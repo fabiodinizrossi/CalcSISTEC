@@ -1,0 +1,340 @@
+nohup: ignoring input
+Dash is running on http://0.0.0.0:8050/
+
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8050
+ * Running on http://172.31.4.194:8050
+Press CTRL+C to quit
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /matriculas HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:24] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /matriculas HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:25] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:27] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:27] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:27] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:28] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:29] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:30] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:39] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:40] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:41] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:42] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:43] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dcc/async-slider.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dcc/async-dropdown.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:53:44] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 17:56:29] code 400, message Bad request version ('lÄ\x9cÏ[ô\x8a\x00*ªª\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:29] "\x16\x03\x01\x05å\x01\x00\x05á\x03\x03ÎÀÀÐÎKc\x19iÐP?\x85'\x16`\x13èº\x92þî6òj,Çä\x89L±\x85 \x8bú+\x14A\x03äPÅÐ\x1bÒ\x83\x07·2c¯ÆðìÔ\x13v\x85lÄ\x9cÏ[ô\x8a\x00*ªª\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:29] code 400, message Bad request version ('SUà²G´\x98OÚÌ4TIÆiÒ\x81Ã_Þõ\x17´\x90\x13\x8f\x00,êê\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:29] "\x16\x03\x01\x05ç\x01\x00\x05ã\x03\x03°Á\x93\x865,\x1d\x10²\x12\x1d\x9c/^Øéæ±ðf*ö\x18B\x11\x93\x06£\x97/|\x02 Ñ«\x08ì\x89 SUà²G´\x98OÚÌ4TIÆiÒ\x81Ã_Þõ\x17´\x90\x13\x8f\x00,êê\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:33] code 400, message Bad request version ('\x97È÷u°\x8dyuKîß¾ËÊ\x12ë\x04V²]Þ*3=Ut\x00*ºº\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:33] "\x16\x03\x01\x05å\x01\x00\x05á\x03\x03\x07Ïz`\x05tWÌãäÂô]\x8b\x11®\x89B\x08îÝ¥/t×^±\x1d"OiV \x17p!ÂÎ\x0b\x97È÷u°\x8dyuKîß¾ËÊ\x12ë\x04V²]Þ*3=Ut\x00*ºº\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:33] code 400, message Bad request version ('\x06T\x06ñ\x14ÝªÖÍ«A\x99Ûcz?6éÞ*°\x93$\x83ÈU´H\x16t\x00*ºº\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:33] "\x16\x03\x01\x05å\x01\x00\x05á\x03\x03r¯§þg@ï(\x0bxÃ+\x9bÎâ\x83\x85è\x0fÇa¾|\x0eÑÁÒÁÙ¸]V \x85\x0c\x06T\x06ñ\x14ÝªÖÍ«A\x99Ûcz?6éÞ*°\x93$\x83ÈU´H\x16t\x00*ºº\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:34] code 400, message Bad request version ('%\x00*\x9a\x9a\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:34] "\x16\x03\x01\x05å\x01\x00\x05á\x03\x03Àÿ>\x92\x83\x129;\x8f\x14æ\x8a\x8f¢\x9c qýh\x153à§\x02qÒ[HÒd\x90\x81 J=\x05¢æ0\x08\x08s¨P\x80ÓÅ6Dÿ\x18\x9cÍÈñÞA¥³`Z/\x05\x1f%\x00*\x9a\x9a\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:34] code 400, message Bad request version ('ð\x946ÛJ\x9co\x9cãëqü©\x03TÂ\x8aVB\x83û\x8e¡\x01õÍQ´»\x1b«$\x00*\x8a\x8a\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:34] "\x16\x03\x01\x05å\x01\x00\x05á\x03\x03î?§ì(HBÐ\x7fo\x18\x01Æ\x07'\x03\x05\x1bÙ\x8c½'\x04â\x05.\x96O\x0f\x85\x80O ð\x946ÛJ\x9co\x9cãëqü©\x03TÂ\x8aVB\x83û\x8e¡\x01õÍQ´»\x1b«$\x00*\x8a\x8a\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:56:34] code 400, message Bad request version ('î[×ËÃ¦ñO¼y:2µò`£#h0\x18kQ°A\x17\x8eºÄ\x00,jj\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À')
+186.251.195.90 - - [06/Mar/2026 17:56:34] "\x16\x03\x01\x05ç\x01\x00\x05ã\x03\x03Ì\x88çs\x0c@ì!(Ø²\x04\x9a©\x14\x18\x06.\x89\x1d¦<\x1cAeè¤%f\x00¡0 vÆ\x86\x85î[×ËÃ¦ñO¼y:2µò`£#h0\x18kQ°A\x17\x8eºÄ\x00,jj\x13\x02\x13\x03\x13\x01À,À+Ì©À0À/Ì¨À" HTTPStatus.BAD_REQUEST -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET / HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:04] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 17:57:05] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET / HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /assets/style.css?m=1772755140.0 HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/deps/react@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/deps/react-dom@18.v4_0_0m1772814798.3.1.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/deps/polyfill@7.v4_0_0m1772814798.12.1.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/deps/prop-types@15.v4_0_0m1772814798.8.1.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash_bootstrap_components/_components/dash_bootstrap_components.v2_0_4m1772814803.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/dash-renderer/build/dash_renderer.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/dcc/dash_core_components.v4_0_0m1772814798.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/dcc/dash_core_components-shared.v4_0_0m1772814798.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:26] "GET /_dash-component-suites/dash/html/dash_html_components.v4_0_0m1772814798.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "GET /_dash-component-suites/dash/dash_table/bundle.v7_0_0m1772814798.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "GET /_dash-layout HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "GET /_dash-dependencies HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "GET /_favicon.ico?v=4.0.0 HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:27] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:42] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:42] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:42] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:42] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:45] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:45] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:46] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:47] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:47] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:22:47] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:27] "GET /percentuais HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "GET /_dash-layout HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "GET /_dash-dependencies HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "POST /_dash-update-component HTTP/1.1" 200 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 304 -
+177.174.194.30 - - [06/Mar/2026 18:26:28] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 304 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.90 - - [06/Mar/2026 18:54:03] "GET /_dash-component-suites/dash/dcc/async-upload.js HTTP/1.1" 304 -
+186.251.195.97 - - [06/Mar/2026 23:02:49] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [06/Mar/2026 23:02:49] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [06/Mar/2026 23:02:49] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [06/Mar/2026 23:02:49] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 304 -
+186.251.195.97 - - [06/Mar/2026 23:02:49] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 304 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "GET /_dash-dependencies HTTP/1.1" 200 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "GET /_dash-layout HTTP/1.1" 200 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "GET /_dash-component-suites/dash/dcc/async-graph.js HTTP/1.1" 304 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "POST /_dash-update-component HTTP/1.1" 200 -
+186.251.195.97 - - [07/Mar/2026 02:25:26] "GET /_dash-component-suites/plotly/package_data/plotly.min.js HTTP/1.1" 304 -
+3.130.168.2 - - [07/Mar/2026 16:53:28] "GET / HTTP/1.1" 200 -
+3.130.168.2 - - [07/Mar/2026 16:55:12] "GET / HTTP/1.1" 200 -
+3.130.168.2 - - [07/Mar/2026 16:55:47] code 400, message Bad request version ('À\x14À')
+3.130.168.2 - - [07/Mar/2026 16:55:47] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03¬åçD\x89{ÿ\x8aúH\x11]¸\x85\x15oj\x09\x94Q\x9c+Ã\x89Úâ²wÓú\x11/\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+3.130.168.2 - - [07/Mar/2026 16:56:49] code 400, message Bad request syntax ('SSH-2.0-Go')
+3.130.168.2 - - [07/Mar/2026 16:56:49] "SSH-2.0-Go" HTTPStatus.BAD_REQUEST -
+3.130.168.2 - - [07/Mar/2026 16:57:37] code 400, message Bad request version ('À\x14À')
+3.130.168.2 - - [07/Mar/2026 16:57:37] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03\x9dsxÅ®Cì)\x9c\x02\x80ãó%Ê\x85ÄÞà\x7f\x02À\x8c²\x9e1ÿÉ¶À¼ß\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+18.218.118.203 - - [08/Mar/2026 17:53:11] "GET / HTTP/1.1" 200 -
+18.218.118.203 - - [08/Mar/2026 17:54:56] "GET / HTTP/1.1" 200 -
+18.218.118.203 - - [08/Mar/2026 17:56:42] code 400, message Bad request version ('À\x14À')
+18.218.118.203 - - [08/Mar/2026 17:56:42] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03;Â¥C¼\x1bL\x12ûË\x85\x9c\x92\x9bA¤jì%/8íÃd\x87û¶\x1eÔ\x19\x8bØ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+18.218.118.203 - - [08/Mar/2026 17:57:35] code 400, message Bad request syntax ('SSH-2.0-Go')
+18.218.118.203 - - [08/Mar/2026 17:57:35] "SSH-2.0-Go" HTTPStatus.BAD_REQUEST -
+18.218.118.203 - - [08/Mar/2026 17:59:17] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00{\x01\x00\x00w\x03\x03#ÛvÉ=\x9a¹\x90\x02\x00ðã=Ó\x9aK³\x9fÅøÎæoÏPØï\x80«ãù\x7f\x00\x00\x1aÀ/À+À\x11À\x07À\x13À')
+18.218.118.203 - - [08/Mar/2026 17:59:17] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03#ÛvÉ=\x9a¹\x90\x02\x00ðã=Ó\x9aK³\x9fÅøÎæoÏPØï\x80«ãù\x7f\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
