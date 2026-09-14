@@ -1,0 +1,77 @@
+{% extends "_base.html" %}
+{% block title %}Configurações - Pesquisa Institucional - SISTEC{% endblock %}
+{% block admin_nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block content %}
+<div class="admin-form">
+  <h1>Configurações</h1>
+
+  {% if mensagem_email %}
+  <div class="form-message {{ 'success' if sucesso_email else 'error' }}" role="alert" aria-live="assertive">{{ mensagem_email }}</div>
+  {% endif %}
+
+  <form method="post" action="/admin/config">
+    <input type="hidden" name="acao" value="salvar_email">
+    <div class="br-input {% if erro_email %}danger{% endif %}">
+      <label for="contato_email">E-mail de contato exibido no rodapé público</label>
+      <input type="email" id="contato_email" name="contato_email" value="{{ contato_email }}"
+             required {% if erro_email %}autofocus{% endif %}>
+    </div>
+    {% if erro_email %}<div class="field-error" role="alert" aria-live="polite">{{ erro_email }}</div>{% endif %}
+    <button type="submit" class="br-button primary" data-loading="Salvando...">Salvar e-mail</button>
+  </form>
+
+  <form method="post" action="/admin/config" class="confirm-form">
+    <input type="hidden" name="acao" value="restaurar_email">
+    <button type="submit" class="br-button secondary" id="btn-restaurar-email"
+            data-confirm="Restaurar o e-mail de contato para o padrão de fábrica?">Restaurar padrão do e-mail</button>
+  </form>
+
+  <hr>
+
+  {% if mensagem_logo %}
+  <div class="form-message {{ 'success' if sucesso_logo else 'error' }}" role="alert" aria-live="assertive">{{ mensagem_logo }}</div>
+  {% endif %}
+
+  <div>
+    <p>Logotipo vigente:</p>
+    <img src="/branding/logo" alt="Instituto Federal Farroupilha" class="app-header-logo">
+  </div>
+
+  <form method="post" action="/admin/config" enctype="multipart/form-data">
+    <input type="hidden" name="acao" value="enviar_logo">
+    <div class="br-upload">
+      <label for="logo">Novo logotipo (SVG ou PNG)</label>
+      <input type="file" id="logo" name="logo" accept=".svg,.png" required>
+    </div>
+    <button type="submit" class="br-button primary" data-loading="Enviando...">Enviar logotipo</button>
+  </form>
+
+  <form method="post" action="/admin/config" class="confirm-form">
+    <input type="hidden" name="acao" value="restaurar_logo">
+    <button type="submit" class="br-button secondary" id="btn-restaurar-logo"
+            data-confirm="Restaurar o logotipo para o padrão de fábrica?">Restaurar padrão do logotipo</button>
+  </form>
+</div>
+<script>
+(function () {
+  document.querySelectorAll(".admin-form form.confirm-form").forEach(function (form) {
+    form.addEventListener("submit", function (evento) {
+      var btn = form.querySelector("button[data-confirm]");
+      if (btn && !confirm(btn.dataset.confirm)) {
+        evento.preventDefault();
+        btn.focus();
+      }
+    });
+  });
+  document.querySelectorAll(".admin-form form:not(.confirm-form)").forEach(function (form) {
+    form.addEventListener("submit", function () {
+      var btn = form.querySelector("button[type=submit]");
+      if (btn && btn.dataset.loading) {
+        btn.disabled = true;
+        btn.textContent = btn.dataset.loading;
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

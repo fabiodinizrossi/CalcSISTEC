@@ -3,3 +3,5 @@ dash-bootstrap-components
 pandas
 openpyxl
 plotly
+defusedxml
+Pillow

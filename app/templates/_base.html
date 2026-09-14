@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Pesquisa Institucional - SISTEC{% endblock %}</title>
+  <link rel="stylesheet" href="/assets/govbr-ds/dist/core.min.css">
+  <link rel="stylesheet" href="/assets/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a class="br-sr-only-focusable skip-link" href="#main-content">Ir para o conteúdo principal</a>
+
+  <header class="app-header" role="banner">
+    <div class="app-header-inner">
+      <img class="app-header-logo" src="/branding/logo" alt="Instituto Federal Farroupilha">
+      <div class="app-header-text">
+        <span class="app-header-title">Painel de Acompanhamento Sistec</span>
+        <span class="app-header-subtitle">Pesquisa Institucional</span>
+      </div>
+    </div>
+  </header>
+
+  {% block admin_nav %}{% endblock %}
+
+  <main id="main-content" role="main" class="app-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer" role="contentinfo">
+    <span>Instituto Federal Farroupilha</span>
+    <a href="https://www.iffarroupilha.edu.br" target="_blank" rel="noopener">www.iffarroupilha.edu.br</a>
+    <span>{{ contato_email }}</span>
+  </footer>
+</body>
+</html>

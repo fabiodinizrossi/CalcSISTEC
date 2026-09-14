@@ -1,0 +1,33 @@
+{% extends "_base.html" %}
+{% block title %}Upload de dados - Pesquisa Institucional - SISTEC{% endblock %}
+{% block admin_nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block content %}
+<div class="admin-form">
+  <h1>Upload de dados</h1>
+  <p>Usuário: {{ usuario }} — <a href="/admin/logout">Sair</a></p>
+
+  {% if mensagem %}
+  <div class="form-message {{ 'success' if sucesso else 'error' }}" role="alert" aria-live="assertive">{{ mensagem }}</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="br-upload">
+      <label for="arquivo">Planilha (.xlsx) do dataset SISTEC/PNP</label>
+      <input type="file" id="arquivo" name="arquivo" accept=".xlsx" required>
+    </div>
+    <button type="submit" class="br-button primary" data-loading="Enviando...">Enviar</button>
+  </form>
+</div>
+<script>
+(function () {
+  var form = document.querySelector(".admin-form form");
+  var btn = document.querySelector(".admin-form button[type=submit]");
+  if (form && btn) {
+    form.addEventListener("submit", function () {
+      btn.disabled = true;
+      btn.textContent = btn.dataset.loading;
+    });
+  }
+})();
+</script>
+{% endblock %}

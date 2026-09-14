@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+{% block title %}Login administrativo - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<div class="admin-form">
+  <h1>Login administrativo</h1>
+
+  {% if erro_global %}
+  <div class="form-message error" role="alert" aria-live="assertive">{{ erro_global }}</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    <div class="br-input {% if erro_email %}danger{% endif %}">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" value="{{ email or '' }}" required
+             {% if erro_email %}autofocus{% endif %}>
+    </div>
+    {% if erro_email %}<div class="field-error" role="alert" aria-live="polite">{{ erro_email }}</div>{% endif %}
+
+    <div class="br-password {% if erro_senha %}danger{% endif %}">
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" required
+             {% if erro_senha and not erro_email %}autofocus{% endif %}>
+    </div>
+    {% if erro_senha %}<div class="field-error" role="alert" aria-live="polite">{{ erro_senha }}</div>{% endif %}
+
+    <button type="submit" class="br-button primary" data-loading="Entrando...">Entrar</button>
+  </form>
+
+  <p><a href="/recuperar-acesso">Esqueci minha senha</a></p>
+</div>
+<script>
+(function () {
+  var form = document.querySelector(".admin-form form");
+  var btn = document.querySelector(".admin-form button[type=submit]");
+  if (form && btn) {
+    form.addEventListener("submit", function () {
+      btn.disabled = true;
+      btn.textContent = btn.dataset.loading;
+    });
+  }
+})();
+</script>
+{% endblock %}

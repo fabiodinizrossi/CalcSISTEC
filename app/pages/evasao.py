@@ -1,131 +1,118 @@
+"""BC-04 (Apresentação): página Taxa de Evasão Anual.
+
+Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
+`_reversa_sdd/migration/target_screens.md` §"Tela: Taxa de Evasão Anual".
+"""
+
 import dash
-from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.express as px
+from dash import Input, Output, callback, dcc, html
 
-from app.components.utils import apply_filters, classify_status
+from app.components.filters import clear_filters_button, fic_toggle, filter_panel, select_filter
+from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
+from app.domain.contrato import FiltrosAtivos
+from app.domain.matriculas import filtrar_fic, taxa_evasao
 
-dash.register_page(__name__, path="/evasao")
+dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesquisa Institucional - SISTEC")
 
-layout = html.Div(
-    [
-        html.Div(
-            className="header",
-            children=[
-                html.H2("Taxa de Evasão"),
-                html.Div("Evasões por mês e por campus"),
-            ],
-        ),
-        html.Div(
-            className="panel",
-            children=[
-                html.Div(id="evasao-alerta"),
-                dbc.Row(
-                    [
-                        dbc.Col(html.Div(id="kpi-eva-aband"), md=3),
-                        dbc.Col(html.Div(id="kpi-eva-transf"), md=3),
-                        dbc.Col(html.Div(id="kpi-eva-deslig"), md=3),
-                        dbc.Col(html.Div(id="kpi-eva-taxa"), md=3),
-                    ],
-                    className="g-3",
-                ),
-                html.Br(),
-                dcc.Graph(id="grafico-evasao"),
-                html.Div(id="tabela-evasao"),
-            ],
-        ),
-    ]
-)
+
+def layout():
+    if not dataset_disponivel():
+        return html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state")
+
+    df = carregar_matriculas()
+    return html.Div(
+        [
+            html.H1("Taxa de Evasão Anual"),
+            fic_toggle("evasao-fic", default="sem_fic"),
+            dcc.Loading(html.Div(id="evasao-heatmap")),
+            filter_panel(
+                select_filter("evasao-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+                select_filter("evasao-filtro-tipo-curso", "Tipo de Curso", sorted(df["tipo_curso_pnp"].dropna().unique())),
+            ),
+            clear_filters_button("evasao-limpar"),
+        ]
+    )
+
+
+def _filtrar(df, campus, tipo_curso, incluir_fic):
+    if campus and campus != "__todos__":
+        df = df[df["cidade"] == campus]
+    if tipo_curso and tipo_curso != "__todos__":
+        df = df[df["tipo_curso_pnp"] == tipo_curso]
+    return filtrar_fic(df, incluir_fic)
+
+
+# `color_scale` de `target_screens.md` (verde/amarelo/vermelho) — o ponto
+# médio é sinalizado no próprio contrato como "revisar, hoje 16% fixo no
+# legado"; mantido aqui como constante nomeada (nunca literal solto), até que
+# vire configurável.
+LIMIAR_EVASAO_MEDIO = 0.16
+
+
+def _classe_evasao(taxa):
+    if taxa is None:
+        return ""
+    if taxa >= LIMIAR_EVASAO_MEDIO * 1.5:
+        return "evasao-alta"
+    if taxa >= LIMIAR_EVASAO_MEDIO:
+        return "evasao-media"
+    return "evasao-baixa"
+
+
+# RN-08 (RF-09): cor nunca é o único indicador de estado — cada faixa tem um
+# equivalente textual visível, para quem não distingue cor (daltonismo,
+# leitor de tela, impressão em preto e branco).
+_LABEL_EVASAO = {"evasao-alta": "Alta", "evasao-media": "Média", "evasao-baixa": "Baixa"}
 
 
 @callback(
-    Output("evasao-alerta", "children"),
-    Output("kpi-eva-aband", "children"),
-    Output("kpi-eva-transf", "children"),
-    Output("kpi-eva-deslig", "children"),
-    Output("kpi-eva-taxa", "children"),
-    Output("grafico-evasao", "figure"),
-    Output("tabela-evasao", "children"),
-    Input("store-data", "data"),
-    Input("store-filters", "data"),
+    Output("evasao-heatmap", "children"),
+    Input("evasao-fic", "value"),
+    Input("evasao-filtro-campus", "value"),
+    Input("evasao-filtro-tipo-curso", "value"),
 )
-def atualizar_evasao(store_data, filtros):
-    if not store_data or "fact" not in store_data:
-        empty_fig = px.line(pd.DataFrame({"x": [], "y": []}), x="x", y="y")
-        alerta = dbc.Alert("Faça upload do arquivo na Home.", color="warning")
-        return alerta, "", "", "", "", empty_fig, ""
+def atualizar(fic, campus, tipo_curso):
+    ano_base = ano_base_ativo() or 2026
+    incluir_fic = fic == "com_fic"
+    df = _filtrar(carregar_matriculas(), campus, tipo_curso, incluir_fic)
+    filtros = FiltrosAtivos(ano_base=ano_base, incluir_fic=incluir_fic)
 
-    df = pd.read_json(store_data["fact"], orient="split")
-    df = apply_filters(df, filtros)
-    df["STATUS_GRUPO"] = classify_status(df["NO_STATUS_MATRICULA"])
+    if df.empty:
+        return html.Div("Sem dados para os filtros selecionados.")
 
-    if "ANO_OCORRENCIA" in df.columns and filtros and filtros.get("ano_ocorrencia") is not None:
-        df = df[df["ANO_OCORRENCIA"] == int(filtros["ano_ocorrencia"])]
-
-    if len(df) == 0:
-        empty_fig = px.line(pd.DataFrame({"x": [], "y": []}), x="x", y="y")
-        alerta = dbc.Alert("Nenhum registro encontrado para os filtros selecionados.", color="info")
-        return alerta, "", "", "", "", empty_fig, ""
-
-    abandonos = int((df["STATUS_GRUPO"] == "ABANDONO").sum())
-    transferencias = int(df["STATUS_GRUPO"].isin(["TRANSF_EXT", "TRANSF_INT"]).sum())
-    desligamentos = int((df["STATUS_GRUPO"] == "DESLIGADO").sum())
-
-    total = len(df)
-    evasoes = int(df["STATUS_GRUPO"].isin(["ABANDONO", "TRANSF_EXT", "DESLIGADO", "TRANSF_INT"]).sum())
-    taxa = round((evasoes / total) * 100, 2) if total > 0 else 0.0
-
-    if "MES_OCORRENCIA" in df.columns:
-        mensal = (
-            df[df["STATUS_GRUPO"].isin(["ABANDONO", "TRANSF_EXT", "DESLIGADO", "TRANSF_INT"])]
-            .groupby("MES_OCORRENCIA")
-            .size()
-            .reset_index(name="Evasões")
-            .sort_values("MES_OCORRENCIA")
-        )
-        fig = px.area(
-            mensal,
-            x="MES_OCORRENCIA",
-            y="Evasões",
-            title="Evasões por mês",
-        )
-    else:
-        fig = px.line(pd.DataFrame({"x": [], "y": []}), x="x", y="y")
-
-    if "CAMPUS" in df.columns:
-        tabela = (
-            df.groupby("CAMPUS")
-            .apply(
-                lambda x: pd.Series(
-                    {
-                        "Matrículas": len(x),
-                        "Evasões": int(x["STATUS_GRUPO"].isin(["ABANDONO", "TRANSF_EXT", "DESLIGADO", "TRANSF_INT"]).sum()),
-                    }
-                )
+    linhas = []
+    for cidade, grupo in df.groupby("cidade", dropna=False):
+        taxa = taxa_evasao(grupo, filtros)
+        classe = _classe_evasao(taxa)
+        linhas.append(
+            html.Tr(
+                [
+                    html.Td(cidade),
+                    html.Td(f"{taxa:.1%}", className=classe),
+                    html.Td(_LABEL_EVASAO.get(classe, "—")),
+                ]
             )
-            .reset_index()
         )
-        tabela["Taxa de Evasão (%)"] = (
-            (tabela["Evasões"] / tabela["Matrículas"]) * 100
-        ).fillna(0).round(2)
 
-        table_component = dbc.Table.from_dataframe(
-            tabela.sort_values("Taxa de Evasão (%)", ascending=False),
-            striped=True,
-            bordered=False,
-            hover=True,
-            size="sm",
-        )
-    else:
-        table_component = ""
-
-    return (
-        "",
-        dbc.Card(dbc.CardBody([html.Div("Abandonos"), html.H4(f"{abandonos:,}".replace(",", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("Transferências"), html.H4(f"{transferencias:,}".replace(",", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("Desligamentos"), html.H4(f"{desligamentos:,}".replace(",", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("Taxa"), html.H4(f"{taxa:.2f}%".replace(".", ","))]), className="kpi-card"),
-        fig,
-        table_component,
+    tabela = dbc.Table(
+        [
+            html.Thead(html.Tr([html.Th("Campus"), html.Th("Taxa de Evasão"), html.Th("Situação")])),
+            html.Tbody(linhas),
+        ],
+        striped=True,
+        bordered=True,
+        hover=True,
     )
+    return html.Div(tabela, className="table-scroll-wrapper")
+
+
+@callback(
+    Output("evasao-filtro-campus", "value"),
+    Output("evasao-filtro-tipo-curso", "value"),
+    Output("evasao-fic", "value"),
+    Input("evasao-limpar", "n_clicks"),
+    prevent_initial_call=True,
+)
+def limpar_filtros(_n_clicks):
+    return "__todos__", "__todos__", "sem_fic"

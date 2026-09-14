@@ -1,314 +1,312 @@
-import base64
-import io
+import os
 
 import dash
-from dash import html, dcc, Input, Output, State
-import dash_bootstrap_components as dbc
+import flask
 import pandas as pd
+import dash_bootstrap_components as dbc
+from dash import html
 
-from app.components.sidebar import make_sidebar
-from app.components.filters import render_filters
-from app.components.utils import clean_str, clean_sorted
+from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, requer_autenticacao
+from app.components.footer import make_footer
+from app.components.header import make_header
+from app.components.navigation import make_navigation
+from app.data.config_store import (
+    DEFAULT_LOGO_PATH,
+    get_contato_email,
+    get_logo_path,
+    reset_contato_email,
+    reset_logo,
+    set_contato_email,
+    set_logo,
+)
+from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
+from app.data.ingest import UploadInvalido, processar_upload
+from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
 
 app = dash.Dash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    title="Pesquisa Institucional - SISTEC",
+    title="Início - Pesquisa Institucional - SISTEC",
 )
+
+# T021 (RF-05, WCAG 3.1.1): declara pt-BR no `<html>` — o índice padrão do
+# Dash usa `lang="en"`.
+app.index_string = """<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
 
 server = app.server
 server.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
+# BC-05/AD-04: sessão Flask usada apenas para o guarda de acesso da rota
+# administrativa de upload — as 5 páginas públicas nunca a consultam.
+server.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24))
 
-app.layout = dbc.Container(
-    fluid=True,
-    children=[
-        dcc.Store(id="store-data", storage_type="session"),
-        dcc.Store(id="store-meta", storage_type="session"),
-        dcc.Store(id="store-filters", storage_type="session"),
-        dbc.Row(
-            [
-                dbc.Col(
-                    make_sidebar(),
-                    width=3,
-                    className="sidebar-col",
-                ),
-                dbc.Col(
-                    dash.page_container,
-                    width=9,
-                    className="content-col",
-                ),
-            ]
-        ),
-    ],
-)
-
-
-@app.callback(
-    Output("filters-container", "children"),
-    Output("filters-status", "children"),
-    Input("store-meta", "data"),
-)
-def render_sidebar_filters(meta):
-    if not meta:
-        return (
-            html.Div(
-                "Faça upload na Home para habilitar os filtros.",
-                style={"fontSize": "12px"},
+# Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do
+# SQLite a cada carregamento (`app/data/consulta.py`), substituindo o antigo
+# padrão de upload no navegador + `dcc.Store` de sessão — o upload agora só
+# acontece na rota administrativa autenticada (`/admin/upload`, Tarefa 08).
+#
+# `001-govbr-design-system` (T019/T021): Header + NavigationMenu +
+# page_container + Footer empilhados verticalmente (a barra lateral fixa
+# saiu, RF-03). `app.layout` vira uma função (em vez de um componente
+# estático) para que o rodapé releia `config_store.get_contato_email()` a
+# cada carregamento de página — sem isso, uma alteração de e-mail em
+# `/admin/config` só apareceria depois de reiniciar o processo (RN-12).
+def serve_layout():
+    return html.Div(
+        [
+            html.A("Ir para o conteúdo principal", href="#main-content", className="skip-link"),
+            make_header(),
+            make_navigation(),
+            html.Main(
+                id="main-content",
+                role="main",
+                children=dash.page_container,
             ),
-            "",
-        )
-
-    return render_filters(meta), "Arquivo carregado: {}".format(
-        meta.get("filename", "")
+            make_footer(),
+        ]
     )
 
 
-@app.callback(
-    Output("store-filters", "data"),
-    Input("filt-ano-ingresso", "value"),
-    Input("filt-campus", "value"),
-    Input("filt-subtipo", "value"),
-    Input("filt-modalidade", "value"),
-    Input("filt-oferta", "value"),
-    Input("filt-curso", "value"),
-    Input("filt-programa", "value"),
-    Input("filt-fic-mode", "value"),
-    Input("filt-ano-ocorrencia", "value"),
-    prevent_initial_call=True,
+app.layout = serve_layout
+
+
+_MSG_EMAIL_INVALIDO = "Informe um e-mail válido, por exemplo nome@iffarroupilha.edu.br."
+_MSG_SENHA_CURTA = "A senha deve ter pelo menos 8 caracteres."
+_MSG_CONFIG_AUSENTE = (
+    "Servidor sem credenciais administrativas configuradas "
+    "(variáveis de ambiente ADMIN_EMAIL/ADMIN_PASSWORD_HASH ausentes neste processo). "
+    "Nenhum usuário/senha vai funcionar até isso ser corrigido — não é um problema de senha errada."
 )
-def sync_filters(
-    ano_ingresso,
-    campus,
-    subtipo,
-    modalidade,
-    oferta,
-    curso,
-    programa,
-    fic_mode,
-    ano_ocorrencia,
-):
-    return {
-        "ano_ingresso": ano_ingresso,
-        "campus": campus,
-        "subtipo": subtipo,
-        "modalidade": modalidade,
-        "oferta": oferta,
-        "curso": curso,
-        "programa": programa,
-        "fic_mode": fic_mode,
-        "ano_ocorrencia": ano_ocorrencia,
+
+LOGO_MAX_BYTES = 500 * 1024  # RN-13: acima disso, rejeitado (RF-21).
+UPLOADS_BRANDING_DIR = os.path.join(os.path.dirname(__file__), "data", "uploads", "branding")
+
+
+def _contexto_base():
+    return {"contato_email": get_contato_email()}
+
+
+@server.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    """BC-05/AD-04: única porta de entrada autenticada do sistema — as 5
+    páginas públicas (Dash `use_pages`) nunca passam por esta rota.
+
+    `001-govbr-design-system` (T033): RF-10 a RF-14 — campos E-mail/Senha
+    (em vez de Usuário/Senha), validação de formato por campo (RF-11),
+    mensagem global genérica em caso de credencial incorreta, sem indicar
+    qual campo errou (RF-12), foco no primeiro campo inválido."""
+    if not credenciais_configuradas():
+        return flask.render_template(
+            "login.html", erro_global=_MSG_CONFIG_AUSENTE, email="", **_contexto_base()
+        )
+
+    if flask.request.method == "POST":
+        email = flask.request.form.get("email", "").strip()
+        senha = flask.request.form.get("senha", "")
+
+        erro_email = None if email_valido(email) else _MSG_EMAIL_INVALIDO
+        erro_senha = None if len(senha) >= 8 else _MSG_SENHA_CURTA
+        if erro_email or erro_senha:
+            return flask.render_template(
+                "login.html",
+                erro_email=erro_email,
+                erro_senha=erro_senha,
+                email=email,
+                **_contexto_base(),
+            )
+
+        if autenticar_sessao(email, senha):
+            return flask.redirect("/admin/upload")
+        return flask.render_template(
+            "login.html",
+            erro_global="E-mail ou senha incorretos.",
+            email=email,
+            **_contexto_base(),
+        )
+
+    return flask.render_template("login.html", email="", **_contexto_base())
+
+
+@server.route("/admin/logout")
+def admin_logout():
+    encerrar_sessao()
+    return flask.redirect("/admin/login")
+
+
+@server.route("/recuperar-acesso")
+def recuperar_acesso():
+    """RF-15/RN-10: pública, sem exigir sessão — orienta a pedir a
+    redefinição à Pesquisa Institucional, sem nenhum campo de formulário."""
+    return flask.render_template("recuperar_acesso.html", **_contexto_base())
+
+
+@server.route("/admin/upload", methods=["GET", "POST"])
+@requer_autenticacao
+def admin_upload():
+    """BC-05: guarda de acesso sobre BC-01 (`app/data/ingest.processar_upload`)
+    — nenhum upload é aceito sem autenticação válida (`AGG-Administracao`).
+
+    GAP herdado da Tarefa 05/07 (não bloqueante): `mapa_nomes_curso`
+    (BR-MIGRAR-017, ~40 mapeamentos históricos Sistec -> PNP) ainda não foi
+    externalizado como tabela de configuração real — usa dict vazio como
+    placeholder até que a tabela real seja fornecida/confirmada (Tarefa 11).
+    """
+    mensagem = None
+    sucesso = False
+    if flask.request.method == "POST":
+        arquivo = flask.request.files.get("arquivo")
+        if arquivo is None or not arquivo.filename:
+            mensagem = "Selecione um arquivo."
+        elif server.config["MAX_CONTENT_LENGTH"] and flask.request.content_length and (
+            flask.request.content_length > server.config["MAX_CONTENT_LENGTH"]
+        ):
+            mensagem = "Arquivo maior que 500 MB — envie um arquivo menor."
+        else:
+            try:
+                xls = pd.ExcelFile(arquivo)
+                planilhas = {
+                    nome: pd.read_excel(xls, sheet_name=nome)
+                    for nome in ("matriculas", "ciclos", "cursos", "campus", "fatores")
+                    if nome in xls.sheet_names
+                }
+                resultado = processar_upload(
+                    planilhas=planilhas,
+                    mapa_nomes_curso={},
+                    ano_base=int(os.environ.get("ANO_BASE", 2026)),
+                    uploaded_by=flask.session.get("admin_usuario", "desconhecido"),
+                    filename=arquivo.filename,
+                )
+                mensagem = f"Upload aceito: {resultado}"
+                sucesso = True
+            except UploadInvalido as exc:
+                mensagem = f"Upload rejeitado: {exc}"
+    return flask.render_template(
+        "upload.html",
+        usuario=flask.session.get("admin_usuario", ""),
+        mensagem=mensagem,
+        sucesso=sucesso,
+        **_contexto_base(),
+    )
+
+
+@server.route("/admin/config", methods=["GET", "POST"])
+@requer_autenticacao
+def admin_config():
+    """RF-19 a RF-22: e-mail de contato e logotipo administráveis
+    (`001-govbr-design-system`, T036). Cada ação (`acao` no form) é
+    independente — salvar/restaurar e-mail não afeta o logotipo e vice-versa."""
+    contexto = {
+        "contato_email": get_contato_email(),
+        "erro_email": None,
+        "mensagem_email": None,
+        "sucesso_email": False,
+        "mensagem_logo": None,
+        "sucesso_logo": False,
     }
 
+    if flask.request.method == "POST":
+        acao = flask.request.form.get("acao")
 
-@app.callback(
-    Output("filt-ano-ingresso", "value"),
-    Output("filt-campus", "value"),
-    Output("filt-subtipo", "value"),
-    Output("filt-modalidade", "value"),
-    Output("filt-oferta", "value"),
-    Output("filt-curso", "value"),
-    Output("filt-programa", "value"),
-    Output("filt-fic-mode", "value"),
-    Output("filt-ano-ocorrencia", "value"),
-    Input("btn-clear-filters", "n_clicks"),
-    State("store-meta", "data"),
-    prevent_initial_call=True,
-)
-def clear_filters(n_clicks, meta):
-    if not meta:
-        raise dash.exceptions.PreventUpdate
+        if acao == "salvar_email":
+            novo_email = flask.request.form.get("contato_email", "").strip()
+            if email_valido(novo_email):
+                set_contato_email(novo_email)
+                contexto["contato_email"] = novo_email
+                contexto["mensagem_email"] = "E-mail de contato salvo."
+                contexto["sucesso_email"] = True
+            else:
+                contexto["erro_email"] = _MSG_EMAIL_INVALIDO
+                contexto["contato_email"] = novo_email
+                contexto["mensagem_email"] = "Não foi possível salvar: e-mail inválido."
 
-    years_ingresso = meta.get("years_ingresso", [2010, 2025])
-    years_ocorrencia = meta.get("years_ocorrencia", [])
-    ano_oc = years_ocorrencia[-1] if years_ocorrencia else None
+        elif acao == "restaurar_email":
+            reset_contato_email()
+            contexto["contato_email"] = get_contato_email()
+            contexto["mensagem_email"] = "E-mail de contato restaurado ao padrão de fábrica."
+            contexto["sucesso_email"] = True
 
-    return (
-        [int(years_ingresso[0]), int(years_ingresso[1])],
-        "Todos",
-        "Todos",
-        "Todos",
-        "Todos",
-        "Todos",
-        "Todos",
-        "SEM_FIC",
-        ano_oc,
-    )
+        elif acao == "enviar_logo":
+            arquivo = flask.request.files.get("logo")
+            if arquivo is None or not arquivo.filename:
+                contexto["mensagem_logo"] = "Selecione um arquivo de logotipo (SVG ou PNG)."
+            else:
+                dados = arquivo.read()
+                if len(dados) > LOGO_MAX_BYTES:
+                    contexto["mensagem_logo"] = "Arquivo maior que 500 KB — envie um logotipo menor."
+                else:
+                    extensao = os.path.splitext(arquivo.filename)[1].lower()
+                    os.makedirs(UPLOADS_BRANDING_DIR, exist_ok=True)
+                    try:
+                        if extensao == ".svg":
+                            limpo = sanitizar_svg(dados)
+                            destino = os.path.join(UPLOADS_BRANDING_DIR, "logo-atual.svg")
+                            with open(destino, "wb") as f:
+                                f.write(limpo)
+                            set_logo(destino)
+                            contexto["mensagem_logo"] = "Logotipo atualizado."
+                            contexto["sucesso_logo"] = True
+                        elif extensao == ".png":
+                            normalizado = validar_e_normalizar_png(dados)
+                            destino = os.path.join(UPLOADS_BRANDING_DIR, "logo-atual.png")
+                            with open(destino, "wb") as f:
+                                f.write(normalizado)
+                            set_logo(destino)
+                            contexto["mensagem_logo"] = "Logotipo atualizado."
+                            contexto["sucesso_logo"] = True
+                        else:
+                            contexto["mensagem_logo"] = "Formato não suportado — envie um arquivo .svg ou .png."
+                    except (SvgInvalido, ImagemInvalida) as exc:
+                        contexto["mensagem_logo"] = f"Logotipo rejeitado: {exc}"
+
+        elif acao == "restaurar_logo":
+            reset_logo()
+            contexto["mensagem_logo"] = "Logotipo restaurado ao padrão de fábrica."
+            contexto["sucesso_logo"] = True
+
+    return flask.render_template("configuracoes.html", **contexto)
 
 
-@app.callback(
-    Output("upload-filename", "children"),
-    Input("upload-data", "filename"),
-    prevent_initial_call=True,
-)
-def show_filename(filename):
-    if not filename:
-        return ""
-    return "Arquivo selecionado: {}".format(filename)
+@server.route("/branding/logo")
+def branding_logo():
+    """RF-02/RF-21: serve o logotipo vigente. Sempre com *fallback* ao
+    padrão de fábrica quando o arquivo configurado está ausente ou
+    ilegível — nunca um erro visível ao visitante público (T037)."""
+    caminho = get_logo_path()
+    conteudo = None
+    if caminho and os.path.isfile(caminho):
+        try:
+            with open(caminho, "rb") as f:
+                conteudo = f.read()
+        except OSError:
+            conteudo = None
 
+    if conteudo is None:
+        caminho = DEFAULT_LOGO_PATH
+        with open(caminho, "rb") as f:
+            conteudo = f.read()
 
-@app.callback(
-    Output("store-data", "data"),
-    Output("store-meta", "data"),
-    Output("upload-status", "children"),
-    Input("upload-data", "contents"),
-    State("upload-data", "filename"),
-    prevent_initial_call=True,
-)
-def process_file(contents, filename):
-    if contents is None:
-        return dash.no_update, dash.no_update, ""
-
-    try:
-        _, content_string = contents.split(",")
-        decoded = base64.b64decode(content_string)
-
-        xls = pd.ExcelFile(io.BytesIO(decoded))
-
-        if "matriculas" not in xls.sheet_names or "ciclos" not in xls.sheet_names:
-            return (
-                dash.no_update,
-                dash.no_update,
-                "Erro: o arquivo precisa conter as abas 'matriculas' e 'ciclos'.",
-            )
-
-        df_m = pd.read_excel(xls, sheet_name="matriculas")
-        df_c = pd.read_excel(xls, sheet_name="ciclos")
-
-        rename_map = {
-            "CÓDIGO CICLO DE MATRÍCULA": "CO_CICLO_MATRICULA",
-            "NOME UNIDADE DE ENSINO": "NOME_UNIDADE",
-            "NOME DO CURSO": "NOME_CURSO",
-            "SUBTIPO CURSOS": "SUBTIPO_CURSO",
-            "MODALIDADE ENSINO": "MODALIDADE",
-            "OFERTA": "OFERTA",
-            "TIPO PROGRAMA DO CURSO": "PROGRAMA",
-            "CARGA HORÁRIA TOTAL": "CARGA_TOTAL",
-        }
-
-        df_c = df_c.rename(columns=rename_map)
-
-        if "CO_CICLO_MATRICULA" not in df_m.columns:
-            return (
-                dash.no_update,
-                dash.no_update,
-                "Erro: a aba 'matriculas' não possui a coluna 'CO_CICLO_MATRICULA'.",
-            )
-
-        if "CO_CICLO_MATRICULA" not in df_c.columns:
-            return (
-                dash.no_update,
-                dash.no_update,
-                "Erro: a aba 'ciclos' não possui a coluna 'CO_CICLO_MATRICULA' após o renomeamento.",
-            )
-
-        df_c = df_c.drop_duplicates(subset=["CO_CICLO_MATRICULA"])
-
-        fact = df_m.merge(df_c, on="CO_CICLO_MATRICULA", how="left")
-
-        if "DT_DATA_INICIO" in fact.columns:
-            fact["DT_DATA_INICIO"] = pd.to_datetime(
-                fact["DT_DATA_INICIO"], errors="coerce"
-            )
-            fact["ANO_INGRESSO"] = fact["DT_DATA_INICIO"].dt.year
-
-        if "MES_DE_OCORRENCIA" in fact.columns:
-            fact["MES_DE_OCORRENCIA"] = pd.to_datetime(
-                fact["MES_DE_OCORRENCIA"], errors="coerce"
-            )
-            fact["ANO_OCORRENCIA"] = fact["MES_DE_OCORRENCIA"].dt.year
-            fact["MES_OCORRENCIA"] = fact["MES_DE_OCORRENCIA"].dt.month
-
-        if "NOME_UNIDADE" in fact.columns:
-            fact["CAMPUS"] = fact["NOME_UNIDADE"]
-        elif "CO_UNIDADE_ENSINO" in fact.columns:
-            fact["CAMPUS"] = fact["CO_UNIDADE_ENSINO"]
-        else:
-            fact["CAMPUS"] = "N/D"
-
-        if "NOME_CURSO" in fact.columns:
-            fact["CURSO"] = fact["NOME_CURSO"]
-        elif "CO_CURSO" in fact.columns:
-            fact["CURSO"] = fact["CO_CURSO"]
-        else:
-            fact["CURSO"] = "N/D"
-
-        if "SUBTIPO_CURSO" not in fact.columns:
-            fact["SUBTIPO_CURSO"] = "N/D"
-
-        if "MODALIDADE" not in fact.columns:
-            fact["MODALIDADE"] = "N/D"
-
-        if "OFERTA" not in fact.columns:
-            fact["OFERTA"] = "N/D"
-
-        if "PROGRAMA" not in fact.columns:
-            fact["PROGRAMA"] = "N/D"
-
-        fact["CAMPUS"] = clean_str(fact["CAMPUS"])
-        fact["CURSO"] = clean_str(fact["CURSO"])
-        fact["SUBTIPO_CURSO"] = clean_str(fact["SUBTIPO_CURSO"])
-        fact["MODALIDADE"] = clean_str(fact["MODALIDADE"])
-        fact["OFERTA"] = clean_str(fact["OFERTA"])
-        fact["PROGRAMA"] = clean_str(fact["PROGRAMA"])
-
-        if "NU_CARGA_HORARIA" in fact.columns and "CARGA_TOTAL" in fact.columns:
-            numerador = pd.to_numeric(fact["NU_CARGA_HORARIA"], errors="coerce")
-            denominador = pd.to_numeric(fact["CARGA_TOTAL"], errors="coerce").replace(
-                0, pd.NA
-            )
-            fact["EQ_MATRICULA"] = (numerador / denominador).fillna(1.0).clip(lower=0)
-        else:
-            fact["EQ_MATRICULA"] = 1.0
-
-        options = {
-            "campus": clean_sorted(fact["CAMPUS"]),
-            "subtipo": clean_sorted(fact["SUBTIPO_CURSO"]),
-            "modalidade": clean_sorted(fact["MODALIDADE"]),
-            "oferta": clean_sorted(fact["OFERTA"]),
-            "programa": clean_sorted(fact["PROGRAMA"]),
-            "curso": clean_sorted(fact["CURSO"]),
-        }
-
-        if "ANO_INGRESSO" in fact.columns and fact["ANO_INGRESSO"].notna().any():
-            years_ingresso = [
-                int(fact["ANO_INGRESSO"].dropna().min()),
-                int(fact["ANO_INGRESSO"].dropna().max()),
-            ]
-        else:
-            years_ingresso = [2010, 2025]
-
-        if "ANO_OCORRENCIA" in fact.columns and fact["ANO_OCORRENCIA"].notna().any():
-            years_ocorrencia = sorted(
-                pd.to_numeric(
-                    fact["ANO_OCORRENCIA"].dropna(), errors="coerce"
-                ).dropna().astype(int).unique().tolist()
-            )
-        else:
-            years_ocorrencia = []
-
-        meta = {
-            "filename": filename,
-            "years_ingresso": years_ingresso,
-            "years_ocorrencia": years_ocorrencia,
-            "options": options,
-        }
-
-        payload = {"fact": fact.to_json(orient="split", date_format="iso")}
-
-        return (
-            payload,
-            meta,
-            "Arquivo carregado e processado com sucesso ({} registros).".format(len(fact)),
-        )
-
-    except Exception as e:
-        return (
-            dash.no_update,
-            dash.no_update,
-            "Erro ao processar: {}".format(str(e)),
-        )
+    mimetype = "image/svg+xml" if caminho.lower().endswith(".svg") else "image/png"
+    resposta = flask.Response(conteudo, mimetype=mimetype)
+    resposta.headers["X-Content-Type-Options"] = "nosniff"
+    resposta.headers["Cache-Control"] = "no-cache"
+    return resposta
 
 
 if __name__ == "__main__":

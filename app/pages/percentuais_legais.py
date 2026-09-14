@@ -1,193 +1,129 @@
+"""BC-04 (Apresentação): página Percentuais Legais.
+
+Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
+`_reversa_sdd/migration/target_screens.md` §"Tela: Percentuais Legais".
+`BR-MIGRAR-022`: página já liberada — nunca retida/oculta.
+"""
+
 import dash
-from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.graph_objects as go
+from dash import Input, Output, callback, dcc, html
 
-from app.components.utils import apply_filters, matriculas_equivalentes
-
-dash.register_page(__name__, path="/percentuais")
-
-
-def make_gauge(title, value):
-    fig = go.Figure(
-        go.Indicator(
-            mode="gauge+number",
-            value=float(value),
-            number={"suffix": "%"},
-            title={"text": title},
-            gauge={"axis": {"range": [0, 100]}},
-        )
-    )
-    fig.update_layout(margin=dict(l=20, r=20, t=50, b=20))
-    return fig
-
-
-layout = html.Div(
-    [
-        html.Div(
-            className="header",
-            children=[
-                html.H2("Percentuais Legais"),
-                html.Div("Técnico, Formação de Professores e Proeja"),
-            ],
-        ),
-        html.Div(
-            className="panel",
-            children=[
-                html.Div(id="percentuais-alerta"),
-                dbc.Row(
-                    [
-                        dbc.Col(html.Div(id="kpi-p-total"), md=3),
-                        dbc.Col(html.Div(id="kpi-p-tecnico"), md=3),
-                        dbc.Col(html.Div(id="kpi-p-formacao"), md=3),
-                        dbc.Col(html.Div(id="kpi-p-proeja"), md=3),
-                    ],
-                    className="g-3",
-                ),
-                html.Br(),
-                dbc.Row(
-                    [
-                        dbc.Col(dcc.Graph(id="gauge-tecnico"), md=4),
-                        dbc.Col(dcc.Graph(id="gauge-formacao"), md=4),
-                        dbc.Col(dcc.Graph(id="gauge-proeja"), md=4),
-                    ]
-                ),
-                html.Br(),
-                html.Div(id="tabela-percentuais"),
-            ],
-        ),
-    ]
+from app.components.filters import axis_selector, clear_filters_button, filter_panel, select_filter
+from app.components.kpi import kpi_card
+from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
+from app.domain.percentuais_legais import (
+    META_PROEJA,
+    META_PROFESSORES,
+    META_TECNICO,
+    cor_medidor,
+    matriculas_equivalentes,
+    percentual_proeja,
+    percentual_professores,
+    percentual_tecnico,
 )
+
+dash.register_page(__name__, path="/percentuais-legais", title="Percentuais Legais - Pesquisa Institucional - SISTEC")
+
+
+def layout():
+    if not dataset_disponivel():
+        return html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state")
+
+    df = carregar_matriculas()
+    return html.Div(
+        [
+            html.H1("Percentuais Legais"),
+            axis_selector("percentuais-eixo", default="campus"),
+            dcc.Loading(html.Div(id="percentuais-medidores", className="gauge-row")),
+            dcc.Loading(html.Div(id="percentuais-kpi")),
+            filter_panel(
+                select_filter("percentuais-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+                select_filter("percentuais-filtro-programa", "Programa Associado", sorted(df["tipo_programa_curso"].dropna().unique())),
+            ),
+            html.Div(id="percentuais-aviso-proeja", className="aviso-filtro"),
+            clear_filters_button("percentuais-limpar"),
+        ]
+    )
+
+
+def _base_percentuais(df):
+    """Adapta a base consolidada de `carregar_matriculas` para o formato
+    esperado por `app/domain/percentuais_legais.py` (uma linha por matrícula,
+    `quantidade_matriculas=1` — a soma equivale à agregação por curso, já que
+    `matricula_equivalente` é linear em `matriculas`)."""
+    return df.assign(quantidade_matriculas=1)
 
 
 @callback(
-    Output("percentuais-alerta", "children"),
-    Output("kpi-p-total", "children"),
-    Output("kpi-p-tecnico", "children"),
-    Output("kpi-p-formacao", "children"),
-    Output("kpi-p-proeja", "children"),
-    Output("gauge-tecnico", "figure"),
-    Output("gauge-formacao", "figure"),
-    Output("gauge-proeja", "figure"),
-    Output("tabela-percentuais", "children"),
-    Input("store-data", "data"),
-    Input("store-filters", "data"),
+    Output("percentuais-medidores", "children"),
+    Output("percentuais-kpi", "children"),
+    Output("percentuais-aviso-proeja", "children"),
+    Input("percentuais-eixo", "value"),
+    Input("percentuais-filtro-campus", "value"),
+    Input("percentuais-filtro-programa", "value"),
 )
-def atualizar_percentuais(store_data, filtros):
-    if not store_data or "fact" not in store_data:
-        alerta = dbc.Alert("Faça upload do arquivo na Home.", color="warning")
-        return alerta, "", "", "", "", make_gauge("Técnico", 0), make_gauge("Formação", 0), make_gauge("Proeja", 0), ""
+def atualizar(_eixo, campus, programa):
+    ano_base_ativo()
+    df = carregar_matriculas()
+    if campus and campus != "__todos__":
+        df = df[df["cidade"] == campus]
 
-    df = pd.read_json(store_data["fact"], orient="split")
-    df = apply_filters(df, filtros)
+    aviso = ""
+    if programa and programa != "__todos__":
+        df = df[df["tipo_programa_curso"] == programa]
+        # BR-MIGRAR-026: avisa quando o filtro de programa distorce o % PROEJA
+        # (denominador filtrado deixa de representar o universo de referência).
+        aviso = "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA."
 
-    if len(df) == 0:
-        alerta = dbc.Alert("Nenhum registro encontrado para os filtros selecionados.", color="info")
-        return alerta, "", "", "", "", make_gauge("Técnico", 0), make_gauge("Formação", 0), make_gauge("Proeja", 0), ""
+    base = _base_percentuais(df)
+    if base.empty:
+        medidores = html.Div("Sem dados para os filtros selecionados.")
+        kpi = kpi_card("Matrículas equivalentes", None, empty_state="dado incompleto")
+        return medidores, kpi, aviso
 
-    total_eq = matriculas_equivalentes(df)
+    pt = percentual_tecnico(base)
+    pp = percentual_professores(base)
+    pj = percentual_proeja(base)
+    equivalentes_total = matriculas_equivalentes(base).sum()
 
-    subtipo_norm = (
-        df["SUBTIPO_CURSO"]
-        .astype(str)
-        .str.upper()
-        .str.normalize("NFKD")
-        .str.encode("ascii", errors="ignore")
-        .str.decode("utf-8")
-    )
-
-    programa_norm = (
-        df["PROGRAMA"]
-        .astype(str)
-        .str.upper()
-        .str.normalize("NFKD")
-        .str.encode("ascii", errors="ignore")
-        .str.decode("utf-8")
-    )
-
-    df_tecnico = df[subtipo_norm.str.contains("TECNICO", na=False)]
-    df_formacao = df[subtipo_norm.str.contains("LICENCIATURA|FORMACAO DE PROFESSORES", na=False)]
-    df_proeja = df[programa_norm.str.contains("PROEJA", na=False)]
-
-    eq_tecnico = matriculas_equivalentes(df_tecnico)
-    eq_formacao = matriculas_equivalentes(df_formacao)
-    eq_proeja = matriculas_equivalentes(df_proeja)
-
-    pct_tecnico = round((eq_tecnico / total_eq) * 100, 2) if total_eq > 0 else 0.0
-    pct_formacao = round((eq_formacao / total_eq) * 100, 2) if total_eq > 0 else 0.0
-    pct_proeja = round((eq_proeja / total_eq) * 100, 2) if total_eq > 0 else 0.0
-
-    tabela = (
-        df.groupby("CAMPUS")
-        .apply(
-            lambda x: pd.Series(
-                {
-                    "MatEq Total": round(matriculas_equivalentes(x), 2),
-                    "MatEq Técnico": round(
-                        matriculas_equivalentes(
-                            x[
-                                x["SUBTIPO_CURSO"]
-                                .astype(str)
-                                .str.upper()
-                                .str.normalize("NFKD")
-                                .str.encode("ascii", errors="ignore")
-                                .str.decode("utf-8")
-                                .str.contains("TECNICO", na=False)
-                            ]
-                        ),
-                        2,
-                    ),
-                    "MatEq Formação": round(
-                        matriculas_equivalentes(
-                            x[
-                                x["SUBTIPO_CURSO"]
-                                .astype(str)
-                                .str.upper()
-                                .str.normalize("NFKD")
-                                .str.encode("ascii", errors="ignore")
-                                .str.decode("utf-8")
-                                .str.contains("LICENCIATURA|FORMACAO DE PROFESSORES", na=False)
-                            ]
-                        ),
-                        2,
-                    ),
-                    "MatEq Proeja": round(
-                        matriculas_equivalentes(
-                            x[
-                                x["PROGRAMA"]
-                                .astype(str)
-                                .str.upper()
-                                .str.normalize("NFKD")
-                                .str.encode("ascii", errors="ignore")
-                                .str.decode("utf-8")
-                                .str.contains("PROEJA", na=False)
-                            ]
-                        ),
-                        2,
-                    ),
-                }
-            )
+    def gauge(label, valor, meta):
+        cor = cor_medidor(valor, meta)
+        # RF-09/RN-08: a cor do medidor nunca é o único sinal de estado — o
+        # texto "Acima da meta"/"Abaixo da meta" vale mesmo sem distinguir cor.
+        situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
+        return dbc.Card(
+            dbc.CardBody(
+                [
+                    html.Div(label, className="kpi-label"),
+                    html.Div(f"{valor:.1%}", className=f"gauge-value gauge-{cor}"),
+                    html.Div(situacao, className=f"gauge-situacao gauge-situacao-{cor}"),
+                    html.Div(f"Meta: {meta:.0%}", className="gauge-meta"),
+                ]
+            ),
+            className="gauge-card",
         )
-        .reset_index()
+
+    medidores = [
+        gauge("Técnico", pt, META_TECNICO),
+        gauge("Formação de Professores", pp, META_PROFESSORES),
+        gauge("PROEJA", pj, META_PROEJA),
+    ]
+    kpi = kpi_card(
+        "Matrículas equivalentes",
+        equivalentes_total,
+        formato="#,0.00",
     )
 
-    table_component = dbc.Table.from_dataframe(
-        tabela.sort_values("MatEq Total", ascending=False),
-        striped=True,
-        bordered=False,
-        hover=True,
-        size="sm",
-    )
+    return medidores, kpi, aviso
 
-    return (
-        "",
-        dbc.Card(dbc.CardBody([html.Div("MatEq Total"), html.H4(f"{total_eq:,.1f}".replace(",", "X").replace(".", ",").replace("X", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("MatEq Técnico"), html.H4(f"{eq_tecnico:,.1f}".replace(",", "X").replace(".", ",").replace("X", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("MatEq Formação"), html.H4(f"{eq_formacao:,.1f}".replace(",", "X").replace(".", ",").replace("X", "."))]), className="kpi-card"),
-        dbc.Card(dbc.CardBody([html.Div("MatEq Proeja"), html.H4(f"{eq_proeja:,.1f}".replace(",", "X").replace(".", ",").replace("X", "."))]), className="kpi-card"),
-        make_gauge("Técnico", pct_tecnico),
-        make_gauge("Formação", pct_formacao),
-        make_gauge("Proeja", pct_proeja),
-        table_component,
-    )
+
+@callback(
+    Output("percentuais-filtro-campus", "value"),
+    Output("percentuais-filtro-programa", "value"),
+    Output("percentuais-eixo", "value"),
+    Input("percentuais-limpar", "n_clicks"),
+    prevent_initial_call=True,
+)
+def limpar_filtros(_n_clicks):
+    return "__todos__", "__todos__", "campus"

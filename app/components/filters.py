@@ -1,77 +1,82 @@
-from dash import html, dcc
+"""BC-04 (Apresentação): componentes de filtro reusados pelas páginas de
+dashboard — `FicToggle`, `AxisSelector`, `Select` (dentro de `FilterPanel`) e
+o botão "Limpar Filtros".
+
+Implementado na Tarefa 09 do plano de reconstrução, a partir de
+`_reversa_sdd/migration/target_screens.md`. Substitui o antigo filtro único
+de sidebar global (compartilhado entre páginas) por um `FilterPanel` por
+página, conforme o contrato de cada tela.
+"""
+
 import dash_bootstrap_components as dbc
+from dash import html, dcc
+
+TODOS = "__todos__"
+
+# BR-MIGRAR-020: os 6 eixos de quebra definidos em EixoQuebra
+# (`app/domain/contrato.py`). "oferta" mapeia para `cursos.tipo_oferta_curso`
+# (coluna adicionada ao schema na Tarefa 11, após divergência encontrada em
+# parity_tests/06-eixo-dinamico-e-fic.feature).
+EIXOS = [
+    {"label": "Campus", "value": "campus"},
+    {"label": "Tipo de Curso", "value": "tipo_curso"},
+    {"label": "Nome do Curso", "value": "nome_curso"},
+    {"label": "Modalidade", "value": "modalidade"},
+    {"label": "Oferta (Técnico)", "value": "oferta"},
+    {"label": "Ciclo", "value": "ciclo"},
+]
 
 
-def render_filters(meta):
-    options = meta.get("options", {})
-    years = meta.get("years_ingresso", [2010, 2025])
-    years_oc = meta.get("years_ocorrencia", [])
-
-    def make_dropdown(component_id, values):
-        return dcc.Dropdown(
-            id=component_id,
-            options=[{"label": "Todos", "value": "Todos"}]
-            + [{"label": str(v), "value": str(v)} for v in values],
-            value="Todos",
-            clearable=False,
-            style={"fontSize": "12px"},
-        )
-
-    slider_marks = {
-        int(years[0]): str(int(years[0])),
-        int(years[1]): str(int(years[1])),
-    }
-
+def fic_toggle(id_, default="com_fic"):
+    """BR-MIGRAR-021: toggle COM FIC / SEM FIC — bidirecional por
+    construção (`dbc.RadioItems` não tem o bug de estado unidirecional do
+    legado nesta página)."""
     return html.Div(
         [
-            html.Div("Ano de ingresso", className="filter-label"),
-            dcc.RangeSlider(
-                id="filt-ano-ingresso",
-                min=int(years[0]),
-                max=int(years[1]),
-                step=1,
-                value=[int(years[0]), int(years[1])],
-                marks=slider_marks,
-                tooltip={"placement": "bottom"},
-            ),
-
-            html.Div("Campus", className="filter-label"),
-            make_dropdown("filt-campus", options.get("campus", [])),
-
-            html.Div("Subtipo do curso", className="filter-label"),
-            make_dropdown("filt-subtipo", options.get("subtipo", [])),
-
-            html.Div("Modalidade", className="filter-label"),
-            make_dropdown("filt-modalidade", options.get("modalidade", [])),
-
-            html.Div("Oferta", className="filter-label"),
-            make_dropdown("filt-oferta", options.get("oferta", [])),
-
-            html.Div("Curso", className="filter-label"),
-            make_dropdown("filt-curso", options.get("curso", [])),
-
-            html.Div("Programa", className="filter-label"),
-            make_dropdown("filt-programa", options.get("programa", [])),
-
-            html.Div("FIC", className="filter-label"),
+            html.Label("Filtro FIC", className="filter-label"),
             dbc.RadioItems(
-                id="filt-fic-mode",
-                options=[
-                    {"label": "Sem FIC", "value": "SEM_FIC"},
-                    {"label": "Com FIC", "value": "COM_FIC"},
-                ],
-                value="SEM_FIC",
+                id=id_,
+                options=[{"label": "Com FIC", "value": "com_fic"}, {"label": "Sem FIC", "value": "sem_fic"}],
+                value=default,
                 inline=True,
-                style={"fontSize": "12px"},
             ),
-
-            html.Div("Ano de ocorrência", className="filter-label"),
-            dcc.Dropdown(
-                id="filt-ano-ocorrencia",
-                options=[{"label": str(v), "value": int(v)} for v in years_oc],
-                value=years_oc[-1] if years_oc else None,
-                clearable=False,
-                style={"fontSize": "12px"},
-            ),
-        ]
+        ],
+        className="filter-item",
     )
+
+
+def axis_selector(id_, default="campus"):
+    """BR-MIGRAR-020: "Ver tabela por:" — seleção única por construção
+    (`dbc.RadioItems`, nunca um componente multi-select), corrigindo o bug
+    M-D3 do legado (`DEV-002`)."""
+    return html.Div(
+        [
+            html.Label("Ver tabela por:", className="filter-label"),
+            dbc.RadioItems(id=id_, options=EIXOS, value=default, inline=True),
+        ],
+        className="filter-item",
+    )
+
+
+def select_filter(id_, label, opcoes):
+    return html.Div(
+        [
+            html.Label(label, className="filter-label"),
+            dcc.Dropdown(
+                id=id_,
+                options=[{"label": "Todos", "value": TODOS}] + [{"label": str(o), "value": str(o)} for o in opcoes],
+                value=TODOS,
+                clearable=False,
+            ),
+        ],
+        className="filter-item",
+    )
+
+
+def filter_panel(*campos):
+    return html.Div(list(campos), className="filter-panel")
+
+
+def clear_filters_button(id_):
+    """BR-MIGRAR-023: callback "Limpar Filtros" por página."""
+    return dbc.Button("Limpar Filtros", id=id_, className="btn-primary-gov")

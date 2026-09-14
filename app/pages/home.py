@@ -1,62 +1,62 @@
+"""BC-04 (Apresentação): página Início (capa).
+
+Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
+`_reversa_sdd/migration/target_screens.md` §"Tela: Início (capa)".
+
+O widget de upload que existia aqui (herdado do app pré-migração) foi
+removido — o upload agora é uma função administrativa autenticada em
+`/admin/upload` (BC-05, Tarefa 08, `BR-MIGRAR-027`/`AD-04`: o painel público
+nunca exige login). `DEV-001`: fundo de imagem ad-hoc do legado substituído
+por estilização CSS/gov.br (nenhum componente de imagem aqui).
+"""
+
 import dash
-from dash import html, dcc
+from dash import html
 
-dash.register_page(__name__, path="/")
+from app.data.consulta import data_ultimo_upload_valido, dataset_disponivel
 
-layout = html.Div(
-    [
-        html.Div(
-            className="header",
-            children=[
-                html.H2("Pesquisa Institucional"),
-                html.Div("Acompanhamento SISTEC"),
-                html.Div(
-                    "O arquivo será processado automaticamente após ser arrastado ou selecionado.",
-                    className="small-note",
-                ),
-            ],
-        ),
-        html.Div(
-            className="panel",
-            children=[
-                html.H3("Upload do arquivo SISTEC"),
-                html.P(
-                    "Selecione o arquivo Excel contendo as abas 'matriculas' e 'ciclos'."
-                ),
-                dcc.Upload(
-                    id="upload-data",
-                    children=html.Div(
-                        [
-                            html.Div("Arraste o arquivo aqui"),
-                            html.Div("ou"),
-                            html.B("clique para selecionar"),
-                        ]
-                    ),
-                    style={
-                        "width": "100%",
-                        "minHeight": "140px",
-                        "display": "flex",
-                        "alignItems": "center",
-                        "justifyContent": "center",
-                        "borderWidth": "2px",
-                        "borderStyle": "dashed",
-                        "borderRadius": "12px",
-                        "textAlign": "center",
-                        "background": "white",
-                        "cursor": "pointer",
-                        "padding": "20px",
-                    },
-                    multiple=False,
-                ),
-                html.Div(
-                    id="upload-filename",
-                    style={"marginTop": "12px", "fontWeight": "700"},
-                ),
-                html.Div(
-                    id="upload-status",
-                    style={"marginTop": "16px", "fontWeight": "700"},
-                ),
-            ],
-        ),
-    ]
-)
+dash.register_page(__name__, path="/", title="Início - Pesquisa Institucional - SISTEC")
+
+NAV_CARDS = [
+    ("Matrículas", "/matriculas"),
+    ("Eficiência Acadêmica", "/eficiencia"),
+    ("Taxa de Evasão Anual", "/evasao"),
+    # BR-MIGRAR-022: já liberada, sempre visível — nunca omitida do menu/capa.
+    ("Percentuais Legais", "/percentuais-legais"),
+]
+
+
+def layout():
+    if not dataset_disponivel():
+        # Estado Idle (`target_screens.md`): nenhum dataset carregado ainda.
+        return html.Div(
+            [
+                html.Div(className="hero", children=[html.H1("Painel de Acompanhamento Sistec"), html.Div("Pesquisa Institucional")]),
+                html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state"),
+            ]
+        )
+
+    data_atualizacao = data_ultimo_upload_valido()
+
+    return html.Div(
+        [
+            html.Div(
+                className="hero",
+                children=[
+                    html.H1("Painel de Acompanhamento Sistec"),
+                    html.Div("Pesquisa Institucional"),
+                ],
+            ),
+            html.Div(
+                f"Atualizado em {data_atualizacao}" if data_atualizacao else "",
+                className="updated-at-badge",
+            ),
+            html.Div(
+                className="landing-cards",
+                children=[
+                    html.A(label, href=href, className="nav-card")
+                    for label, href in NAV_CARDS
+                ],
+            ),
+        ]
+    )

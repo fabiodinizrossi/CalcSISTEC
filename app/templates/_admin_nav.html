@@ -1,0 +1,4 @@
+<nav class="admin-nav" aria-label="Navegação administrativa">
+  <a href="/admin/upload" {% if request.path == "/admin/upload" %}aria-current="page"{% endif %}>Upload de dados</a>
+  <a href="/admin/config" {% if request.path == "/admin/config" %}aria-current="page"{% endif %}>Configurações</a>
+</nav>
