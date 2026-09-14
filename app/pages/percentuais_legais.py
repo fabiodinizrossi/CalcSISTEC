@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
 
-from components.utils import apply_filters, matriculas_equivalentes
+from app.components.utils import apply_filters, matriculas_equivalentes
 
 dash.register_page(__name__, path="/percentuais")
 

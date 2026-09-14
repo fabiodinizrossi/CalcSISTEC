@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 
-from components.utils import apply_filters, classify_status
+from app.components.utils import apply_filters, classify_status
 
 dash.register_page(__name__, path="/eficiencia")
 

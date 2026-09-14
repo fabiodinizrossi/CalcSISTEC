@@ -1,9 +1,24 @@
 # Painel SISTEC (Dash) - Projeto completo (todas as páginas)
 
+## Estrutura
+
+```
+app/
+  data/        # BC-01: ingestão, validação e correção de status (Tarefa 05)
+  domain/      # BC-02/BC-03: regras de negócio puras (Tarefas 04, 06, 07)
+  pages/       # 1 arquivo por página (Tarefa 09)
+  components/  # UI reutilizável (Tarefa 09)
+  assets/      # CSS
+  app.py       # app Dash + callbacks
+run.py         # entry point
+```
+
+Ver `_reversa_sdd/migration/` e `_reversa_sdd/reconstruction-plan.md` (no repositório principal) para as specs completas desta migração.
+
 ## Rodar local
 ```bash
 pip install -r requirements.txt
-python app.py
+python run.py
 ```
 
 ## Rodar na EC2 (modo teste)

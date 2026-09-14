@@ -6,9 +6,9 @@ from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 
-from components.sidebar import make_sidebar
-from components.filters import render_filters
-from components.utils import clean_str, clean_sorted
+from app.components.sidebar import make_sidebar
+from app.components.filters import render_filters
+from app.components.utils import clean_str, clean_sorted
 
 app = dash.Dash(
     __name__,
