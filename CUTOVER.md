@@ -19,6 +19,18 @@
 - [ ] Design gov.br validado em pelo menos um dispositivo móvel real (passo humano)
 - [x] `AMB-003` (integração do repositório `projetoFabio/CalcSISTEC`) resolvido na Tarefa 01 (`AD-05`)
 
+### `002-baixador-planilhas-sistec` (baixador de planilhas do Sistec)
+
+- [x] Schema v2 (versionamento interna/publicada/anterior, `fatores`, `campi_sistec`, `estado_versoes`, `historico`) — T004-T012
+- [x] `/admin/upload` removido; `/admin/atualizar` é a nova porta de entrada de dados (D-14)
+- [x] Extensão MV3 `extensao-sistec/` (baixa com a sessão da PI, sem senha, sem Downloads) — T013, T045, T046, T061
+- [x] Rotas `/api/sistec/*` com token por execução (D-16) e bloqueio de HTTP fora de `localhost` (D-19)
+- [ ] **Processo único (P-09)**: o registro em memória de execuções (`app/sistec/execucoes.py`) só funciona com **um único worker/processo**. Configurar o servidor de produção (`gunicorn`/`waitress`/etc.) com `--workers 1` (ou equivalente) antes do cutover — múltiplos workers quebram silenciosamente a fila e o limite de uma execução por administrador (RN-11)
+- [ ] **`CALCSISTEC_HTTPS=1`** configurado no ambiente de produção, com certificado válido — D-19 recusa `/api/sistec/*` sem isso fora de `localhost`
+- [ ] Extensão instalada na máquina da Pesquisa Institucional (política institucional ou modo desenvolvedor, P-10)
+- [ ] Roteiro de `_reversa_forward/002-baixador-planilhas-sistec/onboarding.md` executado (Sistec simulado + 1 baixa real de pelo menos 1 campus)
+- [ ] W001 a W008 (`_reversa_forward/002-baixador-planilhas-sistec/regression-watch.md`) conferidas sem regressão nas telas novas e alteradas
+
 **Nota sobre "28 regras com teste unitário"**: as Tarefas 05-07 testaram cada
 regra com dados sintéticos ad-hoc (não uma suíte de testes formal versionada,
 ex. `pytest`). Antes do cutover, migrar esses testes ad-hoc para uma suíte
@@ -32,10 +44,13 @@ python scripts/verificar_prontidao_cutover.py
 ```
 
 Cobre: ausência de PII no schema (`RISK-008`), autenticação admin configurada
-(`RISK-009`), dataset ativo presente, ano-base configurado. **Não cobre**
-paridade numérica (Tarefa 11) nem os passos humanos abaixo — o script termina
-com `NO-GO` até que um upload real de teste seja feito e a Tarefa 11 esteja
-completa, mesmo que os critérios técnicos automatizáveis estejam OK.
+(`RISK-009`), schema v2 aplicado (`002-baixador-planilhas-sistec`, substitui
+`RISK-004`/`uploads_log`), tabela de fatores carregada, `CALCSISTEC_HTTPS=1`
+configurado (D-19), dataset publicado presente e ano-base configurado. **Não
+cobre** paridade numérica (Tarefa 11), o processo único (P-09, checklist
+acima) nem os passos humanos abaixo — o script termina com `NO-GO` até que
+uma baixa real de teste seja publicada e a Tarefa 11 esteja completa, mesmo
+que os critérios técnicos automatizáveis estejam OK.
 
 ## Passos do cutover (`cutover_plan.md` §"Passos do cutover")
 
