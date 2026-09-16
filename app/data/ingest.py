@@ -1,149 +1,95 @@
-"""BC-01 (Ingestão & Preparação): leitura/parsing das planilhas (matriculas, ciclos).
+"""BC-01 (Ingestão & Preparação): monta a versão interna a partir da baixa
+consolidada do Sistec (`002-baixador-planilhas-sistec`, T037/T038, D-14,
+D-18).
 
-Implementado na Tarefa 05 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_architecture.md` (seção BC-01) e
-`_reversa_sdd/migration/data_migration_plan.md`.
+O upload `.xlsx` saiu do sistema (D-14, `/admin/upload` removido). A entrada
+agora é o `conjunto` já consolidado por `app/sistec/consolidacao.consolidar`
+(pares de ciclo/matrícula da extensão, já com a lista de permissão de
+colunas aplicada). `montar_versao_interna` deriva `cursos`/`ciclos`
+(`_cursos_e_ciclos_do_conjunto`, reaproveitando T-03/T-04 de
+`app/data/transform.py` e os ajustes A2/A3/A5 de `app/data/ajustes_curso.py`),
+aplica a regra de campus falho (RN-22, `data-delta.md` §6) e grava via
+`app/data/versoes.salvar_interna` — nunca escreve incrementalmente sobre a
+versão interna em uso (RN-20)."""
 
-Orquestra o fluxo completo descrito em `data_migration_plan.md`
-§"Estratégia de ETL":
-    1. validação de schema (RISK-004) — `app/data/validators.py`
-    2. aplicação sequencial de T-01 a T-08 — `app/data/transform.py` +
-       correção de status via `app/data/correction.py` (BR-MIGRAR-003)
-    3. escrita em tabelas ativas via swap atômico (AD-02)
-    4. registro do upload em `uploads_log`, válido ou inválido
+import pandas as pd
 
-Upload inválido nunca altera o dataset ativo — o dataset anterior permanece
-(RISK-004, AD-02).
-"""
-
-from app.data.correction import corrigir_status_sistec_pnp
-from app.data.schema import DEFAULT_DB_PATH, get_connection
-from app.data.transform import (
-    t01_remover_pii,
-    t03_normalizar_curso,
-    t04_chave_curso_unica,
-    t05_default_fec_fech,
-    t06_filtrar_ciclos_excluidos,
-    t07_grao_matricula_atendida,
-    t08_grao_eficiencia_academica,
+from app.data.ajustes_curso import (
+    MAPA_NOMES_CURSO,
+    aplicar_prefixo_tecnico,
+    aplicar_preposicoes_minusculas,
+    reclassificar_eixo_tecnologico,
 )
-from app.data.validators import validar_schema
+from app.data.fatores import casar_fatores
+from app.data.schema import DEFAULT_DB_PATH, get_connection
+from app.data.transform import t03_normalizar_curso, t04_chave_curso_unica
+from app.data.versoes import salvar_interna
+from app.sistec.consolidacao import montar_matriculas_e_eficiencia
 
 
-class UploadInvalido(Exception):
-    """Levantada quando o upload é rejeitado por inteiro (RISK-004)."""
+_COLUNAS_CURSOS_SCHEMA = [
+    "codigo_portfolio",
+    "nome_curso_ajustado",
+    "tipo_curso_pnp",
+    "subtipo_curso",
+    "modalidade_ensino",
+    "eixo_tecnologico_ajustado",
+    "fec",
+    "fech",
+    "carga_horaria_total",
+    "co_unidade",
+    "tipo_oferta_curso",
+    "categoria_origem_curso",
+    "fator_nao_encontrado",
+]
+_COLUNAS_CICLOS_SCHEMA = [
+    "codigo_ciclo_matricula",
+    "codigo_portfolio",
+    "co_unidade",
+    "dt_data_inicio",
+    "dt_data_fim_previsto",
+    "tipo_programa_curso",
+    "status_ciclo",
+]
+_COLUNAS_MATRICULAS_SCHEMA = ["co_matricula", "codigo_ciclo_matricula", "status_corrigido", "mes_ocorrencia_corrigido", "ano_base"]
+_COLUNAS_EFICIENCIA_SCHEMA = ["co_matricula", "codigo_ciclo_matricula", "status_corrigido2"]
 
 
-def processar_upload(planilhas, mapa_nomes_curso, ano_base, uploaded_by, filename, db_path=DEFAULT_DB_PATH):
-    """Processa um upload completo e, se válido, promove-o a dataset ativo.
+def _cursos_e_ciclos_do_conjunto(df_ciclo):
+    """Deriva `cursos` e `ciclos` (nomes de coluna do schema) a partir das
+    linhas de ciclo consolidadas (`app/sistec/consolidacao.consolidar`), que
+    trazem os atributos do curso embutidos em cada linha (T036, D-18).
 
-    `planilhas` é um dict com as 5 fontes do upload: "matriculas", "ciclos",
-    "cursos", "campus", "fatores" (ver `validators.REQUIRED_COLUMNS`).
-    `mapa_nomes_curso` é a tabela de mapeamento externalizada de nomes
-    históricos do Sistec -> nome padrão PNP (BR-MIGRAR-017).
+    Aplica, nesta ordem (`app/data/ajustes_curso.py`): A2 (mapa de nomes,
+    `t03_normalizar_curso`), A3 (prefixo "TÉCNICO EM"), Text.Proper + A4
+    (cosmético), A5 (eixo tecnológico). `t04_chave_curso_unica` rejeita
+    linhas sem `CÓDIGO DO PORTFÓLIO` (D-08)."""
+    if df_ciclo.empty:
+        cursos_vazio = pd.DataFrame(columns=[c for c in _COLUNAS_CURSOS_SCHEMA if c not in ("fec", "fech", "fator_nao_encontrado")])
+        return cursos_vazio, pd.DataFrame(columns=_COLUNAS_CICLOS_SCHEMA), 0
 
-    Retorna um resumo de contagens quando o upload é aceito; levanta
-    `UploadInvalido` (e registra a rejeição em `uploads_log`) caso contrário.
-    """
-    erros_schema = validar_schema(planilhas)
-    if erros_schema:
-        mensagem = "; ".join(erros_schema)
-        _registrar_upload(db_path, uploaded_by, filename, "invalido", mensagem)
-        raise UploadInvalido(mensagem)
-
-    try:
-        resultado = _executar_pipeline(planilhas, mapa_nomes_curso, ano_base)
-    except Exception as exc:
-        _registrar_upload(db_path, uploaded_by, filename, "invalido", str(exc))
-        raise UploadInvalido(str(exc)) from exc
-
-    _swap_atomico(db_path, resultado)
-    _registrar_upload(db_path, uploaded_by, filename, "valido", None)
-
-    return {
-        "matriculas": len(resultado["matriculas"]),
-        "matriculas_eficiencia": len(resultado["matriculas_eficiencia"]),
-        "cursos_rejeitados_sem_portfolio": resultado["cursos_rejeitados"],
-        "ciclos_rejeitados_sem_portfolio": resultado["ciclos_rejeitados"],
-        "matriculas_rejeitadas_status": resultado["matriculas_rejeitadas"],
-        "cursos_fator_nao_encontrado": resultado["cursos_fator_nao_encontrado"],
-    }
-
-
-def _executar_pipeline(planilhas, mapa_nomes_curso, ano_base):
-    """T-01 a T-08, na ordem descrita em `data_migration_plan.md`."""
-
-    # T-01: remoção de PII na borda (BR-DESCARTAR-001, RISK-008).
-    df_matriculas = t01_remover_pii(planilhas["matriculas"])
-
-    # T-02: correção de status Sistec x PNP (BR-MIGRAR-003), via correction.py.
-    df_matriculas, df_matriculas_rejeitadas = corrigir_status_sistec_pnp(df_matriculas)
-
-    # T-03: normalização de nome/tipo de curso (BR-MIGRAR-017).
-    df_cursos = t03_normalizar_curso(planilhas["cursos"], mapa_nomes_curso)
-
-    # T-04: chave de curso única (BR-MIGRAR-014) — aplicada a cursos e ciclos.
-    df_cursos, df_cursos_rejeitados = t04_chave_curso_unica(df_cursos)
-    df_ciclos, df_ciclos_rejeitados = t04_chave_curso_unica(planilhas["ciclos"])
-
-    # T-05: default explícito de FEC/FECH quando a planilha de fatores não
-    # tem par (BR-MIGRAR-008) — nunca NULL silencioso.
-    df_fatores = planilhas["fatores"].rename(columns={"CÓDIGO DO PORTFÓLIO": "codigo_portfolio"})
-    df_cursos = t05_default_fec_fech(df_cursos, df_fatores)
-    # BR-MIGRAR-008 exige um sinal explícito (não silêncio) quando o default é
-    # aplicado; `fator_nao_encontrado` é contado aqui e devolvido no resumo do
-    # upload para revisão, em vez de ser descartado ao selecionar as colunas
-    # finais de `cursos` abaixo.
-    cursos_fator_nao_encontrado = int(df_cursos["fator_nao_encontrado"].sum())
-
-    # T-06: filtra ciclos excluídos (BR-MIGRAR-018) — a regra exige checar as
-    # duas colunas de status do ciclo (`STATUS DO CICLO DE MATRÍCULA` e
-    # `SITUAÇÃO DO CICLO`); `t06_filtrar_ciclos_excluidos` cobre a primeira,
-    # a segunda (opcional na fonte) é filtrada aqui.
-    df_ciclos = t06_filtrar_ciclos_excluidos(df_ciclos)
-    if "SITUACAO_CICLO" in df_ciclos.columns:
-        df_ciclos = df_ciclos.loc[df_ciclos["SITUACAO_CICLO"] != "EXCLUÍDO"].copy()
-
-    # Junta matrículas ao ciclo correspondente para expor as colunas exigidas
-    # pelo grão (dt_data_inicio, dt_data_fim_previsto, mes_ocorrencia_corrigido)
-    # com os nomes já usados pelas funções T-07/T-08 (nomes do schema alvo).
-    df_ciclos_para_join = df_ciclos.rename(
-        columns={
-            "DT_DATA_INICIO": "dt_data_inicio",
-            "DT_DATA_FIM_PREVISTO": "dt_data_fim_previsto",
-        }
+    df = t03_normalizar_curso(df_ciclo, MAPA_NOMES_CURSO, col_nome="NOME_CURSO", col_tipo="TIPO_CURSO")
+    df["nome_curso_ajustado"] = df.apply(
+        lambda linha: aplicar_prefixo_tecnico(linha["nome_curso_ajustado"], linha["tipo_curso_pnp"]), axis=1
     )
-    df_matriculas = df_matriculas.rename(columns={"MES_OCORRENCIA_CORRIGIDO": "mes_ocorrencia_corrigido"})
-    df_matriculas_ciclo = df_matriculas.merge(
-        df_ciclos_para_join,
-        on="CODIGO_CICLO_MATRICULA",
-        how="inner",
+    df["nome_curso_ajustado"] = df["nome_curso_ajustado"].str.title().map(aplicar_preposicoes_minusculas)
+    df["eixo_tecnologico_ajustado"] = df.apply(
+        lambda linha: reclassificar_eixo_tecnologico(linha["nome_curso_ajustado"], linha.get("EIXO_TECNOLOGICO")),
+        axis=1,
     )
+    df, df_rejeitados = t04_chave_curso_unica(df, col_portfolio="CÓDIGO DO PORTFÓLIO")
 
-    # T-07: grão de matrícula atendida (BR-MIGRAR-001, BR-MIGRAR-028 — inclui
-    # dt_data_inicio nula, BR-HUMANA-010).
-    df_matriculas_final = t07_grao_matricula_atendida(df_matriculas_ciclo, ano_base)
-
-    # T-08: grão de eficiência acadêmica (BR-MIGRAR-002) — universo
-    # independente do T-07, derivado da mesma junção matrícula x ciclo.
-    df_eficiencia_final = t08_grao_eficiencia_academica(df_matriculas_ciclo, ano_base)
-
-    return {
-        "campus": planilhas["campus"].rename(
-            columns={"CO_UNIDADE": "co_unidade", "CIDADE": "cidade", "NOME_UNIDADE": "nome_unidade"}
-        )[["co_unidade", "cidade", "nome_unidade"]],
-        "cursos": df_cursos.rename(
+    cursos = (
+        df.rename(
             columns={
-                "SUBTIPO_CURSO": "subtipo_curso",
+                "TIPO_CURSO": "subtipo_curso",
                 "MODALIDADE_ENSINO": "modalidade_ensino",
-                "EIXO_TECNOLOGICO_AJUSTADO": "eixo_tecnologico_ajustado",
                 "CARGA_HORARIA_TOTAL": "carga_horaria_total",
                 "CO_UNIDADE": "co_unidade",
-                # Tarefa 11: colunas adicionadas após divergência encontrada
-                # em parity_tests/06-eixo-dinamico-e-fic.feature.
                 "OFERTA": "tipo_oferta_curso",
             }
-        )[
+        )
+        .drop_duplicates(subset="codigo_portfolio", keep="first")[
             [
                 "codigo_portfolio",
                 "nome_curso_ajustado",
@@ -151,79 +97,154 @@ def _executar_pipeline(planilhas, mapa_nomes_curso, ano_base):
                 "subtipo_curso",
                 "modalidade_ensino",
                 "eixo_tecnologico_ajustado",
-                "fec",
-                "fech",
                 "carga_horaria_total",
                 "co_unidade",
                 "tipo_oferta_curso",
                 "categoria_origem_curso",
             ]
-        ],
-        "ciclos": df_ciclos.rename(
-            columns={
-                "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula",
-                "DT_DATA_INICIO": "dt_data_inicio",
-                "DT_DATA_FIM_PREVISTO": "dt_data_fim_previsto",
-                "TIPO_PROGRAMA_CURSO": "tipo_programa_curso",
-                "STATUS_CICLO": "status_ciclo",
-            }
-        )[
-            [
-                "codigo_ciclo_matricula",
-                "codigo_portfolio",
-                "dt_data_inicio",
-                "dt_data_fim_previsto",
-                "tipo_programa_curso",
-                "status_ciclo",
-            ]
-        ],
-        "matriculas": df_matriculas_final.rename(
-            columns={"CO_MATRICULA": "co_matricula", "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula"}
-        ).assign(ano_base=ano_base)[
-            ["co_matricula", "codigo_ciclo_matricula", "status_corrigido", "mes_ocorrencia_corrigido", "ano_base"]
-        ],
-        "matriculas_eficiencia": df_eficiencia_final.rename(
-            columns={
-                "CO_MATRICULA": "co_matricula",
-                "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula",
-                "status_corrigido": "status_corrigido2",
-            }
-        )[["co_matricula", "codigo_ciclo_matricula", "status_corrigido2"]],
-        "cursos_rejeitados": len(df_cursos_rejeitados),
-        "ciclos_rejeitados": len(df_ciclos_rejeitados),
-        "matriculas_rejeitadas": len(df_matriculas_rejeitadas),
-        "cursos_fator_nao_encontrado": cursos_fator_nao_encontrado,
+        ]
+        .reset_index(drop=True)
+    )
+
+    ciclos = df.rename(
+        columns={
+            "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula",
+            "CO_UNIDADE": "co_unidade",
+            "DT_DATA_INICIO": "dt_data_inicio",
+            "DT_DATA_FIM_PREVISTO": "dt_data_fim_previsto",
+            "TIPO_PROGRAMA_CURSO": "tipo_programa_curso",
+            "STATUS_CICLO": "status_ciclo",
+        }
+    )[
+        [
+            "codigo_ciclo_matricula",
+            "codigo_portfolio",
+            "co_unidade",
+            "dt_data_inicio",
+            "dt_data_fim_previsto",
+            "tipo_programa_curso",
+            "status_ciclo",
+        ]
+    ].reset_index(drop=True)
+
+    return cursos, ciclos, len(df_rejeitados)
+
+
+def _ler_mantidos(conn, campi_falhos):
+    """data-delta.md §6.2: linhas de `interna_*` dos campi com par falho —
+    mantidas como estão, sem entrar na troca desta baixa."""
+    vazio = {
+        "cursos": pd.DataFrame(columns=_COLUNAS_CURSOS_SCHEMA),
+        "ciclos": pd.DataFrame(columns=_COLUNAS_CICLOS_SCHEMA),
+        "matriculas": pd.DataFrame(columns=_COLUNAS_MATRICULAS_SCHEMA),
+        "matriculas_eficiencia": pd.DataFrame(columns=_COLUNAS_EFICIENCIA_SCHEMA),
     }
+    if not campi_falhos:
+        return vazio
+
+    marcadores = ",".join("?" for _ in campi_falhos)
+    ciclos = pd.read_sql_query(
+        f"SELECT * FROM interna_ciclos WHERE co_unidade IN ({marcadores})", conn, params=list(campi_falhos)
+    )
+    if ciclos.empty:
+        return vazio
+
+    codigos_ciclo = ciclos["codigo_ciclo_matricula"].tolist()
+    codigos_portfolio = ciclos["codigo_portfolio"].unique().tolist()
+    marcadores_ciclo = ",".join("?" for _ in codigos_ciclo) or "NULL"
+    marcadores_portfolio = ",".join("?" for _ in codigos_portfolio) or "NULL"
+
+    cursos = pd.read_sql_query(
+        f"SELECT * FROM interna_cursos WHERE codigo_portfolio IN ({marcadores_portfolio})",
+        conn,
+        params=codigos_portfolio,
+    )
+    matriculas = pd.read_sql_query(
+        f"SELECT * FROM interna_matriculas WHERE codigo_ciclo_matricula IN ({marcadores_ciclo})",
+        conn,
+        params=codigos_ciclo,
+    )
+    matriculas_eficiencia = pd.read_sql_query(
+        f"SELECT * FROM interna_matriculas_eficiencia WHERE codigo_ciclo_matricula IN ({marcadores_ciclo})",
+        conn,
+        params=codigos_ciclo,
+    )
+    return {"cursos": cursos, "ciclos": ciclos, "matriculas": matriculas, "matriculas_eficiencia": matriculas_eficiencia}
 
 
-def _swap_atomico(db_path, resultado):
-    """AD-02: grava as tabelas ativas dentro de uma única transação SQLite —
-    nunca escreve incrementalmente sobre o dataset em uso. Se qualquer escrita
-    falhar, a transação inteira é revertida e o dataset anterior permanece."""
-    tabelas = ["campus", "cursos", "ciclos", "matriculas", "matriculas_eficiencia"]
+def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=2026):
+    """RN-20/RN-22 (`data-delta.md` §6): monta a versão interna a partir do
+    `conjunto` consolidado (`app/sistec/consolidacao.consolidar`) e dos
+    `campi_falhos` (códigos de unidade com algum par que falhou nesta
+    execução — os dados desses campi na interna atual são preservados, e as
+    linhas novas desses campi no `conjunto` são descartadas, P-06).
+
+    Grava via `app/data/versoes.salvar_interna` (transação única). Retorna um
+    resumo de contagens para a prévia (RN-18: cursos sem fator)."""
+    campi_falhos = set(campi_falhos or ())
+    df_ciclo = conjunto["ciclos"]
+    df_matricula = conjunto["matriculas"]
+
+    if campi_falhos and "CO_UNIDADE" in df_ciclo.columns:
+        df_ciclo_novos = df_ciclo.loc[~df_ciclo["CO_UNIDADE"].isin(campi_falhos)].copy()
+    else:
+        df_ciclo_novos = df_ciclo
+
+    cursos_novos, ciclos_novos, cursos_rejeitados = _cursos_e_ciclos_do_conjunto(df_ciclo_novos)
+    matriculas_novos, eficiencia_novos = montar_matriculas_e_eficiencia(df_matricula, df_ciclo_novos, ano_base)
+    matriculas_novos = matriculas_novos.rename(
+        columns={"CO_MATRICULA": "co_matricula", "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula"}
+    ).assign(ano_base=ano_base)[_COLUNAS_MATRICULAS_SCHEMA] if not matriculas_novos.empty else pd.DataFrame(
+        columns=_COLUNAS_MATRICULAS_SCHEMA
+    )
+    eficiencia_novos = eficiencia_novos.rename(
+        columns={
+            "CO_MATRICULA": "co_matricula",
+            "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula",
+            "status_corrigido": "status_corrigido2",
+        }
+    )[_COLUNAS_EFICIENCIA_SCHEMA] if not eficiencia_novos.empty else pd.DataFrame(columns=_COLUNAS_EFICIENCIA_SCHEMA)
+
     conn = get_connection(db_path)
     try:
-        conn.execute("BEGIN")
-        for tabela in tabelas:
-            conn.execute(f"DELETE FROM {tabela}")
-            df = resultado[tabela]
-            if not df.empty:
-                df.to_sql(tabela, conn, if_exists="append", index=False)
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-
-
-def _registrar_upload(db_path, uploaded_by, filename, status, error_message):
-    conn = get_connection(db_path)
-    try:
-        conn.execute(
-            "INSERT INTO uploads_log (uploaded_by, filename, status, error_message) VALUES (?, ?, ?, ?)",
-            (uploaded_by, filename, status, error_message),
+        mantidos = _ler_mantidos(conn, campi_falhos)
+        fatores_atuais = pd.read_sql_query(
+            "SELECT tipo_curso, nome_curso, fec, fech, chave_tipo, chave_nome FROM interna_fatores", conn
         )
-        conn.commit()
     finally:
         conn.close()
+
+    cursos_final = pd.concat([mantidos["cursos"], cursos_novos], ignore_index=True).drop_duplicates(
+        subset="codigo_portfolio", keep="first"
+    )
+    cursos_final = casar_fatores(cursos_final, fatores_atuais)
+
+    ciclos_final = pd.concat([mantidos["ciclos"], ciclos_novos], ignore_index=True).drop_duplicates(
+        subset="codigo_ciclo_matricula", keep="first"
+    )
+    matriculas_final = pd.concat([mantidos["matriculas"], matriculas_novos], ignore_index=True).drop_duplicates(
+        subset="co_matricula", keep="first"
+    )
+    eficiencia_final = pd.concat(
+        [mantidos["matriculas_eficiencia"], eficiencia_novos], ignore_index=True
+    ).drop_duplicates(subset="co_matricula", keep="first")
+
+    salvar_interna(
+        {
+            "cursos": cursos_final[_COLUNAS_CURSOS_SCHEMA],
+            "ciclos": ciclos_final[_COLUNAS_CICLOS_SCHEMA],
+            "matriculas": matriculas_final[_COLUNAS_MATRICULAS_SCHEMA],
+            "matriculas_eficiencia": eficiencia_final[_COLUNAS_EFICIENCIA_SCHEMA],
+        },
+        db_path,
+    )
+
+    return {
+        "cursos": len(cursos_final),
+        "ciclos": len(ciclos_final),
+        "matriculas": len(matriculas_final),
+        "matriculas_eficiencia": len(eficiencia_final),
+        "cursos_rejeitados_sem_portfolio": cursos_rejeitados,
+        "cursos_fator_nao_encontrado": int(cursos_final["fator_nao_encontrado"].sum()),
+        "campi_mantidos": sorted(campi_falhos),
+    }

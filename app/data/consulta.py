@@ -60,7 +60,7 @@ def carregar_matriculas(db_path=DEFAULT_DB_PATH):
                    c.codigo_ciclo_matricula, c.tipo_programa_curso, c.dt_data_inicio,
                    cu.codigo_portfolio, cu.nome_curso_ajustado, cu.tipo_curso_pnp,
                    cu.subtipo_curso, cu.modalidade_ensino, cu.eixo_tecnologico_ajustado,
-                   cu.carga_horaria_total, cu.fec, cu.co_unidade,
+                   cu.carga_horaria_total, cu.fec, cu.fech, cu.co_unidade,
                    cu.tipo_oferta_curso, cu.categoria_origem_curso,
                    camp.cidade
             FROM matriculas m

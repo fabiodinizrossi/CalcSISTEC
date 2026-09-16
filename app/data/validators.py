@@ -17,6 +17,12 @@ ser confirmados contra a extração real do Sistec/PNP na Tarefa 11 (Validação
 de Paridade).
 """
 
+# `002-baixador-planilhas-sistec` (T057, D-14): `cursos`, `campus` e
+# `fatores` saíram daqui — não são mais abas de um upload `.xlsx` (o upload
+# saiu do sistema). `cursos` agora é derivada da planilha de ciclo consolidada
+# (`app/sistec/consolidacao.py`), `campus` vem da captura de perfis
+# (`app/data/campi.py`) e `fatores` tem sua própria validação (RN-34/RN-35,
+# `app/data/fatores.py`).
 REQUIRED_COLUMNS = {
     "matriculas": [
         "CO_MATRICULA",
@@ -33,21 +39,6 @@ REQUIRED_COLUMNS = {
         "TIPO_PROGRAMA_CURSO",
         "STATUS_CICLO",
     ],
-    "cursos": [
-        "CÓDIGO DO PORTFÓLIO",
-        "NOME_CURSO",
-        "TIPO_CURSO",
-        "SUBTIPO_CURSO",
-        "MODALIDADE_ENSINO",
-        "EIXO_TECNOLOGICO_AJUSTADO",
-        "CARGA_HORARIA_TOTAL",
-        "CO_UNIDADE",
-        # Tarefa 11: coluna de origem do eixo "oferta" (BR-MIGRAR-020),
-        # ausente da validação original da Tarefa 05 (GAP nunca implementado).
-        "OFERTA",
-    ],
-    "campus": ["CO_UNIDADE", "CIDADE", "NOME_UNIDADE"],
-    "fatores": ["CÓDIGO DO PORTFÓLIO", "FEC", "FECH"],
 }
 
 

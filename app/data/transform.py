@@ -56,6 +56,11 @@ COLUNAS_PII = [
     "SG_SEXO",
     "DT_DATA_NASCIMENTO",
     "NU_CPF",
+    # Confirmadas na planilha de CICLO pela investigação ao vivo F0 (2026-09-14,
+    # `_reversa_forward/002-baixador-planilhas-sistec/f0-resultado.md`, achado 4):
+    # nome e CPF do responsável, não previstos na versão anterior desta lista.
+    "NOME_RESPONSAVEL",
+    "CPF",
 ]
 
 
