@@ -5,5 +5,7 @@ venv/
 *.db
 *.sqlite3
 .env
+*.log
+.pytest_cache/
 app/data/uploads/*
 !app/data/uploads/**/.gitkeep
