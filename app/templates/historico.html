@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+{% block title %}Histórico de atualizações - Pesquisa Institucional - SISTEC{% endblock %}
+{% block admin_nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block content %}
+<div class="admin-form">
+  <h1>Histórico de atualizações</h1>
+
+  {% if not eventos %}
+  <p>Nenhuma atualização registrada ainda.</p>
+  {% else %}
+  <div class="table-scroll-wrapper">
+    <table class="br-table">
+      <thead>
+        <tr>
+          <th>Início</th>
+          <th>Tipo</th>
+          <th>Administrador</th>
+          <th>Desfecho</th>
+          <th>Sucessos</th>
+          <th>Falhas</th>
+          <th>Pausas</th>
+          <th>Linhas consolidadas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for evento in eventos %}
+        <tr>
+          <td>{{ evento.inicio }}</td>
+          <td>{{ evento.tipo }}</td>
+          <td>{{ evento.admin_email }}</td>
+          <td>{{ evento.desfecho or "em andamento" }}</td>
+          <td>{{ evento.sucessos if evento.sucessos is not none else "—" }}</td>
+          <td>{{ evento.falhas if evento.falhas is not none else "—" }}</td>
+          <td>{{ evento.pausas if evento.pausas is not none else "—" }}</td>
+          <td>{{ evento.linhas_consolidadas if evento.linhas_consolidadas is not none else "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

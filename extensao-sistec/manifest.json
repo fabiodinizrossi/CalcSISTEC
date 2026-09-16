@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Baixador Sistec — CalcSISTEC",
+  "version": "1.0.0",
+  "description": "Baixa as planilhas do Sistec para a área administrativa do CalcSISTEC usando a sessão da própria pessoa (sem senha, sem passar pela pasta de Downloads).",
+  "permissions": ["cookies", "browsingData", "tabs", "storage"],
+  "host_permissions": [
+    "https://sistec.mec.gov.br/*",
+    "https://*.acesso.gov.br/*",
+    "https://calcsistec.iffarroupilha.edu.br/*",
+    "http://localhost:8050/*",
+    "http://127.0.0.1:8051/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://sistec.mec.gov.br/*", "http://127.0.0.1:8051/*"],
+      "js": ["sistec-content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://calcsistec.iffarroupilha.edu.br/*",
+      "http://localhost:8050/*"
+    ]
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Baixador Sistec"
+  }
+}

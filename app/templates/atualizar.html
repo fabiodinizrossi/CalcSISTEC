@@ -1,0 +1,75 @@
+{% extends "_base.html" %}
+{% block title %}Atualizar dados - Pesquisa Institucional - SISTEC{% endblock %}
+{% block admin_nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block content %}
+<div class="admin-form" id="atualizar-app">
+  <h1>Atualizar dados</h1>
+
+  <p>
+    Clique em <strong>Atualizar do Sistec</strong>. O Sistec abre no seu navegador de sempre: faça o login gov.br
+    e clique em <strong>Já entrei no Sistec</strong>. O sistema baixa os ciclos e as matrículas de cada campus e
+    mostra a prévia aqui. Cada planilha é lida e apagada assim que chega.
+  </p>
+  <p>
+    A baixa usa o <strong>identificador de perfil</strong> de cada campus, cadastrado em
+    <a href="/admin/config#campi">Configurações → Campi do Sistec</a>. Se algum estiver faltando ou inválido, a
+    atualização avisa e não começa — sem ele o Sistec não troca de campus e as planilhas viriam vazias.
+  </p>
+
+  <div id="atualizar-acoes">
+    <button type="button" class="br-button primary" id="btn-atualizar-sistec">Atualizar do Sistec</button>
+    <button type="button" class="br-button secondary" id="btn-login-feito" hidden>Já entrei no Sistec</button>
+    <button type="button" class="br-button danger" id="btn-cancelar" hidden data-confirm="Cancelar a atualização em andamento?">Cancelar</button>
+  </div>
+
+  <p id="status-navegador" role="status" aria-live="polite"></p>
+
+  <div id="barra-area" hidden>
+    <label for="barra-progresso" id="barra-rotulo">Progresso</label>
+    <progress id="barra-progresso" value="0" max="1" style="width:100%;height:1.5rem"></progress>
+  </div>
+
+  <details id="passos-area" open>
+    <summary>O que está acontecendo</summary>
+    <ol id="passos-navegador" aria-live="polite"></ol>
+  </details>
+
+  <ul id="avisos-navegador" class="form-message error" role="alert" hidden></ul>
+
+  <div id="atualizar-progresso" hidden>
+    <h2>Progresso</h2>
+    <p id="progresso-resumo"></p>
+    <div class="table-scroll-wrapper">
+      <table class="br-table">
+        <thead><tr><th>#</th><th>Planilha</th><th>Campus</th><th>Situação</th><th>Linhas</th></tr></thead>
+        <tbody id="progresso-pares"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="atualizar-previa" hidden>
+    <h2>Prévia</h2>
+    <p id="previa-resumo"></p>
+    <div class="table-scroll-wrapper">
+      <table class="br-table">
+        <thead id="previa-cabecalho"></thead>
+        <tbody id="previa-linhas"></tbody>
+      </table>
+    </div>
+    <button type="button" class="br-button primary" id="btn-salvar">Salvar na versão interna</button>
+    <button type="button" class="br-button secondary" id="btn-descartar" data-confirm="Descartar esta prévia?">Descartar</button>
+  </div>
+  <p id="status-salvar" role="status" aria-live="polite"></p>
+
+  <p><a href="/admin/config#campi">Gerenciar a lista de campi</a></p>
+
+  <hr>
+
+  <h2>Publicação</h2>
+  <p>Publicar aplica a última versão salva ao painel público. Desfazer volta à publicação anterior.</p>
+  <button type="button" class="br-button primary" id="btn-publicar" data-confirm="Publicar a versão interna no painel público?">Publicar</button>
+  <button type="button" class="br-button secondary" id="btn-desfazer" data-confirm="Desfazer a última publicação?">Desfazer publicação</button>
+  <p id="status-publicacao" role="status"></p>
+</div>
+<script src="/assets/js/atualizar.js"></script>
+{% endblock %}

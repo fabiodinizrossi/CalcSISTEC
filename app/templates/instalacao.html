@@ -1,0 +1,89 @@
+{% extends "_base.html" %}
+{% block title %}Instalação - Painel Sistec{% endblock %}
+{% block content %}
+<div class="admin-form">
+  <h1>Instalação</h1>
+  <p>
+    Bem-vindo(a). Esta tela aparece na primeira vez e configura o painel para a sua instituição.
+    Dá para voltar aqui depois em <a href="/admin/config">Configurações</a>.
+  </p>
+
+  {% if mensagem %}
+  <div class="form-message {{ 'success' if sucesso else '' }}" role="status" aria-live="polite">{{ mensagem }}</div>
+  {% endif %}
+
+  <h2>1. Sua instituição</h2>
+  <form method="post" action="/admin/instalacao" class="admin-form-section">
+    <input type="hidden" name="acao" value="salvar_instituicao">
+    <label for="nome">Nome da instituição</label>
+    <input type="text" id="nome" name="nome" value="{{ instituicao.nome }}"
+           placeholder="Instituto Federal de ..." required>
+
+    <label for="sigla">Sigla</label>
+    <input type="text" id="sigla" name="sigla" value="{{ instituicao.sigla }}" placeholder="IF...">
+
+    <label for="site">Site institucional</label>
+    <input type="text" id="site" name="site" value="{{ instituicao.site }}" placeholder="www.suainstituicao.edu.br">
+
+    <label for="contato_email">E-mail de contato mostrado no rodapé</label>
+    <input type="email" id="contato_email" name="contato_email" value="{{ instituicao.contato_email }}"
+           placeholder="pesquisainstitucional@suainstituicao.edu.br">
+
+    <button type="submit" class="br-button primary">Salvar dados da instituição</button>
+  </form>
+  <p>O logotipo é enviado em <a href="/admin/config">Configurações</a>; enquanto não houver um, entra um genérico.</p>
+
+  <hr>
+
+  <h2>2. Campi e identificadores do Sistec</h2>
+  <p>
+    Cada campus tem um <strong>identificador de perfil</strong> no Sistec (o campo <code>tipo</code>): um número de
+    7 dígitos, como <code>8278860</code>. É ele que troca o campus ativo na hora de baixar — sem ele, o Sistec
+    ignora a troca e as planilhas vêm vazias. Os identificadores são da conta de quem acessa o Sistec, então
+    precisam ser conferidos com o seu login.
+  </p>
+
+  <h3>Como descobrir cada identificador</h3>
+  <ol>
+    <li>Entre no Sistec e fique na tela “Selecione o Perfil para efetuar login”.</li>
+    <li>Abra as ferramentas do navegador (<kbd>F12</kbd>) na aba <em>Elements</em> e procure
+        <code>name="tipo"</code>.</li>
+    <li>Selecione um campus na lista: o valor de <code>tipo</code> muda para o identificador dele. Anote e repita
+        para cada campus.</li>
+  </ol>
+  <p>
+    Aproveite para anotar também o <code>qtdPerfis</code> (na mesma tela), que vai em
+    <a href="/admin/config#campi">Configurações</a>.
+  </p>
+
+  <h3>Cadastrar a lista</h3>
+  <p>Uma linha por campus, no formato <code>identificador ; nome do perfil</code>. Exemplo:</p>
+  <pre>8278857 ; ASSESSOR DA UNIDADE DE ENSINO - 101 - IF EXEMPLO - CAMPUS ALEGRETE
+8278858 ; ASSESSOR DA UNIDADE DE ENSINO - 102 - IF EXEMPLO - CAMPUS JAGUARI</pre>
+  <form method="post" action="/admin/instalacao" class="admin-form-section">
+    <input type="hidden" name="acao" value="importar_perfis">
+    <label for="lista_perfis">Lista de perfis</label>
+    <textarea id="lista_perfis" name="lista_perfis" rows="8" style="width:100%"></textarea>
+    <button type="submit" class="br-button secondary">Importar lista</button>
+  </form>
+
+  {% if campi %}
+  <p>{{ campi|length }} campus(i) já cadastrados. Confira e edite um a um em
+     <a href="/admin/config#campi">Configurações → Campi do Sistec</a> (identificador, código da unidade, cidade e
+     nome), onde também dá para incluir e excluir.</p>
+  {% else %}
+  <p>Nenhum campus cadastrado ainda.</p>
+  {% endif %}
+
+  <hr>
+
+  <h2>3. Concluir</h2>
+  {% if pendencias %}
+  <p>Ainda falta: {{ pendencias|join(", ") }}. Você pode concluir assim mesmo e completar depois.</p>
+  {% endif %}
+  <form method="post" action="/admin/instalacao">
+    <input type="hidden" name="acao" value="concluir">
+    <button type="submit" class="br-button primary">Concluir instalação</button>
+  </form>
+</div>
+{% endblock %}
