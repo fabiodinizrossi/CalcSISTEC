@@ -24,9 +24,11 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.data.ingest import UploadInvalido, processar_upload  # noqa: E402
+from app.data import versoes  # noqa: E402
+from app.data.ingest import montar_versao_interna  # noqa: E402
 from app.data.schema import get_connection, init_db  # noqa: E402
 from app.data.transform import t02_corrigir_status  # noqa: E402
+from app.sistec.consolidacao import ConsolidacaoInvalida, consolidar  # noqa: E402
 from app.domain.contrato import FiltrosAtivos  # noqa: E402
 from app.domain.eficiencia import calcular_iea, classificar_matriculas_eficiencia, eh_concluido  # noqa: E402
 from app.domain.matriculas import contar_por_status, filtrar_fic, taxa_evasao  # noqa: E402
@@ -46,45 +48,49 @@ def db_path():
     return path
 
 
-def _planilhas_basicas(**overrides):
+def _linha_ciclo(**overrides):
+    """T024: substitui a antiga aba `ciclos`/`cursos` do upload — uma linha
+    consolidada do Sistec já traz os atributos do curso embutidos (D-18),
+    nos nomes internos pós `app/sistec/colunas.aplicar_permissao`."""
     base = {
-        "matriculas": pd.DataFrame(
-            {
-                "CO_MATRICULA": ["M1"],
-                "CODIGO_CICLO_MATRICULA": ["C1"],
-                "STATUS_MATRICULA_SISTEC": ["EM_CURSO"],
-                "STATUS_MATRICULA_PNP": ["ABANDONO"],
-                "MES_OCORRENCIA_CORRIGIDO": ["2026-01-01"],
-            }
-        ),
-        "ciclos": pd.DataFrame(
-            {
-                "CODIGO_CICLO_MATRICULA": ["C1"],
-                "CÓDIGO DO PORTFÓLIO": ["P1"],
-                "DT_DATA_INICIO": ["2026-01-01"],
-                "DT_DATA_FIM_PREVISTO": ["2027-01-01"],
-                "TIPO_PROGRAMA_CURSO": ["REGULAR"],
-                "STATUS_CICLO": ["ATIVO"],
-            }
-        ),
-        "cursos": pd.DataFrame(
-            {
-                "CÓDIGO DO PORTFÓLIO": ["P1"],
-                "NOME_CURSO": ["TÉCNICO EM X"],
-                "TIPO_CURSO": ["TECNICO"],
-                "SUBTIPO_CURSO": ["Técnico"],
-                "MODALIDADE_ENSINO": ["PRESENCIAL"],
-                "EIXO_TECNOLOGICO_AJUSTADO": ["EIXO1"],
-                "CARGA_HORARIA_TOTAL": [1200],
-                "CO_UNIDADE": ["U1"],
-                "OFERTA": ["ANUAL"],
-            }
-        ),
-        "campus": pd.DataFrame({"CO_UNIDADE": ["U1"], "CIDADE": ["Santa Maria"], "NOME_UNIDADE": ["Campus SM"]}),
-        "fatores": pd.DataFrame({"CÓDIGO DO PORTFÓLIO": ["P1"], "FEC": [1.0], "FECH": [1.0]}),
+        "CODIGO_CICLO_MATRICULA": "C1",
+        "CO_UNIDADE": "U1",
+        "CÓDIGO DO PORTFÓLIO": "P1",
+        "NOME_CURSO": "TÉCNICO EM X",
+        "TIPO_CURSO": "TECNICO",
+        "CARGA_HORARIA_TOTAL": 1200,
+        "MODALIDADE_ENSINO": "PRESENCIAL",
+        "OFERTA": "ANUAL",
+        "EIXO_TECNOLOGICO": "EIXO1",
+        "TIPO_PROGRAMA_CURSO": "REGULAR",
+        "DT_DATA_INICIO": "2026-01-01",
+        "DT_DATA_FIM_PREVISTO": "2027-01-01",
+        "STATUS_CICLO": "ATIVO",
+        "SITUACAO_CICLO": "ATIVO",
     }
     base.update(overrides)
     return base
+
+
+def _linha_matricula(**overrides):
+    base = {
+        "CO_MATRICULA": "M1",
+        "CODIGO_CICLO_MATRICULA": "C1",
+        "STATUS_MATRICULA_SISTEC": "EM_CURSO",
+        "MES_OCORRENCIA_CORRIGIDO": "2026-01-01",
+    }
+    base.update(overrides)
+    return base
+
+
+def _baixar_e_publicar(linhas_ciclo, linhas_matricula, db_path, ano_base=2026, campi_falhos=()):
+    """T024: equivalente a `processar_upload` no pipeline novo — consolida,
+    monta a versão interna e publica, para chegar ao mesmo estado final
+    (dataset ativo/publicado) que os testes de paridade verificam."""
+    conjunto = consolidar([pd.DataFrame(linhas_ciclo)], [pd.DataFrame(linhas_matricula)] if linhas_matricula else [])
+    resultado = montar_versao_interna(conjunto, campi_falhos, db_path=db_path, ano_base=ano_base)
+    versoes.publicar(db_path)
+    return resultado
 
 
 # ===================== PT-001: Ingestão e preparação =====================
@@ -107,10 +113,10 @@ def test_pt001_reprovada_nao_e_remapeada():
 
 def test_pt001_nenhuma_pii_sobrevive(db_path):
     """Cenário: nenhuma coluna de PII aparece em nenhuma tabela resultante
-    (BR-DESCARTAR-001)."""
-    planilhas = _planilhas_basicas()
-    planilhas["matriculas"]["NU_CPF"] = ["111.111.111-11"]
-    processar_upload(planilhas, {}, ano_base=2026, uploaded_by="t", filename="t.xlsx", db_path=db_path)
+    (BR-DESCARTAR-001). No pipeline novo, a defesa já acontece na lista de
+    permissão (D-04, `app/sistec/colunas.py`) — uma coluna de PII nunca
+    chega a este ponto porque nem seria lida (RN-17)."""
+    _baixar_e_publicar([_linha_ciclo()], [_linha_matricula()], db_path)
     conn = get_connection(db_path)
     try:
         colunas = [row[1] for row in conn.execute("PRAGMA table_info(matriculas)")]
@@ -122,9 +128,7 @@ def test_pt001_nenhuma_pii_sobrevive(db_path):
 def test_pt001_ciclo_excluido_e_filtrado(db_path):
     """Cenário: ciclos com STATUS DO CICLO = EXCLUÍDO não geram matrículas no
     dataset resultante (BR-MIGRAR-018)."""
-    planilhas = _planilhas_basicas()
-    planilhas["ciclos"]["STATUS_CICLO"] = ["EXCLUÍDO"]
-    processar_upload(planilhas, {}, ano_base=2026, uploaded_by="t", filename="t.xlsx", db_path=db_path)
+    _baixar_e_publicar([_linha_ciclo(STATUS_CICLO="EXCLUÍDO")], [_linha_matricula()], db_path)
     conn = get_connection(db_path)
     try:
         assert conn.execute("SELECT COUNT(*) FROM matriculas").fetchone()[0] == 0
@@ -133,25 +137,21 @@ def test_pt001_ciclo_excluido_e_filtrado(db_path):
 
 
 def test_pt001_upload_invalido_nao_corrompe_dataset_ativo(db_path):
-    """Cenário: upload inválido não corrompe o dataset ativo (RISK-004, AD-02)."""
-    planilhas_validas = _planilhas_basicas()
-    processar_upload(planilhas_validas, {}, ano_base=2026, uploaded_by="t", filename="v1.xlsx", db_path=db_path)
+    """Cenário: consolidação inválida não corrompe o dataset ativo (RISK-004,
+    AD-02) — adaptado ao pipeline novo (`ConsolidacaoInvalida` em vez de
+    `UploadInvalido`; `uploads_log` não é mais escrita, D-13)."""
+    _baixar_e_publicar([_linha_ciclo()], [_linha_matricula()], db_path)
 
     conn = get_connection(db_path)
     total_antes = conn.execute("SELECT COUNT(*) FROM matriculas").fetchone()[0]
     conn.close()
 
-    planilhas_invalidas = {"matriculas": _planilhas_basicas()["matriculas"]}  # faltam as demais abas
-    with pytest.raises(UploadInvalido):
-        processar_upload(planilhas_invalidas, {}, ano_base=2026, uploaded_by="t", filename="v2.xlsx", db_path=db_path)
+    with pytest.raises(ConsolidacaoInvalida):
+        consolidar([], [])  # nenhum par de ciclo consolidado
 
     conn = get_connection(db_path)
     try:
         assert conn.execute("SELECT COUNT(*) FROM matriculas").fetchone()[0] == total_antes
-        status_log = conn.execute(
-            "SELECT status FROM uploads_log ORDER BY id DESC LIMIT 1"
-        ).fetchone()[0]
-        assert status_log == "invalido"
     finally:
         conn.close()
 
@@ -229,9 +229,16 @@ def test_pt003_matricula_equivalente_nao_qualificacao_usa_fech_1():
 
 def test_pt003_fec_fech_ausentes_usam_default_explicito(db_path):
     """Cenário: FEC/FECH ausentes usam default explícito (fec=1), e o curso
-    é sinalizado para revisão — não some silenciosamente (BR-MIGRAR-008)."""
-    planilhas = _planilhas_basicas(fatores=pd.DataFrame({"CÓDIGO DO PORTFÓLIO": [], "FEC": [], "FECH": []}))
-    resultado = processar_upload(planilhas, {}, ano_base=2026, uploaded_by="t", filename="t.xlsx", db_path=db_path)
+    é sinalizado para revisão — não some silenciosamente (BR-MIGRAR-008).
+    No pipeline novo, "ausentes" é a tabela `interna_fatores` vazia (D-07)."""
+    conn = get_connection(db_path)
+    try:
+        conn.execute("DELETE FROM interna_fatores")
+        conn.commit()
+    finally:
+        conn.close()
+
+    resultado = _baixar_e_publicar([_linha_ciclo()], [_linha_matricula()], db_path)
     assert resultado["cursos_fator_nao_encontrado"] == 1
     conn = get_connection(db_path)
     try:
@@ -244,27 +251,19 @@ def test_pt003_fec_fech_ausentes_usam_default_explicito(db_path):
 def test_pt003_cursos_distintos_nao_colidem_por_chave(db_path):
     """Cenário: cursos com CÓDIGO DO PORTFÓLIO diferentes não são descartados
     nem fundidos por colisão (BR-MIGRAR-014)."""
-    planilhas = _planilhas_basicas()
-    planilhas["cursos"] = pd.concat(
-        [
-            planilhas["cursos"],
-            pd.DataFrame(
-                {
-                    "CÓDIGO DO PORTFÓLIO": ["P2"],
-                    "NOME_CURSO": ["TÉCNICO EM Y"],
-                    "TIPO_CURSO": ["TECNICO"],
-                    "SUBTIPO_CURSO": ["Técnico"],
-                    "MODALIDADE_ENSINO": ["EAD"],
-                    "EIXO_TECNOLOGICO_AJUSTADO": ["EIXO2"],
-                    "CARGA_HORARIA_TOTAL": [800],
-                    "CO_UNIDADE": ["U1"],
-                    "OFERTA": ["SEMESTRAL"],
-                }
-            ),
-        ],
-        ignore_index=True,
-    )
-    processar_upload(planilhas, {}, ano_base=2026, uploaded_by="t", filename="t.xlsx", db_path=db_path)
+    linhas_ciclo = [
+        _linha_ciclo(),
+        _linha_ciclo(
+            CODIGO_CICLO_MATRICULA="C2",
+            **{"CÓDIGO DO PORTFÓLIO": "P2"},
+            NOME_CURSO="TÉCNICO EM Y",
+            MODALIDADE_ENSINO="EAD",
+            EIXO_TECNOLOGICO="EIXO2",
+            CARGA_HORARIA_TOTAL=800,
+            OFERTA="SEMESTRAL",
+        ),
+    ]
+    _baixar_e_publicar(linhas_ciclo, [], db_path)
     conn = get_connection(db_path)
     try:
         assert conn.execute("SELECT COUNT(*) FROM cursos").fetchone()[0] == 2
@@ -421,11 +420,13 @@ def test_pt007_paginas_publicas_nao_exigem_autenticacao():
 
 
 def test_pt007_upload_administrativo_exige_autenticacao():
+    """T025: a rota administrativa de dados passa a ser `/admin/atualizar`
+    (D-14) — `/admin/upload` sai do sistema (T057)."""
     os.environ.setdefault("ADMIN_EMAIL", "x")
     os.environ.setdefault("ADMIN_PASSWORD_HASH", "x")
     import app.app as app_module
 
     client = app_module.app.server.test_client()
-    resposta = client.get("/admin/upload", follow_redirects=False)
+    resposta = client.get("/admin/atualizar", follow_redirects=False)
     assert resposta.status_code in (301, 302)
     assert "/admin/login" in resposta.headers.get("Location", "")
