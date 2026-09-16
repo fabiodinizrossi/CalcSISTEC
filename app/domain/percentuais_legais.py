@@ -75,6 +75,7 @@ def matriculas_equivalentes(df):
             linha["carga_horaria_total"],
             linha["fec"],
             linha["quantidade_matriculas"],
+            linha.get("fech", 1),
         ),
         axis=1,
     )

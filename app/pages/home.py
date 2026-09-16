@@ -32,7 +32,7 @@ def layout():
         return html.Div(
             [
                 html.Div(className="hero", children=[html.H1("Painel de Acompanhamento Sistec"), html.Div("Pesquisa Institucional")]),
-                html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state"),
+                html.Div("Ainda não há dados publicados.", className="empty-state"),
             ]
         )
 

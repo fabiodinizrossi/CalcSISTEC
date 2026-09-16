@@ -13,10 +13,11 @@
 
   <header class="app-header" role="banner">
     <div class="app-header-inner">
-      <img class="app-header-logo" src="/branding/logo" alt="Instituto Federal Farroupilha">
+      <img class="app-header-logo" src="/branding/logo"
+           alt="{% if instituicao and instituicao.nome %}Logotipo — {{ instituicao.nome }}{% else %}Logotipo da instituição{% endif %}">
       <div class="app-header-text">
         <span class="app-header-title">Painel de Acompanhamento Sistec</span>
-        <span class="app-header-subtitle">Pesquisa Institucional</span>
+        <span class="app-header-subtitle">{{ instituicao.nome if instituicao and instituicao.nome else "Pesquisa Institucional" }}</span>
       </div>
     </div>
   </header>
@@ -28,9 +29,12 @@
   </main>
 
   <footer class="app-footer" role="contentinfo">
-    <span>Instituto Federal Farroupilha</span>
-    <a href="https://www.iffarroupilha.edu.br" target="_blank" rel="noopener">www.iffarroupilha.edu.br</a>
-    <span>{{ contato_email }}</span>
+    {% if instituicao and instituicao.nome %}<span>{{ instituicao.nome }}</span>{% endif %}
+    {% if instituicao and instituicao.site %}
+    <a href="{{ instituicao.site if instituicao.site.startswith('http') else 'https://' ~ instituicao.site }}"
+       target="_blank" rel="noopener">{{ instituicao.site }}</a>
+    {% endif %}
+    {% if contato_email %}<span>{{ contato_email }}</span>{% endif %}
   </footer>
 </body>
 </html>

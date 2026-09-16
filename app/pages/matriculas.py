@@ -30,7 +30,7 @@ STATUS_EM_CURSO = "EM_CURSO"
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state")
+        return html.Div("Ainda não há dados publicados.", className="empty-state")
 
     df = carregar_matriculas()
     return html.Div(
@@ -85,7 +85,7 @@ def atualizar(fic, eixo, campus, tipo_curso, programa):
         equivalentes = None
     else:
         equivalentes = sum(
-            matricula_equivalente(linha.tipo_curso_pnp, linha.carga_horaria_total, linha.fec, 1)
+            matricula_equivalente(linha.tipo_curso_pnp, linha.carga_horaria_total, linha.fec, 1, linha.fech)
             for linha in df_ano_base.itertuples()
         )
 

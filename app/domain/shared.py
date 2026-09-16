@@ -56,18 +56,25 @@ def eh_evadido(status):
     return status in STATUS_EVADIDO
 
 
-def matricula_equivalente(tipo_curso, carga_horaria_total, fec, matriculas):
+def matricula_equivalente(tipo_curso, carga_horaria_total, fec, matriculas, fech=1):
     """BR-MIGRAR-007: Mateq = Mat x fech x fec (Portaria 146/2021 art. 2º).
 
     `fec` já chega com o default explícito aplicado na ingestão quando a
-    planilha de fatores não tinha par (BR-MIGRAR-008, `app/data/transform.
-    t05_default_fec_fech`) — esta função nunca recebe `fec` nulo.
+    planilha de fatores não tinha par (BR-MIGRAR-008, hoje via
+    `app/data/fatores.casar_fatores`, D-07) — esta função nunca recebe `fec`
+    nulo.
+
+    `fech` (D-07, `002-baixador-planilhas-sistec`): para curso não FIC, vale
+    o `fech` do curso (`cursos.fech`, casado por `casar_fatores`), passado
+    explicitamente pelo chamador. Para Qualificação Profissional (FIC), o
+    `fech` recebido é ignorado — continua sendo a carga horária total / 800,
+    como antes desta feature.
     """
     if tipo_curso == TIPO_CURSO_QUALIFICACAO_PROFISSIONAL:
-        fech = carga_horaria_total / CARGA_HORARIA_REFERENCIA_FECH
+        fech_efetivo = carga_horaria_total / CARGA_HORARIA_REFERENCIA_FECH
     else:
-        fech = 1
-    return matriculas * fech * fec
+        fech_efetivo = fech
+    return matriculas * fech_efetivo * fec
 
 
 def coluna_para_eixo(eixo: EixoQuebra):

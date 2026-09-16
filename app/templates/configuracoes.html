@@ -34,7 +34,8 @@
 
   <div>
     <p>Logotipo vigente:</p>
-    <img src="/branding/logo" alt="Instituto Federal Farroupilha" class="app-header-logo">
+    <img src="/branding/logo" class="app-header-logo"
+         alt="{% if instituicao and instituicao.nome %}Logotipo — {{ instituicao.nome }}{% else %}Logotipo da instituição{% endif %}">
   </div>
 
   <form method="post" action="/admin/config" enctype="multipart/form-data">
@@ -50,6 +51,192 @@
     <input type="hidden" name="acao" value="restaurar_logo">
     <button type="submit" class="br-button secondary" id="btn-restaurar-logo"
             data-confirm="Restaurar o logotipo para o padrão de fábrica?">Restaurar padrão do logotipo</button>
+  </form>
+
+  <hr>
+
+  <h2>Instituição</h2>
+  <form method="post" action="/admin/config" class="admin-form-section">
+    <input type="hidden" name="acao" value="salvar_instituicao">
+    <label for="inst-nome">Nome da instituição</label>
+    <input type="text" id="inst-nome" name="nome" value="{{ instituicao.nome }}" required>
+    <label for="inst-sigla">Sigla</label>
+    <input type="text" id="inst-sigla" name="sigla" value="{{ instituicao.sigla }}">
+    <label for="inst-site">Site institucional</label>
+    <input type="text" id="inst-site" name="site" value="{{ instituicao.site }}">
+    <button type="submit" class="br-button secondary">Salvar dados da instituição</button>
+  </form>
+
+  <hr>
+
+  <h2 id="campi">Campi do Sistec</h2>
+  <p>
+    Esta lista é cadastrada à mão, e é dela que a atualização tira tudo. O campo mais importante é o
+    <strong>identificador do perfil</strong> (o <code>tipo</code> do Sistec): um número de 7 dígitos, como
+    <code>8278860</code>, que é o que troca o campus ativo na hora de baixar. Para descobri-lo, entre no Sistec, na
+    tela “Selecione o Perfil para efetuar login”, selecione o campus e olhe o campo <code>tipo</code>
+    (<kbd>F12</kbd> → <em>Elements</em>, procure <code>name="tipo"</code>) — o valor muda a cada campus escolhido.
+  </p>
+  <p>
+    Aqui dá para corrigir identificador, código, cidade e nome da unidade, desativar um campus (ele deixa de ser
+    baixado), excluir ou incluir um perfil à mão. Código da unidade vazio é preenchido sozinho com o código que vem
+    na planilha de ciclos.
+  </p>
+
+  {% if mensagem_campi %}
+  <div class="form-message" role="status" aria-live="polite">{{ mensagem_campi }}</div>
+  {% endif %}
+
+  {% if campi %}
+  <div class="table-scroll-wrapper">
+    <table class="br-table">
+      <thead><tr><th>Perfil</th><th>Situação</th><th>Identificador, código, cidade e nome da unidade</th><th>Ações</th></tr></thead>
+      <tbody>
+        {% for c in campi %}
+        <tr>
+          <td>
+            {{ c.nome_perfil }}
+            {% if c.id_perfil|length < 5 %}<br><small class="form-message error">⚠ identificador inválido — a atualização não roda assim</small>{% endif %}
+            {% if c.origem == "manual" %}<br><small>(incluído à mão)</small>{% endif %}
+          </td>
+          <td>{{ "Ativo" if c.ativo else "Desativado" }}</td>
+          <td>
+            <form method="post" action="/admin/config" class="campo-campus-form">
+              <input type="hidden" name="acao" value="salvar_campus">
+              <input type="hidden" name="id_perfil" value="{{ c.id_perfil }}">
+              <input type="text" name="novo_id_perfil" value="{{ c.id_perfil }}" placeholder="Identificador (tipo)" aria-label="Identificador do perfil no Sistec" inputmode="numeric" required>
+              <input type="text" name="co_unidade" value="{{ c.co_unidade or '' }}" placeholder="Código da unidade" aria-label="Código da unidade" required>
+              <input type="text" name="cidade" value="{{ c.cidade or '' }}" placeholder="Cidade" aria-label="Cidade" required>
+              <input type="text" name="nome_unidade" value="{{ c.nome_unidade or '' }}" placeholder="Nome da unidade" aria-label="Nome da unidade" required>
+              <button type="submit" class="br-button secondary">Salvar</button>
+            </form>
+          </td>
+          <td>
+            <form method="post" action="/admin/config">
+              <input type="hidden" name="acao" value="{{ 'desativar_campus' if c.ativo else 'ativar_campus' }}">
+              <input type="hidden" name="id_perfil" value="{{ c.id_perfil }}">
+              <button type="submit" class="br-button secondary small">{{ "Desativar" if c.ativo else "Reativar" }}</button>
+            </form>
+            <form method="post" action="/admin/config" class="confirm-form">
+              <input type="hidden" name="acao" value="excluir_campus">
+              <input type="hidden" name="id_perfil" value="{{ c.id_perfil }}">
+              <button type="submit" class="br-button danger small"
+                      data-confirm="Excluir este perfil da lista? Se ele ainda existir no Sistec, volta na próxima atualização (para deixar de baixar, use Desativar).">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>Nenhum campus ainda. Cadastre-os abaixo, colando a lista pronta ou incluindo um a um.</p>
+  {% endif %}
+
+  <h3>Quantidade de perfis da sua conta (<code>qtdPerfis</code>)</h3>
+  <p>
+    Vai junto na URL que troca o campus. É o total de perfis que o Sistec lista para o seu login — some os dois
+    papéis (Assessor e Gestor) de cada campus. Em branco, vale 16. Para conferir: na tela de perfis do Sistec,
+    <kbd>F12</kbd> → <em>Elements</em>, procure <code>name="qtdPerfis"</code>.
+  </p>
+  <form method="post" action="/admin/config" class="campo-campus-form">
+    <input type="hidden" name="acao" value="salvar_qtd_perfis">
+    <label for="qtd-perfis">Quantidade de perfis</label>
+    <input type="text" id="qtd-perfis" name="qtd_perfis" value="{{ qtd_perfis }}" inputmode="numeric" placeholder="16">
+    <button type="submit" class="br-button secondary">Salvar quantidade</button>
+  </form>
+
+  <h3>Importar lista de perfis</h3>
+  <p>
+    Uma linha por campus, no formato <code>identificador ; nome do perfil</code>. É o jeito mais rápido de
+    cadastrar tudo de uma vez; a lista substitui os identificadores atuais, preservando código da unidade, cidade
+    e nome já preenchidos.
+  </p>
+  <form method="post" action="/admin/config">
+    <input type="hidden" name="acao" value="importar_perfis">
+    <label for="lista-perfis">Lista de perfis</label>
+    <textarea id="lista-perfis" name="lista_perfis" rows="6" style="width:100%"></textarea>
+    <button type="submit" class="br-button secondary">Importar lista</button>
+  </form>
+
+  <h3>Incluir campus manualmente</h3>
+  <form method="post" action="/admin/config" class="campo-campus-form">
+    <input type="hidden" name="acao" value="incluir_campus">
+    <label for="novo-id-perfil">Identificador do perfil no Sistec (campo “tipo”)</label>
+    <input type="text" id="novo-id-perfil" name="id_perfil" inputmode="numeric" required>
+    <label for="novo-nome-perfil">Nome do perfil</label>
+    <input type="text" id="novo-nome-perfil" name="nome_perfil" required>
+    <label for="novo-co-unidade">Código da unidade</label>
+    <input type="text" id="novo-co-unidade" name="co_unidade">
+    <label for="novo-cidade">Cidade</label>
+    <input type="text" id="novo-cidade" name="cidade">
+    <label for="novo-nome-unidade">Nome da unidade</label>
+    <input type="text" id="novo-nome-unidade" name="nome_unidade">
+    <button type="submit" class="br-button primary">Incluir campus</button>
+  </form>
+
+  <hr>
+
+  <h2>Fatores (FEC/FECH)</h2>
+
+  {% if mensagem_fatores %}
+  <div class="form-message {{ 'success' if sucesso_fatores else 'error' }}" role="alert" aria-live="assertive">{{ mensagem_fatores }}</div>
+  {% endif %}
+
+  {% if fatores_avisos %}
+  <div class="form-message" role="status">
+    Tipos sem correspondência no Sistec, mantidos com aviso: {{ fatores_avisos | join(", ") }}
+  </div>
+  {% endif %}
+
+  {% if fatores_diferenca %}
+  <div class="fatores-diferenca">
+    <p><strong>{{ fatores_diferenca.incluidas | length }}</strong> incluídas,
+       <strong>{{ fatores_diferenca.removidas | length }}</strong> removidas,
+       <strong>{{ fatores_diferenca.alteradas | length }}</strong> alteradas.</p>
+    <form method="post" action="/admin/config" class="confirm-form">
+      <input type="hidden" name="acao" value="confirmar_fatores">
+      <button type="submit" class="br-button primary" data-confirm="Confirmar a troca da tabela de fatores?">Confirmar troca</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <form method="post" action="/admin/config" enctype="multipart/form-data">
+    <input type="hidden" name="acao" value="enviar_fatores">
+    <div class="br-upload">
+      <label for="arquivo_fatores">Arquivo de fatores (.xlsx)</label>
+      <input type="file" id="arquivo_fatores" name="arquivo_fatores" accept=".xlsx" required>
+    </div>
+    <button type="submit" class="br-button primary" data-loading="Enviando...">Enviar e ver prévia</button>
+  </form>
+
+  <form method="post" action="/admin/config" class="confirm-form">
+    <input type="hidden" name="acao" value="restaurar_fatores">
+    <button type="submit" class="br-button secondary"
+            data-confirm="Restaurar a tabela de fatores para o padrão de fábrica?">Restaurar padrão dos fatores</button>
+  </form>
+
+  <hr>
+
+  <h2>Recomeçar do zero</h2>
+  <p>
+    Apaga os dados da instituição, a lista de campi e o que foi baixado, e leva de volta ao assistente de
+    instalação. Serve para quando muda a pessoa responsável pelo setor ou para instalar em outra instituição.
+    O ano-base e a tabela de fatores (FEC/FECH) são mantidos.
+  </p>
+  <form method="post" action="/admin/config" class="confirm-form">
+    <input type="hidden" name="acao" value="resetar_instalacao">
+    <input type="hidden" name="apagar_dados" value="1">
+    <button type="submit" class="br-button danger"
+            data-confirm="Apagar configuração, campi e dados baixados, voltando ao assistente de instalação? Isso não pode ser desfeito.">Resetar instalação</button>
+  </form>
+
+  <hr>
+
+  <form method="post" action="/admin/config" class="confirm-form">
+    <input type="hidden" name="acao" value="aplicar_publico">
+    <button type="submit" class="br-button primary"
+            data-confirm="Aplicar os campi e fatores da versão interna diretamente ao painel público?">Aplicar campi e fatores ao público</button>
   </form>
 </div>
 <script>

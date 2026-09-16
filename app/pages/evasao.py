@@ -18,7 +18,7 @@ dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesq
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Nenhum dado disponível ainda. Aguarde o próximo upload.", className="empty-state")
+        return html.Div("Ainda não há dados publicados.", className="empty-state")
 
     df = carregar_matriculas()
     return html.Div(
