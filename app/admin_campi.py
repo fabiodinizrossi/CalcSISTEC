@@ -1,5 +1,7 @@
 """Lista de campi do painel administrativo: busca, paginação e telas do CRUD."""
 
+from urllib.parse import urlencode
+
 from flask import Blueprint, abort, flash, get_flashed_messages, redirect, render_template, request
 
 from app.auth import requer_autenticacao
@@ -65,12 +67,28 @@ def filtrar_e_paginar(campi, q, pagina, por_pagina):
     }
 
 
+def _url_da_lista(q, pagina, por_pagina):
+    params = {"por_pagina": por_pagina, "pagina": pagina}
+    if q:
+        params["q"] = q
+    return "/admin/campi?" + urlencode(params)
+
+
 @campi_bp.route("/admin/campi")
 @requer_autenticacao
 def lista():
+    todos = listar_campi(DB_PATH)
+    q = request.args.get("q", "").strip()
+    pagina = filtrar_e_paginar(todos, q, request.args.get("pagina"), request.args.get("por_pagina"))
+    ultima = max(1, -(-pagina["total"] // pagina["por_pagina"]))
     return render_template(
         "campi_lista.html",
-        campi=listar_campi(DB_PATH),
+        existem_campi=bool(todos),
+        pagina=pagina,
+        q=q,
+        tamanhos_de_pagina=TAMANHOS_DE_PAGINA,
+        href_anterior=_url_da_lista(q, pagina["pagina"] - 1, pagina["por_pagina"]) if pagina["pagina"] > 1 else None,
+        href_proxima=_url_da_lista(q, pagina["pagina"] + 1, pagina["por_pagina"]) if pagina["pagina"] < ultima else None,
         id_suspeito=id_suspeito,
         mensagens=get_flashed_messages(with_categories=True),
     )

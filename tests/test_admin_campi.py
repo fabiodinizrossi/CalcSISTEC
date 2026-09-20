@@ -78,7 +78,9 @@ def test_pagina_invalida_ou_alem_do_fim_vira_1(pagina):
     assert (resultado["inicio"], resultado["fim"]) == (1, 10)
 
 
+import html as html_lib
 import re
+from urllib.parse import parse_qs, urlparse
 
 from app import admin_campi
 from app import app as app_module
@@ -384,3 +386,79 @@ def test_excluir_campus_inexistente_volta_a_lista_com_mensagem_de_erro(cliente_a
     html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
     assert re.search(r'class="br-message danger"', html)
     assert "Campus não encontrado." in html
+
+
+@pytest.fixture
+def vinte_e_dois_campi(banco):
+    for i in range(1, 23):
+        dados_campi.incluir_campus(
+            str(8270000 + i), f"Perfil {i:02d}", str(200 + i), f"Cidade {i:02d}", f"Campus {i:02d}", banco
+        )
+
+
+def _resumo(html):
+    return re.search(r"(\d+-\d+ de \d+ itens)", html).group(1)
+
+
+def _botao(html, nome):
+    return re.search(rf'<(?:a|button)\b[^>]*aria-label="{nome}"[^>]*>', html).group(0)
+
+
+def test_lista_tem_a_barra_campi_com_busca_por_envio_e_botao_de_lupa(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r"<h2[^>]*>\s*Campi\s*</h2>", html)
+    busca = re.search(r'<form method="get"[^>]*role="search".*?</form>', html, re.S).group(0)
+    assert re.search(r'<input\b[^>]*name="q"', busca)
+    assert re.search(r'<button\b[^>]*type="submit"[^>]*aria-label="Buscar campus"', busca)
+    assert html.index('role="search"') < html.index("<table")
+
+
+def test_busca_lista_so_as_linhas_que_contem_o_texto(cliente_autenticado, vinte_e_dois_campi):
+    html = cliente_autenticado.get("/admin/campi?q=cidade 05").get_data(as_text=True)
+    linhas = _linhas(html)
+    assert len(linhas) == 1
+    assert "Cidade 05" in linhas[0]
+    assert _resumo(html) == "1-1 de 1 itens"
+
+
+def test_busca_sem_resultado_mostra_br_message_info(cliente_autenticado, vinte_e_dois_campi):
+    html = cliente_autenticado.get("/admin/campi?q=zzz").get_data(as_text=True)
+    assert re.search(r'class="br-message info"[^>]*>.*Nenhum campus encontrado\.', html, re.S)
+    assert "<table" not in html
+
+
+def test_rodape_mostra_o_intervalo_de_itens_da_pagina(cliente_autenticado, vinte_e_dois_campi):
+    assert _resumo(cliente_autenticado.get("/admin/campi").get_data(as_text=True)) == "1-10 de 22 itens"
+    assert _resumo(cliente_autenticado.get("/admin/campi?por_pagina=25").get_data(as_text=True)) == "1-22 de 22 itens"
+    assert _resumo(cliente_autenticado.get("/admin/campi?pagina=3").get_data(as_text=True)) == "21-22 de 22 itens"
+
+
+def test_seletor_exibir_tem_10_25_e_50_e_marca_o_valor_atual(cliente_autenticado, vinte_e_dois_campi):
+    html = cliente_autenticado.get("/admin/campi?por_pagina=25").get_data(as_text=True)
+    seletor = re.search(r'<select id="por_pagina".*?</select>', html, re.S).group(0)
+    assert re.findall(r'<option value="(\d+)"', seletor) == ["10", "25", "50"]
+    assert re.search(r'<option value="25" selected>', seletor)
+    assert re.search(r'<button\b[^>]*type="submit"[^>]*>\s*Aplicar\s*</button>', html)
+
+
+def test_anterior_fica_desabilitado_na_primeira_pagina_e_proxima_na_ultima(cliente_autenticado, vinte_e_dois_campi):
+    primeira = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert "disabled" in _botao(primeira, "Página anterior")
+    assert 'href="/admin/campi?' in _botao(primeira, "Próxima página")
+    ultima = cliente_autenticado.get("/admin/campi?pagina=3").get_data(as_text=True)
+    assert "disabled" in _botao(ultima, "Próxima página")
+    assert 'href="/admin/campi?' in _botao(ultima, "Página anterior")
+
+
+def test_pagina_e_por_pagina_invalidos_viram_1_e_10_sem_erro(cliente_autenticado, vinte_e_dois_campi):
+    resposta = cliente_autenticado.get("/admin/campi?pagina=abc&por_pagina=7")
+    assert resposta.status_code == 200
+    assert _resumo(resposta.get_data(as_text=True)) == "1-10 de 22 itens"
+
+
+def test_links_de_pagina_mantem_a_busca_e_o_tamanho_da_pagina(cliente_autenticado, vinte_e_dois_campi):
+    html = cliente_autenticado.get("/admin/campi?q=cidade&por_pagina=10&pagina=2").get_data(as_text=True)
+    for nome, pagina_esperada in (("Página anterior", "1"), ("Próxima página", "3")):
+        href = html_lib.unescape(re.search(r'href="([^"]+)"', _botao(html, nome)).group(1))
+        params = parse_qs(urlparse(href).query)
+        assert params == {"q": ["cidade"], "por_pagina": ["10"], "pagina": [pagina_esperada]}

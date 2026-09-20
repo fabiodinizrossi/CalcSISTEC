@@ -1058,11 +1058,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /admin/campi` mostra a barra "Campi" com campo de busca (`<form method="get">` com botão de lupa de nome acessível) acima da tabela
-- [ ] `?q=<parte de uma cidade>` lista só as linhas que a contêm; `?q=zzz` mostra `br-message info` "Nenhum campus encontrado."
-- [ ] Com 22 campi: padrão mostra "1-10 de 22 itens"; `?por_pagina=25` mostra "1-22 de 22 itens"; `?pagina=3` mostra "21-22 de 22 itens"; anterior desabilitado na página 1 e próxima na última
-- [ ] `pagina` e `por_pagina` inválidos na URL viram 1 e 10, sem erro; a busca e o tamanho de página se mantêm nos links de página
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] `GET /admin/campi` mostra a barra "Campi" com campo de busca (`<form method="get">` com botão de lupa de nome acessível) acima da tabela
+- [x] `?q=<parte de uma cidade>` lista só as linhas que a contêm; `?q=zzz` mostra `br-message info` "Nenhum campus encontrado."
+- [x] Com 22 campi: padrão mostra "1-10 de 22 itens"; `?por_pagina=25` mostra "1-22 de 22 itens"; `?pagina=3` mostra "21-22 de 22 itens"; anterior desabilitado na página 1 e próxima na última
+- [x] `pagina` e `por_pagina` inválidos na URL viram 1 e 10, sem erro; a busca e o tamanho de página se mantêm nos links de página
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full

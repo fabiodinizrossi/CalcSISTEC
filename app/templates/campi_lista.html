@@ -8,8 +8,25 @@
 
 <p><a class="br-button primary" href="/admin/campi/novo">Incluir campus</a></p>
 
-{% if not campi %}
+{% if not existem_campi %}
 {{ mensagem("info", "Nenhum campus cadastrado. Importe a lista de perfis no assistente de instalação ou inclua um campus.") }}
+{% else %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-end mb-3">
+  <h2 class="mb-2 mb-sm-0">Campi</h2>
+  <form method="get" action="/admin/campi" role="search" class="d-flex align-items-end">
+    <input type="hidden" name="por_pagina" value="{{ pagina.por_pagina }}">
+    <div class="br-input mr-2">
+      <label for="busca">Buscar por perfil, cidade ou unidade</label>
+      <input type="search" id="busca" name="q" value="{{ q }}">
+    </div>
+    <button class="br-button circle" type="submit" aria-label="Buscar campus" title="Buscar campus">
+      <i class="fas fa-search" aria-hidden="true"></i>
+    </button>
+  </form>
+</div>
+
+{% if not pagina.itens %}
+{{ mensagem("info", "Nenhum campus encontrado.") }}
 {% else %}
 <div class="br-table">
   <div class="responsive">
@@ -27,7 +44,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for c in campi %}
+        {% for c in pagina.itens %}
         <tr>
           <td>{{ c.nome_perfil }}</td>
           <td>
@@ -59,5 +76,36 @@
     </table>
   </div>
 </div>
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-end mt-3">
+  <form method="get" action="/admin/campi" class="d-flex align-items-end mb-2 mb-sm-0">
+    <input type="hidden" name="q" value="{{ q }}">
+    <div class="br-input mr-2">
+      <label for="por_pagina">Exibir</label>
+      <select id="por_pagina" name="por_pagina">
+        {% for tamanho in tamanhos_de_pagina %}
+        <option value="{{ tamanho }}"{% if tamanho == pagina.por_pagina %} selected{% endif %}>{{ tamanho }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="br-button secondary" type="submit">Aplicar</button>
+  </form>
+
+  <p class="mb-2 mb-sm-0" aria-live="polite">{{ pagina.inicio }}-{{ pagina.fim }} de {{ pagina.total }} itens</p>
+
+  <div class="d-flex">
+    {% if href_anterior %}
+    <a class="br-button circle mr-2" href="{{ href_anterior }}" aria-label="Página anterior"><i class="fas fa-angle-left" aria-hidden="true"></i></a>
+    {% else %}
+    <button class="br-button circle mr-2" type="button" disabled aria-label="Página anterior"><i class="fas fa-angle-left" aria-hidden="true"></i></button>
+    {% endif %}
+    {% if href_proxima %}
+    <a class="br-button circle" href="{{ href_proxima }}" aria-label="Próxima página"><i class="fas fa-angle-right" aria-hidden="true"></i></a>
+    {% else %}
+    <button class="br-button circle" type="button" disabled aria-label="Próxima página"><i class="fas fa-angle-right" aria-hidden="true"></i></button>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 {% endif %}
 {% endblock %}
