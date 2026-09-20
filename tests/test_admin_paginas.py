@@ -209,3 +209,76 @@ def test_atualizar_empilha_os_botoes_abaixo_de_576px_com_classes_do_ds(cliente_a
     assert "flex-column" in acoes
     assert "flex-sm-row" in acoes
     assert "@media" not in html
+
+
+CONFIG_CAMPI = [
+    {"id_perfil": "8278857", "nome_perfil": "A", "ativo": 1},
+    {"id_perfil": "1", "nome_perfil": "B", "ativo": 1},
+    {"id_perfil": "8278859", "nome_perfil": "C", "ativo": 0},
+]
+
+
+def test_configuracoes_resume_os_campi_e_leva_a_gerenciar_campi(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI)
+    resposta = cliente_autenticado.get("/admin/config")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'<a\b[^>]*href="/admin/campi"[^>]*>\s*Gerenciar campi\s*</a>', html)
+    assert "3 campi cadastrados, 2 ativos." in html
+    assert re.search(r'class="br-message warning".*1 campus com identificador inválido: a atualização não roda assim', html, re.S)
+    assert 'name="novo_id_perfil"' not in html
+    assert "<table" not in html
+    for celula in re.findall(r"<td>(.*?)</td>", html, re.S):
+        assert "<input" not in celula
+
+
+def test_configuracoes_sem_suspeitos_nao_mostra_o_aviso(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI[:1])
+    html = cliente_autenticado.get("/admin/config").get_data(as_text=True)
+    assert "1 campi cadastrados, 1 ativos." in html
+    assert "identificador inválido" not in html
+
+
+def test_configuracoes_nao_usa_confirm_nativo_e_mantem_os_6_data_confirm(cliente_autenticado):
+    com_data_confirm = [
+        "Restaurar o e-mail de contato para o padrão de fábrica?",
+        "Restaurar o logotipo para o padrão de fábrica?",
+        "Confirmar a troca da tabela de fatores?",
+        "Restaurar a tabela de fatores para o padrão de fábrica?",
+        "Apagar configuração, campi e dados baixados, voltando ao assistente de instalação? Isso não pode ser desfeito.",
+        "Aplicar os campi e fatores da versão interna diretamente ao painel público?",
+    ]
+    modelo = app_module.server.root_path + "/templates/configuracoes.html"
+    with open(modelo, encoding="utf-8") as arquivo:
+        fonte = arquivo.read()
+    assert "confirm(" not in fonte
+    assert sorted(re.findall(r'data-confirm="([^"]+)"', fonte)) == sorted(com_data_confirm)
+    html = cliente_autenticado.get("/admin/config").get_data(as_text=True)
+    assert "confirm(" not in html
+    # "Confirmar troca" só aparece depois de enviar um arquivo de fatores.
+    assert sorted(re.findall(r'data-confirm="([^"]+)"', html)) == sorted(t for t in com_data_confirm if not t.startswith("Confirmar a troca"))
+
+
+def test_configuracoes_todo_campo_de_texto_tem_rotulo_visivel(cliente_autenticado):
+    html = cliente_autenticado.get("/admin/config").get_data(as_text=True)
+    ids = re.findall(r'<input\b[^>]*type="(?:text|email)"[^>]*id="([^"]+)"', html)
+    assert sorted(ids) == ["contato_email", "nome", "qtd_perfis", "sigla", "site"]
+    for campo_id in ids:
+        assert f'<label for="{campo_id}">' in html
+
+
+def test_email_invalido_mostra_o_campo_em_danger_e_a_mensagem_em_br_message(cliente_autenticado):
+    html = cliente_autenticado.post("/admin/config", data={"acao": "salvar_email", "contato_email": "nao-e-email"}).get_data(as_text=True)
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="contato_email">', html)
+    assert re.search(r'class="br-message danger"[^>]*role="alert".*Não foi possível salvar: e-mail inválido\.', html, re.S)
+
+
+def test_mensagem_do_logotipo_aparece_em_br_message(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "reset_logo", lambda: None)
+    html = cliente_autenticado.post("/admin/config", data={"acao": "restaurar_logo"}).get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert".*Logotipo restaurado ao padrão de fábrica\.', html, re.S)
+
+
+def test_mensagem_dos_fatores_aparece_em_br_message(cliente_autenticado):
+    html = cliente_autenticado.post("/admin/config", data={"acao": "enviar_fatores"}).get_data(as_text=True)
+    assert re.search(r'class="br-message danger"[^>]*role="alert".*Selecione um arquivo de fatores \(\.xlsx\)\.', html, re.S)

@@ -513,6 +513,7 @@ def admin_config():
         "mensagem_logo": None,
         "sucesso_logo": False,
         "campi": listar_campi(),
+        "id_suspeito": campi.id_suspeito,
         "qtd_perfis": get_qtd_perfis(),
         "mensagem_campi": None,
         "fatores_diferenca": None,

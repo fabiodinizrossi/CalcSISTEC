@@ -1113,10 +1113,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /admin/config` responde 200 com link "Gerenciar campi" para `/admin/campi`, sem `<input name="novo_id_perfil">` e sem nenhum campo de campus em célula de tabela
-- [ ] Nenhuma ocorrência de `confirm(` nativo no arquivo; os 6 `data-confirm` restantes (e-mail, logotipo, 2 de fatores, resetar, aplicar) continuam com o mesmo texto
-- [ ] Campos com `<label>` visível; mensagens de e-mail, logotipo e fatores em `br-message`
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] `GET /admin/config` responde 200 com link "Gerenciar campi" para `/admin/campi`, sem `<input name="novo_id_perfil">` e sem nenhum campo de campus em célula de tabela
+- [x] Nenhuma ocorrência de `confirm(` nativo no arquivo; os 6 `data-confirm` restantes (e-mail, logotipo, 2 de fatores, resetar, aplicar) continuam com o mesmo texto
+- [x] Campos com `<label>` visível; mensagens de e-mail, logotipo e fatores em `br-message`
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full
