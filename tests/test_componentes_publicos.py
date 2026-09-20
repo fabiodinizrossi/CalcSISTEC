@@ -50,3 +50,51 @@ def test_o_helper_falha_com_componente_do_ds_que_precisa_de_js(classe):
 def test_o_helper_acha_componentes_por_classe_em_arvore_aninhada():
     arvore = html.Div([html.Div(className="a"), html.Div(html.Div(className="a b"))])
     assert len(com_classe(arvore, "a")) == 2
+
+
+from app.components.tabela import tabela_ds
+from arvore_dash import componentes
+
+
+def _tabela(**kwargs):
+    return tabela_ds(["Campus", "Total"], [["Alegrete", 120], ["Jaguari", 80]], "Matrículas por campus", **kwargs)
+
+
+def test_tabela_e_br_table_com_conteiner_de_rolagem_e_table_dentro():
+    raiz = _tabela()
+    assert raiz.className == "br-table"
+    assert raiz.children.className == "responsive"
+    assert type(raiz.children.children).__name__ == "Table"
+
+
+def test_tabela_tem_legenda_em_caption_e_cabecalhos_com_scope_col():
+    raiz = _tabela()
+    legendas = [c for c in componentes(raiz) if type(c).__name__ == "Caption"]
+    assert [textos(c) for c in legendas] == ["Matrículas por campus"]
+    cabecalhos = [c for c in componentes(raiz) if type(c).__name__ == "Th"]
+    assert [(textos(c), c.scope) for c in cabecalhos] == [("Campus", "col"), ("Total", "col")]
+
+
+def test_valores_das_celulas_chegam_iguais_aos_passados():
+    linhas = [
+        [textos(c) for c in componentes(tr) if type(c).__name__ == "Td"]
+        for tr in componentes(_tabela())
+        if type(tr).__name__ == "Tr"
+    ]
+    assert linhas == [[], ["Alegrete", "120"], ["Jaguari", "80"]]
+
+
+def test_celula_com_classe_recebe_a_classe_e_a_sem_classe_nao():
+    raiz = tabela_ds(["Taxa"], [[{"valor": "12,3%", "classe": "evasao-media"}], ["5,0%"]], "Evasão")
+    celulas = [c for c in componentes(raiz) if type(c).__name__ == "Td"]
+    assert [(textos(c), getattr(c, "className", None)) for c in celulas] == [("12,3%", "evasao-media"), ("5,0%", None)]
+
+
+def test_tabela_nao_usa_classe_de_tabela_do_bootstrap_nem_componente_dbc():
+    raiz = _tabela()
+    assert not (classes(raiz) & {"table", "table-striped", "table-bordered", "table-hover"})
+    assert not [c for c in componentes(raiz) if type(c).__module__.startswith("dash_bootstrap_components")]
+
+
+def test_tabela_nao_usa_componente_do_ds_que_precisa_de_js():
+    exigir_sem_componente_do_ds_que_precisa_de_js(_tabela())

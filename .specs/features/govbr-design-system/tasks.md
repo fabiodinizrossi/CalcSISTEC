@@ -1216,10 +1216,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] A árvore tem `br-table` > contêiner de rolagem > `table`; cabeçalhos com `scope="col"`; legenda em `<caption>`
-- [ ] Valores das células chegam iguais aos passados; classe por célula (usada pela evasão) é aplicada
-- [ ] Nenhuma classe `table`, `table-striped` nem `dbc.Table` do Bootstrap
-- [ ] Testes em `tests/test_componentes_publicos.py`; gate quick passa
+- [x] A árvore tem `br-table` > contêiner de rolagem > `table`; cabeçalhos com `scope="col"`; legenda em `<caption>`
+- [x] Valores das células chegam iguais aos passados; classe por célula (usada pela evasão) é aplicada
+- [x] Nenhuma classe `table`, `table-striped` nem `dbc.Table` do Bootstrap
+- [x] Testes em `tests/test_componentes_publicos.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick
