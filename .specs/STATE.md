@@ -30,9 +30,9 @@
 
 - **Feature**: `.specs/features/govbr-design-system`
 - **Phase / Task**: Execute, Phase 1. `tasks.md` aprovada por Jaline em 2026-09-19 (57 tasks, execução inline, sem sub-agentes de lote)
-- **Completed**: T1
+- **Completed**: T1, T2
 - **In-progress** (file:line): none
-- **Next step**: T2 (mover o DS para `app/static/govbr-ds/` com `git mv`, criar `app/shell.py` com o blueprint `ds_static`)
+- **Next step**: T3 (mover `atualizar.js` para `app/static/js/` e referenciar por `/ds/js/atualizar.js`)
 - **Blockers**: T53 (Font Awesome) ainda pede autorização de rede; Rawline (T54) liberada por Jaline para baixar. T57 exige teste de Jaline em celular real
 - **Uncommitted files**: none da feature (fora de escopo e sem stage: `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/`)
 - **Branch**: migracao-dash-gov-br

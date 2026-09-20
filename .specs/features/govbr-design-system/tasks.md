@@ -211,10 +211,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `app/assets/govbr-ds/` não existe mais; `app/static/govbr-ds/dist/core.min.css` e `core.min.js` existem (histórico preservado por `git mv`)
-- [ ] `GET /ds/govbr-ds/dist/core.min.css` e `GET /ds/govbr-ds/dist/core.min.js` respondem 200 pelo `test_client`
-- [ ] `GET /admin/login` referencia `/ds/govbr-ds/dist/core.min.css` e não referencia `/assets/govbr-ds/`
-- [ ] Novo `tests/test_shell_assets.py` cobre os três itens acima; gate full passa (≥ 181 + novos)
+- [x] `app/assets/govbr-ds/` não existe mais; `app/static/govbr-ds/dist/core.min.css` e `core.min.js` existem (histórico preservado por `git mv`)
+- [x] `GET /ds/govbr-ds/dist/core.min.css` e `GET /ds/govbr-ds/dist/core.min.js` respondem 200 pelo `test_client`
+- [x] `GET /admin/login` referencia `/ds/govbr-ds/dist/core.min.css` e não referencia `/assets/govbr-ds/`
+- [x] Novo `tests/test_shell_assets.py` cobre os três itens acima; gate full passa (≥ 181 + novos)
 
 **Tests**: integration
 **Gate**: full

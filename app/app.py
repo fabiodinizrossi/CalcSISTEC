@@ -75,8 +75,10 @@ aplicar_configuracao_sessao(server)
 init_db(DEFAULT_DB_PATH)
 
 from app.sistec.api import bp as sistec_api_bp  # noqa: E402
+from app.shell import init_shell  # noqa: E402
 
 server.register_blueprint(sistec_api_bp)
+init_shell(server, app)
 
 # Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do
 # SQLite a cada carregamento (`app/data/consulta.py`), substituindo o antigo
