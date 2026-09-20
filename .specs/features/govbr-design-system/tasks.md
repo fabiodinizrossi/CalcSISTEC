@@ -869,10 +869,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com 22 campi: `por_pagina=10, pagina=3` → 2 itens, `inicio=21`, `fim=22`, `total=22`; `por_pagina=25` → 1 página com 22 itens
-- [ ] Busca "santa" acha perfil, cidade ou nome da unidade com "Santa", sem diferenciar caixa; texto sem resultado → `total=0`, `itens=[]`, `inicio=0`, `fim=0`
-- [ ] `por_pagina` inválido (7, "x", 0) vira 10; `pagina` inválida (0, negativa, texto ou além do fim) vira 1
-- [ ] Novo `tests/test_admin_campi.py`; gate quick passa
+- [x] Com 22 campi: `por_pagina=10, pagina=3` → 2 itens, `inicio=21`, `fim=22`, `total=22`; `por_pagina=25` → 1 página com 22 itens
+- [x] Busca "santa" acha perfil, cidade ou nome da unidade com "Santa", sem diferenciar caixa; texto sem resultado → `total=0`, `itens=[]`, `inicio=0`, `fim=0`
+- [x] `por_pagina` inválido (7, "x", 0) vira 10; `pagina` inválida (0, negativa, texto ou além do fim) vira 1
+- [x] Novo `tests/test_admin_campi.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

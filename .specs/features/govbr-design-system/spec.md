@@ -450,9 +450,9 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-78          | P1: CRUD de campi (AC 17, incluir com sucesso) | Design | In Tasks |
 | DS-79          | P1: CRUD de campi (AC 18, sem campos em célula de tabela) | Design | In Tasks |
 | DS-80          | P2: Busca e paginação (AC 1, barra de busca) | Design | In Tasks |
-| DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | In Tasks |
-| DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | In Tasks |
-| DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | In Tasks |
+| DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | Implementing |
+| DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | Implementing |
+| DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Implementing |
 | DS-84          | P3: Cards (AC 1, botão de visualização) | Design | In Tasks |
 | DS-85          | P3: Cards (AC 2, br-card por campus) | Design | In Tasks |
 
