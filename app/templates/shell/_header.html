@@ -1,0 +1,38 @@
+<div class="br-skiplink">
+  <a class="br-item" href="#main-content" accesskey="1">Ir para o conteúdo principal</a>
+</div>
+<header class="br-header">
+  <div class="container-fluid">
+    <div class="header-top">
+      <div class="header-logo">
+        <span class="logo-superficie">
+          <img src="/branding/logo"
+               alt="{% if instituicao and instituicao.nome %}Logotipo — {{ instituicao.nome }}{% else %}Logotipo da instituição{% endif %}">
+        </span>
+      </div>
+      <div class="header-actions">
+        <button class="br-button secondary small" type="button" id="botao-tema" aria-pressed="false">
+          <i class="fas fa-adjust" aria-hidden="true"></i>
+          <span>Usar tema escuro</span>
+        </button>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <div class="header-menu">
+        {% if shell.com_menu %}
+        <div class="header-menu-trigger">
+          <button class="br-button small circle" type="button" id="botao-menu" aria-label="Menu"
+                  aria-expanded="false" aria-controls="main-navigation"
+                  data-toggle="menu" data-target="#main-navigation">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+          </button>
+        </div>
+        {% endif %}
+        <div class="header-info">
+          <div class="header-title">Painel de Acompanhamento Sistec</div>
+          <div class="header-subtitle">{{ instituicao.nome if instituicao and instituicao.nome else "Pesquisa Institucional" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

@@ -317,12 +317,12 @@ T55 → T57
 
 **Done when**:
 
-- [ ] O primeiro `<a>` do HTML renderizado é "Ir para o conteúdo principal" com `href="#main-content"`
-- [ ] `<img>` do logotipo tem `alt` não vazio com e sem nome de instituição configurado
-- [ ] Botão de tema tem texto "Usar tema escuro" e `aria-pressed="false"`; botão hambúrguer tem `aria-expanded="false"` e `aria-controls`; sem menu (`com_menu=False`) o hambúrguer não aparece
-- [ ] Logotipo fica dentro de um invólucro com classe própria para superfície clara nos dois temas
-- [ ] `GET /branding/logo` sem logotipo enviado responde com `padrao-generico.svg` (DS-40)
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] O primeiro `<a>` do HTML renderizado é "Ir para o conteúdo principal" com `href="#main-content"`
+- [x] `<img>` do logotipo tem `alt` não vazio com e sem nome de instituição configurado
+- [x] Botão de tema tem texto "Usar tema escuro" e `aria-pressed="false"`; botão hambúrguer tem `aria-expanded="false"` e `aria-controls`; sem menu (`com_menu=False`) o hambúrguer não aparece
+- [x] Logotipo fica dentro de um invólucro com classe própria para superfície clara nos dois temas
+- [x] `GET /branding/logo` sem logotipo enviado responde com `padrao-generico.svg` (DS-40)
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick
