@@ -6,11 +6,11 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 """
 
 import dash
-import dash_bootstrap_components as dbc
 from dash import Input, Output, callback, dcc, html
 
 from app.components.filters import axis_selector, clear_filters_button, filter_panel, select_filter
-from app.components.kpi import kpi_card
+from app.components.kpi import kpi_card, kpi_colunas
+from app.components.mensagem import mensagem_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
 from app.domain.percentuais_legais import (
     META_PROEJA,
@@ -28,20 +28,20 @@ dash.register_page(__name__, path="/percentuais-legais", title="Percentuais Lega
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Ainda não há dados publicados.", className="empty-state")
+        return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_matriculas()
     return html.Div(
         [
             html.H1("Percentuais Legais"),
             axis_selector("percentuais-eixo", default="campus"),
-            dcc.Loading(html.Div(id="percentuais-medidores", className="gauge-row")),
-            dcc.Loading(html.Div(id="percentuais-kpi")),
+            dcc.Loading(html.Div(id="percentuais-medidores", className="row")),
+            dcc.Loading(html.Div(id="percentuais-kpi", className="row")),
             filter_panel(
                 select_filter("percentuais-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
                 select_filter("percentuais-filtro-programa", "Programa Associado", sorted(df["tipo_programa_curso"].dropna().unique())),
             ),
-            html.Div(id="percentuais-aviso-proeja", className="aviso-filtro"),
+            html.Div(id="percentuais-aviso-proeja"),
             clear_filters_button("percentuais-limpar"),
         ]
     )
@@ -69,17 +69,17 @@ def atualizar(_eixo, campus, programa):
     if campus and campus != "__todos__":
         df = df[df["cidade"] == campus]
 
-    aviso = ""
+    aviso = None
     if programa and programa != "__todos__":
         df = df[df["tipo_programa_curso"] == programa]
         # BR-MIGRAR-026: avisa quando o filtro de programa distorce o % PROEJA
         # (denominador filtrado deixa de representar o universo de referência).
-        aviso = "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA."
+        aviso = mensagem_ds("warning", "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA.")
 
     base = _base_percentuais(df)
     if base.empty:
-        medidores = html.Div("Sem dados para os filtros selecionados.")
-        kpi = kpi_card("Matrículas equivalentes", None, empty_state="dado incompleto")
+        medidores = html.Div(mensagem_ds("info", "Sem dados para os filtros selecionados."), className="col-12")
+        kpi = kpi_colunas([kpi_card("Matrículas equivalentes", None, empty_state="dado incompleto")])
         return medidores, kpi, aviso
 
     pt = percentual_tecnico(base)
@@ -92,28 +92,27 @@ def atualizar(_eixo, campus, programa):
         # RF-09/RN-08: a cor do medidor nunca é o único sinal de estado — o
         # texto "Acima da meta"/"Abaixo da meta" vale mesmo sem distinguir cor.
         situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
-        return dbc.Card(
-            dbc.CardBody(
+        return html.Div(
+            html.Div(
                 [
                     html.Div(label, className="kpi-label"),
                     html.Div(f"{valor:.1%}", className=f"gauge-value gauge-{cor}"),
                     html.Div(situacao, className=f"gauge-situacao gauge-situacao-{cor}"),
                     html.Div(f"Meta: {meta:.0%}", className="gauge-meta"),
-                ]
+                ],
+                className="card-content",
             ),
-            className="gauge-card",
+            className="br-card",
         )
 
-    medidores = [
-        gauge("Técnico", pt, META_TECNICO),
-        gauge("Formação de Professores", pp, META_PROFESSORES),
-        gauge("PROEJA", pj, META_PROEJA),
-    ]
-    kpi = kpi_card(
-        "Matrículas equivalentes",
-        equivalentes_total,
-        formato="#,0.00",
+    medidores = kpi_colunas(
+        [
+            gauge("Técnico", pt, META_TECNICO),
+            gauge("Formação de Professores", pp, META_PROFESSORES),
+            gauge("PROEJA", pj, META_PROEJA),
+        ]
     )
+    kpi = kpi_colunas([kpi_card("Matrículas equivalentes", equivalentes_total, formato="#,0.00")])
 
     return medidores, kpi, aviso
 

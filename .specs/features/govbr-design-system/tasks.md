@@ -1423,10 +1423,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Os 3 medidores (Técnico, Formação de Professores, PROEJA) são `br-card` com valor, "Meta: N%" e a situação em texto; sem `dbc.Card`
-- [ ] Com programa filtrado, o aviso "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA." aparece em `br-message warning`; sem filtro, não aparece
-- [ ] Sem dados: `br-message info` "Ainda não há dados publicados."; medidores em colunas que começam em `col-12`
-- [ ] Testes em `tests/test_paginas_publicas.py`; gate full passa
+- [x] Os 3 medidores (Técnico, Formação de Professores, PROEJA) são `br-card` com valor, "Meta: N%" e a situação em texto; sem `dbc.Card`
+- [x] Com programa filtrado, o aviso "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA." aparece em `br-message warning`; sem filtro, não aparece
+- [x] Sem dados: `br-message info` "Ainda não há dados publicados."; medidores em colunas que começam em `col-12`
+- [x] Testes em `tests/test_paginas_publicas.py`; gate full passa
 
 **Tests**: unit
 **Gate**: full

@@ -267,3 +267,64 @@ def test_evasao_sem_dados_mostra_br_message_info(monkeypatch):
     layout = pagina_evasao.layout()
     assert {"br-message", "info"} <= set(layout.className.split())
     assert SEM_DADOS in textos(layout)
+
+
+@pytest.fixture
+def percentuais_com_dados(monkeypatch):
+    pagina_percentuais = pagina("percentuais_legais")
+    monkeypatch.setattr(pagina_percentuais, "carregar_matriculas", _matriculas_de_teste)
+    monkeypatch.setattr(pagina_percentuais, "ano_base_ativo", lambda: 2026)
+    return pagina_percentuais
+
+
+def test_percentuais_mostra_os_3_medidores_em_br_card_com_valor_meta_e_situacao_em_texto(percentuais_com_dados):
+    from app.domain.percentuais_legais import (
+        META_PROEJA,
+        META_PROFESSORES,
+        META_TECNICO,
+        percentual_proeja,
+        percentual_professores,
+        percentual_tecnico,
+    )
+
+    base = _matriculas_de_teste().assign(quantidade_matriculas=1)
+    esperados = [
+        ("Técnico", percentual_tecnico(base), META_TECNICO),
+        ("Formação de Professores", percentual_professores(base), META_PROFESSORES),
+        ("PROEJA", percentual_proeja(base), META_PROEJA),
+    ]
+    medidores, _, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    cartoes = [c for coluna in medidores for c in com_classe(coluna, "br-card")]
+    assert len(cartoes) == 3
+    for cartao, (rotulo, valor, meta) in zip(cartoes, esperados):
+        situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
+        assert textos(cartao) == f"{rotulo} {valor:.1%} {situacao} Meta: {meta:.0%}"
+
+
+def test_percentuais_poe_os_medidores_em_colunas_que_comecam_em_col_12_sem_card_do_bootstrap(percentuais_com_dados):
+    medidores, kpi, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    assert len(medidores) == 3
+    for coluna in medidores:
+        assert "col-12" in coluna.className.split()
+    assert not (classes(medidores) | classes(kpi)) & {"gauge-card", "card", "card-body", "gauge-row"}
+    assert not [c for c in componentes(medidores) if type(c).__module__.startswith("dash_bootstrap_components")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(medidores)
+
+
+def test_percentuais_com_programa_filtrado_mostra_o_aviso_proeja_em_br_message_warning(percentuais_com_dados):
+    _, _, aviso = percentuais_com_dados.atualizar("campus", "__todos__", "Regular")
+    assert {"br-message", "warning"} <= set(aviso.className.split())
+    assert "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA." in textos(aviso)
+
+
+def test_percentuais_sem_filtro_de_programa_nao_mostra_o_aviso(percentuais_com_dados):
+    _, _, aviso = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    assert not aviso
+
+
+def test_percentuais_sem_dados_mostra_br_message_info(monkeypatch):
+    pagina_percentuais = pagina("percentuais_legais")
+    monkeypatch.setattr(pagina_percentuais, "dataset_disponivel", lambda: False)
+    layout = pagina_percentuais.layout()
+    assert {"br-message", "info"} <= set(layout.className.split())
+    assert SEM_DADOS in textos(layout)
