@@ -32,6 +32,12 @@ def test_head_tem_viewport_e_um_unico_core_min_css(servidor):
     assert "<title>Matrículas</title>" in html
 
 
+def test_head_linka_o_font_awesome_local_antes_do_ds(servidor):
+    html = renderizar(servidor, "shell/_head.html", titulo="Início")
+    assert len(re.findall(r'<link[^>]+href="/ds/vendor/fontawesome/css/all\.min\.css"', html)) == 1
+    assert html.index("/ds/vendor/fontawesome/css/all.min.css") < html.index("/ds/govbr-ds/dist/core.min.css")
+
+
 def test_head_nao_referencia_url_externa(servidor):
     html = renderizar(servidor, "shell/_head.html", titulo="Início")
     assert "http://" not in html
