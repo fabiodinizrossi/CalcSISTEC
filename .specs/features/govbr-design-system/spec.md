@@ -376,7 +376,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Implementing |
 | DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
 | DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | Implementing |
-| DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | In Tasks |
+| DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | Implementing |
 | DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | Implementing |
 | DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | Implementing |
 | DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Implementing |
@@ -402,7 +402,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | Implementing |
 | DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Implementing |
 | DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Implementing |
-| DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | In Tasks |
+| DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | Implementing |
 | DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | In Tasks |
 | DS-35          | P2: Acessibilidade (AC 5, rótulo textual) | Design | Implementing |
 | DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | Implementing |

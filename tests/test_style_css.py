@@ -55,3 +55,56 @@ def test_faixas_e_medidores_continuam_definidos_por_variaveis_do_ds(seletor):
     regras = re.findall(re.escape(seletor) + r"(?![\w-])[^{]*\{([^}]*)\}", SEM_COMENTARIOS)
     assert regras, f"{seletor} sem regra"
     assert any("var(--" in regra for regra in regras), seletor
+
+
+def _bloco_media(consulta):
+    inicio = SEM_COMENTARIOS.index(consulta)
+    abertura = SEM_COMENTARIOS.index("{", inicio)
+    profundidade, i = 1, abertura + 1
+    while profundidade:
+        profundidade += {"{": 1, "}": -1}.get(SEM_COMENTARIOS[i], 0)
+        i += 1
+    return SEM_COMENTARIOS[abertura + 1 : i - 1]
+
+
+def _regra(seletor_contem, texto=SEM_COMENTARIOS):
+    for seletor, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", texto):
+        if seletor_contem in seletor:
+            return corpo
+    raise AssertionError(f"sem regra para {seletor_contem}")
+
+
+def test_a_partir_de_1600px_o_conteudo_e_limitado_ao_token_de_tv_e_centralizado():
+    corpo = _regra(".container-fluid", _bloco_media("@media (min-width: 1600px)"))
+    assert re.search(r"max-width:\s*var\(--grid-tv-maxwidth\)", corpo)
+    assert re.search(r"margin-inline:\s*auto", corpo)
+
+
+def test_controles_interativos_tem_area_minima_de_24px():
+    assert re.search(r"--alvo-toque-minimo:\s*24px", SEM_COMENTARIOS)
+    corpo = _regra("button, input, select")
+    assert "min-width: var(--alvo-toque-minimo)" in corpo
+    assert "min-height: var(--alvo-toque-minimo)" in corpo
+
+
+def test_foco_visivel_tem_contorno_de_ao_menos_3px_na_cor_de_foco_do_ds():
+    corpo = _regra(":focus-visible")
+    largura = int(re.search(r"outline:\s*(\d+)px\s+solid\s+var\(--focus-color\)", corpo).group(1))
+    assert largura >= 3
+
+
+def test_menu_fica_persistente_a_partir_de_992px():
+    bloco = _bloco_media("@media (min-width: 992px)")
+    assert re.search(r"\.br-menu \.menu-container\s*\{\s*display:\s*block", bloco)
+    assert re.search(r"\.header-menu-trigger", bloco)
+
+
+def test_sem_js_o_menu_fica_sempre_visivel():
+    assert re.search(r"\.ds-sem-js \.br-menu \.menu-container\s*\{\s*display:\s*block", SEM_COMENTARIOS)
+
+
+def test_dropdown_do_dash_usa_variaveis_do_ds():
+    corpo = _regra(".filtro-dropdown .dash-dropdown-trigger")
+    assert "var(--background)" in corpo
+    assert "var(--color)" in corpo
+    assert "var(--border-color)" in corpo

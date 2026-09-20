@@ -1477,10 +1477,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `@media (min-width: 1600px)` limita o contêiner a `var(--grid-tv-maxwidth)` com `margin-inline: auto`
-- [ ] Há regra de `min-width` e `min-height` de `24px` para controles interativos e `outline` de largura ≥ 3px em `:focus-visible`, ambos por `var()` onde o token existir
-- [ ] Há regras `.ds-sem-js` que mantêm os links do menu visíveis
-- [ ] `tests/test_style_css.py` continua verde (sem hex, sem `--gov-*`, `@media` só nos pontos do DS) e cobre os itens novos; gate quick passa
+- [x] `@media (min-width: 1600px)` limita o contêiner a `var(--grid-tv-maxwidth)` com `margin-inline: auto`
+- [x] Há regra de `min-width` e `min-height` de `24px` para controles interativos e `outline` de largura ≥ 3px em `:focus-visible`, ambos por `var()` onde o token existir
+- [x] Há regras `.ds-sem-js` que mantêm os links do menu visíveis
+- [x] `tests/test_style_css.py` continua verde (sem hex, sem `--gov-*`, `@media` só nos pontos do DS) e cobre os itens novos; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

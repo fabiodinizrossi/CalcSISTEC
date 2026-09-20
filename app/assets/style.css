@@ -55,3 +55,60 @@
 .evasao-baixa{ background: color-mix(in srgb, var(--success) 25%, var(--background)); }
 .evasao-media{ background: color-mix(in srgb, var(--warning) 35%, var(--background)); }
 .evasao-alta{ background: color-mix(in srgb, var(--danger) 25%, var(--background)); }
+
+/* ---- Contêiner, toque e foco ---- */
+
+:root{
+  --alvo-toque-minimo: 24px;
+}
+
+/* A partir de 1600px o conteúdo para em --grid-tv-maxwidth e fica centralizado. */
+@media (min-width: 1600px){
+  .container-fluid{
+    max-width: var(--grid-tv-maxwidth);
+    margin-inline: auto;
+  }
+}
+
+/* Área mínima de toque de 24 x 24px nos controles interativos. */
+button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-trigger{
+  min-width: var(--alvo-toque-minimo);
+  min-height: var(--alvo-toque-minimo);
+}
+
+:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: var(--spacing-scale-half);
+}
+
+/* ---- Menu: persistente a partir de 992px, sobreposto (botão do cabeçalho) abaixo disso ---- */
+
+@media (min-width: 992px){
+  .br-menu .menu-container{ display: block; }
+  .br-menu .menu-panel{ height: auto; flex-direction: row; }
+  .br-menu .menu-body{ display: flex; flex-wrap: wrap; }
+  .br-menu .menu-header, .br-menu .menu-scrim, .header-menu-trigger{ display: none; }
+}
+
+/* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */
+.ds-sem-js .br-menu .menu-container{ display: block; }
+.ds-sem-js .br-menu .menu-panel{ height: auto; }
+.ds-sem-js .br-menu .menu-header, .ds-sem-js .br-menu .menu-scrim, .ds-sem-js .header-menu-trigger{ display: none; }
+
+/* ---- dcc.Dropdown (Dash 4) pelas variáveis do DS ---- */
+
+.filtro-dropdown .dash-dropdown-trigger{
+  background: var(--background);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+}
+.dash-dropdown-content{
+  background: var(--background);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+}
+.dash-dropdown-option:hover, .dash-dropdown-option:focus-visible{
+  background: var(--background-alternative);
+}
