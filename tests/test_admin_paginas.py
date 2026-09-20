@@ -84,3 +84,19 @@ def test_login_recusado_mostra_mensagem_danger_com_role_alert(cliente, login_con
     html = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "12345678"}).get_data(as_text=True)
     assert re.search(r'class="br-message danger"[^>]*role="alert"', html)
     assert "E-mail ou senha incorretos." in html
+
+
+def test_recuperar_acesso_tem_titulo_shell_sem_menu_e_sem_breadcrumb(cliente):
+    resposta = cliente.get("/recuperar-acesso")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r"<h1[^>]*>\s*Recuperação de acesso\s*</h1>", html)
+    assert 'class="br-header"' in html
+    assert 'class="br-footer"' in html
+    assert 'class="br-menu"' not in html
+    assert 'class="br-breadcrumb"' not in html
+
+
+def test_recuperar_acesso_volta_ao_login_por_um_br_button(cliente):
+    html = cliente.get("/recuperar-acesso").get_data(as_text=True)
+    assert re.search(r'<a\b[^>]*class="br-button[^"]*"[^>]*href="/admin/login"[^>]*>\s*Voltar ao login\s*</a>', html)

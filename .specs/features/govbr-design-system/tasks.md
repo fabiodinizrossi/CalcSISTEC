@@ -636,9 +636,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /recuperar-acesso` responde 200 com `<h1>`, `br-header`, `br-footer`, sem menu e sem breadcrumb
-- [ ] O botão de voltar é `br-button` e leva a `/admin/login`
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] `GET /recuperar-acesso` responde 200 com `<h1>`, `br-header`, `br-footer`, sem menu e sem breadcrumb
+- [x] O botão de voltar é `br-button` e leva a `/admin/login`
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

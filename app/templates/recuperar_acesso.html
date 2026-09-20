@@ -1,13 +1,15 @@
 {% extends "_base.html" %}
 {% block title %}Recuperação de acesso - Pesquisa Institucional - SISTEC{% endblock %}
 {% block content %}
-<div class="admin-form">
-  <h1>Recuperação de acesso</h1>
-  <p>
-    O acesso administrativo deste painel é gerenciado pela Pesquisa Institucional.
-    Para redefinir sua senha, entre em contato pelo e-mail
-    <a href="mailto:{{ contato_email }}">{{ contato_email }}</a>.
-  </p>
-  <p><a href="/admin/login">Voltar ao login</a></p>
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <h1>Recuperação de acesso</h1>
+    <p>
+      O acesso administrativo deste painel é gerenciado pela Pesquisa Institucional.
+      Para redefinir sua senha, entre em contato pelo e-mail
+      <a href="mailto:{{ contato_email }}">{{ contato_email }}</a>.
+    </p>
+    <a class="br-button secondary" href="/admin/login">Voltar ao login</a>
+  </div>
 </div>
 {% endblock %}
