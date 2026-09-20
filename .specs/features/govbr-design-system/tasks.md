@@ -1612,11 +1612,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Tabela página × largura com PASS ou FAIL e a medida de `scrollWidth ≤ innerWidth` para as 11 páginas nas 5 larguras
-- [ ] Registrado o resultado do menu persistente a partir de 992px; se falhar, decisão de cair para menu sobreposto em todas as larguras (ajuste de DS-04 e DS-05) e o ajuste feito
-- [ ] Registrado: Enter e Espaço abrem o menu e levam o foco ao primeiro item, Esc fecha e devolve o foco ao botão (DS-37, DS-38); se o JS do DS não cumprir, a lacuna vira task nova neste arquivo
-- [ ] Registrado: modal de exclusão prende o foco, fecha com Esc, devolve o foco e o botão "Cancelar" não exclui (DS-60, DS-75); botão de tema troca sem recarregar; `br-radio` e `dcc.Dropdown` legíveis nos dois temas
-- [ ] `python scripts/verificar_prontidao_cutover.py` rodado e o estado (NO-GO por ambiente) anotado; toda lacuna vira task nova ou correção com teste, antes de seguir
+- [x] Tabela página × largura com PASS ou FAIL e a medida de `scrollWidth ≤ innerWidth` para as 11 páginas nas 5 larguras
+- [x] Registrado o resultado do menu persistente a partir de 992px; se falhar, decisão de cair para menu sobreposto em todas as larguras (ajuste de DS-04 e DS-05) e o ajuste feito
+- [x] Registrado: Enter e Espaço abrem o menu e levam o foco ao primeiro item, Esc fecha e devolve o foco ao botão (DS-37, DS-38); se o JS do DS não cumprir, a lacuna vira task nova neste arquivo
+- [x] Registrado: modal de exclusão prende o foco, fecha com Esc, devolve o foco e o botão "Cancelar" não exclui (DS-60, DS-75); botão de tema troca sem recarregar; `br-radio` e `dcc.Dropdown` legíveis nos dois temas
+- [x] `python scripts/verificar_prontidao_cutover.py` rodado e o estado (NO-GO por ambiente) anotado; toda lacuna vira task nova ou correção com teste, antes de seguir
 
 **Tests**: none
 **Gate**: build

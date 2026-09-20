@@ -406,8 +406,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | Implementing |
 | DS-35          | P2: Acessibilidade (AC 5, rótulo textual) | Design | Implementing |
 | DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | Implementing |
-| DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | In Tasks |
-| DS-38          | P2: Acessibilidade (AC 8, Esc fecha o menu) | Design | In Tasks |
+| DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | Implementing |
+| DS-38          | P2: Acessibilidade (AC 8, Esc fecha o menu) | Design | Implementing |
 | DS-39          | P2: Identidade (AC 1, da configuração)  | -      | Implementing |
 | DS-40          | P2: Identidade (AC 2, logotipo genérico) | -     | Implementing |
 | DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Implementing |
