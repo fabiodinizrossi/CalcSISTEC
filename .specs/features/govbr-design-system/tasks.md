@@ -609,11 +609,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /admin/login` mostra "Acesso ao sistema", 2 campos com `<label>` visível, texto de apoio, e "Esqueci minha senha" depois do campo de senha na ordem do HTML
-- [ ] Botão "Entrar" tem `br-button primary` com classe de largura total
-- [ ] POST com campo inválido devolve 200 com o campo em `danger` e `aria-describedby` apontando para um id presente
-- [ ] POST com credenciais recusadas mostra `br-message danger` com `role="alert"`
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] `GET /admin/login` mostra "Acesso ao sistema", 2 campos com `<label>` visível, texto de apoio, e "Esqueci minha senha" depois do campo de senha na ordem do HTML
+- [x] Botão "Entrar" tem `br-button primary` com classe de largura total
+- [x] POST com campo inválido devolve 200 com o campo em `danger` e `aria-describedby` apontando para um id presente
+- [x] POST com credenciais recusadas mostra `br-message danger` com `role="alert"`
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

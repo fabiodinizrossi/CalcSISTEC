@@ -49,3 +49,38 @@ def test_login_nao_mostra_menu_nem_breadcrumb(cliente):
     html = cliente.get("/admin/login").get_data(as_text=True)
     assert 'class="br-menu"' not in html
     assert 'class="br-breadcrumb"' not in html
+
+
+@pytest.fixture
+def login_configurado(monkeypatch):
+    monkeypatch.setattr(app_module, "credenciais_configuradas", lambda: True)
+
+
+def test_login_tem_titulo_campos_com_rotulo_e_apoio_e_link_depois_da_senha(cliente, login_configurado):
+    html = cliente.get("/admin/login").get_data(as_text=True)
+    assert re.search(r"<h1[^>]*>\s*Acesso ao sistema\s*</h1>", html)
+    assert len(re.findall(r'<label for="(email|senha)">', html)) == 2
+    assert "Mínimo de 8 caracteres." in html
+    assert 'id="email-ajuda"' in html
+    assert html.index('id="senha"') < html.index("Esqueci minha senha")
+
+
+def test_botao_entrar_ocupa_a_largura_do_formulario(cliente, login_configurado):
+    html = cliente.get("/admin/login").get_data(as_text=True)
+    assert re.search(r'<button\b[^>]*class="br-button primary block"[^>]*>\s*Entrar\s*</button>', html)
+
+
+def test_login_com_campo_invalido_devolve_o_campo_em_danger_ligado_ao_erro(cliente, login_configurado):
+    resposta = cliente.post("/admin/login", data={"email": "nao-e-email", "senha": "curta"})
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"', html)
+    descrito = re.search(r'<input\b[^>]*id="email"[^>]*aria-describedby="([^"]+)"', html).group(1)
+    assert f'id="{descrito.split()[-1]}"' in html
+
+
+def test_login_recusado_mostra_mensagem_danger_com_role_alert(cliente, login_configurado, monkeypatch):
+    monkeypatch.setattr(app_module, "autenticar_sessao", lambda email, senha: False)
+    html = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "12345678"}).get_data(as_text=True)
+    assert re.search(r'class="br-message danger"[^>]*role="alert"', html)
+    assert "E-mail ou senha incorretos." in html

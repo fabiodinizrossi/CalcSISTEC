@@ -1,37 +1,29 @@
 {% extends "_base.html" %}
-{% block title %}Login administrativo - Pesquisa Institucional - SISTEC{% endblock %}
+{% from "shell/_macros.html" import campo, mensagem %}
+{% block title %}Acesso ao sistema - Pesquisa Institucional - SISTEC{% endblock %}
 {% block content %}
-<div class="admin-form">
-  <h1>Login administrativo</h1>
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+    <h1>Acesso ao sistema</h1>
 
-  {% if erro_global %}
-  <div class="form-message error" role="alert" aria-live="assertive">{{ erro_global }}</div>
-  {% endif %}
+    {% if erro_global %}{{ mensagem("danger", erro_global) }}{% endif %}
 
-  <form method="post" novalidate>
-    <div class="br-input {% if erro_email %}danger{% endif %}">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" name="email" value="{{ email or '' }}" required
-             {% if erro_email %}autofocus{% endif %}>
-    </div>
-    {% if erro_email %}<div class="field-error" role="alert" aria-live="polite">{{ erro_email }}</div>{% endif %}
+    <form method="post" novalidate>
+      {{ campo("email", "E-mail", email, erro=erro_email, ajuda="Use o e-mail do administrador do painel.", obrigatorio=True, tipo="email") }}
+      {{ campo("senha", "Senha", "", erro=erro_senha, ajuda="Mínimo de 8 caracteres.", obrigatorio=True, tipo="password") }}
 
-    <div class="br-password {% if erro_senha %}danger{% endif %}">
-      <label for="senha">Senha</label>
-      <input type="password" id="senha" name="senha" required
-             {% if erro_senha and not erro_email %}autofocus{% endif %}>
-    </div>
-    {% if erro_senha %}<div class="field-error" role="alert" aria-live="polite">{{ erro_senha }}</div>{% endif %}
+      <p class="mt-2"><a href="/recuperar-acesso">Esqueci minha senha</a></p>
 
-    <button type="submit" class="br-button primary" data-loading="Entrando...">Entrar</button>
-  </form>
-
-  <p><a href="/recuperar-acesso">Esqueci minha senha</a></p>
+      <button type="submit" class="br-button primary block" data-loading="Entrando...">Entrar</button>
+    </form>
+  </div>
 </div>
 <script>
 (function () {
-  var form = document.querySelector(".admin-form form");
-  var btn = document.querySelector(".admin-form button[type=submit]");
+  var form = document.querySelector("main form");
+  var btn = document.querySelector("main button[type=submit]");
+  var invalido = document.querySelector("main [aria-invalid=true]");
+  if (invalido) { invalido.focus(); }
   if (form && btn) {
     form.addEventListener("submit", function () {
       btn.disabled = true;

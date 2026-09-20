@@ -392,7 +392,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-20          | P1: Páginas administrativas (AC 2, formulários) | Design | Implementing |
 | DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | Implementing |
 | DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | Implementing |
-| DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | In Tasks |
+| DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | Implementing |
 | DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Implementing |
 | DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Implementing |
 | DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Implementing |
@@ -426,7 +426,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | In Tasks |
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Implementing |
 | DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
-| DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | In Tasks |
+| DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | Implementing |
 | DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | Implementing |
 | DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | In Tasks |
 | DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
