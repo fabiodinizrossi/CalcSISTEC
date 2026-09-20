@@ -1190,10 +1190,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `kpi_card("Matrículas", 1234, "0")` tem classe `br-card` e o texto "1.234"; valor `None` mostra "—"; `empty_state` substitui o valor `None` sem virar "0"
-- [ ] Nenhuma classe `card`, `card-body` ou `kpi-card` do Bootstrap na árvore
-- [ ] O helper de teste falha se a árvore tiver classe de componente do DS que depende de JS (`br-select`, `br-tab`, `br-modal`, `br-tooltip`, `br-accordion`, `br-dropdown`, `br-carousel`, `br-upload`)
-- [ ] Novo `tests/test_componentes_publicos.py`; gate quick passa
+- [x] `kpi_card("Matrículas", 1234, "0")` tem classe `br-card` e o texto "1.234"; valor `None` mostra "—"; `empty_state` substitui o valor `None` sem virar "0"
+- [x] Nenhuma classe `card`, `card-body` ou `kpi-card` do Bootstrap na árvore
+- [x] O helper de teste falha se a árvore tiver classe de componente do DS que depende de JS (`br-select`, `br-tab`, `br-modal`, `br-tooltip`, `br-accordion`, `br-dropdown`, `br-carousel`, `br-upload`)
+- [x] Novo `tests/test_componentes_publicos.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

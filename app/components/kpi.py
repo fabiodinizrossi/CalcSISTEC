@@ -5,7 +5,6 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir de
 `_reversa_sdd/migration/target_screens.md` (componente `KpiCard`).
 """
 
-import dash_bootstrap_components as dbc
 from dash import html
 
 
@@ -25,12 +24,13 @@ def kpi_card(label, valor, formato="0", empty_state=None):
     "0" quando o valor está incompleto (ex.: FEC/FECH ausente, `BR-MIGRAR-008`)
     — nunca "0" enganoso escondendo dado ausente."""
     texto = empty_state if (empty_state is not None and valor is None) else formatar_valor(valor, formato)
-    return dbc.Card(
-        dbc.CardBody(
+    return html.Div(
+        html.Div(
             [
                 html.Div(label, className="kpi-label"),
                 html.Div(texto, className="kpi-value"),
-            ]
+            ],
+            className="card-content",
         ),
-        className="kpi-card",
+        className="br-card",
     )

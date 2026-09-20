@@ -382,7 +382,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Implementing |
 | DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Implementing |
 | DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Implementing |
-| DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | In Tasks |
+| DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | Implementing |
 | DS-14          | P1: Páginas públicas (AC 5, br-table)   | Design | In Tasks |
 | DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | In Tasks |
 | DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | Implementing |
