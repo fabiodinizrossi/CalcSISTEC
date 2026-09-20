@@ -375,10 +375,10 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | Implementing |
 | DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Implementing |
 | DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
-| DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | In Tasks |
+| DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | Implementing |
 | DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | In Tasks |
 | DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | Implementing |
-| DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | In Tasks |
+| DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | Implementing |
 | DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Implementing |
 | DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Implementing |
 | DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Implementing |
@@ -412,7 +412,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-40          | P2: Identidade (AC 2, logotipo genérico) | -     | Implementing |
 | DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Implementing |
 | DS-42          | P3: Dispositivo real (AC 1)             | -      | In Tasks |
-| DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | In Tasks |
+| DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | Implementing |
 | DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | Implementing |
 | DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Implementing |
 | DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Implementing |

@@ -30,9 +30,9 @@
 
 - **Feature**: `.specs/features/govbr-design-system`
 - **Phase / Task**: Execute, Phase 2. `tasks.md` aprovada por Jaline em 2026-09-19 (57 tasks, execução inline, sem sub-agentes de lote)
-- **Completed**: T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41
+- **Completed**: T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42
 - **In-progress** (file:line): none
-- **Next step**: T42 (dropdown, botão Limpar Filtros e painel de filtros)
+- **Next step**: T43 (aviso sem correção PNP em `br-message`)
 - **Blockers**: T53 (Font Awesome) ainda pede autorização de rede; Rawline (T54) liberada por Jaline para baixar. T57 exige teste de Jaline em celular real
 - **Uncommitted files**: none da feature (fora de escopo e sem stage: `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/`)
 - **Branch**: migracao-dash-gov-br

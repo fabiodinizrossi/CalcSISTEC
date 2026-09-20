@@ -130,3 +130,43 @@ def test_filtros_de_opcao_exclusiva_sao_br_radio_sem_classe_btn_do_bootstrap(com
     assert "br-radio" in radio.className.split()
     assert not [c for c in classes(componente) if c == "btn" or c.startswith("btn-")]
     exigir_sem_componente_do_ds_que_precisa_de_js(componente)
+
+
+from app.components.filters import TODOS, clear_filters_button, filter_panel, select_filter
+
+
+def test_botao_limpar_filtros_e_html_button_br_button_primary_com_id_e_n_clicks():
+    botao = clear_filters_button("matriculas-limpar")
+    assert type(botao).__module__.startswith("dash.html")
+    assert botao.id == "matriculas-limpar"
+    assert botao.n_clicks == 0
+    assert {"br-button", "primary"} <= set(botao.className.split())
+    assert "Limpar Filtros" in textos(botao)
+
+
+def test_select_filter_mantem_todos_como_valor_padrao_sem_limpar_e_com_a_opcao_todos():
+    dropdown = [c for c in componentes(select_filter("f", "Campus", ["Alegrete", "Jaguari"])) if type(c).__name__ == "Dropdown"][0]
+    assert dropdown.id == "f"
+    assert dropdown.value == TODOS
+    assert dropdown.clearable is False
+    assert dropdown.options == [
+        {"label": "Todos", "value": TODOS},
+        {"label": "Alegrete", "value": "Alegrete"},
+        {"label": "Jaguari", "value": "Jaguari"},
+    ]
+
+
+def test_select_filter_nao_usa_br_select_e_tem_classe_propria_no_dropdown():
+    componente = select_filter("f", "Campus", ["Alegrete"])
+    exigir_sem_componente_do_ds_que_precisa_de_js(componente)
+    dropdown = [c for c in componentes(componente) if type(c).__name__ == "Dropdown"][0]
+    assert "filtro-dropdown" in dropdown.className.split()
+
+
+def test_filter_panel_e_uma_row_com_cada_campo_em_coluna_que_comeca_em_col_12():
+    painel = filter_panel(select_filter("a", "A", []), select_filter("b", "B", []), fic_toggle("c"))
+    assert "row" in painel.className.split()
+    assert len(painel.children) == 3
+    for coluna in painel.children:
+        assert "col-12" in coluna.className.split()
+    assert [coluna.children.children[1].id for coluna in painel.children] == ["a", "b", "c"]

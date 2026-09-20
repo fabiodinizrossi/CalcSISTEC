@@ -68,6 +68,7 @@ def select_filter(id_, label, opcoes):
                 options=[{"label": "Todos", "value": TODOS}] + [{"label": str(o), "value": str(o)} for o in opcoes],
                 value=TODOS,
                 clearable=False,
+                className="filtro-dropdown",
             ),
         ],
         className="filter-item",
@@ -75,9 +76,9 @@ def select_filter(id_, label, opcoes):
 
 
 def filter_panel(*campos):
-    return html.Div(list(campos), className="filter-panel")
+    return html.Div([html.Div(campo, className="col-12 col-md-6 col-lg-4") for campo in campos], className="row filter-panel")
 
 
 def clear_filters_button(id_):
     """BR-MIGRAR-023: callback "Limpar Filtros" por página."""
-    return dbc.Button("Limpar Filtros", id=id_, className="btn-primary-gov")
+    return html.Button("Limpar Filtros", id=id_, n_clicks=0, className="br-button primary")

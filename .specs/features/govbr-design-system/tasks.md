@@ -1267,10 +1267,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `clear_filters_button("id")` tem `id="id"`, `n_clicks` e classes `br-button primary`, sem `dbc.Button`
-- [ ] `select_filter` mantém `value=TODOS`, `clearable=False` e a opção "Todos"; nenhum `br-select`
-- [ ] `filter_panel` devolve `div.row` com cada campo em coluna que começa em `col-12`
-- [ ] Testes em `tests/test_componentes_publicos.py`; gate quick passa
+- [x] `clear_filters_button("id")` tem `id="id"`, `n_clicks` e classes `br-button primary`, sem `dbc.Button`
+- [x] `select_filter` mantém `value=TODOS`, `clearable=False` e a opção "Todos"; nenhum `br-select`
+- [x] `filter_panel` devolve `div.row` com cada campo em coluna que começa em `col-12`
+- [x] Testes em `tests/test_componentes_publicos.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick
