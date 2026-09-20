@@ -93,10 +93,18 @@ def test_foco_visivel_tem_contorno_de_ao_menos_3px_na_cor_de_foco_do_ds():
     assert largura >= 3
 
 
-def test_menu_fica_persistente_a_partir_de_992px():
+def test_menu_fica_persistente_e_aberto_a_partir_de_992px():
     bloco = _bloco_media("@media (min-width: 992px)")
-    assert re.search(r"\.br-menu \.menu-container\s*\{\s*display:\s*block", bloco)
-    assert re.search(r"\.header-menu-trigger", bloco)
+    assert re.search(r"\.br-menu \.menu-container, \.br-menu\.active \.menu-container\s*\{[^}]*display:\s*block", bloco)
+
+
+def test_a_partir_de_992px_o_botao_do_cabecalho_continua_visivel_e_recolhe_o_menu():
+    bloco = _bloco_media("@media (min-width: 992px)")
+    for seletores, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", bloco):
+        if "display: none" in corpo:
+            assert "header-menu-trigger" not in seletores, seletores
+    recolhido = _regra(".br-menu.menu-recolhido .menu-container", bloco)
+    assert "display: none" in recolhido
 
 
 def test_sem_js_o_menu_fica_sempre_visivel():
@@ -137,3 +145,7 @@ def test_botao_do_ds_quebra_o_rotulo_em_vez_de_estourar_a_largura():
     assert "max-width: 100%" in corpo
     assert "white-space: normal" in corpo
     assert "min-height: var(--button-size)" in corpo
+
+
+def test_style_css_nao_redefine_as_classes_de_grade_row_e_col_do_ds():
+    assert not re.search(r"(?m)^\s*\.(?:row|col(?:-[\w-]+)?)\s*[,{]", SEM_COMENTARIOS)

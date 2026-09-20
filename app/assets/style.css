@@ -81,13 +81,14 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
   outline-offset: var(--spacing-scale-half);
 }
 
-/* ---- Menu: persistente a partir de 992px, sobreposto (botão do cabeçalho) abaixo disso ---- */
+/* ---- Menu: persistente e aberto a partir de 992px (o botão do cabeçalho o recolhe e mostra), sobreposto abaixo disso ---- */
 
 @media (min-width: 992px){
-  .br-menu .menu-container{ display: block; }
+  .br-menu .menu-container, .br-menu.active .menu-container{ display: block; position: static; }
+  .br-menu.menu-recolhido .menu-container, .br-menu.menu-recolhido.active .menu-container{ display: none; }
   .br-menu .menu-panel{ height: auto; flex-direction: row; }
   .br-menu .menu-body{ display: flex; flex-wrap: wrap; }
-  .br-menu .menu-header, .br-menu .menu-scrim, .header-menu-trigger{ display: none; }
+  .br-menu .menu-header, .br-menu .menu-scrim{ display: none; }
 }
 
 /* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */

@@ -184,7 +184,7 @@ def test_pagina_dash_mantem_entrada_config_scripts_e_renderer_com_a_entrada_no_m
     assert re.search(r'<main id="main-content"[^>]*>.*CONTEUDO-DASH.*</main>', html, re.S)
 
 
-def test_pagina_dash_carrega_core_min_css_e_js_uma_vez_e_style_css_uma_vez_mesmo_com_o_css_do_dash():
+def test_pagina_dash_carrega_o_css_e_o_js_do_ds_uma_vez_e_style_css_uma_vez_mesmo_com_o_css_do_dash():
     import re
 
     css = '<link rel="stylesheet" href="/assets/style.css?m=1700000000.0">'

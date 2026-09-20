@@ -216,7 +216,7 @@ aparência por ordem de arquivos e a página não baixa centenas de arquivos.
 
 1. The system SHALL servir o gov.br DS 3.7.0 a partir de `app/assets/govbr-ds/`, sem dependência de CDN.  <!-- ubiquitous -->
 2. The system SHALL carregar `core.min.css` exatamente uma vez por página, pública ou administrativa.  <!-- ubiquitous -->
-3. The system SHALL carregar `core.min.js` exatamente uma vez por página, pública ou administrativa.  <!-- ubiquitous -->
+3. The system SHALL carregar `core-init.min.js` (o script do DS que também instancia os componentes, AD-004) exatamente uma vez por página, pública ou administrativa.  <!-- ubiquitous -->
 4. The system SHALL usar, em conteúdo renderizado pelo Dash, apenas componentes do DS que funcionam sem JavaScript.  <!-- ubiquitous -->
 5. The system SHALL NOT carregar arquivos individuais de `dist/components/` nem versões não minificadas dos bundles do DS.  <!-- ubiquitous -->
 6. The system SHALL definir em `app/assets/style.css` apenas regras que o DS não cobre, sem cores hexadecimais literais e sem `@media` de largura fora dos pontos de quebra do DS (`prefers-color-scheme` é permitido).  <!-- ubiquitous -->
@@ -355,7 +355,7 @@ Edge cases are usually unwanted-behavior (IF/THEN) or boundary (WHEN) criteria:
 - IF um medidor ou aviso usar cor de estado (verde, vermelho, amarelo) THEN the system SHALL manter o rótulo textual legível no tema escuro (ver DS-35).
 - IF não houver campus cadastrado THEN the system SHALL exibir `br-message` do tipo `info` convidando a importar a lista de perfis ou incluir um campus.
 - IF o usuário abrir a tela de edição de um campus que foi excluído em outra aba THEN the system SHALL voltar à lista com `br-message` do tipo `danger` "Campus não encontrado.".
-- IF `core.min.js` não carregar THEN the system SHALL manter os links de navegação visíveis e acionáveis, sem menu preso fechado.
+- IF `core-init.min.js` não carregar THEN the system SHALL manter os links de navegação visíveis e acionáveis, sem menu preso fechado.
 - IF a tabela de campi tiver mais colunas do que cabem em 320px THEN the system SHALL rolar só o contêiner da tabela (ver AC 8 da primeira história).
 - WHEN o usuário amplia o zoom para 200% em uma tela de 1280px THEN the system SHALL se comportar como em 640px, sem perda de conteúdo nem rolagem horizontal da página.
 - WHEN a orientação do aparelho muda entre retrato e paisagem THEN the system SHALL reorganizar o layout sem recarregar a página.

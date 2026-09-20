@@ -515,3 +515,32 @@ def test_busca_e_paginacao_continuam_valendo_nos_cards(cliente_autenticado, vint
     href = html_lib.unescape(re.search(r'href="([^"]+)"', _botao(padrao, "Próxima página")).group(1))
     assert parse_qs(urlparse(href).query)["visao"] == ["cards"]
     assert 'name="visao" value="cards"' in padrao
+
+
+def test_campos_do_formulario_de_campus_ocupam_a_linha_toda_no_celular_e_metade_a_partir_de_768px(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi/8278857/editar").get_data(as_text=True)
+    colunas = re.findall(r'<div class="([^"]*col-[^"]*)">\s*<div class="br-input', html)
+    assert len(colunas) == 4
+    for classes_da_coluna in colunas:
+        assert {"col-12", "col-md-6"} <= set(classes_da_coluna.split())
+
+
+def test_cada_linha_liga_editar_ao_href_certo_e_desativar_reativar_e_excluir_aos_actions_certos(cliente_autenticado, tres_campi):
+    linhas = _linhas(cliente_autenticado.get("/admin/campi").get_data(as_text=True))
+    alegrete, _, inativo = linhas
+    assert re.search(r'<a\b[^>]*href="/admin/campi/8278857/editar"[^>]*aria-label="Editar campus Perfil Alegrete"', alegrete)
+    desativar = re.search(r'<form\b[^>]*action="/admin/campi/8278857/situacao"[^>]*>.*?</form>', alegrete, re.S).group(0)
+    assert re.search(r'<button\b[^>]*name="ativo"[^>]*value="0"', desativar)
+    reativar = re.search(r'<form\b[^>]*action="/admin/campi/8278859/situacao"[^>]*>.*?</form>', inativo, re.S).group(0)
+    assert re.search(r'<button\b[^>]*name="ativo"[^>]*value="1"', reativar)
+    assert re.search(r'<form\b[^>]*action="/admin/campi/8278857/excluir"', alegrete)
+
+
+def test_cada_card_liga_as_acoes_aos_mesmos_destinos_da_linha(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi?visao=cards").get_data(as_text=True)
+    cards = re.findall(r'<div class="br-card">.*?<div class="card-footer">.*?</div>\s*</div>\s*</div>', html, re.S)
+    alegrete, _, inativo = cards
+    assert 'href="/admin/campi/8278857/editar"' in alegrete
+    assert re.search(r'action="/admin/campi/8278857/situacao".*?name="ativo"[^>]*value="0"', alegrete, re.S)
+    assert re.search(r'action="/admin/campi/8278859/situacao".*?name="ativo"[^>]*value="1"', inativo, re.S)
+    assert 'action="/admin/campi/8278857/excluir"' in alegrete

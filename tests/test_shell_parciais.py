@@ -208,7 +208,7 @@ def scripts(servidor):
     return renderizar(servidor, "shell/_scripts.html")
 
 
-def test_scripts_carrega_core_min_js_uma_vez(servidor):
+def test_scripts_carrega_o_script_do_ds_uma_vez(servidor):
     html = scripts(servidor)
     assert len(re.findall(r'<script\b[^>]*src="/ds/govbr-ds/dist/core-init.min.js"', html)) == 1
 
@@ -338,3 +338,14 @@ def test_botao_de_icone_escapa_o_texto_de_confirmacao(servidor):
     html = macro(servidor, '{{ botao_icone("trash", "Excluir", tipo="submit", confirmar="Excluir \\"A&B\\"?", rotulo_confirmar="Excluir") }}')
     assert 'data-confirm="Excluir &#34;A&amp;B&#34;?"' in html
     assert 'data-confirm-rotulo="Excluir"' in html
+
+
+def test_botoes_do_formulario_empilham_abaixo_de_576px_e_alinham_a_direita_depois(servidor):
+    html = macro(servidor, '{{ botoes_formulario("/admin/campi", "Salvar") }}')
+    conteiner = re.search(r'<div class="([^"]*)">\s*<a\b', html).group(1).split()
+    assert {"d-flex", "flex-column", "flex-sm-row", "justify-content-sm-end"} <= set(conteiner)
+
+
+def test_head_define_o_tema_antes_de_qualquer_folha_de_estilo_para_nao_piscar(servidor):
+    html = renderizar(servidor, "shell/_head.html", titulo="Início")
+    assert html.index("<script>") < html.index('rel="stylesheet"')

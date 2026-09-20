@@ -236,7 +236,7 @@ class PaginaCampi(TypedDict):
 | Decision | Choice | Rationale |
 | -------- | ------ | --------- |
 | Onde fica o DS | `app/static/govbr-ds/`, URL `/ds/govbr-ds/`, fora de `app/assets/` | O Dash carrega recursivamente tudo de `assets/`; fora dele o shell controla o que carrega |
-| Qual JS do DS | `core.min.js` (inicializa os componentes na carga) | `core.min.js` e `core-init.min.js` inicializam sozinhos e têm o mesmo tamanho (cerca de 232 KB); `core-base.js` exporta as classes sem inicializar, mas não existe versão `.min`, o que violaria DS-28. O shell existe na carga, então a inicialização única basta |
+| Qual JS do DS | `core-init.min.js` (AD-004; a premissa inicial de que `core.min.js` inicializava os componentes estava errada, e a verificação no Chrome mostrou que o menu não abria) | `core-init.min.js` instancia os componentes na carga; `core.min.js` só registra os comportamentos. Os dois têm o mesmo tamanho (cerca de 232 KB); `core-base.js` exporta as classes sem inicializar, mas não existe versão `.min`, o que violaria DS-28. O shell existe na carga, então a inicialização única basta |
 | Como o Dash recebe o shell | Subclasse `PainelDash` com `interpolate_index` | API pública do Dash; deixa o `<html>`, o `<head>` e o `<main>` sob controle do shell |
 | Tema | `data-tema` em `<html>` e remapeamento dos tokens semânticos `-dark` do DS | O DS 3.7.0 não tem tema global; os tokens já trazem os pares claro e escuro |
 | Onde roda busca e paginação de campi | No servidor, por parâmetros de URL | Testável com `test_client`, sem JS; cerca de 22 linhas |

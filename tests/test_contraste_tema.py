@@ -62,3 +62,9 @@ def test_o_tema_escuro_troca_o_fundo_e_o_texto_pelos_pares_dark_do_ds():
 
 def test_contraste_calcula_o_valor_conhecido_de_preto_sobre_branco():
     assert round(contraste("#000", "#fff"), 1) == 21.0
+
+
+@pytest.mark.parametrize("tema", TEMAS)
+def test_texto_tem_contraste_de_ao_menos_4_5_para_1_sobre_o_fundo_alternativo_de_cartoes_e_mensagens(tema):
+    sobre = TEMAS[tema]
+    assert contraste(_resolver("--color", sobre), _resolver("--background-alternative", sobre)) >= 4.5
