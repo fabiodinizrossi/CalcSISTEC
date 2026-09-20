@@ -432,9 +432,9 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
 | DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
 | DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | In Tasks |
-| DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | In Tasks |
+| DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | Implementing |
 | DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | In Tasks |
-| DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | In Tasks |
+| DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | Implementing |
 | DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | Implementing |
 | DS-67          | P1: CRUD de campi (AC 6, campos com rótulo visível) | Design | In Tasks |
 | DS-68          | P1: CRUD de campi (AC 7, Cancelar e Salvar) | Design | In Tasks |

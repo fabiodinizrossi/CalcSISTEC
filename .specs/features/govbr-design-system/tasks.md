@@ -897,9 +897,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `tag_situacao(True)` mostra o texto "Ativo" e `tag_situacao(False)` mostra "Desativado", ambos em `br-tag` (a situação não depende só da cor)
-- [ ] `botao_icone` renderiza `<button>` com `aria-label` igual ao rótulo, ícone com `aria-hidden="true"` e área mínima definida por classe do DS
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] `tag_situacao(True)` mostra o texto "Ativo" e `tag_situacao(False)` mostra "Desativado", ambos em `br-tag` (a situação não depende só da cor)
+- [x] `botao_icone` renderiza `<button>` com `aria-label` igual ao rótulo, ícone com `aria-hidden="true"` e área mínima definida por classe do DS
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick

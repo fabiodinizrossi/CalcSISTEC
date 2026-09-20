@@ -274,7 +274,7 @@ def test_modal_renderiza_fechado(servidor):
 
 def macro(servidor, chamada):
     with servidor.test_request_context("/"):
-        return render_template_string('{% from "shell/_macros.html" import campo, mensagem, botoes_formulario %}' + chamada)
+        return render_template_string('{% from "shell/_macros.html" import campo, mensagem, botoes_formulario, tag_situacao, botao_icone %}' + chamada)
 
 
 def test_campo_com_erro_fica_em_danger_com_texto_abaixo_ligado_por_aria_describedby(servidor):
@@ -311,3 +311,30 @@ def test_botoes_do_formulario_tem_cancelar_secundario_antes_de_salvar_primario(s
     salvar = re.search(r'<button\b[^>]*class="br-button primary[^"]*"[^>]*type="submit"[^>]*>\s*Salvar\s*</button>', html)
     assert cancelar and salvar
     assert cancelar.start() < salvar.start()
+
+
+def test_tag_de_situacao_mostra_o_texto_em_br_tag(servidor):
+    ativo = macro(servidor, "{{ tag_situacao(True) }}")
+    desativado = macro(servidor, "{{ tag_situacao(False) }}")
+    assert re.search(r'<span class="br-tag">\s*Ativo\s*</span>', ativo)
+    assert re.search(r'<span class="br-tag">\s*Desativado\s*</span>', desativado)
+
+
+def test_botao_de_icone_tem_nome_acessivel_icone_escondido_e_area_minima_do_ds(servidor):
+    html = macro(servidor, '{{ botao_icone("edit", "Editar campus Perfil A") }}')
+    botao = re.search(r"<button\b[^>]*>", html).group(0)
+    assert 'aria-label="Editar campus Perfil A"' in botao
+    assert re.search(r'class="br-button circle"', botao)
+    assert re.search(r'<i\b[^>]*aria-hidden="true"', html)
+
+
+def test_botao_de_icone_com_href_vira_link_com_o_mesmo_nome_acessivel(servidor):
+    html = macro(servidor, '{{ botao_icone("edit", "Editar campus Perfil A", href="/admin/campi/1/editar") }}')
+    assert re.search(r'<a\b[^>]*href="/admin/campi/1/editar"[^>]*aria-label="Editar campus Perfil A"', html)
+    assert "<button" not in html
+
+
+def test_botao_de_icone_escapa_o_texto_de_confirmacao(servidor):
+    html = macro(servidor, '{{ botao_icone("trash", "Excluir", tipo="submit", confirmar="Excluir \\"A&B\\"?", rotulo_confirmar="Excluir") }}')
+    assert 'data-confirm="Excluir &#34;A&amp;B&#34;?"' in html
+    assert 'data-confirm-rotulo="Excluir"' in html
