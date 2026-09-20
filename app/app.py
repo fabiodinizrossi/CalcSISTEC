@@ -548,41 +548,6 @@ def admin_config():
                 except execucoes.ExecucaoInvalida as exc:
                     contexto["mensagem_campi"] = str(exc)
 
-        elif acao == "salvar_campus":
-            try:
-                campi.salvar_campus_manual(
-                    flask.request.form.get("id_perfil", ""),
-                    flask.request.form.get("co_unidade", "").strip() or None,
-                    flask.request.form.get("cidade", "").strip() or None,
-                    flask.request.form.get("nome_unidade", "").strip() or None,
-                    DEFAULT_DB_PATH,
-                    novo_id_perfil=flask.request.form.get("novo_id_perfil", "").strip() or None,
-                )
-                contexto["mensagem_campi"] = "Campus atualizado."
-            except campi.CampusInvalido as exc:
-                contexto["mensagem_campi"] = f"Não foi possível salvar: {exc}."
-            contexto["campi"] = listar_campi()
-
-        elif acao == "incluir_campus":
-            id_perfil = flask.request.form.get("id_perfil", "").strip()
-            nome_perfil = flask.request.form.get("nome_perfil", "").strip()
-            if not id_perfil or not nome_perfil:
-                contexto["mensagem_campi"] = "Informe o identificador e o nome do perfil."
-            else:
-                try:
-                    campi.incluir_campus(
-                        id_perfil,
-                        nome_perfil,
-                        flask.request.form.get("co_unidade", "").strip() or None,
-                        flask.request.form.get("cidade", "").strip() or None,
-                        flask.request.form.get("nome_unidade", "").strip() or None,
-                        DEFAULT_DB_PATH,
-                    )
-                    contexto["mensagem_campi"] = "Campus incluído."
-                except campi.CampusInvalido as exc:
-                    contexto["mensagem_campi"] = f"Não foi possível incluir: {exc}."
-            contexto["campi"] = listar_campi()
-
         elif acao == "salvar_qtd_perfis":
             qtd = flask.request.form.get("qtd_perfis", "").strip()
             if qtd and not qtd.isdigit():
@@ -627,20 +592,6 @@ def admin_config():
             # instituição: volta ao estado de instalação nova.
             instalacao.resetar(DEFAULT_DB_PATH, apagar_dados=flask.request.form.get("apagar_dados") == "1")
             return flask.redirect("/admin/instalacao")
-
-        elif acao in ("ativar_campus", "desativar_campus"):
-            ativar = acao == "ativar_campus"
-            campi.definir_ativo(flask.request.form.get("id_perfil", ""), ativar, DEFAULT_DB_PATH)
-            contexto["mensagem_campi"] = (
-                "Campus reativado: volta a ser baixado." if ativar
-                else "Campus desativado: deixa de ser baixado nas próximas atualizações."
-            )
-            contexto["campi"] = listar_campi()
-
-        elif acao == "excluir_campus":
-            campi.excluir_campus(flask.request.form.get("id_perfil", ""), DEFAULT_DB_PATH)
-            contexto["mensagem_campi"] = "Perfil excluído da lista."
-            contexto["campi"] = listar_campi()
 
         elif acao == "salvar_fator":
             linhas_atuais = fatores.ler_fatores_atuais("interna_fatores", DEFAULT_DB_PATH)

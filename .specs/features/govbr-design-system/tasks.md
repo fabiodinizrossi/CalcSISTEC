@@ -1139,9 +1139,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `POST /admin/config` com `acao=salvar_campus`, `incluir_campus`, `excluir_campus`, `ativar_campus` ou `desativar_campus` não altera nenhum campus no banco temporário
-- [ ] Ações restantes seguem funcionando: `salvar_qtd_perfis` grava o valor e `importar_perfis` importa uma linha válida
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa (suíte existente de fatores e e-mail sem alteração)
+- [x] `POST /admin/config` com `acao=salvar_campus`, `incluir_campus`, `excluir_campus`, `ativar_campus` ou `desativar_campus` não altera nenhum campus no banco temporário
+- [x] Ações restantes seguem funcionando: `salvar_qtd_perfis` grava o valor e `importar_perfis` importa uma linha válida
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa (suíte existente de fatores e e-mail sem alteração)
 
 **Tests**: integration
 **Gate**: full

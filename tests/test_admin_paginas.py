@@ -282,3 +282,60 @@ def test_mensagem_do_logotipo_aparece_em_br_message(cliente_autenticado, monkeyp
 def test_mensagem_dos_fatores_aparece_em_br_message(cliente_autenticado):
     html = cliente_autenticado.post("/admin/config", data={"acao": "enviar_fatores"}).get_data(as_text=True)
     assert re.search(r'class="br-message danger"[^>]*role="alert".*Selecione um arquivo de fatores \(\.xlsx\)\.', html, re.S)
+
+
+@pytest.fixture
+def banco_temporario(tmp_path, monkeypatch):
+    from app.data.schema import init_db
+
+    caminho = str(tmp_path / "config.db")
+    init_db(caminho)
+    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
+    return caminho
+
+
+def _campi_do_banco(caminho):
+    from app.data import campi as dados_campi
+
+    return dados_campi.listar_campi(caminho)
+
+
+@pytest.mark.parametrize(
+    "acao",
+    ["salvar_campus", "incluir_campus", "excluir_campus", "ativar_campus", "desativar_campus"],
+)
+def test_acoes_de_campus_sairam_de_admin_config(cliente_autenticado, banco_temporario, acao):
+    from app.data import campi as dados_campi
+
+    dados_campi.incluir_campus("8278857", "Perfil A", "101", "A", "Campus A", banco_temporario)
+    antes = _campi_do_banco(banco_temporario)
+    cliente_autenticado.post(
+        "/admin/config",
+        data={
+            "acao": acao,
+            "id_perfil": "8278857",
+            "novo_id_perfil": "8279999",
+            "nome_perfil": "Outro",
+            "co_unidade": "999",
+            "cidade": "Outra",
+            "nome_unidade": "Outro campus",
+        },
+    )
+    assert _campi_do_banco(banco_temporario) == antes
+
+
+def test_salvar_qtd_perfis_continua_gravando_o_valor(cliente_autenticado, banco_temporario, monkeypatch):
+    gravado = []
+    monkeypatch.setattr(app_module, "set_qtd_perfis", gravado.append)
+    monkeypatch.setattr(app_module, "get_qtd_perfis", lambda: gravado[-1] if gravado else "")
+    html = cliente_autenticado.post("/admin/config", data={"acao": "salvar_qtd_perfis", "qtd_perfis": "18"}).get_data(as_text=True)
+    assert gravado == ["18"]
+    assert "Quantidade de perfis salva." in html
+
+
+def test_importar_perfis_continua_importando_uma_linha_valida(cliente_autenticado, banco_temporario):
+    cliente_autenticado.post(
+        "/admin/config", data={"acao": "importar_perfis", "lista_perfis": "8278860 ; ASSESSOR - IF EXEMPLO - CAMPUS X"}
+    )
+    campi_gravados = _campi_do_banco(banco_temporario)
+    assert [c["id_perfil"] for c in campi_gravados] == ["8278860"]
