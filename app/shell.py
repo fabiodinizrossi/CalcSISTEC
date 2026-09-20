@@ -2,8 +2,10 @@
 menu, breadcrumb e rodapé compartilhados por páginas Flask e Dash."""
 
 import os
+import re
 
-from flask import Blueprint, request
+import dash
+from flask import Blueprint, render_template, request
 
 from app.data.config_store import dados_instituicao, get_contato_email
 
@@ -65,6 +67,27 @@ def contexto_shell(caminho):
         "instituicao": {chave: _texto(valor) for chave, valor in dados_instituicao().items()},
         "contato_email": _texto(get_contato_email()),
     }
+
+
+class PainelDash(dash.Dash):
+    """Dash cujo HTML inicial é o shell do painel: cabeçalho, menu, breadcrumb e
+    rodapé vêm dos parciais Jinja, e o Dash renderiza só o conteúdo de `<main>`."""
+
+    def interpolate_index(
+        self, metas="", title="", css="", config="", scripts="", app_entry="", favicon="", renderer=""
+    ):
+        # O parcial `_head.html` já carrega o style.css; o do Dash seria o segundo.
+        css = re.sub(r'<link\b[^>]*style\.css[^>]*>', '', css)
+        return render_template(
+            "shell/_pagina_dash.html",
+            titulo_dash=title,
+            favicon=favicon,
+            css_dash=css,
+            app_entry=app_entry,
+            config=config,
+            scripts=scripts,
+            renderer=renderer,
+        )
 
 
 def init_shell(server, dash_app):

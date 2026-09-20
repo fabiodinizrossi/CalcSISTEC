@@ -133,3 +133,66 @@ def test_rota_que_ja_passa_instituicao_e_contato_mantem_os_valores_dela():
             "{{ instituicao.nome }}|{{ contato_email }}", instituicao={"nome": "Da rota"}, contato_email="rota@x.br"
         )
     assert html == "Da rota|rota@x.br"
+
+
+ENTRADA = '<div id="react-entry-point">CONTEUDO-DASH</div>'
+CONFIG = '<script id="_dash-config" type="application/json">CFG-DASH</script>'
+SCRIPTS = '<script src="/_dash-component-suites/dash/dash-renderer.js"></script>'
+RENDERER = "<script>var renderer = new DashRenderer();</script>"
+
+
+def montar_pagina_dash(caminho, css=""):
+    from app import app as app_module
+
+    with app_module.server.test_request_context(caminho):
+        return shell.PainelDash.interpolate_index(
+            None,
+            metas='<meta charset="UTF-8">',
+            title="Matrículas - Pesquisa Institucional - SISTEC",
+            css=css,
+            config=CONFIG,
+            scripts=SCRIPTS,
+            app_entry=ENTRADA,
+            favicon='<link rel="icon" type="image/x-icon" href="/_favicon.ico">',
+            renderer=RENDERER,
+        )
+
+
+def test_painel_dash_e_um_dash():
+    import dash
+
+    assert issubclass(shell.PainelDash, dash.Dash)
+
+
+def test_pagina_dash_traz_o_shell_e_marca_o_item_da_pagina_atual():
+    import re
+
+    html = montar_pagina_dash("/matriculas")
+    assert '<html lang="pt-BR"' in html
+    assert 'class="br-header"' in html
+    assert 'class="br-footer"' in html
+    com_aria = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">(.*?)</span>', html, re.S)
+    assert [rotulo.strip() for rotulo in com_aria] == ["Matrículas"]
+
+
+def test_pagina_dash_mantem_entrada_config_scripts_e_renderer_com_a_entrada_no_main():
+    import re
+
+    html = montar_pagina_dash("/matriculas")
+    for parte in (ENTRADA, CONFIG, SCRIPTS, RENDERER):
+        assert parte in html
+    assert re.search(r'<main id="main-content"[^>]*>.*CONTEUDO-DASH.*</main>', html, re.S)
+
+
+def test_pagina_dash_carrega_core_min_css_e_js_uma_vez_e_style_css_uma_vez_mesmo_com_o_css_do_dash():
+    import re
+
+    css = '<link rel="stylesheet" href="/assets/style.css?m=1700000000.0">'
+    html = montar_pagina_dash("/matriculas", css=css)
+    assert len(re.findall(r"core\.min\.css", html)) == 1
+    assert len(re.findall(r"core\.min\.js", html)) == 1
+    assert len(re.findall(r"style\.css", html)) == 1
+
+
+def test_pagina_dash_nao_carrega_folha_do_bootstrap():
+    assert "bootstrap" not in montar_pagina_dash("/matriculas").lower()

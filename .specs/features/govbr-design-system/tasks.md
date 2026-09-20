@@ -555,10 +555,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Chamado em `server.test_request_context("/matriculas")`, o HTML tem `lang="pt-BR"`, `br-header`, item "Matrículas" com `aria-current="page"`, `br-footer`, e `app_entry`, `config`, `scripts` e `renderer` presentes; `app_entry` dentro de `<main id="main-content">`
-- [ ] 1 `core.min.css` e 1 `core.min.js`; `style.css` aparece 1 vez mesmo quando o argumento `css` também o traz
-- [ ] Sem folha do Bootstrap
-- [ ] Testes em `tests/test_shell.py`; gate quick passa
+- [x] Chamado em `server.test_request_context("/matriculas")`, o HTML tem `lang="pt-BR"`, `br-header`, item "Matrículas" com `aria-current="page"`, `br-footer`, e `app_entry`, `config`, `scripts` e `renderer` presentes; `app_entry` dentro de `<main id="main-content">`
+- [x] 1 `core.min.css` e 1 `core.min.js`; `style.css` aparece 1 vez mesmo quando o argumento `css` também o traz
+- [x] Sem folha do Bootstrap
+- [x] Testes em `tests/test_shell.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

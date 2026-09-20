@@ -1,0 +1,4 @@
+{% extends "_base.html" %}
+{% block title %}{{ titulo_dash }}{% endblock %}
+{% block extra_head %}{{ favicon|safe }}{{ css_dash|safe }}{% endblock %}
+{% block content %}{{ app_entry|safe }}{{ config|safe }}{{ scripts|safe }}{{ renderer|safe }}{% endblock %}
