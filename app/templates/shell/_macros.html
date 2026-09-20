@@ -1,0 +1,36 @@
+{% macro campo(nome, rotulo, valor="", erro=None, ajuda=None, obrigatorio=False, tipo="text") %}
+{% set descrito = [] %}
+{% if erro %}{% set _ = descrito.append(nome ~ "-erro") %}{% endif %}
+{% if ajuda %}{% set _ = descrito.append(nome ~ "-ajuda") %}{% endif %}
+<div class="br-input{% if erro %} danger{% endif %}">
+  <label for="{{ nome }}">{{ rotulo }}</label>
+  <input type="{{ tipo }}" id="{{ nome }}" name="{{ nome }}" value="{{ valor or '' }}"
+         {%- if obrigatorio %} required{% endif %}
+         {%- if erro %} aria-invalid="true"{% endif %}
+         {%- if descrito %} aria-describedby="{{ descrito|join(' ') }}"{% endif %}>
+  {% if ajuda %}<span class="text-down-01" id="{{ nome }}-ajuda">{{ ajuda }}</span>{% endif %}
+  {% if erro %}
+  <span class="feedback danger" role="alert" id="{{ nome }}-erro">
+    <i class="fas fa-times-circle" aria-hidden="true"></i>{{ erro }}
+  </span>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro mensagem(tipo, texto, titulo=None) %}
+{% set icones = {"success": "fa-check-circle", "danger": "fa-times-circle", "info": "fa-info-circle", "warning": "fa-exclamation-triangle"} %}
+<div class="br-message {{ tipo }}" role="{{ 'alert' if tipo in ('success', 'danger') else 'status' }}">
+  <div class="icon"><i class="fas {{ icones[tipo] }} fa-lg" aria-hidden="true"></i></div>
+  <div class="content">
+    {% if titulo %}<span class="message-title">{{ titulo }}</span>{% endif %}
+    <span class="message-body">{{ texto }}</span>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro botoes_formulario(cancelar_href, rotulo_salvar) %}
+<div class="d-flex flex-column flex-sm-row justify-content-sm-end mt-4">
+  <a class="br-button secondary mb-2 mb-sm-0 mr-sm-2" href="{{ cancelar_href }}">Cancelar</a>
+  <button class="br-button primary" type="submit">{{ rotulo_salvar }}</button>
+</div>
+{% endmacro %}

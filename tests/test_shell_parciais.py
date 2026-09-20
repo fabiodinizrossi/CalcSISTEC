@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from flask import render_template
+from flask import render_template, render_template_string
 
 from app import app as app_module
 from app import shell as shell_modulo
@@ -271,3 +271,44 @@ def test_modal_renderiza_fechado(servidor):
     scrim = re.search(r'<div\b[^>]*class="br-scrim[^"]*"[^>]*>', modal(servidor)).group(0)
     assert "foco" in scrim
     assert not re.search(r'class="[^"]*\bactive\b', scrim)
+
+
+def macro(servidor, chamada):
+    with servidor.test_request_context("/"):
+        return render_template_string('{% from "shell/_macros.html" import campo, mensagem, botoes_formulario %}' + chamada)
+
+
+def test_campo_com_erro_fica_em_danger_com_texto_abaixo_ligado_por_aria_describedby(servidor):
+    html = macro(servidor, '{{ campo("co_unidade", "Código da unidade", "", erro="Preencha o campo obrigatório") }}')
+    assert re.search(r'class="br-input danger"', html)
+    assert html.index("<input") < html.index("Preencha o campo obrigatório")
+    descrito_por = re.search(r'aria-describedby="([^"]+)"', html).group(1)
+    assert re.search(rf'id="{re.escape(descrito_por)}"[^>]*>[^<]*(<[^>]+>\s*)*Preencha o campo obrigatório', html, re.S)
+
+
+def test_campo_sem_erro_nao_tem_aria_describedby(servidor):
+    html = macro(servidor, '{{ campo("cidade", "Cidade", "Jaguari") }}')
+    assert "aria-describedby" not in html
+    assert 'value="Jaguari"' in html
+
+
+def test_campo_tem_rotulo_visivel_acima_e_marca_obrigatorio(servidor):
+    html = macro(servidor, '{{ campo("cidade", "Cidade", "", obrigatorio=True) }}')
+    assert re.search(r'<label for="cidade">\s*Cidade', html)
+    assert html.index("<label") < html.index("<input")
+    assert re.search(r"<input\b[^>]*\brequired\b", html)
+
+
+@pytest.mark.parametrize("tipo,papel", [("success", "alert"), ("danger", "alert"), ("info", "status"), ("warning", "status")])
+def test_mensagem_usa_classe_do_tipo_e_o_papel_da_spec(servidor, tipo, papel):
+    html = macro(servidor, '{{ mensagem("' + tipo + '", "Campus atualizado.") }}')
+    assert re.search(rf'class="br-message {tipo}"[^>]*role="{papel}"|role="{papel}"[^>]*class="br-message {tipo}"', html)
+    assert "Campus atualizado." in html
+
+
+def test_botoes_do_formulario_tem_cancelar_secundario_antes_de_salvar_primario(servidor):
+    html = macro(servidor, '{{ botoes_formulario("/admin/campi", "Salvar") }}')
+    cancelar = re.search(r'<a\b[^>]*class="br-button secondary[^"]*"[^>]*href="/admin/campi"[^>]*>\s*Cancelar\s*</a>', html)
+    salvar = re.search(r'<button\b[^>]*class="br-button primary[^"]*"[^>]*type="submit"[^>]*>\s*Salvar\s*</button>', html)
+    assert cancelar and salvar
+    assert cancelar.start() < salvar.start()

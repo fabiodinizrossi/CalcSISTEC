@@ -475,11 +475,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `campo` com `erro` marca o estado `danger`, mostra o texto abaixo do campo e liga o campo ao texto por `aria-describedby` com id existente; sem erro não há `aria-describedby` vazio
-- [ ] `campo` renderiza `<label for>` visível acima do input; `obrigatorio` marca o campo como obrigatório
-- [ ] `mensagem("success"|"danger", ...)` tem `role="alert"`; `info` e `warning` têm `role="status"`; tipo vira classe `br-message <tipo>`
-- [ ] `botoes_formulario` renderiza "Cancelar" (link, `secondary`) antes de "Salvar" (`primary`)
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] `campo` com `erro` marca o estado `danger`, mostra o texto abaixo do campo e liga o campo ao texto por `aria-describedby` com id existente; sem erro não há `aria-describedby` vazio
+- [x] `campo` renderiza `<label for>` visível acima do input; `obrigatorio` marca o campo como obrigatório
+- [x] `mensagem("success"|"danger", ...)` tem `role="alert"`; `info` e `warning` têm `role="status"`; tipo vira classe `br-message <tipo>`
+- [x] `botoes_formulario` renderiza "Cancelar" (link, `secondary`) antes de "Salvar" (`primary`)
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick
