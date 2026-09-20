@@ -237,9 +237,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `app/assets/js/` não existe; `GET /ds/js/atualizar.js` responde 200
-- [ ] `atualizar.html` referencia `/ds/js/atualizar.js` e não `/assets/js/`
-- [ ] `tests/test_shell_assets.py` ganha os testes dos dois itens; gate full passa
+- [x] `app/assets/js/` não existe; `GET /ds/js/atualizar.js` responde 200
+- [x] `atualizar.html` referencia `/ds/js/atualizar.js` e não `/assets/js/`
+- [x] `tests/test_shell_assets.py` ganha os testes dos dois itens; gate full passa
 
 **Tests**: integration
 **Gate**: full

@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: Execute, Phase 1. `tasks.md` aprovada por Jaline em 2026-09-19 (57 tasks, execução inline, sem sub-agentes de lote)
-- **Completed**: T1, T2
+- **Phase / Task**: Execute, Phase 2. `tasks.md` aprovada por Jaline em 2026-09-19 (57 tasks, execução inline, sem sub-agentes de lote)
+- **Completed**: T1, T2, T3
 - **In-progress** (file:line): none
-- **Next step**: T3 (mover `atualizar.js` para `app/static/js/` e referenciar por `/ds/js/atualizar.js`)
+- **Next step**: T4 (contexto do shell em `app/shell.py`: `PAGINAS_PUBLICAS`, `PAGINAS_ADMIN`, `contexto_shell`)
 - **Blockers**: T53 (Font Awesome) ainda pede autorização de rede; Rawline (T54) liberada por Jaline para baixar. T57 exige teste de Jaline em celular real
 - **Uncommitted files**: none da feature (fora de escopo e sem stage: `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/`)
 - **Branch**: migracao-dash-gov-br
