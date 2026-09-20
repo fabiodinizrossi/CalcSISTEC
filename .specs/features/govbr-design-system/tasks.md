@@ -767,9 +767,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Nenhum `confirm(` nativo em `app/static/js/*.js` (regex com fronteira de palavra, ignorando `confirmarAcao(`)
-- [ ] `atualizar.js` chama `confirmarAcao` 4 vezes, com os textos de `data-confirm` dos 4 botões
-- [ ] Testes em `tests/test_js_confirmar.py`; gate quick passa
+- [x] Nenhum `confirm(` nativo em `app/static/js/*.js` (regex com fronteira de palavra, ignorando `confirmarAcao(`)
+- [x] `atualizar.js` chama `confirmarAcao` 4 vezes, com os textos de `data-confirm` dos 4 botões
+- [x] Testes em `tests/test_js_confirmar.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

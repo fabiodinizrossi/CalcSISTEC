@@ -73,3 +73,15 @@ def test_scripts_carrega_confirmar_js_uma_vez_depois_de_core_min_js():
         html = render_template("shell/_scripts.html")
     assert html.count("/ds/js/confirmar.js") == 1
     assert html.index("core.min.js") < html.index("/ds/js/confirmar.js")
+
+
+def test_nenhum_js_estatico_chama_o_confirm_nativo():
+    for arquivo in (RAIZ / "app" / "static" / "js").glob("*.js"):
+        codigo = arquivo.read_text(encoding="utf-8")
+        assert not re.search(r"(?<![\w$])(?:window\.)?confirm\s*\(", codigo), arquivo.name
+
+
+def test_atualizar_js_confirma_os_4_botoes_pelo_modal_com_o_texto_do_data_confirm():
+    codigo = (RAIZ / "app" / "static" / "js" / "atualizar.js").read_text(encoding="utf-8")
+    chamadas = re.findall(r"await confirmarAcao\(\s*(btn\w+)\.dataset\.confirm", codigo)
+    assert sorted(chamadas) == ["btnCancelar", "btnDescartar", "btnDesfazer", "btnPublicar"]

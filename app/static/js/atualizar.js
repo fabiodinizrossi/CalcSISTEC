@@ -247,7 +247,7 @@
   });
 
   btnCancelar.addEventListener("click", async () => {
-    if (!confirm(btnCancelar.dataset.confirm)) return;
+    if (!(await confirmarAcao(btnCancelar.dataset.confirm, { rotuloConfirmar: "Cancelar atualização" }))) return;
     await postar("/admin/atualizar/sistec/cancelar");
     await poll();
   });
@@ -274,20 +274,20 @@
 
   btnDescartar.addEventListener("click", async () => {
     if (!estadoAtual || !estadoAtual.execucao_id) return;
-    if (!confirm(btnDescartar.dataset.confirm)) return;
+    if (!(await confirmarAcao(btnDescartar.dataset.confirm, { rotuloConfirmar: "Descartar" }))) return;
     await postar(`/admin/atualizar/execucoes/${estadoAtual.execucao_id}/descartar`);
     elStatusSalvar.textContent = "Prévia descartada.";
     await poll();
   });
 
   btnPublicar.addEventListener("click", async () => {
-    if (!confirm(btnPublicar.dataset.confirm)) return;
+    if (!(await confirmarAcao(btnPublicar.dataset.confirm, { rotuloConfirmar: "Publicar" }))) return;
     const resposta = await postar("/admin/atualizar/publicar");
     elStatusPublicacao.textContent = resposta.ok ? "Publicado." : "Não foi possível publicar.";
   });
 
   btnDesfazer.addEventListener("click", async () => {
-    if (!confirm(btnDesfazer.dataset.confirm)) return;
+    if (!(await confirmarAcao(btnDesfazer.dataset.confirm, { rotuloConfirmar: "Desfazer" }))) return;
     const resposta = await postar("/admin/atualizar/desfazer");
     elStatusPublicacao.textContent = resposta.ok ? "Publicação desfeita." : "Não havia o que desfazer.";
   });
