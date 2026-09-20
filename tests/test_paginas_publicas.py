@@ -208,3 +208,62 @@ def test_eficiencia_sem_dados_mostra_br_message_info(monkeypatch):
     layout = pagina_eficiencia.layout()
     assert {"br-message", "info"} <= set(layout.className.split())
     assert SEM_DADOS in textos(layout)
+
+
+def _matriculas_para_evasao():
+    base = _matriculas_de_teste().iloc[:1]
+    linhas = []
+    for cidade, co_unidade, status in (
+        [("Alta", "1", s) for s in ("ABANDONO", "EM_CURSO")]
+        + [("Media", "2", s) for s in ("ABANDONO", "EM_CURSO", "EM_CURSO", "EM_CURSO", "EM_CURSO")]
+        + [("Baixa", "3", s) for s in ("EM_CURSO", "EM_CURSO", "EM_CURSO")]
+    ):
+        linha = base.iloc[0].to_dict()
+        linha.update({"cidade": cidade, "co_unidade": co_unidade, "status_corrigido": status, "co_matricula": len(linhas) + 1})
+        linhas.append(linha)
+    return pd.DataFrame(linhas)
+
+
+@pytest.fixture
+def evasao_com_dados(monkeypatch):
+    pagina_evasao = pagina("evasao")
+    monkeypatch.setattr(pagina_evasao, "carregar_matriculas", _matriculas_para_evasao)
+    monkeypatch.setattr(pagina_evasao, "ano_base_ativo", lambda: 2026)
+    return pagina_evasao
+
+
+def _celulas_de_evasao(tabela):
+    return {
+        textos(tds[0]): (textos(tds[1]), getattr(tds[1], "className", None))
+        for tds in (
+            [td for td in componentes(tr) if type(td).__name__ == "Td"]
+            for tr in componentes(tabela)
+            if type(tr).__name__ == "Tr"
+        )
+        if tds
+    }
+
+
+def test_evasao_mostra_percentual_e_texto_da_faixa_com_a_classe_de_cor(evasao_com_dados):
+    tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
+    assert _celulas_de_evasao(tabela) == {
+        "Alta": ("50,0% (Alta)", "evasao-alta"),
+        "Media": ("20,0% (Média)", "evasao-media"),
+        "Baixa": ("0,0% (Baixa)", "evasao-baixa"),
+    }
+
+
+def test_evasao_e_br_table_sem_dbc_nem_wrapper_antigo(evasao_com_dados):
+    tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
+    assert tabela.className == "br-table"
+    assert "table-scroll-wrapper" not in classes(tabela)
+    assert not [c for c in componentes(tabela) if type(c).__module__.startswith("dash_bootstrap_components")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(tabela)
+
+
+def test_evasao_sem_dados_mostra_br_message_info(monkeypatch):
+    pagina_evasao = pagina("evasao")
+    monkeypatch.setattr(pagina_evasao, "dataset_disponivel", lambda: False)
+    layout = pagina_evasao.layout()
+    assert {"br-message", "info"} <= set(layout.className.split())
+    assert SEM_DADOS in textos(layout)

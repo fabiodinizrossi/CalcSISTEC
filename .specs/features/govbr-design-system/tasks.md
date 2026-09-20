@@ -1397,10 +1397,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Cada célula de taxa mostra o percentual e o texto "Baixa", "Média" ou "Alta" (ex.: "12,3% (Média)"), com a classe de cor correspondente; a taxa em si é a mesma de antes
-- [ ] Tabela é `br-table`; sem `dbc.Table` nem `table-scroll-wrapper`
-- [ ] Sem dados: `br-message info` "Ainda não há dados publicados."
-- [ ] Testes em `tests/test_paginas_publicas.py`; gate full passa
+- [x] Cada célula de taxa mostra o percentual e o texto "Baixa", "Média" ou "Alta" (ex.: "12,3% (Média)"), com a classe de cor correspondente; a taxa em si é a mesma de antes
+- [x] Tabela é `br-table`; sem `dbc.Table` nem `table-scroll-wrapper`
+- [x] Sem dados: `br-message info` "Ainda não há dados publicados."
+- [x] Testes em `tests/test_paginas_publicas.py`; gate full passa
 
 **Tests**: unit
 **Gate**: full

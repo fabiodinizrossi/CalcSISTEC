@@ -5,10 +5,11 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 """
 
 import dash
-import dash_bootstrap_components as dbc
 from dash import Input, Output, callback, dcc, html
 
 from app.components.filters import clear_filters_button, fic_toggle, filter_panel, select_filter
+from app.components.mensagem import mensagem_ds
+from app.components.tabela import tabela_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.matriculas import filtrar_fic, taxa_evasao
@@ -18,7 +19,7 @@ dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesq
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Ainda não há dados publicados.", className="empty-state")
+        return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_matriculas()
     return html.Div(
@@ -79,32 +80,16 @@ def atualizar(fic, campus, tipo_curso):
     filtros = FiltrosAtivos(ano_base=ano_base, incluir_fic=incluir_fic)
 
     if df.empty:
-        return html.Div("Sem dados para os filtros selecionados.")
+        return mensagem_ds("info", "Sem dados para os filtros selecionados.")
 
     linhas = []
     for cidade, grupo in df.groupby("cidade", dropna=False):
         taxa = taxa_evasao(grupo, filtros)
         classe = _classe_evasao(taxa)
-        linhas.append(
-            html.Tr(
-                [
-                    html.Td(cidade),
-                    html.Td(f"{taxa:.1%}", className=classe),
-                    html.Td(_LABEL_EVASAO.get(classe, "—")),
-                ]
-            )
-        )
+        percentual = f"{taxa:.1%}".replace(".", ",")
+        linhas.append([cidade, {"valor": f"{percentual} ({_LABEL_EVASAO.get(classe, '—')})", "classe": classe or None}])
 
-    tabela = dbc.Table(
-        [
-            html.Thead(html.Tr([html.Th("Campus"), html.Th("Taxa de Evasão"), html.Th("Situação")])),
-            html.Tbody(linhas),
-        ],
-        striped=True,
-        bordered=True,
-        hover=True,
-    )
-    return html.Div(tabela, className="table-scroll-wrapper")
+    return tabela_ds(["Campus", "Taxa de Evasão"], linhas, "Taxa de evasão por campus")
 
 
 @callback(
