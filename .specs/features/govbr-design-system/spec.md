@@ -417,8 +417,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Implementing |
 | DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Implementing |
 | DS-47          | P2: Tema escuro (AC 3, botão no cabeçalho) | Design | Implementing |
-| DS-48          | P2: Tema escuro (AC 4, aplica sem recarregar) | Design | In Tasks |
-| DS-49          | P2: Tema escuro (AC 5, salva em localStorage) | Design | In Tasks |
+| DS-48          | P2: Tema escuro (AC 4, aplica sem recarregar) | Design | Implementing |
+| DS-49          | P2: Tema escuro (AC 5, salva em localStorage) | Design | Implementing |
 | DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | Implementing |
 | DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Implementing |
 | DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Implementing |

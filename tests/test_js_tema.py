@@ -73,3 +73,63 @@ def test_escolha_escuro_salva_vale_mais_que_sistema_claro():
 def test_storage_bloqueado_segue_a_preferencia_do_sistema_sem_erro():
     assert tema_resultante(sistema="escuro", storage="bloqueado") == "escuro"
     assert tema_resultante(sistema="claro", storage="bloqueado") == "claro"
+
+
+from pathlib import Path
+
+TEMA_JS = Path(__file__).resolve().parents[1] / "app" / "static" / "js" / "tema.js"
+
+
+def avaliar_tema_js(expressao):
+    codigo = f"const m = require({json.dumps(str(TEMA_JS))}); process.stdout.write(JSON.stringify({expressao}));"
+    resultado = subprocess.run(["node", "-e", codigo], capture_output=True, text=True, timeout=30)
+    assert resultado.returncode == 0, resultado.stderr
+    return json.loads(resultado.stdout)
+
+
+def test_alternar_tema_troca_claro_e_escuro():
+    assert avaliar_tema_js('[m.alternarTema("claro"), m.alternarTema("escuro")]') == ["escuro", "claro"]
+
+
+def test_rotulo_do_botao_oferece_o_tema_que_ainda_nao_esta_ativo():
+    assert avaliar_tema_js('[m.rotuloDoBotao("claro"), m.rotuloDoBotao("escuro")]') == ["Usar tema escuro", "Usar tema claro"]
+
+
+def test_gravar_tema_usa_a_chave_calcsistec_tema_com_claro_ou_escuro():
+    expressao = (
+        "(() => { const gravado = {}; const storage = { setItem: (k, v) => { gravado[k] = v; } };"
+        'return [m.gravarTema("escuro", storage), gravado]; })()'
+    )
+    assert avaliar_tema_js(expressao) == [True, {"calcsistec-tema": "escuro"}]
+
+
+def test_gravar_tema_com_storage_que_lanca_excecao_devolve_false_sem_propagar_erro():
+    expressao = '(() => { const storage = { setItem() { throw new Error("SecurityError"); } }; return m.gravarTema("claro", storage); })()'
+    assert avaliar_tema_js(expressao) is False
+
+
+@pytest.mark.parametrize(
+    "salvo,sistema,storage",
+    [
+        (None, "escuro", "livre"),
+        (None, "claro", "livre"),
+        ("claro", "escuro", "livre"),
+        ("escuro", "claro", "livre"),
+        (None, "escuro", "bloqueado"),
+        (None, "claro", "bloqueado"),
+    ],
+)
+def test_resolver_tema_da_o_mesmo_resultado_que_o_script_inline_do_head(salvo, sistema, storage):
+    if storage == "bloqueado":
+        leitura = '{ getItem() { throw new Error("SecurityError"); } }'
+    else:
+        leitura = "{ getItem: () => " + json.dumps(salvo) + " }"
+    expressao = f"m.resolverTema(m.lerTemaSalvo({leitura}), {json.dumps(sistema == 'escuro')})"
+    assert avaliar_tema_js(expressao) == tema_resultante(salvo=salvo, sistema=sistema, storage=storage)
+
+
+def test_scripts_carrega_tema_js_uma_vez_depois_de_core_min_js():
+    with app_module.server.test_request_context("/"):
+        html = render_template("shell/_scripts.html")
+    assert html.count("/ds/js/tema.js") == 1
+    assert html.index("core.min.js") < html.index("/ds/js/tema.js")

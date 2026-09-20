@@ -1503,11 +1503,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Funções puras exportadas rodam em `node`: alternar `claro` ↔ `escuro`; rótulo "Usar tema escuro" quando claro e "Usar tema claro" quando escuro; gravar em `localStorage` que lança exceção não propaga erro e devolve `false`
-- [ ] Gravar usa a chave `calcsistec-tema` com `claro` ou `escuro`
-- [ ] `resolverTema` de `tema.js` e o script inline de `_head.html` dão o mesmo resultado nos mesmos 4 casos da tabela-verdade de T5
-- [ ] `_scripts.html` carrega `tema.js` uma vez, depois de `core.min.js`
-- [ ] Testes em `tests/test_js_tema.py` (com `skipif` sem `node`); gate quick passa
+- [x] Funções puras exportadas rodam em `node`: alternar `claro` ↔ `escuro`; rótulo "Usar tema escuro" quando claro e "Usar tema claro" quando escuro; gravar em `localStorage` que lança exceção não propaga erro e devolve `false`
+- [x] Gravar usa a chave `calcsistec-tema` com `claro` ou `escuro`
+- [x] `resolverTema` de `tema.js` e o script inline de `_head.html` dão o mesmo resultado nos mesmos 4 casos da tabela-verdade de T5
+- [x] `_scripts.html` carrega `tema.js` uma vez, depois de `core.min.js`
+- [x] Testes em `tests/test_js_tema.py` (com `skipif` sem `node`); gate quick passa
 
 **Tests**: unit
 **Gate**: quick
