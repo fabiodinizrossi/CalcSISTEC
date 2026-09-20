@@ -1,40 +1,21 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Pesquisa Institucional - SISTEC{% endblock %}</title>
-  <link rel="stylesheet" href="/ds/govbr-ds/dist/core.min.css">
-  <link rel="stylesheet" href="/assets/style.css">
+  {% set titulo %}{% block title %}Pesquisa Institucional - SISTEC{% endblock %}{% endset %}
+  {% include "shell/_head.html" %}
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <a class="br-sr-only-focusable skip-link" href="#main-content">Ir para o conteúdo principal</a>
+  {% include "shell/_header.html" %}
+  {% include "shell/_menu.html" %}
+  {% include "shell/_breadcrumb.html" %}
 
-  <header class="app-header" role="banner">
-    <div class="app-header-inner">
-      <img class="app-header-logo" src="/branding/logo"
-           alt="{% if instituicao and instituicao.nome %}Logotipo — {{ instituicao.nome }}{% else %}Logotipo da instituição{% endif %}">
-      <div class="app-header-text">
-        <span class="app-header-title">Painel de Acompanhamento Sistec</span>
-        <span class="app-header-subtitle">{{ instituicao.nome if instituicao and instituicao.nome else "Pesquisa Institucional" }}</span>
-      </div>
-    </div>
-  </header>
-
-  {% block admin_nav %}{% endblock %}
-
-  <main id="main-content" role="main" class="app-main">
+  <main id="main-content" class="container-fluid">
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="app-footer" role="contentinfo">
-    {% if instituicao and instituicao.nome %}<span>{{ instituicao.nome }}</span>{% endif %}
-    {% if instituicao and instituicao.site %}
-    <a href="{{ instituicao.site if instituicao.site.startswith('http') else 'https://' ~ instituicao.site }}"
-       target="_blank" rel="noopener">{{ instituicao.site }}</a>
-    {% endif %}
-    {% if contato_email %}<span>{{ contato_email }}</span>{% endif %}
-  </footer>
+  {% include "shell/_modal_confirmacao.html" %}
+  {% include "shell/_footer.html" %}
+  {% include "shell/_scripts.html" %}
 </body>
 </html>

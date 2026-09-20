@@ -372,7 +372,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | -------------- | --------------------------------------- | ------ | ------- |
 | DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | Implementing |
 | DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | In Tasks |
-| DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | In Tasks |
+| DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | Implementing |
 | DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Implementing |
 | DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
 | DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | In Tasks |
@@ -400,7 +400,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Implementing |
 | DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | In Tasks |
 | DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | In Tasks |
-| DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | In Tasks |
+| DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Implementing |
 | DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Implementing |
 | DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | In Tasks |
 | DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | In Tasks |
@@ -413,7 +413,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Implementing |
 | DS-42          | P3: Dispositivo real (AC 1)             | -      | In Tasks |
 | DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | In Tasks |
-| DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | In Tasks |
+| DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | Implementing |
 | DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Implementing |
 | DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Implementing |
 | DS-47          | P2: Tema escuro (AC 3, botão no cabeçalho) | Design | Implementing |

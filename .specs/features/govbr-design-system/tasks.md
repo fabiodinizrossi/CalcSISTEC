@@ -529,10 +529,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /admin/login` responde 200 com `<html lang="pt-BR">`, 1 `core.min.css`, 1 `core.min.js`, `br-header`, `br-footer`, `container-fluid`, e sem `app-header`, `app-footer` nem `admin-nav`
-- [ ] Com sessão autenticada e instalação concluída (`monkeypatch`), `GET /admin/historico` mostra `br-menu` e `br-breadcrumb`; `/admin/login` não mostra nenhum dos dois
-- [ ] Nenhuma folha do Bootstrap no HTML
-- [ ] Novo `tests/test_admin_paginas.py`; gate full passa
+- [x] `GET /admin/login` responde 200 com `<html lang="pt-BR">`, 1 `core.min.css`, 1 `core.min.js`, `br-header`, `br-footer`, `container-fluid`, e sem `app-header`, `app-footer` nem `admin-nav`
+- [x] Com sessão autenticada e instalação concluída (`monkeypatch`), `GET /admin/historico` mostra `br-menu` e `br-breadcrumb`; `/admin/login` não mostra nenhum dos dois
+- [x] Nenhuma folha do Bootstrap no HTML
+- [x] Novo `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full
