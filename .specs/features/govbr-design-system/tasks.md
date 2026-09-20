@@ -424,9 +424,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Exatamente 1 `<script>` para `core.min.js`, com `onerror` que adiciona `ds-sem-js` a `document.documentElement`
-- [ ] Nenhuma referência a `dist/components/`, `core-init`, `core-base` nem a versão não minificada
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] Exatamente 1 `<script>` para `core.min.js`, com `onerror` que adiciona `ds-sem-js` a `document.documentElement`
+- [x] Nenhuma referência a `dist/components/`, `core-init`, `core-base` nem a versão não minificada
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick

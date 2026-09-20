@@ -395,8 +395,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | In Tasks |
 | DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Implementing |
 | DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Implementing |
-| DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | In Tasks |
-| DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | In Tasks |
+| DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Implementing |
+| DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | Implementing |
 | DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Implementing |
 | DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | In Tasks |
 | DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | In Tasks |

@@ -1,6 +1,10 @@
 """Parciais Jinja do shell (`app/templates/shell/`)."""
 
+import html as html_lib
+import json
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -198,3 +202,39 @@ def test_rodape_sem_nome_nao_deixa_elemento_vazio(servidor):
     html = rodape(servidor, nome="")
     assert not re.search(r"<(span|li|a|div|p)\b[^>]*>\s*</\1>", html)
     assert "Área administrativa" in html
+
+
+def scripts(servidor):
+    return renderizar(servidor, "shell/_scripts.html")
+
+
+def test_scripts_carrega_core_min_js_uma_vez(servidor):
+    html = scripts(servidor)
+    assert len(re.findall(r'<script\b[^>]*src="/ds/govbr-ds/dist/core\.min\.js"', html)) == 1
+    assert len(re.findall(r"<script\b", html)) == 1
+
+
+def test_scripts_nao_carrega_componentes_avulsos_nem_versao_nao_minificada(servidor):
+    html = scripts(servidor)
+    for proibido in ("dist/components/", "core-init", "core-base"):
+        assert proibido not in html
+    assert not re.search(r'src="[^"]*core\.js"', html)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node não encontrado")
+def test_falha_ao_carregar_core_min_js_marca_ds_sem_js_no_html(servidor):
+    onerror = re.search(r'onerror="([^"]*)"', scripts(servidor)).group(1)
+    executor = (
+        "const vm = require('vm');"
+        "const classes = [];"
+        "const sandbox = { document: { documentElement: { classList: { add: (c) => classes.push(c) } } } };"
+        "vm.runInNewContext(process.argv[1], sandbox);"
+        "process.stdout.write(JSON.stringify(classes));"
+    )
+    resultado = subprocess.run(["node", "-e", executor, html_desescapado(onerror)], capture_output=True, text=True, timeout=30)
+    assert resultado.returncode == 0, resultado.stderr
+    assert json.loads(resultado.stdout) == ["ds-sem-js"]
+
+
+def html_desescapado(valor):
+    return html_lib.unescape(valor)
