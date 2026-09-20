@@ -1005,10 +1005,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `ativo=0` desativa, `ativo=1` reativa, cada um com `br-message success` na lista seguinte; a linha passa a mostrar a tag "Desativado" ou "Ativo"
-- [ ] Os botões Desativar e Reativar da lista não levam `data-confirm`
-- [ ] Id inexistente redireciona com `br-message danger` "Campus não encontrado."
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] `ativo=0` desativa, `ativo=1` reativa, cada um com `br-message success` na lista seguinte; a linha passa a mostrar a tag "Desativado" ou "Ativo"
+- [x] Os botões Desativar e Reativar da lista não levam `data-confirm`
+- [x] Id inexistente redireciona com `br-message danger` "Campus não encontrado."
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full

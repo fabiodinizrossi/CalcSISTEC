@@ -1,10 +1,11 @@
 """Lista de campi do painel administrativo: busca, paginação e telas do CRUD."""
 
-from flask import Blueprint, flash, get_flashed_messages, redirect, render_template, request
+from flask import Blueprint, abort, flash, get_flashed_messages, redirect, render_template, request
 
 from app.auth import requer_autenticacao
 from app.data.campi import (
     CampusInvalido,
+    definir_ativo,
     id_suspeito,
     incluir_campus,
     listar_campi,
@@ -157,3 +158,16 @@ def incluir():
         erros=erros,
         mensagem_erro=MENSAGEM_ERRO_DO_FORMULARIO if faltam_campos else None,
     )
+
+
+@campi_bp.route("/admin/campi/<id_perfil>/situacao", methods=["POST"])
+@requer_autenticacao
+def situacao(id_perfil):
+    valor = request.form.get("ativo")
+    if valor not in ("0", "1"):
+        abort(400)
+    if obter_campus(id_perfil, DB_PATH) is None:
+        return _campus_nao_encontrado()
+    definir_ativo(id_perfil, valor == "1", DB_PATH)
+    flash("Campus reativado." if valor == "1" else "Campus desativado.", "success")
+    return redirect("/admin/campi")

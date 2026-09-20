@@ -311,3 +311,45 @@ def test_incluir_com_identificador_repetido_mostra_a_regra_no_campo(cliente_aute
     assert resposta.status_code == 200
     assert re.search(r'class="br-input danger"[^>]*>\s*<label for="id_perfil">', html)
     assert "esse identificador de perfil já está em outro campus" in html
+
+
+def test_desativar_grava_e_a_lista_mostra_a_tag_e_a_mensagem(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/situacao", data={"ativo": "0"})
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/campi")
+    assert dados_campi.obter_campus("8278857", banco)["ativo"] == 0
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert"', html)
+    assert "Campus desativado." in html
+    assert re.search(r'<span class="br-tag">\s*Desativado\s*</span>', _linhas(html)[0])
+
+
+def test_reativar_grava_e_a_lista_mostra_a_tag_e_a_mensagem(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post("/admin/campi/8278859/situacao", data={"ativo": "1"})
+    assert resposta.status_code == 302
+    assert dados_campi.obter_campus("8278859", banco)["ativo"] == 1
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert "Campus reativado." in html
+    assert re.search(r'<span class="br-tag">\s*Ativo\s*</span>', _linhas(html)[2])
+
+
+def test_botoes_desativar_e_reativar_da_lista_nao_pedem_confirmacao(cliente_autenticado, tres_campi):
+    linhas = _linhas(cliente_autenticado.get("/admin/campi").get_data(as_text=True))
+    for linha in (linhas[0], linhas[2]):
+        botao = re.search(r'<button\b[^>]*aria-label="(?:Desativar|Reativar) campus[^"]*"[^>]*>', linha).group(0)
+        assert "data-confirm" not in botao
+
+
+def test_situacao_de_campus_inexistente_volta_a_lista_com_mensagem_de_erro(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post("/admin/campi/99999999/situacao", data={"ativo": "0"})
+    assert resposta.status_code == 302
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message danger"', html)
+    assert "Campus não encontrado." in html
+
+
+@pytest.mark.parametrize("valor", [None, "", "2", "sim"])
+def test_situacao_com_valor_invalido_responde_400_e_nao_altera_o_campus(cliente_autenticado, tres_campi, banco, valor):
+    dados = {} if valor is None else {"ativo": valor}
+    assert cliente_autenticado.post("/admin/campi/8278857/situacao", data=dados).status_code == 400
+    assert dados_campi.obter_campus("8278857", banco)["ativo"] == 1
