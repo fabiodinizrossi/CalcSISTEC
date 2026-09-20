@@ -193,3 +193,14 @@ def test_aviso_sem_pnp_e_br_message_warning_com_role_status_e_o_texto_original(m
 def test_aviso_sem_pnp_devolve_none_com_a_correcao_ativa(monkeypatch):
     monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", True)
     assert aviso_sem_pnp.make_aviso_sem_pnp() is None
+
+
+from app.components.mensagem import mensagem_ds
+
+
+@pytest.mark.parametrize("tipo,papel", [("success", "alert"), ("danger", "alert"), ("info", "status"), ("warning", "status")])
+def test_mensagem_ds_usa_a_classe_do_tipo_e_o_papel_aria_da_spec(tipo, papel):
+    mensagem = mensagem_ds(tipo, "Texto")
+    assert {"br-message", tipo} <= set(mensagem.className.split())
+    assert mensagem.role == papel
+    assert "Texto" in textos(mensagem)

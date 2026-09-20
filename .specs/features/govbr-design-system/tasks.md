@@ -1320,10 +1320,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com dados (`monkeypatch` de `dataset_disponivel`), `layout()` tem 4 `br-card` de navegação com os hrefs `/matriculas`, `/eficiencia`, `/evasao`, `/percentuais-legais` e rótulos atuais, dentro de `row` com colunas `col-12 col-md-6 col-xl-3` (ou equivalentes do DS)
-- [ ] Sem dados: `br-message info` "Ainda não há dados publicados.", sem nenhum cartão de KPI
-- [ ] Nenhuma classe `nav-card` nem `hero` própria; nenhum componente do DS que dependa de JS
-- [ ] Novo `tests/test_paginas_publicas.py`; gate quick passa
+- [x] Com dados (`monkeypatch` de `dataset_disponivel`), `layout()` tem 4 `br-card` de navegação com os hrefs `/matriculas`, `/eficiencia`, `/evasao`, `/percentuais-legais` e rótulos atuais, dentro de `row` com colunas `col-12 col-md-6 col-xl-3` (ou equivalentes do DS)
+- [x] Sem dados: `br-message info` "Ainda não há dados publicados.", sem nenhum cartão de KPI
+- [x] Nenhuma classe `nav-card` nem `hero` própria; nenhum componente do DS que dependa de JS
+- [x] Novo `tests/test_paginas_publicas.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

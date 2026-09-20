@@ -13,6 +13,7 @@ por estilização CSS/gov.br (nenhum componente de imagem aqui).
 import dash
 from dash import html
 
+from app.components.mensagem import mensagem_ds
 from app.data.consulta import data_ultimo_upload_valido, dataset_disponivel
 
 dash.register_page(__name__, path="/", title="Início - Pesquisa Institucional - SISTEC")
@@ -27,36 +28,24 @@ NAV_CARDS = [
 
 
 def layout():
+    titulo = html.H1("Painel de Acompanhamento Sistec")
     if not dataset_disponivel():
         # Estado Idle (`target_screens.md`): nenhum dataset carregado ainda.
-        return html.Div(
-            [
-                html.Div(className="hero", children=[html.H1("Painel de Acompanhamento Sistec"), html.Div("Pesquisa Institucional")]),
-                html.Div("Ainda não há dados publicados.", className="empty-state"),
-            ]
-        )
+        return html.Div([titulo, mensagem_ds("info", "Ainda não há dados publicados.")])
 
     data_atualizacao = data_ultimo_upload_valido()
-
+    cartoes = [
+        html.Div(
+            html.A(html.Div(label, className="card-content"), href=href, className="br-card"),
+            className="col-12 col-md-6 col-xl-3 mb-3",
+        )
+        for label, href in NAV_CARDS
+    ]
     return html.Div(
         [
-            html.Div(
-                className="hero",
-                children=[
-                    html.H1("Painel de Acompanhamento Sistec"),
-                    html.Div("Pesquisa Institucional"),
-                ],
-            ),
-            html.Div(
-                f"Atualizado em {data_atualizacao}" if data_atualizacao else "",
-                className="updated-at-badge",
-            ),
-            html.Div(
-                className="landing-cards",
-                children=[
-                    html.A(label, href=href, className="nav-card")
-                    for label, href in NAV_CARDS
-                ],
-            ),
+            titulo,
+            html.P("Pesquisa Institucional"),
+            html.P(f"Atualizado em {data_atualizacao}") if data_atualizacao else None,
+            html.Div(cartoes, className="row"),
         ]
     )
