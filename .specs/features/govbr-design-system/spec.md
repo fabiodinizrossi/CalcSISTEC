@@ -370,91 +370,91 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 
 | Requirement ID | Story                                   | Phase  | Status  |
 | -------------- | --------------------------------------- | ------ | ------- |
-| DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | Implementing |
-| DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | Implementing |
-| DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | Implementing |
-| DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Implementing |
-| DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
-| DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | Implementing |
-| DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | Implementing |
-| DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | Implementing |
-| DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | Implementing |
-| DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Implementing |
-| DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Implementing |
-| DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Implementing |
-| DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | Implementing |
-| DS-14          | P1: Páginas públicas (AC 5, br-table)   | Design | Implementing |
-| DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | Implementing |
-| DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | Implementing |
-| DS-17          | P1: Páginas públicas (AC 8, br-message) | Design | Implementing |
-| DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | Implementing |
-| DS-19          | P1: Páginas administrativas (AC 1, header e footer) | Design | Implementing |
-| DS-20          | P1: Páginas administrativas (AC 2, formulários) | Design | Implementing |
-| DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | Implementing |
-| DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | Implementing |
-| DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | Implementing |
+| DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | Verified |
+| DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | Verified |
+| DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | Verified |
+| DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Verified |
+| DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Verified |
+| DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | Verified |
+| DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | Verified |
+| DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | Verified |
+| DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | Verified |
+| DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Verified |
+| DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Verified |
+| DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Verified |
+| DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | Verified |
+| DS-14          | P1: Páginas públicas (AC 5, br-table)   | Design | Verified |
+| DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | Verified |
+| DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | Verified |
+| DS-17          | P1: Páginas públicas (AC 8, br-message) | Design | Verified |
+| DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | Verified |
+| DS-19          | P1: Páginas administrativas (AC 1, header e footer) | Design | Verified |
+| DS-20          | P1: Páginas administrativas (AC 2, formulários) | Design | Verified |
+| DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | Verified |
+| DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | Verified |
+| DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | Verified |
 | DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Implementing |
-| DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Implementing |
-| DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Implementing |
-| DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | Implementing |
-| DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Implementing |
-| DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | Implementing |
-| DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | Implementing |
-| DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Implementing |
-| DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Implementing |
-| DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | Implementing |
-| DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | Implementing |
-| DS-35          | P2: Acessibilidade (AC 5, rótulo textual) | Design | Implementing |
-| DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | Implementing |
-| DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | Implementing |
-| DS-38          | P2: Acessibilidade (AC 8, Esc fecha o menu) | Design | Implementing |
-| DS-39          | P2: Identidade (AC 1, da configuração)  | -      | Implementing |
-| DS-40          | P2: Identidade (AC 2, logotipo genérico) | -     | Implementing |
-| DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Implementing |
+| DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Verified |
+| DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Verified |
+| DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | Verified |
+| DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Verified |
+| DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | Verified |
+| DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | Verified |
+| DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Verified |
+| DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Verified |
+| DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | Verified |
+| DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | Verified |
+| DS-35          | P2: Acessibilidade (AC 5, rótulo textual) | Design | Verified |
+| DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | Verified |
+| DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | Verified |
+| DS-38          | P2: Acessibilidade (AC 8, Esc fecha o menu) | Design | Verified |
+| DS-39          | P2: Identidade (AC 1, da configuração)  | -      | Verified |
+| DS-40          | P2: Identidade (AC 2, logotipo genérico) | -     | Verified |
+| DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Verified |
 | DS-42          | P3: Dispositivo real (AC 1)             | -      | In Tasks |
-| DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | Implementing |
-| DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | Implementing |
-| DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Implementing |
-| DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Implementing |
-| DS-47          | P2: Tema escuro (AC 3, botão no cabeçalho) | Design | Implementing |
-| DS-48          | P2: Tema escuro (AC 4, aplica sem recarregar) | Design | Implementing |
-| DS-49          | P2: Tema escuro (AC 5, salva em localStorage) | Design | Implementing |
-| DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | Implementing |
-| DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Implementing |
-| DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Implementing |
-| DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | Implementing |
-| DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | Implementing |
-| DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Implementing |
-| DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
-| DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | Implementing |
-| DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | Implementing |
-| DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | Implementing |
-| DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
-| DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
-| DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | Implementing |
-| DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | Implementing |
-| DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | Implementing |
-| DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | Implementing |
-| DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | Implementing |
-| DS-67          | P1: CRUD de campi (AC 6, campos com rótulo visível) | Design | Implementing |
-| DS-68          | P1: CRUD de campi (AC 7, Cancelar e Salvar) | Design | Implementing |
-| DS-69          | P1: CRUD de campi (AC 8, salvar com sucesso) | Design | Implementing |
-| DS-70          | P1: CRUD de campi (AC 9, campo obrigatório vazio) | Design | Implementing |
-| DS-71          | P1: CRUD de campi (AC 10, identificador ou código duplicado) | Design | Implementing |
-| DS-72          | P1: CRUD de campi (AC 11, banner de erro) | Design | Implementing |
-| DS-73          | P1: CRUD de campi (AC 12, modal de exclusão) | Design | Implementing |
-| DS-74          | P1: CRUD de campi (AC 13, confirmar exclusão) | Design | Implementing |
-| DS-75          | P1: CRUD de campi (AC 14, cancelar exclusão) | Design | Implementing |
-| DS-76          | P1: CRUD de campi (AC 15, desativar e reativar) | Design | Implementing |
-| DS-77          | P1: CRUD de campi (AC 16, tela Incluir campus) | Design | Implementing |
-| DS-78          | P1: CRUD de campi (AC 17, incluir com sucesso) | Design | Implementing |
-| DS-79          | P1: CRUD de campi (AC 18, sem campos em célula de tabela) | Design | Implementing |
-| DS-80          | P2: Busca e paginação (AC 1, barra de busca) | Design | Implementing |
-| DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | Implementing |
-| DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | Implementing |
-| DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Implementing |
-| DS-84          | P3: Cards (AC 1, botão de visualização) | Design | Implementing |
-| DS-85          | P3: Cards (AC 2, br-card por campus) | Design | Implementing |
+| DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | Verified |
+| DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | Verified |
+| DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Verified |
+| DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Verified |
+| DS-47          | P2: Tema escuro (AC 3, botão no cabeçalho) | Design | Verified |
+| DS-48          | P2: Tema escuro (AC 4, aplica sem recarregar) | Design | Verified |
+| DS-49          | P2: Tema escuro (AC 5, salva em localStorage) | Design | Verified |
+| DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | Verified |
+| DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Verified |
+| DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Verified |
+| DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | Verified |
+| DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | Verified |
+| DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Verified |
+| DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Verified |
+| DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | Verified |
+| DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | Verified |
+| DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | Verified |
+| DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Verified |
+| DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Verified |
+| DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | Verified |
+| DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | Verified |
+| DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | Verified |
+| DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | Verified |
+| DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | Verified |
+| DS-67          | P1: CRUD de campi (AC 6, campos com rótulo visível) | Design | Verified |
+| DS-68          | P1: CRUD de campi (AC 7, Cancelar e Salvar) | Design | Verified |
+| DS-69          | P1: CRUD de campi (AC 8, salvar com sucesso) | Design | Verified |
+| DS-70          | P1: CRUD de campi (AC 9, campo obrigatório vazio) | Design | Verified |
+| DS-71          | P1: CRUD de campi (AC 10, identificador ou código duplicado) | Design | Verified |
+| DS-72          | P1: CRUD de campi (AC 11, banner de erro) | Design | Verified |
+| DS-73          | P1: CRUD de campi (AC 12, modal de exclusão) | Design | Verified |
+| DS-74          | P1: CRUD de campi (AC 13, confirmar exclusão) | Design | Verified |
+| DS-75          | P1: CRUD de campi (AC 14, cancelar exclusão) | Design | Verified |
+| DS-76          | P1: CRUD de campi (AC 15, desativar e reativar) | Design | Verified |
+| DS-77          | P1: CRUD de campi (AC 16, tela Incluir campus) | Design | Verified |
+| DS-78          | P1: CRUD de campi (AC 17, incluir com sucesso) | Design | Verified |
+| DS-79          | P1: CRUD de campi (AC 18, sem campos em célula de tabela) | Design | Verified |
+| DS-80          | P2: Busca e paginação (AC 1, barra de busca) | Design | Verified |
+| DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | Verified |
+| DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | Verified |
+| DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Verified |
+| DS-84          | P3: Cards (AC 1, botão de visualização) | Design | Verified |
+| DS-85          | P3: Cards (AC 2, br-card por campus) | Design | Verified |
 
 **ID format:** `[CATEGORY]-[NUMBER]` (e.g., `DS-01`)
 

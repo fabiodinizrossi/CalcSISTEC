@@ -37,10 +37,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: Execute concluído em código (Phase 1 a 13); Verifier dispara ao fim
-- **Completed**: T1 a T52, T54, T55, T56 e T57 (roteiro e pendência de CSRF escritos)
+- **Phase / Task**: Execute concluído e Verifier em PASS (2ª iteração, `validation.md`)
+- **Completed**: T1 a T52, T54, T55, T56 e T57 (menos o passo humano)
 - **In-progress** (file:line): none
-- **Next step**: ler `.specs/features/govbr-design-system/validation.md` (Verifier); depois Jaline decide T53 (Font Awesome 5) e faz o teste em celular real (T57)
-- **Blockers**: T53 exige autorização de rede de Jaline (a Rawline foi liberada e vendorizada; o Font Awesome não foi mencionado). T57: o item de design de `CUTOVER.md` só é marcado com dispositivo, largura e data de Jaline (DS-42)
+- **Next step**: Jaline decide T53 (Font Awesome 5: autorizar o download) e faz o teste em celular real (T57, DS-42); depois marcar o item de design em `CUTOVER.md`. Push e merge esperam OK explícito
+- **Blockers**: T53 exige autorização de rede de Jaline (só a Rawline foi liberada). DS-42 exige dispositivo, largura e data informados por Jaline
 - **Uncommitted files**: none da feature (fora de escopo e sem stage: `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/`)
 - **Branch**: migracao-dash-gov-br

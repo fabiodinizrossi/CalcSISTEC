@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 5,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::testar so as funcoes puras de um js deixa cliques teclas e observadores sem rede cubra a fiacao com node e um dom simulado tests dom falso py",
+      "text": "Testar so as funcoes puras de um .js deixa cliques, teclas e observadores sem rede; cubra a fiacao com node e um DOM simulado (tests/dom_falso.py).",
+      "signal": "surviving_mutant",
+      "scope": "app/static/js",
+      "status": "candidate",
+      "features": [
+        "govbr-design-system"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P3,P4,P5,P8,P13,P14,P15 (app/static/js)"
+      ],
+      "created": "2026-09-20T03:05:32Z",
+      "last_seen": "2026-09-20T03:05:32Z"
+    },
+    {
+      "id": "L-002",
+      "key": "surviving_mutant::em listas geradas por template assertar href action e valor do botao nao so o aria label",
+      "text": "Em listas geradas por template, assertar href, action e valor do botao, nao so o aria-label.",
+      "signal": "surviving_mutant",
+      "scope": "app/templates",
+      "status": "candidate",
+      "features": [
+        "govbr-design-system"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P7,P12 (app/templates)"
+      ],
+      "created": "2026-09-20T03:05:32Z",
+      "last_seen": "2026-09-20T03:05:32Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::teste que so confere a presenca de um seletor em um bloco media pode codificar o oposto da spec assertar a propriedade e o valor",
+      "text": "Teste que so confere a presenca de um seletor em um bloco @media pode codificar o oposto da spec; assertar a propriedade e o valor.",
+      "signal": "ac_gap",
+      "scope": "app/assets/style.css",
+      "status": "candidate",
+      "features": [
+        "govbr-design-system"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "DS-05 (app/assets/style.css)"
+      ],
+      "created": "2026-09-20T03:05:32Z",
+      "last_seen": "2026-09-20T03:05:32Z"
+    },
+    {
+      "id": "L-004",
+      "key": "spec_deviation::confirmar no navegador o que o pacote do ds inicializa core min js nao instancia br menu antes de fixar a premissa no design e atualizar o ac da spec quando um ad mudar o texto",
+      "text": "Confirmar no navegador o que o pacote do DS inicializa (core.min.js nao instancia br-menu) antes de fixar a premissa no Design, e atualizar o AC da spec quando um AD mudar o texto.",
+      "signal": "spec_deviation",
+      "scope": ".specs",
+      "status": "candidate",
+      "features": [
+        "govbr-design-system"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AD-004 (.specs)"
+      ],
+      "created": "2026-09-20T03:05:33Z",
+      "last_seen": "2026-09-20T03:05:33Z"
+    }
+  ]
+}
