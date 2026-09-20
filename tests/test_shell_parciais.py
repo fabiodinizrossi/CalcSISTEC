@@ -211,7 +211,6 @@ def scripts(servidor):
 def test_scripts_carrega_core_min_js_uma_vez(servidor):
     html = scripts(servidor)
     assert len(re.findall(r'<script\b[^>]*src="/ds/govbr-ds/dist/core\.min\.js"', html)) == 1
-    assert len(re.findall(r"<script\b", html)) == 1
 
 
 def test_scripts_nao_carrega_componentes_avulsos_nem_versao_nao_minificada(servidor):

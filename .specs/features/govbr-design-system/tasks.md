@@ -741,10 +741,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Funções puras exportadas (`proximoFoco(indice, total, shift)`, `teclaFecha(tecla)`) rodam em `node`: Tab no último elemento volta ao primeiro, Shift+Tab no primeiro vai ao último, Esc fecha, outras teclas não
-- [ ] O arquivo não contém chamada ao `confirm()` nativo; usa os ids do modal de T11 (teste de contrato entre os dois arquivos)
-- [ ] `_scripts.html` carrega `confirmar.js` uma vez, depois de `core.min.js`
-- [ ] Novo `tests/test_js_confirmar.py` (com `skipif` sem `node`); gate quick passa. O comportamento no DOM é conferido na T55
+- [x] Funções puras exportadas (`proximoFoco(indice, total, shift)`, `teclaFecha(tecla)`) rodam em `node`: Tab no último elemento volta ao primeiro, Shift+Tab no primeiro vai ao último, Esc fecha, outras teclas não
+- [x] O arquivo não contém chamada ao `confirm()` nativo; usa os ids do modal de T11 (teste de contrato entre os dois arquivos)
+- [x] `_scripts.html` carrega `confirmar.js` uma vez, depois de `core.min.js`
+- [x] Novo `tests/test_js_confirmar.py` (com `skipif` sem `node`); gate quick passa. O comportamento no DOM é conferido na T55
 
 **Tests**: unit
 **Gate**: quick

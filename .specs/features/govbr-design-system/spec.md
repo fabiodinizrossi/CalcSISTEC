@@ -428,7 +428,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
 | DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | Implementing |
 | DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | Implementing |
-| DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | In Tasks |
+| DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | Implementing |
 | DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
 | DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
 | DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | In Tasks |
