@@ -34,3 +34,8 @@ def kpi_card(label, valor, formato="0", empty_state=None):
         ),
         className="br-card",
     )
+
+
+def kpi_colunas(cartoes):
+    """Cada cartão numa coluna da grade do DS que começa em `col-12` (uma por linha no celular)."""
+    return [html.Div(cartao, className="col-12 col-sm-6 col-lg-4 mb-3") for cartao in cartoes]

@@ -12,11 +12,12 @@ plan.md` Tarefa 11 para o detalhe das divergências encontradas e corrigidas.
 """
 
 import dash
-import dash_bootstrap_components as dbc
 from dash import Input, Output, callback, dcc, html
 
 from app.components.filters import axis_selector, clear_filters_button, fic_toggle, filter_panel, select_filter
-from app.components.kpi import kpi_card
+from app.components.kpi import kpi_card, kpi_colunas
+from app.components.mensagem import mensagem_ds
+from app.components.tabela import tabela_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.matriculas import contar_cursos_ativos, contar_matriculas, contar_por_status, filtrar_fic
@@ -30,13 +31,13 @@ STATUS_EM_CURSO = "EM_CURSO"
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Ainda não há dados publicados.", className="empty-state")
+        return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_matriculas()
     return html.Div(
         [
             html.H1("Matrículas"),
-            dcc.Loading(html.Div(id="matriculas-kpis", className="kpi-row")),
+            dcc.Loading(html.Div(id="matriculas-kpis", className="row")),
             fic_toggle("matriculas-fic", default="com_fic"),
             axis_selector("matriculas-eixo", default="campus"),
             dcc.Loading(html.Div(id="matriculas-matriz")),
@@ -89,22 +90,19 @@ def atualizar(fic, eixo, campus, tipo_curso, programa):
             for linha in df_ano_base.itertuples()
         )
 
-    kpis = [
+    kpis = kpi_colunas([
         kpi_card("Cursos", cursos_ativos),
         kpi_card("Matrículas", total, formato="#,0"),
         kpi_card("Matrículas equivalentes", equivalentes, formato="#,0.00", empty_state="dado incompleto"),
         kpi_card("Matrículas concluídas", concluidas),
         kpi_card("Ingressantes", ingressantes),
-    ]
+    ])
 
     if df.empty:
-        matriz = html.Div("Sem dados para o eixo selecionado.")
+        matriz = mensagem_ds("info", "Sem dados para o eixo selecionado.")
     else:
         agregado = agrupar_por_eixo(df.assign(total=1), filtros, "total", agregacao="sum")
-        tabela = dbc.Table.from_dataframe(agregado, striped=True, bordered=True, hover=True)
-        # RF-07 (320 px): a tabela rola na horizontal dentro do próprio
-        # quadro — a página inteira não rola.
-        matriz = html.Div(tabela, className="table-scroll-wrapper")
+        matriz = tabela_ds(list(agregado.columns), agregado.values.tolist(), "Matrículas por eixo")
 
     return kpis, matriz
 

@@ -1346,10 +1346,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Callback com um `DataFrame` pequeno (`monkeypatch` de `carregar_matriculas`) devolve `br-card` para os KPIs e `br-table` para a matriz, com os mesmos números de antes
-- [ ] KPIs em colunas que começam em `col-12`; nenhuma classe `kpi-row`, `table` ou `card` do Bootstrap; sem `dbc.Table`
-- [ ] Sem dados: `br-message info` "Ainda não há dados publicados."
-- [ ] Testes em `tests/test_paginas_publicas.py`; gate full passa (paridade de domínio intacta)
+- [x] Callback com um `DataFrame` pequeno (`monkeypatch` de `carregar_matriculas`) devolve `br-card` para os KPIs e `br-table` para a matriz, com os mesmos números de antes
+- [x] KPIs em colunas que começam em `col-12`; nenhuma classe `kpi-row`, `table` ou `card` do Bootstrap; sem `dbc.Table`
+- [x] Sem dados: `br-message info` "Ainda não há dados publicados."
+- [x] Testes em `tests/test_paginas_publicas.py`; gate full passa (paridade de domínio intacta)
 
 **Tests**: unit
 **Gate**: full
