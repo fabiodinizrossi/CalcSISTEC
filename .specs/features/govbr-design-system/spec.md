@@ -370,7 +370,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 
 | Requirement ID | Story                                   | Phase  | Status  |
 | -------------- | --------------------------------------- | ------ | ------- |
-| DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | In Tasks |
+| DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | Implementing |
 | DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | In Tasks |
 | DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | In Tasks |
 | DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | In Tasks |
@@ -394,7 +394,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | In Tasks |
 | DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | In Tasks |
 | DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Implementing |
-| DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | In Tasks |
+| DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Implementing |
 | DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | In Tasks |
 | DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | In Tasks |
 | DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Implementing |
@@ -414,14 +414,14 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-42          | P3: Dispositivo real (AC 1)             | -      | In Tasks |
 | DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | In Tasks |
 | DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | In Tasks |
-| DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | In Tasks |
-| DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | In Tasks |
+| DS-45          | P2: Tema escuro (AC 1, sistema escuro) | Design | Implementing |
+| DS-46          | P2: Tema escuro (AC 2, sistema claro) | Design | Implementing |
 | DS-47          | P2: Tema escuro (AC 3, botão no cabeçalho) | Design | In Tasks |
 | DS-48          | P2: Tema escuro (AC 4, aplica sem recarregar) | Design | In Tasks |
 | DS-49          | P2: Tema escuro (AC 5, salva em localStorage) | Design | In Tasks |
-| DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | In Tasks |
-| DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | In Tasks |
-| DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | In Tasks |
+| DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | Implementing |
+| DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Implementing |
+| DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Implementing |
 | DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | In Tasks |
 | DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | In Tasks |
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | In Tasks |

@@ -1,0 +1,22 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titulo }}</title>
+<script>
+(function () {
+  var tema = null;
+  try {
+    var salvo = localStorage.getItem("calcsistec-tema");
+    if (salvo === "claro" || salvo === "escuro") { tema = salvo; }
+  } catch (erro) {}
+  if (!tema) {
+    try {
+      tema = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
+    } catch (erro) {
+      tema = "claro";
+    }
+  }
+  document.documentElement.setAttribute("data-tema", tema);
+})();
+</script>
+<link rel="stylesheet" href="/ds/govbr-ds/dist/core.min.css">
+<link rel="stylesheet" href="/assets/style.css">

@@ -291,10 +291,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] HTML renderizado tem `<meta name="viewport" content="width=device-width, initial-scale=1">` e exatamente 1 link para `core.min.css`
-- [ ] Nenhum URL externo (`http://` ou `https://`) no parcial
-- [ ] O script inline, executado em `node` com `document`, `localStorage` e `matchMedia` simulados, resulta em: sem escolha salva e sistema escuro → `escuro`; sem escolha e sistema claro ou sem preferência → `claro`; escolha `claro` salva e sistema escuro → `claro`; `localStorage` lançando exceção → preferência do sistema, sem erro
-- [ ] Novos `tests/test_shell_parciais.py` e `tests/test_js_tema.py` (este com `skipif` sem `node`); gate quick passa
+- [x] HTML renderizado tem `<meta name="viewport" content="width=device-width, initial-scale=1">` e exatamente 1 link para `core.min.css`
+- [x] Nenhum URL externo (`http://` ou `https://`) no parcial
+- [x] O script inline, executado em `node` com `document`, `localStorage` e `matchMedia` simulados, resulta em: sem escolha salva e sistema escuro → `escuro`; sem escolha e sistema claro ou sem preferência → `claro`; escolha `claro` salva e sistema escuro → `claro`; `localStorage` lançando exceção → preferência do sistema, sem erro
+- [x] Novos `tests/test_shell_parciais.py` e `tests/test_js_tema.py` (este com `skipif` sem `node`); gate quick passa
 
 **Tests**: integration
 **Gate**: quick
