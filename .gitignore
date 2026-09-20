@@ -9,3 +9,6 @@ venv/
 .pytest_cache/
 app/data/uploads/*
 !app/data/uploads/**/.gitkeep
+
+# Modelos do Figma da feature govbr-design-system (~87 MB), so referencia local
+.specs/features/**/*.svg
