@@ -147,3 +147,64 @@ def test_matriculas_sem_dados_mostra_br_message_info(monkeypatch):
     assert {"br-message", "info"} <= set(layout.className.split())
     assert SEM_DADOS in textos(layout)
     assert "empty-state" not in classes(layout)
+
+
+def _eficiencia_de_teste():
+    return pd.DataFrame(
+        {
+            "co_matricula": [1, 2, 3, 4, 5],
+            "status_corrigido2": ["CONCLUÍDA", "ABANDONO", "EM_CURSO", "CONCLUÍDA", "CONCLUÍDA"],
+            "codigo_ciclo_matricula": [10, 10, 10, 11, 11],
+            "dt_data_fim_previsto": pd.to_datetime(["2025-12-01"] * 5),
+            "co_unidade": ["101", "101", "101", "102", "102"],
+            "modalidade_ensino": ["Presencial"] * 5,
+            "subtipo_curso": ["Integrado"] * 5,
+            "nome_curso_ajustado": ["Curso A", "Curso A", "Curso A", "Curso B", "Curso B"],
+            "tipo_oferta_curso": ["Integrado"] * 5,
+            "categoria_origem_curso": ["Regular"] * 5,
+            "cidade": ["Alegrete", "Alegrete", "Alegrete", "Jaguari", "Jaguari"],
+        }
+    )
+
+
+@pytest.fixture
+def eficiencia_com_dados(monkeypatch):
+    pagina_eficiencia = pagina("eficiencia")
+    monkeypatch.setattr(pagina_eficiencia, "carregar_eficiencia", _eficiencia_de_teste)
+    monkeypatch.setattr(pagina_eficiencia, "ano_base_ativo", lambda: 2026)
+    return pagina_eficiencia
+
+
+def _atualizar_eficiencia(pagina_eficiencia):
+    return pagina_eficiencia.atualizar("com_fic", "campus", "__todos__", "__todos__")
+
+
+def test_eficiencia_mostra_o_iea_em_br_card_com_o_mesmo_numero(eficiencia_com_dados):
+    kpi, _ = _atualizar_eficiencia(eficiencia_com_dados)
+    cartoes = com_classe(kpi, "br-card")
+    assert [textos(c) for c in cartoes] == ["IEA (Índice de Eficiência Acadêmica) 0,75"]
+    assert all("col-12" in coluna.className.split() for coluna in kpi)
+
+
+def test_eficiencia_mostra_a_matriz_em_br_table_com_o_iea_de_cada_campus(eficiencia_com_dados):
+    _, matriz = _atualizar_eficiencia(eficiencia_com_dados)
+    assert matriz.className == "br-table"
+    cabecalhos = [textos(th) for th in componentes(matriz) if type(th).__name__ == "Th"]
+    assert cabecalhos == ["cidade", "IEA"]
+    celulas = [[textos(td) for td in componentes(tr) if type(td).__name__ == "Td"] for tr in componentes(matriz) if type(tr).__name__ == "Tr"]
+    assert [linha for linha in celulas if linha] == [["Alegrete", "0.5"], ["Jaguari", "1.0"]]
+
+
+def test_eficiencia_nao_usa_componentes_de_tabela_do_bootstrap(eficiencia_com_dados):
+    kpi, matriz = _atualizar_eficiencia(eficiencia_com_dados)
+    assert not (classes(kpi) | classes(matriz)) & {"table", "table-striped", "card", "card-body", "table-scroll-wrapper"}
+    assert not [c for c in componentes(matriz) if type(c).__module__.startswith("dash_bootstrap_components")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(matriz)
+
+
+def test_eficiencia_sem_dados_mostra_br_message_info(monkeypatch):
+    pagina_eficiencia = pagina("eficiencia")
+    monkeypatch.setattr(pagina_eficiencia, "dataset_disponivel", lambda: False)
+    layout = pagina_eficiencia.layout()
+    assert {"br-message", "info"} <= set(layout.className.split())
+    assert SEM_DADOS in textos(layout)

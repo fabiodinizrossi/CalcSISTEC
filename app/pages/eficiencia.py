@@ -11,12 +11,13 @@ dados (a Tarefa 09 calculava `filtros.incluir_fic` mas nunca aplicava
 """
 
 import dash
-import dash_bootstrap_components as dbc
 import pandas as pd
 from dash import Input, Output, callback, dcc, html
 
 from app.components.filters import axis_selector, clear_filters_button, fic_toggle, filter_panel, select_filter
-from app.components.kpi import kpi_card
+from app.components.kpi import kpi_card, kpi_colunas
+from app.components.mensagem import mensagem_ds
+from app.components.tabela import tabela_ds
 from app.data.consulta import ano_base_ativo, carregar_eficiencia, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.eficiencia import iea
@@ -28,7 +29,7 @@ dash.register_page(__name__, path="/eficiencia", title="Eficiência Acadêmica -
 
 def layout():
     if not dataset_disponivel():
-        return html.Div("Ainda não há dados publicados.", className="empty-state")
+        return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_eficiencia()
     return html.Div(
@@ -37,7 +38,7 @@ def layout():
             # BR-MIGRAR-021: estado inicial SEM FIC nesta página, intencional (não alterar).
             fic_toggle("eficiencia-fic", default="sem_fic"),
             axis_selector("eficiencia-eixo", default="campus"),
-            dcc.Loading(html.Div(id="eficiencia-kpi")),
+            dcc.Loading(html.Div(id="eficiencia-kpi", className="row")),
             dcc.Loading(html.Div(id="eficiencia-matriz")),
             filter_panel(
                 select_filter("eficiencia-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
@@ -71,7 +72,7 @@ def atualizar(fic, eixo, campus, modalidade):
     filtros = FiltrosAtivos(ano_base=ano_base, eixo=eixo or "campus", incluir_fic=incluir_fic)
 
     if df.empty:
-        return kpi_card("IEA", None, empty_state="0"), html.Div("Sem dados para o eixo selecionado.")
+        return kpi_colunas([kpi_card("IEA", None, empty_state="0")]), mensagem_ds("info", "Sem dados para o eixo selecionado.")
 
     valor_iea = iea(df, filtros)
 
@@ -81,12 +82,12 @@ def atualizar(fic, eixo, campus, modalidade):
     linhas = []
     for chave, grupo in df.groupby(coluna_eixo, dropna=False):
         linhas.append({coluna_eixo: chave, "IEA": round(iea(grupo, filtros), 4)})
-    tabela = dbc.Table.from_dataframe(pd.DataFrame(linhas), striped=True, bordered=True, hover=True)
-    matriz = html.Div(tabela, className="table-scroll-wrapper")
+    quadro = pd.DataFrame(linhas)
+    matriz = tabela_ds(list(quadro.columns), quadro.values.tolist(), "IEA por eixo")
 
     # BR-MIGRAR-013/BR-HUMANA-001: 0, nunca NaN, quando pC+pE=0 — já garantido
     # por `app.domain.eficiencia.calcular_iea`.
-    return kpi_card("IEA (Índice de Eficiência Acadêmica)", valor_iea, formato="#,0.00"), matriz
+    return kpi_colunas([kpi_card("IEA (Índice de Eficiência Acadêmica)", valor_iea, formato="#,0.00")]), matriz
 
 
 @callback(

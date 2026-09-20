@@ -1372,9 +1372,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Callback com dados simulados devolve `br-table` e `br-card` com os mesmos números de antes; sem `dbc.Table.from_dataframe`
-- [ ] Sem dados: `br-message info` "Ainda não há dados publicados."
-- [ ] Testes em `tests/test_paginas_publicas.py`; gate full passa
+- [x] Callback com dados simulados devolve `br-table` e `br-card` com os mesmos números de antes; sem `dbc.Table.from_dataframe`
+- [x] Sem dados: `br-message info` "Ainda não há dados publicados."
+- [x] Testes em `tests/test_paginas_publicas.py`; gate full passa
 
 **Tests**: unit
 **Gate**: full
