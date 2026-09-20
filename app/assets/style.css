@@ -208,3 +208,20 @@ body{
   color: var(--interactive);
   border-color: var(--interactive);
 }
+
+/* ---- Sem rolagem lateral nas telas estreitas (achado na verificação visual) ---- */
+
+.br-message .content{
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+pre{
+  max-width: 100%;
+  overflow-x: auto;
+}
+.br-button{
+  max-width: 100%;
+  height: auto;
+  min-height: var(--button-size);
+  white-space: normal;
+}

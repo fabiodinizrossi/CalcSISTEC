@@ -72,7 +72,7 @@ def test_scripts_carrega_confirmar_js_uma_vez_depois_de_core_min_js():
     with app_module.server.test_request_context("/"):
         html = render_template("shell/_scripts.html")
     assert html.count("/ds/js/confirmar.js") == 1
-    assert html.index("core.min.js") < html.index("/ds/js/confirmar.js")
+    assert html.index("core-init.min.js") < html.index("/ds/js/confirmar.js")
 
 
 def test_nenhum_js_estatico_chama_o_confirm_nativo():

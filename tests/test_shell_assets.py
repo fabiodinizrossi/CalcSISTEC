@@ -20,10 +20,10 @@ def cliente():
 def test_ds_sai_de_assets_e_vai_para_static():
     assert not (RAIZ_APP / "assets" / "govbr-ds").exists()
     assert (RAIZ_APP / "static" / "govbr-ds" / "dist" / "core.min.css").is_file()
-    assert (RAIZ_APP / "static" / "govbr-ds" / "dist" / "core.min.js").is_file()
+    assert (RAIZ_APP / "static" / "govbr-ds" / "dist" / "core-init.min.js").is_file()
 
 
-@pytest.mark.parametrize("arquivo", ["core.min.css", "core.min.js"])
+@pytest.mark.parametrize("arquivo", ["core.min.css", "core-init.min.js"])
 def test_ds_e_servido_em_ds(cliente, arquivo):
     """O corpo é o arquivo do DS (o catch-all do Dash também responde 200, com o índice)."""
     resposta = cliente.get(f"/ds/govbr-ds/dist/{arquivo}")
@@ -115,3 +115,15 @@ def test_os_arquivos_de_fonte_do_css_da_rawline_resolvem_para_200(cliente):
         resposta = cliente.get(url)
         assert resposta.status_code == 200, url
         resposta.close()
+
+
+def test_o_script_do_shell_instancia_os_componentes_do_ds_na_carga():
+    """`core.min.js` só registra os comportamentos; `core-init.min.js` também instancia
+    `br-menu`, `br-header` e os demais (verificado no Chrome: com `core.min.js` o botão
+    do menu não abre)."""
+    dist = RAIZ_APP / "static" / "govbr-ds" / "dist"
+    chamadas_no_init = (dist / "core-init.min.js").read_text(encoding="utf-8").count(".initInstanceAll()")
+    chamadas_na_biblioteca = (dist / "core.min.js").read_text(encoding="utf-8").count(".initInstanceAll()")
+    assert chamadas_no_init == chamadas_na_biblioteca + 1
+    with open(RAIZ_APP / "templates" / "shell" / "_scripts.html", encoding="utf-8") as arquivo:
+        assert "core-init.min.js" in arquivo.read()

@@ -26,6 +26,14 @@
 - **Date**: 2026-09-19
 - **Status**: active
 
+### AD-004
+- **Decision**: O shell carrega `core-init.min.js` (um único script do DS), não `core.min.js`; `menu.js` complementa o menu do DS com `aria-expanded` e o foco de volta ao botão.
+- **Reason**: `core.min.js` só registra os comportamentos e não instancia `br-menu`, `br-header` e os demais (verificado no Chrome: o botão do menu não abria). `core-init.min.js` faz isso na carga do DOM real; o DS não devolve o foco ao botão ao fechar com Esc.
+- **Trade-off**: Substitui a premissa de AD-001 e AD-002 de que `core.min.js` inicializa os componentes; atualizar o DS exige conferir que o `core-init.min.js` continua chamando `initInstanceAll`.
+- **Scope**: Toda página que carrega o shell (`shell/_scripts.html`).
+- **Date**: 2026-09-19
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `.specs/features/govbr-design-system`

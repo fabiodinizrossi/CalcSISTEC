@@ -132,4 +132,4 @@ def test_scripts_carrega_tema_js_uma_vez_depois_de_core_min_js():
     with app_module.server.test_request_context("/"):
         html = render_template("shell/_scripts.html")
     assert html.count("/ds/js/tema.js") == 1
-    assert html.index("core.min.js") < html.index("/ds/js/tema.js")
+    assert html.index("core-init.min.js") < html.index("/ds/js/tema.js")

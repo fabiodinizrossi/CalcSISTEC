@@ -1,7 +1,7 @@
 """Percorre a árvore de componentes Dash para os testes das telas públicas."""
 
 # Componentes do DS que dependem de JavaScript inicializado na carga (AD-001): o
-# core.min.js não observa o DOM que o React cria depois.
+# core-init.min.js não observa o DOM que o React cria depois.
 CLASSES_DO_DS_QUE_PRECISAM_DE_JS = (
     "br-select",
     "br-tab",

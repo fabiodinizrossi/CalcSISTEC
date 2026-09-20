@@ -125,3 +125,15 @@ def test_o_tema_escuro_tem_regra_para_o_componente(componente):
 def test_o_involucro_do_logotipo_mantem_superficie_clara_nos_dois_temas():
     assert re.search(r"\.logo-superficie\s*\{[^}]*background:\s*var\(--pure-0\)", SEM_COMENTARIOS)
     assert not re.search(r'data-tema="escuro"\][^{]*\.logo-superficie', SEM_COMENTARIOS)
+
+
+def test_mensagem_quebra_texto_longo_e_o_pre_rola_dentro_do_proprio_quadro():
+    assert re.search(r"\.br-message \.content\s*\{[^}]*overflow-wrap:\s*anywhere", SEM_COMENTARIOS)
+    assert re.search(r"(?m)^pre\s*\{[^}]*overflow-x:\s*auto", SEM_COMENTARIOS)
+
+
+def test_botao_do_ds_quebra_o_rotulo_em_vez_de_estourar_a_largura():
+    corpo = _regra(".br-button{") if False else re.search(r"(?m)^\.br-button\s*\{([^}]*)\}", SEM_COMENTARIOS).group(1)
+    assert "max-width: 100%" in corpo
+    assert "white-space: normal" in corpo
+    assert "min-height: var(--button-size)" in corpo

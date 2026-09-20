@@ -25,7 +25,7 @@ def test_base_compoe_o_shell_do_ds(cliente):
     html = cliente.get("/admin/login").get_data(as_text=True)
     assert '<html lang="pt-BR"' in html
     assert len(re.findall(r'<link[^>]+href="/ds/govbr-ds/dist/core\.min\.css"', html)) == 1
-    assert len(re.findall(r'<script[^>]+src="/ds/govbr-ds/dist/core\.min\.js"', html)) == 1
+    assert len(re.findall(r'<script[^>]+src="/ds/govbr-ds/dist/core-init.min.js"', html)) == 1
     assert 'class="br-header"' in html
     assert 'class="br-footer"' in html
     assert "container-fluid" in html

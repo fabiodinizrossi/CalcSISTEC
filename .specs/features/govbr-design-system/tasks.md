@@ -24,6 +24,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
   - `validar_campos_campus(dados, inclusao=False)` no lugar de `exigir_nome_perfil`: na inclusão só Identificador e Nome do perfil são obrigatórios (DS-78, literal); na edição, os quatro campos.
   - Macro `mensagem`: `role="alert"` para `success` e `danger` (DS-22 é a spec); `role="status"` para `info` e `warning`.
   - Seletor "Exibir" da paginação (DS-83) é `<select>` nativo em formulário GET com botão "Aplicar", sem JavaScript próprio.
+  - `_scripts.html` carrega `core-init.min.js`, não `core.min.js` (AD-004): a T55 mostrou no Chrome que o `core.min.js` não instancia o menu do DS. `menu.js` (novo) cobre `aria-expanded` e o foco de volta ao botão do menu.
   - Testes de JS rodam com `node` (funções puras exportadas) e são pulados (`skipif`) se `node` não existir; nenhuma dependência nova no `requirements.txt`. O comportamento de DOM (foco preso, Esc, menu por teclado) é conferido na T55.
 
 ---

@@ -190,7 +190,7 @@ def test_pagina_dash_carrega_core_min_css_e_js_uma_vez_e_style_css_uma_vez_mesmo
     css = '<link rel="stylesheet" href="/assets/style.css?m=1700000000.0">'
     html = montar_pagina_dash("/matriculas", css=css)
     assert len(re.findall(r"core\.min\.css", html)) == 1
-    assert len(re.findall(r"core\.min\.js", html)) == 1
+    assert len(re.findall(r"core-init.min.js", html)) == 1
     assert len(re.findall(r"style\.css", html)) == 1
 
 
@@ -219,7 +219,7 @@ def test_paginas_publicas_usam_o_shell_do_ds(caminho, rotulo):
     for classe in ("br-header", "br-menu", "br-footer"):
         assert f'class="{classe}"' in html
     assert len(re.findall(r"core\.min\.css", html)) == 1
-    assert len(re.findall(r"core\.min\.js", html)) == 1
+    assert len(re.findall(r"core-init.min.js", html)) == 1
     assert not re.search(r"<link[^>]*bootstrap", html, re.I)
     ativos = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">(.*?)</span>', html, re.S)
     assert [a.strip() for a in ativos] == [rotulo]
