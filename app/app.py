@@ -2,15 +2,11 @@ import os
 
 import dash
 import flask
-import dash_bootstrap_components as dbc
 from dash import html
 
 from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, requer_autenticacao
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
-from app.components.footer import make_footer
 from app.config import aplicar_configuracao_sessao
-from app.components.header import make_header
-from app.components.navigation import make_navigation
 from app.data.config_store import (
     DEFAULT_LOGO_PATH,
     dados_instituicao,
@@ -32,35 +28,15 @@ from app.data.historico import listar as historico_listar
 from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
+from app.shell import PainelDash, init_shell
 from app.sistec import execucoes, navegador
 
-app = dash.Dash(
+app = PainelDash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
     title="Início - Pesquisa Institucional - SISTEC",
 )
-
-# T021 (RF-05, WCAG 3.1.1): declara pt-BR no `<html>` — o índice padrão do
-# Dash usa `lang="en"`.
-app.index_string = """<!DOCTYPE html>
-<html lang="pt-BR">
-    <head>
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>"""
 
 server = app.server
 server.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
@@ -75,7 +51,6 @@ aplicar_configuracao_sessao(server)
 init_db(DEFAULT_DB_PATH)
 
 from app.sistec.api import bp as sistec_api_bp  # noqa: E402
-from app.shell import init_shell  # noqa: E402
 
 server.register_blueprint(sistec_api_bp)
 init_shell(server, app)
@@ -85,31 +60,11 @@ init_shell(server, app)
 # padrão de upload no navegador + `dcc.Store` de sessão — o upload agora só
 # acontece na rota administrativa autenticada (`/admin/upload`, Tarefa 08).
 #
-# `001-govbr-design-system` (T019/T021): Header + NavigationMenu +
-# page_container + Footer empilhados verticalmente (a barra lateral fixa
-# saiu, RF-03). `app.layout` vira uma função (em vez de um componente
-# estático) para que o rodapé releia `config_store.get_contato_email()` a
-# cada carregamento de página — sem isso, uma alteração de e-mail em
-# `/admin/config` só apareceria depois de reiniciar o processo (RN-12).
+# O cabeçalho, o menu e o rodapé vêm do shell (`app/shell.py`, AD-001); o Dash
+# renderiza só o aviso de dataset sem correção PNP e a página atual. O layout
+# continua sendo uma função para reler o dataset a cada carregamento.
 def serve_layout():
-    return html.Div(
-        [
-            html.A("Ir para o conteúdo principal", href="#main-content", className="skip-link"),
-            make_header(),
-            make_navigation(),
-            html.Main(
-                id="main-content",
-                role="main",
-                children=[
-                    aviso
-                    for aviso in [make_aviso_sem_pnp()]
-                    if aviso is not None
-                ]
-                + [dash.page_container],
-            ),
-            make_footer(),
-        ]
-    )
+    return html.Div([aviso for aviso in [make_aviso_sem_pnp()] if aviso is not None] + [dash.page_container])
 
 
 app.layout = serve_layout

@@ -581,10 +581,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET /`, `/matriculas`, `/eficiencia`, `/evasao` e `/percentuais-legais` respondem 200 com `br-header`, `br-menu`, `br-footer`, 1 `core.min.css`, 1 `core.min.js` e nenhuma folha do Bootstrap
-- [ ] Em cada uma, só o item de menu da própria página tem `aria-current="page"`; as 4 diferentes da capa mostram breadcrumb `Início > título`; a capa não mostra
-- [ ] `app.layout()` não contém mais cabeçalho, menu nem rodapé do Dash
-- [ ] Testes em `tests/test_shell.py`; gate full passa
+- [x] `GET /`, `/matriculas`, `/eficiencia`, `/evasao` e `/percentuais-legais` respondem 200 com `br-header`, `br-menu`, `br-footer`, 1 `core.min.css`, 1 `core.min.js` e nenhuma folha do Bootstrap
+- [x] Em cada uma, só o item de menu da própria página tem `aria-current="page"`; as 4 diferentes da capa mostram breadcrumb `Início > título`; a capa não mostra
+- [x] `app.layout()` não contém mais cabeçalho, menu nem rodapé do Dash
+- [x] Testes em `tests/test_shell.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

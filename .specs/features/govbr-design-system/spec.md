@@ -387,7 +387,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | In Tasks |
 | DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | Implementing |
 | DS-17          | P1: Páginas públicas (AC 8, br-message) | Design | In Tasks |
-| DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | In Tasks |
+| DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | Implementing |
 | DS-19          | P1: Páginas administrativas (AC 1, header e footer) | Design | Implementing |
 | DS-20          | P1: Páginas administrativas (AC 2, formulários) | Design | Implementing |
 | DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | Implementing |

@@ -196,3 +196,49 @@ def test_pagina_dash_carrega_core_min_css_e_js_uma_vez_e_style_css_uma_vez_mesmo
 
 def test_pagina_dash_nao_carrega_folha_do_bootstrap():
     assert "bootstrap" not in montar_pagina_dash("/matriculas").lower()
+
+
+PAGINAS_DASH = [
+    ("/", "Início"),
+    ("/matriculas", "Matrículas"),
+    ("/eficiencia", "Eficiência Acadêmica"),
+    ("/evasao", "Taxa de Evasão Anual"),
+    ("/percentuais-legais", "Percentuais Legais"),
+]
+
+
+@pytest.mark.parametrize("caminho,rotulo", PAGINAS_DASH)
+def test_paginas_publicas_usam_o_shell_do_ds(caminho, rotulo):
+    import re
+
+    from app import app as app_module
+
+    resposta = app_module.server.test_client().get(caminho)
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    for classe in ("br-header", "br-menu", "br-footer"):
+        assert f'class="{classe}"' in html
+    assert len(re.findall(r"core\.min\.css", html)) == 1
+    assert len(re.findall(r"core\.min\.js", html)) == 1
+    assert not re.search(r"<link[^>]*bootstrap", html, re.I)
+    ativos = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">(.*?)</span>', html, re.S)
+    assert [a.strip() for a in ativos] == [rotulo]
+    if caminho == "/":
+        assert 'class="br-breadcrumb"' not in html
+    else:
+        crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
+        textos = [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", c)).strip() for c in re.findall(r'<li class="crumb".*?</li>', crumbs, re.S)]
+        assert textos == ["Início", rotulo]
+
+
+def test_layout_do_dash_nao_tem_mais_cabecalho_menu_nem_rodape():
+    import json
+
+    from plotly.utils import PlotlyJSONEncoder
+
+    from app import app as app_module
+
+    layout = json.dumps(app_module.app.layout(), cls=PlotlyJSONEncoder)
+    for antigo in ("app-header", "nav-menu", "app-footer", "skip-link"):
+        assert antigo not in layout
+    assert "page-content" in layout or "_pages_content" in layout
