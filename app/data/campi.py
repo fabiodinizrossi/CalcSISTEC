@@ -28,7 +28,26 @@ DIGITOS_MINIMOS_ID = 5
 
 
 class CampusInvalido(ValueError):
-    """Identificador do perfil ou código da unidade já usado por outro campus."""
+    """Identificador do perfil ou código da unidade já usado por outro campus.
+
+    `campo` diz qual dos dois entrou em conflito (`id_perfil` ou `co_unidade`);
+    fica `None` quando quem levanta a exceção não sabe."""
+
+    def __init__(self, mensagem, campo=None):
+        super().__init__(mensagem)
+        self.campo = campo
+
+
+_CONFLITOS = {
+    "id_perfil": "esse identificador de perfil já está em outro campus",
+    "co_unidade": "esse código da unidade já está em outro campus",
+}
+
+
+def _conflito(exc):
+    """`CampusInvalido` do campo que o SQLite acusou no `UNIQUE`."""
+    campo = "co_unidade" if "co_unidade" in str(exc) else "id_perfil"
+    return CampusInvalido(_CONFLITOS[campo], campo=campo)
 
 
 def id_suspeito(id_perfil):
@@ -169,9 +188,7 @@ def salvar_campus_manual(id_perfil, co_unidade, cidade, nome_unidade, db_path=DE
         conn.commit()
     except sqlite3.IntegrityError as exc:
         conn.rollback()
-        if novo != id_perfil:
-            raise CampusInvalido("esse identificador de perfil já está em outro campus") from exc
-        raise CampusInvalido("esse código da unidade já está em outro campus") from exc
+        raise _conflito(exc) from exc
     except Exception:
         conn.rollback()
         raise
@@ -196,7 +213,7 @@ def incluir_campus(id_perfil, nome_perfil, co_unidade=None, cidade=None, nome_un
         conn.commit()
     except sqlite3.IntegrityError as exc:
         conn.rollback()
-        raise CampusInvalido("já existe um campus com esse identificador ou código da unidade") from exc
+        raise _conflito(exc) from exc
     except Exception:
         conn.rollback()
         raise

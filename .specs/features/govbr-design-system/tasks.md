@@ -794,9 +794,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Identificador duplicado levanta `CampusInvalido` com `campo == "id_perfil"` e a mensagem do identificador; código duplicado, `campo == "co_unidade"` e a mensagem do código (nos dois caminhos: edição e inclusão)
-- [ ] Chamadores existentes de `CampusInvalido(mensagem)` continuam válidos (`campo` padrão `None`); testes antigos passam sem alteração
-- [ ] Testes novos em `tests/test_campi.py`; gate quick passa
+- [x] Identificador duplicado levanta `CampusInvalido` com `campo == "id_perfil"` e a mensagem do identificador; código duplicado, `campo == "co_unidade"` e a mensagem do código (nos dois caminhos: edição e inclusão)
+- [x] Chamadores existentes de `CampusInvalido(mensagem)` continuam válidos (`campo` padrão `None`); testes antigos passam sem alteração
+- [x] Testes novos em `tests/test_campi.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick
