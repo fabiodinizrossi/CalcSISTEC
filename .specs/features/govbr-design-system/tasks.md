@@ -449,10 +449,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Markup tem `role="dialog"`, `aria-modal="true"`, `aria-labelledby` apontando para um id existente, ícone de alerta com `aria-hidden="true"`
-- [ ] Botão "Cancelar" é `br-button secondary`; botão de confirmação é `br-button primary`, com ids fixos que `confirmar.js` (T22) vai usar
-- [ ] Renderizado sem a classe `active` do scrim (fechado)
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] Markup tem `role="dialog"`, `aria-modal="true"`, `aria-labelledby` apontando para um id existente, ícone de alerta com `aria-hidden="true"`
+- [x] Botão "Cancelar" é `br-button secondary`; botão de confirmação é `br-button primary`, com ids fixos que `confirmar.js` (T22) vai usar
+- [x] Renderizado sem a classe `active` do scrim (fechado)
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick

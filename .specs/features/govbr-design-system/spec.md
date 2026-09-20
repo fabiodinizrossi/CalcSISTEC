@@ -427,9 +427,9 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Implementing |
 | DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
 | DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | In Tasks |
-| DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | In Tasks |
+| DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | Implementing |
 | DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | In Tasks |
-| DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | In Tasks |
+| DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
 | DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
 | DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | In Tasks |
 | DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | In Tasks |
@@ -442,7 +442,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-70          | P1: CRUD de campi (AC 9, campo obrigatório vazio) | Design | In Tasks |
 | DS-71          | P1: CRUD de campi (AC 10, identificador ou código duplicado) | Design | In Tasks |
 | DS-72          | P1: CRUD de campi (AC 11, banner de erro) | Design | In Tasks |
-| DS-73          | P1: CRUD de campi (AC 12, modal de exclusão) | Design | In Tasks |
+| DS-73          | P1: CRUD de campi (AC 12, modal de exclusão) | Design | Implementing |
 | DS-74          | P1: CRUD de campi (AC 13, confirmar exclusão) | Design | In Tasks |
 | DS-75          | P1: CRUD de campi (AC 14, cancelar exclusão) | Design | In Tasks |
 | DS-76          | P1: CRUD de campi (AC 15, desativar e reativar) | Design | In Tasks |

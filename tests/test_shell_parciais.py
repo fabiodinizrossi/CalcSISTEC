@@ -238,3 +238,36 @@ def test_falha_ao_carregar_core_min_js_marca_ds_sem_js_no_html(servidor):
 
 def html_desescapado(valor):
     return html_lib.unescape(valor)
+
+
+def modal(servidor):
+    return renderizar(servidor, "shell/_modal_confirmacao.html")
+
+
+def test_modal_e_dialogo_modal_rotulado_por_um_id_existente(servidor):
+    html = modal(servidor)
+    dialogo = re.search(r'<div\b[^>]*class="br-modal[^"]*"[^>]*>', html).group(0)
+    assert 'role="dialog"' in dialogo
+    assert 'aria-modal="true"' in dialogo
+    rotulo = re.search(r'aria-labelledby="([^"]+)"', dialogo).group(1)
+    assert f'id="{rotulo}"' in html
+
+
+def test_modal_tem_icone_de_alerta_escondido_de_leitores_de_tela(servidor):
+    assert re.search(r'<i\b[^>]*class="[^"]*fa-exclamation-triangle[^"]*"[^>]*aria-hidden="true"', modal(servidor))
+
+
+def test_modal_tem_cancelar_secundario_e_confirmar_primario_com_ids_fixos(servidor):
+    html = modal(servidor)
+    cancelar = re.search(r'<button\b[^>]*id="modal-confirmacao-cancelar"[^>]*>(.*?)</button>', html, re.S)
+    confirmar = re.search(r'<button\b[^>]*id="modal-confirmacao-confirmar"[^>]*>(.*?)</button>', html, re.S)
+    assert re.search(r'class="br-button secondary\b', cancelar.group(0))
+    assert cancelar.group(1).strip() == "Cancelar"
+    assert re.search(r'class="br-button primary\b', confirmar.group(0))
+    assert 'id="modal-confirmacao-mensagem"' in html
+
+
+def test_modal_renderiza_fechado(servidor):
+    scrim = re.search(r'<div\b[^>]*class="br-scrim[^"]*"[^>]*>', modal(servidor)).group(0)
+    assert "foco" in scrim
+    assert not re.search(r'class="[^"]*\bactive\b', scrim)
