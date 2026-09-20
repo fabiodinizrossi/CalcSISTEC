@@ -377,7 +377,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
 | DS-06          | P1: Layout responsivo (AC 6, coluna única < 576px) | Design | In Tasks |
 | DS-07          | P1: Layout responsivo (AC 7, máx. 1520px em 1600px+) | Design | In Tasks |
-| DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | In Tasks |
+| DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | Implementing |
 | DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | In Tasks |
 | DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | Implementing |
 | DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Implementing |

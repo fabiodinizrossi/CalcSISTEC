@@ -687,10 +687,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com registros (`monkeypatch` de `historico_listar`), a tabela é `br-table` dentro de contêiner com rolagem contida; sem `table-scroll-wrapper` antigo
-- [ ] Sem registros, `br-message info` no lugar da tabela
-- [ ] Breadcrumb `Início > Histórico de atualizações` presente
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] Com registros (`monkeypatch` de `historico_listar`), a tabela é `br-table` dentro de contêiner com rolagem contida; sem `table-scroll-wrapper` antigo
+- [x] Sem registros, `br-message info` no lugar da tabela
+- [x] Breadcrumb `Início > Histórico de atualizações` presente
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

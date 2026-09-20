@@ -127,3 +127,53 @@ def test_instalacao_com_nome_vazio_marca_o_campo_em_danger_ligado_a_mensagem(cli
     assert re.search(r'class="br-input danger"[^>]*>\s*<label for="nome">', html)
     assert re.search(r'<input\b[^>]*id="nome"[^>]*aria-describedby="nome-erro[^"]*"', html)
     assert re.search(r'id="nome-erro"[^>]*>\s*<i[^>]*></i>Informe o nome da instituição\.', html)
+
+
+EVENTOS = [
+    {
+        "inicio": "2026-09-01 10:00",
+        "tipo": "sistec",
+        "admin_email": "pi@ife.edu.br",
+        "desfecho": "publicada",
+        "sucessos": 12,
+        "falhas": 0,
+        "pausas": 1,
+        "linhas_consolidadas": 5300,
+    },
+    {
+        "inicio": "2026-09-02 09:30",
+        "tipo": "sistec",
+        "admin_email": "pi@ife.edu.br",
+        "desfecho": None,
+        "sucessos": None,
+        "falhas": None,
+        "pausas": None,
+        "linhas_consolidadas": None,
+    },
+]
+
+
+def test_historico_com_registros_usa_br_table_em_conteiner_rolavel(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "historico_listar", lambda: EVENTOS)
+    html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
+    assert re.search(r'<div class="br-table">\s*<div class="responsive">\s*<table', html)
+    assert "table-scroll-wrapper" not in html
+    assert len(re.findall(r"<tbody>.*?</tbody>", html, re.S)) == 1
+    linhas = re.findall(r"<tr>\s*<td>", html)
+    assert len(linhas) == len(EVENTOS)
+    assert "em andamento" in html
+
+
+def test_historico_sem_registros_mostra_br_message_info_no_lugar_da_tabela(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
+    assert re.search(r'class="br-message info"[^>]*>.*Nenhuma atualização registrada ainda\.', html, re.S)
+    assert "<table" not in html
+
+
+def test_historico_tem_breadcrumb_inicio_e_pagina_atual(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
+    crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
+    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Início\s*</a>', crumbs)
+    assert re.search(r'<span aria-current="page">Histórico de atualizações</span>', crumbs)
