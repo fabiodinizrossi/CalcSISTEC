@@ -3,6 +3,8 @@ como asset, e o servidor Flask o serve em `/ds/`."""
 
 from pathlib import Path
 
+import re
+
 import pytest
 
 RAIZ_APP = Path(__file__).resolve().parents[1] / "app"
@@ -83,3 +85,33 @@ def test_nada_em_app_referencia_o_shell_antigo():
         texto = arquivo.read_text(encoding="utf-8")
         for referencia in referencias:
             assert referencia not in texto, f"{arquivo.name} ainda cita {referencia}"
+
+
+RECURSOS_LOCAIS = re.compile(r'<(?:link|script|img)\b[^>]*\b(?:href|src)="([^"]+)"')
+
+
+def _recursos(html):
+    return [url for url in RECURSOS_LOCAIS.findall(html) if not url.startswith(("#", "data:"))]
+
+
+@pytest.mark.parametrize("caminho", ["/admin/login", "/"])
+def test_todo_recurso_do_html_e_local_e_resolve_para_200(cliente, caminho):
+    html = cliente.get(caminho).get_data(as_text=True)
+    recursos = _recursos(html)
+    assert recursos
+    for url in recursos:
+        assert not url.startswith(("http://", "https://", "//")), url
+        resposta = cliente.get(url.split("?")[0])
+        assert resposta.status_code == 200, url
+        resposta.close()
+
+
+def test_os_arquivos_de_fonte_do_css_da_rawline_resolvem_para_200(cliente):
+    css = cliente.get("/ds/vendor/rawline/rawline.css").get_data(as_text=True)
+    urls = re.findall(r'url\("([^"]+)"\)', css)
+    assert len(urls) == 7
+    for url in urls:
+        assert not url.startswith(("http://", "https://", "//")), url
+        resposta = cliente.get(url)
+        assert resposta.status_code == 200, url
+        resposta.close()

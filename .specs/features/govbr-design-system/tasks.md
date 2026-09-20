@@ -1584,9 +1584,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Ramo com licença confirmada: arquivos e `@font-face` locais, sem URL externo, e o teste de assets de T53 continua verde
-- [ ] Ramo sem licença: `STATE.md` ganha AD-004 com a decisão, a razão e o trade-off, e nenhuma referência a fonte inexistente fica no HTML
-- [ ] Gate build passa
+- [x] Ramo com licença confirmada: arquivos e `@font-face` locais, sem URL externo, e o teste de assets de T53 continua verde
+- [x] Ramo sem licença: não se aplica, Jaline liberou a Rawline (2026-09-19); nenhuma referência a fonte inexistente fica no HTML
+- [x] Gate build passa
 
 **Tests**: none
 **Gate**: build

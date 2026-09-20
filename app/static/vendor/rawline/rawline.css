@@ -1,0 +1,57 @@
+/* Rawline, servida localmente (sem CDN). */
+
+@font-face{
+  font-family: "Rawline";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-300.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-400.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-400i.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-500.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-600.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-700.ttf") format("truetype");
+}
+
+@font-face{
+  font-family: "Rawline";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/ds/vendor/rawline/rawline-700i.ttf") format("truetype");
+}
