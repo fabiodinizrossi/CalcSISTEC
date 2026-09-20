@@ -713,10 +713,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com sessão autenticada e instalação concluída, `GET /admin/atualizar` responde 200 com breadcrumb e `br-menu` administrativo
-- [ ] Os 4 ids de botão e os 4 atributos `data-confirm` continuam presentes com os mesmos textos
-- [ ] Botões empilhados abaixo de 576px pelas classes do DS (sem `@media` próprio)
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] Com sessão autenticada e instalação concluída, `GET /admin/atualizar` responde 200 com breadcrumb e `br-menu` administrativo
+- [x] Os 4 ids de botão e os 4 atributos `data-confirm` continuam presentes com os mesmos textos
+- [x] Botões empilhados abaixo de 576px pelas classes do DS (sem `@media` próprio)
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

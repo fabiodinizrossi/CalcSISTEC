@@ -177,3 +177,35 @@ def test_historico_tem_breadcrumb_inicio_e_pagina_atual(cliente_autenticado, mon
     crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
     assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Início\s*</a>', crumbs)
     assert re.search(r'<span aria-current="page">Histórico de atualizações</span>', crumbs)
+
+
+def test_atualizar_mostra_breadcrumb_e_menu_administrativo(cliente_autenticado):
+    resposta = cliente_autenticado.get("/admin/atualizar")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    menu = re.search(r'<div class="br-menu".*?</nav>', html, re.S).group(0)
+    assert re.search(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">Atualizar dados</span>', menu)
+    assert 'class="br-breadcrumb"' in html
+
+
+@pytest.mark.parametrize(
+    "botao,pergunta",
+    [
+        ("btn-cancelar", "Cancelar a atualização em andamento?"),
+        ("btn-descartar", "Descartar esta prévia?"),
+        ("btn-publicar", "Publicar a versão interna no painel público?"),
+        ("btn-desfazer", "Desfazer a última publicação?"),
+    ],
+)
+def test_atualizar_mantem_os_ids_e_os_data_confirm_dos_botoes(cliente_autenticado, botao, pergunta):
+    html = cliente_autenticado.get("/admin/atualizar").get_data(as_text=True)
+    tag = re.search(rf'<button\b[^>]*id="{botao}"[^>]*>', html).group(0)
+    assert f'data-confirm="{pergunta}"' in tag
+
+
+def test_atualizar_empilha_os_botoes_abaixo_de_576px_com_classes_do_ds(cliente_autenticado):
+    html = cliente_autenticado.get("/admin/atualizar").get_data(as_text=True)
+    acoes = re.search(r'<div[^>]*id="atualizar-acoes"[^>]*>', html).group(0)
+    assert "flex-column" in acoes
+    assert "flex-sm-row" in acoes
+    assert "@media" not in html
