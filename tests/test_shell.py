@@ -111,3 +111,25 @@ def test_email_e_site_em_branco_chegam_como_vazios(monkeypatch):
     assert contexto["contato_email"] == ""
     assert contexto["instituicao"]["site"] == ""
     assert contexto["instituicao"]["nome"] == "Instituto Teste"
+
+
+def test_template_flask_recebe_o_contexto_do_shell_da_rota_atual():
+    from flask import render_template_string
+
+    from app import app as app_module
+
+    with app_module.server.test_request_context("/admin/historico"):
+        assert render_template_string("{{ shell.menu|length }}") == str(len(shell.PAGINAS_ADMIN))
+        assert render_template_string("{{ instituicao.nome }}|{{ contato_email }}") == "Instituto Teste|pi@it.edu.br"
+
+
+def test_rota_que_ja_passa_instituicao_e_contato_mantem_os_valores_dela():
+    from flask import render_template_string
+
+    from app import app as app_module
+
+    with app_module.server.test_request_context("/admin/historico"):
+        html = render_template_string(
+            "{{ instituicao.nome }}|{{ contato_email }}", instituicao={"nome": "Da rota"}, contato_email="rota@x.br"
+        )
+    assert html == "Da rota|rota@x.br"

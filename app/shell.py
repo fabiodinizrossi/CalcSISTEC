@@ -3,7 +3,7 @@ menu, breadcrumb e rodapé compartilhados por páginas Flask e Dash."""
 
 import os
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 from app.data.config_store import dados_instituicao, get_contato_email
 
@@ -69,3 +69,12 @@ def contexto_shell(caminho):
 
 def init_shell(server, dash_app):
     server.register_blueprint(ds_static)
+
+    @server.context_processor
+    def contexto_do_shell():
+        contexto = contexto_shell(request.path)
+        return {
+            "shell": contexto,
+            "instituicao": contexto["instituicao"],
+            "contato_email": contexto["contato_email"],
+        }

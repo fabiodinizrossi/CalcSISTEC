@@ -504,9 +504,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Dentro de `server.test_request_context("/admin/historico")`, `render_template_string("{{ shell.menu|length }}")` devolve o número de itens administrativos
-- [ ] Rota que já passa `instituicao` e `contato_email` mantém os valores dela
-- [ ] Testes em `tests/test_shell.py`; gate quick passa
+- [x] Dentro de `server.test_request_context("/admin/historico")`, `render_template_string("{{ shell.menu|length }}")` devolve o número de itens administrativos
+- [x] Rota que já passa `instituicao` e `contato_email` mantém os valores dela
+- [x] Testes em `tests/test_shell.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick
