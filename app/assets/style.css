@@ -112,3 +112,99 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
 .dash-dropdown-option:hover, .dash-dropdown-option:focus-visible{
   background: var(--background-alternative);
 }
+
+/* ---- Tema escuro ----
+   O DS 3.7.0 não tem tema global: ele traz pares claro e escuro nos tokens, e o
+   modificador `.dark-mode` só em alguns componentes. `data-tema` em <html> (definido
+   por `shell/_head.html` e `tema.js`) remapeia as variáveis semânticas para os
+   pares -dark; as regras abaixo cobrem o que o DS não remapeia sozinho. */
+
+body{
+  background: var(--background);
+  color: var(--color);
+}
+
+:root[data-tema="escuro"]{
+  color-scheme: dark;
+  --background: var(--background-dark);
+  --background-rgb: var(--background-dark-rgb);
+  --background-alternative: var(--blue-warm-vivid-80);
+  --color: var(--color-dark);
+  --color-rgb: var(--color-dark-rgb);
+  --interactive: var(--interactive-dark);
+  --interactive-rgb: var(--interactive-dark-rgb);
+  --border-color: var(--gray-60);
+  --border-color-alternative: var(--gray-40);
+  --visited: var(--visited-dark);
+  --hover: var(--hover-dark);
+  --pressed: var(--pressed-dark);
+  --focus-color: var(--focus-color-dark);
+  --focus: var(--focus-color-dark);
+}
+
+/* Componentes que fixam os tokens claros ou não têm `.dark-mode` no DS 3.7.0. */
+:root[data-tema="escuro"] .br-header{
+  background: var(--background);
+  color: var(--color);
+  border-bottom: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-menu{
+  --menu-background-submenu: var(--background-alternative);
+}
+:root[data-tema="escuro"] .br-menu .menu-panel{
+  background: var(--background);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-footer{
+  background: var(--background);
+  color: var(--color);
+  border-top: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-message,
+:root[data-tema="escuro"] .br-message.info,
+:root[data-tema="escuro"] .br-message.success,
+:root[data-tema="escuro"] .br-message.warning,
+:root[data-tema="escuro"] .br-message.danger{
+  --message-background: var(--background-alternative);
+  --message-text: var(--color);
+  --message-color-icon: var(--color);
+  background: var(--background-alternative);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-card{
+  background: var(--background-alternative);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-table{
+  background: var(--background);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-table th,
+:root[data-tema="escuro"] .br-table td{
+  border-color: var(--border-color);
+}
+:root[data-tema="escuro"] .br-input,
+:root[data-tema="escuro"] .br-textarea{
+  --color: var(--color-dark);
+  --color-rgb: var(--color-dark-rgb);
+  --text-color: var(--color-dark);
+  --interactive: var(--interactive-dark);
+  --interactive-rgb: var(--interactive-dark-rgb);
+  --focus-color: var(--focus-color-dark);
+  --focus: var(--focus-color-dark);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-input input,
+:root[data-tema="escuro"] .br-input select,
+:root[data-tema="escuro"] .br-textarea textarea{
+  background: var(--background);
+  color: var(--color);
+  border-color: var(--border-color-alternative);
+}
+:root[data-tema="escuro"] .br-button.secondary,
+:root[data-tema="escuro"] .br-button.circle:not(.primary){
+  background-color: var(--background);
+  color: var(--interactive);
+  border-color: var(--interactive);
+}

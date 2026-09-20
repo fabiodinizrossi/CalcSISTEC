@@ -108,3 +108,20 @@ def test_dropdown_do_dash_usa_variaveis_do_ds():
     assert "var(--background)" in corpo
     assert "var(--color)" in corpo
     assert "var(--border-color)" in corpo
+
+
+def test_o_bloco_do_tema_escuro_existe_e_todo_valor_dentro_dele_e_var():
+    corpo = re.search(r':root\[data-tema="escuro"\]\s*\{([^}]*)\}', SEM_COMENTARIOS).group(1)
+    valores = re.findall(r"--[\w-]+:\s*([^;]+);", corpo)
+    assert valores
+    assert all(valor.strip().startswith("var(--") for valor in valores)
+
+
+@pytest.mark.parametrize("componente", ["br-header", "br-menu", "br-footer", "br-message", "br-card", "br-table", "br-input", "br-button"])
+def test_o_tema_escuro_tem_regra_para_o_componente(componente):
+    assert re.search(r':root\[data-tema="escuro"\]\s+\.' + componente + r"\b", SEM_COMENTARIOS)
+
+
+def test_o_involucro_do_logotipo_mantem_superficie_clara_nos_dois_temas():
+    assert re.search(r"\.logo-superficie\s*\{[^}]*background:\s*var\(--pure-0\)", SEM_COMENTARIOS)
+    assert not re.search(r'data-tema="escuro"\][^{]*\.logo-superficie', SEM_COMENTARIOS)

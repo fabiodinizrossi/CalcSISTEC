@@ -403,7 +403,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Implementing |
 | DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Implementing |
 | DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | Implementing |
-| DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | In Tasks |
+| DS-34          | P2: Acessibilidade (AC 4, contraste, 2 temas) | Design | Implementing |
 | DS-35          | P2: Acessibilidade (AC 5, rótulo textual) | Design | Implementing |
 | DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | Implementing |
 | DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | In Tasks |
@@ -422,7 +422,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-50          | P2: Tema escuro (AC 6, escolha salva vence) | Design | Implementing |
 | DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Implementing |
 | DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Implementing |
-| DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | In Tasks |
+| DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | Implementing |
 | DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | Implementing |
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Implementing |
 | DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |

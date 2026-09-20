@@ -1530,10 +1530,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] O bloco escuro existe, todo valor de cor dentro dele é `var(--...)`, e há regras para `br-header`, `br-menu`, `br-footer`, `br-message`, `br-card`, `br-table` e `br-input`
-- [ ] O invólucro do logotipo mantém superfície clara nos dois temas
-- [ ] Novo `tests/test_contraste_tema.py` calcula o contraste dos pares `--color`/`--background`, `--interactive`/`--background` e `--focus-color`/`--background` resolvidos em `core-tokens.css`, nos dois temas: texto ≥ 4,5:1 e foco ≥ 3:1
-- [ ] As lacunas achadas na conferência visual estão listadas no corpo do commit e cobertas por regra; `tests/test_style_css.py` continua verde; gate full passa
+- [x] O bloco escuro existe, todo valor de cor dentro dele é `var(--...)`, e há regras para `br-header`, `br-menu`, `br-footer`, `br-message`, `br-card`, `br-table` e `br-input`
+- [x] O invólucro do logotipo mantém superfície clara nos dois temas
+- [x] Novo `tests/test_contraste_tema.py` calcula o contraste dos pares `--color`/`--background`, `--interactive`/`--background` e `--focus-color`/`--background` resolvidos em `core-tokens.css`, nos dois temas: texto ≥ 4,5:1 e foco ≥ 3:1
+- [x] As lacunas achadas na conferência visual estão listadas no corpo do commit e cobertas por regra; `tests/test_style_css.py` continua verde; gate full passa
 
 **Tests**: unit
 **Gate**: full
