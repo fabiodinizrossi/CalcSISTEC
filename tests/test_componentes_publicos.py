@@ -170,3 +170,26 @@ def test_filter_panel_e_uma_row_com_cada_campo_em_coluna_que_comeca_em_col_12():
     for coluna in painel.children:
         assert "col-12" in coluna.className.split()
     assert [coluna.children.children[1].id for coluna in painel.children] == ["a", "b", "c"]
+
+
+from app.components import aviso_sem_pnp
+
+TEXTO_DO_AVISO = (
+    "Os dados exibidos vêm direto do Sistec, sem a correção de status pelos "
+    "microdados do PNP — os números podem divergir dos publicados oficialmente "
+    "pelo PNP até essa correção ser reintroduzida."
+)
+
+
+def test_aviso_sem_pnp_e_br_message_warning_com_role_status_e_o_texto_original(monkeypatch):
+    monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", False)
+    aviso = aviso_sem_pnp.make_aviso_sem_pnp()
+    assert {"br-message", "warning"} <= set(aviso.className.split())
+    assert aviso.role == "status"
+    assert TEXTO_DO_AVISO in textos(aviso)
+    assert "aviso-sem-pnp" not in classes(aviso)
+
+
+def test_aviso_sem_pnp_devolve_none_com_a_correcao_ativa(monkeypatch):
+    monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", True)
+    assert aviso_sem_pnp.make_aviso_sem_pnp() is None

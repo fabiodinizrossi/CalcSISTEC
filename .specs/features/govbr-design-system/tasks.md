@@ -1293,9 +1293,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com `CORRECAO_PNP_ATIVA=False`: classes `br-message warning`, `role="status"`, texto original mantido
-- [ ] Com `True` (`monkeypatch`): devolve `None`
-- [ ] Testes em `tests/test_componentes_publicos.py`; gate quick passa
+- [x] Com `CORRECAO_PNP_ATIVA=False`: classes `br-message warning`, `role="status"`, texto original mantido
+- [x] Com `True` (`monkeypatch`): devolve `None`
+- [x] Testes em `tests/test_componentes_publicos.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

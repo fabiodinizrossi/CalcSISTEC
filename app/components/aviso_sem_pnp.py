@@ -25,4 +25,11 @@ def make_aviso_sem_pnp():
     quem chama deve tratar esse caso (não inserir o componente no layout)."""
     if CORRECAO_PNP_ATIVA:
         return None
-    return html.Div(_MENSAGEM, className="aviso-sem-pnp", role="status")
+    return html.Div(
+        [
+            html.Div(html.I(className="fas fa-exclamation-triangle fa-lg", **{"aria-hidden": "true"}), className="icon"),
+            html.Div(html.Span(_MENSAGEM, className="message-body"), className="content"),
+        ],
+        className="br-message warning",
+        role="status",
+    )
