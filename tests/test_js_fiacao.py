@@ -68,26 +68,20 @@ contexto.__estado = { menu, botao, item };
 """
 
 
-def test_a_partir_de_992px_o_menu_comeca_expandido_e_o_botao_o_recolhe_por_clique_e_por_teclado():
+def test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura():
     verificar = """
     const { menu, botao } = contexto.__estado;
     const ler = () => ({ expanded: botao.getAttribute("aria-expanded"), recolhido: menu.classList.contains("menu-recolhido") });
     const inicial = ler();
     botao.disparar("click");
-    const aposClique = ler();
     botao.disparar("keydown", { code: "Enter" });
-    const aposEnter = ler();
     botao.disparar("keydown", { code: "Space" });
-    const aposEspaco = ler();
-    botao.disparar("keydown", { code: "KeyA" });
-    return { inicial, aposClique, aposEnter, aposEspaco, aposOutraTecla: ler() };
+    return { inicial, aposTeclas: ler() };
     """
-    r = rodar("menu.js", PREPARAR_MENU, verificar, largura=1280)
-    assert r["inicial"] == {"expanded": "true", "recolhido": False}
-    assert r["aposClique"] == {"expanded": "false", "recolhido": True}
-    assert r["aposEnter"] == {"expanded": "true", "recolhido": False}
-    assert r["aposEspaco"] == {"expanded": "false", "recolhido": True}
-    assert r["aposOutraTecla"] == r["aposEspaco"]
+    assert rodar("menu.js", PREPARAR_MENU, verificar, largura=1280) == {
+        "inicial": {"expanded": "false", "recolhido": False},
+        "aposTeclas": {"expanded": "false", "recolhido": False},
+    }
 
 
 def test_abaixo_de_992px_o_menu_comeca_fechado_e_o_botao_nao_recolhe_nada():

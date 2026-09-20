@@ -34,6 +34,14 @@
 - **Date**: 2026-09-19
 - **Status**: active
 
+### AD-005
+- **Decision**: A partir de 992px o menu principal é uma barra lateral fixa à esquerda (largura `--menu-largura: 240px`), sempre aberta, sem botão hambúrguer; o conteúdo (cabeçalho, breadcrumb, `<main>`, rodapé) desloca para a direita por `padding-left` no `<body>`.
+- **Reason**: A primeira versão (barra horizontal com botão hambúrguer para recolher) ficou ruim em telas largas, relatado por Jaline após o teste em celular e tela grande. O `br-menu` 3.7.0 só tem o modo push/sobreposto; a barra lateral é construída em `style.css` (`position: fixed` + `width` + `padding-left`).
+- **Trade-off**: O menu deixa de ser recolhível em telas largas (não há como escondê-lo); abaixo de 992px continua sobreposto e fechado por padrão, aberto pelo hambúrguer.
+- **Scope**: Todas as páginas públicas e administrativas com menu (DS-05; antes era "barra horizontal com hambúrguer").
+- **Date**: 2026-09-20
+- **Status**: active
+
 ## Handoff
 
 Pausa em 2026-09-20. Quem retomar pode ser outro agente (opencode), sem as ferramentas do Claude: nada abaixo depende delas, só de `python`, `node` e `git`.

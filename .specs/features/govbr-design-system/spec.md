@@ -79,7 +79,7 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 | Paginação da lista de campi | 10 itens por página, com opções 10, 25 e 50 | Valor do modelo do DS; hoje são cerca de 22 campi | n |
 | Identificador de perfil suspeito | Salvar continua permitido; a linha mostra aviso porque `id_suspeito` (`app/data/campi.py`) só marca o caso e a atualização recusa campus sem identificador válido (Princípio VI) | Comportamento atual do código | n |
 | Posição do botão de tema | Ícone de contraste no grupo de ações do `br-header`, como nos modelos do DS | Posição usada nos modelos | n |
-| Menu principal | `br-menu` sobreposto abaixo de 992px e persistente, aberto por padrão, a partir de 992px, com hambúrguer sempre presente; cai para sobreposto em todas as larguras se o modo persistente falhar na verificação visual | Padrão do Template V3 Base do DS; aprovado pelo usuário no Design | y |
+| Menu principal | `br-menu` sobreposto abaixo de 992px e, a partir de 992px, persistente como barra lateral fixa à esquerda, sem hambúrguer (decisão do usuário após a verificação em celular e tela grande: o modo anterior, barra horizontal com hambúrguer, ficou ruim em telas largas) | Padrão do Template V3 Base do DS; ajuste aprovado pelo usuário após a primeira verificação | y |
 | Selects dos filtros públicos | `dcc.Dropdown` com variáveis do DS | `br-select` depende do JS do DS na carga e o Dash cria os filtros depois; aprovado pelo usuário no Design | y |
 | Busca da lista de campi | Por envio (Enter ou lupa), processada no servidor | Evita JavaScript próprio; aprovado pelo usuário no Design | y |
 | Componentes `dbc.*` que sobrarem | Podem ficar como comportamento (ex.: `dbc.RadioItems`, escolhido por evitar bug de estado de `dcc.RadioItems`), recebendo classes `br-*`; a folha do Bootstrap não é carregada | Preserva o comportamento já testado dos filtros; o Design decide caso a caso | n |
@@ -107,7 +107,7 @@ indicadores e navegar tanto no celular quanto no monitor.
 2. The system SHALL definir pontos de quebra somente em 576px, 992px, 1280px e 1600px, os do gov.br DS 3.7.0.  <!-- ubiquitous -->
 3. WHILE a largura da viewport estiver entre 320px e 1920px, the system SHALL NOT exibir rolagem horizontal na página.  <!-- state-driven -->
 4. WHILE a viewport tiver menos de 992px, the system SHALL exibir o menu principal sobreposto e fechado por padrão, aberto pelo botão hambúrguer com `aria-expanded`.  <!-- state-driven -->
-5. WHILE a viewport tiver 992px ou mais, the system SHALL exibir o menu principal persistente e aberto por padrão, com o botão hambúrguer presente para recolhê-lo.  <!-- state-driven -->
+5. WHILE a viewport tiver 992px ou mais, the system SHALL exibir o menu principal persistente, aberto por padrão, como uma barra lateral fixa à esquerda, sem botão hambúrguer.  <!-- state-driven -->
 6. WHILE a viewport tiver menos de 576px, the system SHALL empilhar cartões de KPI, medidores e filtros em uma única coluna.  <!-- state-driven -->
 7. WHILE a viewport tiver 1600px ou mais, the system SHALL limitar o conteúdo a 1520px de largura, centralizado.  <!-- state-driven -->
 8. IF uma tabela for mais larga que a viewport THEN the system SHALL rolar só a tabela na horizontal, dentro de um contêiner, sem mover o restante da página.  <!-- unwanted-behavior -->

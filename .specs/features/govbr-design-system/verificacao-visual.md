@@ -37,7 +37,7 @@ As cinco páginas públicas renderizaram o conteúdo do Dash na medição (KPIs,
 
 - **Contêiner a 1600px:** `#main-content` mede 1520px (`--grid-tv-maxwidth`) nas 14 telas.
 - **Menu abaixo de 992px:** `menu-container` em `display: none` a 576px (sobreposto, abre pelo botão do cabeçalho).
-- **Menu persistente a partir de 992px:** `display: block` a 992px e a 1600px. PASS, sem necessidade de cair para menu sobreposto.
+- **Menu persistente a partir de 992px:** `display: block` a 992px e a 1600px. PASS, sem necessidade de cair para menu sobreposto. (Atualização de 2026-09-20, AD-005: após o teste em tela grande, o menu passou a barra lateral fixa à esquerda, sem o botão hambúrguer; ver `validation.md`.)
 - **Botão do cabeçalho presente a partir de 992px (DS-05):** o Verifier achou que o botão sumia nessa faixa. Corrigido: `menu.js` recolhe e mostra o menu persistente (classe `menu-recolhido`). Conferido no Chrome a 1910px: menu aberto e `aria-expanded="true"` na carga; clique e Enter recolhem (`display: none`, `aria-expanded="false"`); clique de novo mostra.
 - Login, recuperar acesso e instalação não têm menu, como manda a spec.
 

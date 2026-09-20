@@ -11,7 +11,7 @@ O Design encontrou quatro pontos em que a spec aprovada não cabe no DS 3.7.0 ou
 
 | Requisito | Problema | Ajuste proposto |
 | --------- | -------- | --------------- |
-| DS-04, DS-05 | Menu recolhido abaixo de 992px e expandido, sem botão, a partir de 992px. O `br-menu` do DS é um painel lateral aberto por botão hambúrguer, presente em todas as larguras (Template V3 Base) | Menu principal em `br-menu`: sobreposto e fechado por padrão abaixo de 992px; persistente e aberto por padrão a partir de 992px; botão hambúrguer sempre presente. Se o modo persistente não se comportar bem no teste, cai para sobreposto em todas as larguras |
+| DS-04, DS-05 | Menu recolhido abaixo de 992px e expandido, sem botão, a partir de 992px. O `br-menu` do DS é um painel lateral aberto por botão hambúrguer, presente em todas as larguras (Template V3 Base) | Menu principal em `br-menu`: sobreposto e fechado por padrão abaixo de 992px; a partir de 992px, persistente como barra lateral fixa à esquerda, sem hambúrguer. Ajuste de 2026-09-20 (AD-005): a barra horizontal com hambúrguer ficou ruim em telas largas |
 | DS-15 | `br-select` é um controle montado por JavaScript do DS; o Dash cria o filtro depois do carregamento, e o `core.min.js` só inicializa o que existe na carga. Não há como ligar `br-select` aos callbacks sem um adaptador frágil | Radios em `br-radio` e botões em `br-button`. Selects em `dcc.Dropdown` com as variáveis do DS (é a alternativa que você aprovou) |
 | DS-27 | Deixa de fazer sentido: cabeçalho, menu, modal e rodapé ficam no shell, que existe na carga, e o conteúdo do Dash usa só componentes que dependem apenas de CSS | Trocar por: "The system SHALL usar em conteúdo renderizado pelo Dash apenas componentes do DS que funcionam sem JavaScript" |
 | DS-81 | A busca "ao digitar" exigiria JavaScript próprio | "WHEN o usuário envia a busca (Enter ou botão de lupa) THEN ..." Busca, paginação e cards ficam no servidor, por parâmetros de URL |
@@ -226,7 +226,7 @@ class PaginaCampi(TypedDict):
 | Importar `app.app` executa `init_db` no banco real | `app/app.py:75` | Testes novos de shell e CRUD escrevem no `sistec.db` real | Testes de CRUD monkeypatcham o caminho do banco; testes de shell só leem. Manter o padrão de `tests/test_instalacao.py:131` |
 | Não há testes de interface hoje | `tests/` | Nenhuma rede contra regressão do layout | `test_shell.py`, `test_style_css.py`, `test_componentes_publicos.py`, `test_admin_campi.py`; larguras reais ficam na verificação visual (premissa da spec) |
 | `CampusInvalido` não diz qual campo falhou | `app/data/campi.py:30` | Mapear erro por texto da mensagem seria frágil | Atributo `campo` com padrão `None`; testes em `tests/test_campi.py` cobrem os dois campos |
-| `br-menu` persistente (a partir de 992px) não foi exercitado | Template V3 Base (SVG) | O modo push pode quebrar a grade de 12 colunas | Verificação visual na tarefa do menu; fallback para menu sobreposto em todas as larguras (ajuste de DS-04/05) |
+| `br-menu` persistente (a partir de 992px) não foi exercitado | Template V3 Base (SVG) | O modo push pode quebrar a grade de 12 colunas | Verificação visual na tarefa do menu; resultado: o menu fica em barra lateral fixa à esquerda (AD-005) |
 | Navegação pública passa a recarregar a página | `app/shell.py` (novo) | Mais lento que a troca sem recarga de hoje | Decisão consciente da arquitetura escolhida; o Dash já busca os dados de cada página a cada carga |
 
 ---

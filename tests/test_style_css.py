@@ -98,13 +98,12 @@ def test_menu_fica_persistente_e_aberto_a_partir_de_992px():
     assert re.search(r"\.br-menu \.menu-container, \.br-menu\.active \.menu-container\s*\{[^}]*display:\s*block", bloco)
 
 
-def test_a_partir_de_992px_o_botao_do_cabecalho_continua_visivel_e_recolhe_o_menu():
+def test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao():
     bloco = _bloco_media("@media (min-width: 992px)")
-    for seletores, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", bloco):
-        if "display: none" in corpo:
-            assert "header-menu-trigger" not in seletores, seletores
-    recolhido = _regra(".br-menu.menu-recolhido .menu-container", bloco)
-    assert "display: none" in recolhido
+    assert re.search(r"\.br-menu\s*\{[^}]*position:\s*fixed", bloco)
+    assert re.search(r"\.br-menu\s*\{[^}]*width:\s*var\(--menu-largura\)", bloco)
+    assert re.search(r"\.header-menu-trigger\s*\{[^}]*display:\s*none", bloco)
+    assert re.search(r"body\s*\{[^}]*padding-left:\s*var\(--menu-largura\)", bloco)
 
 
 def test_sem_js_o_menu_fica_sempre_visivel():

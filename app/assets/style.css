@@ -60,6 +60,7 @@
 
 :root{
   --alvo-toque-minimo: 24px;
+  --menu-largura: 240px;
 }
 
 /* A partir de 1600px o conteúdo para em --grid-tv-maxwidth e fica centralizado. */
@@ -81,14 +82,16 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
   outline-offset: var(--spacing-scale-half);
 }
 
-/* ---- Menu: persistente e aberto a partir de 992px (o botão do cabeçalho o recolhe e mostra), sobreposto abaixo disso ---- */
+/* ---- Menu: barra lateral fixa à esquerda a partir de 992px, sobreposto abaixo disso ---- */
 
 @media (min-width: 992px){
+  .br-menu{ position: fixed; top: 0; bottom: 0; left: 0; width: var(--menu-largura); overflow-y: auto; }
   .br-menu .menu-container, .br-menu.active .menu-container{ display: block; position: static; }
-  .br-menu.menu-recolhido .menu-container, .br-menu.menu-recolhido.active .menu-container{ display: none; }
-  .br-menu .menu-panel{ height: auto; flex-direction: row; }
-  .br-menu .menu-body{ display: flex; flex-wrap: wrap; }
+  .br-menu .menu-panel{ height: 100vh; }
+  .br-menu .menu-body{ display: block; }
   .br-menu .menu-header, .br-menu .menu-scrim{ display: none; }
+  .header-menu-trigger{ display: none; }
+  body{ padding-left: var(--menu-largura); }
 }
 
 /* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */
