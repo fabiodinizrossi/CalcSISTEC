@@ -1664,9 +1664,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `CUTOVER.md` traz o roteiro e a pendência de CSRF (`app/config.py:18`, só `SameSite=Lax` protege)
-- [ ] **Humano:** Jaline testou e informou dispositivo, largura e data; o item de design fica marcado com esses três dados. Sem isso o requisito DS-42 fica bloqueado, e o Verifier o registra como pendente de passo humano, não como falha de código
-- [ ] Gate build passa
+- [x] `CUTOVER.md` traz o roteiro e a pendência de CSRF (`app/config.py:18`, só `SameSite=Lax` protege)
+- [ ] **Humano:** Jaline testou e informou dispositivo, largura e data; o item de design fica marcado com esses três dados. Sem isso o requisito DS-42 fica bloqueado, e o Verifier o registra como pendente de passo humano, não como falha de código (pendente: passo humano de Jaline; DS-42 fica bloqueado até lá)
+- [x] Gate build passa
 
 **Tests**: none
 **Gate**: build

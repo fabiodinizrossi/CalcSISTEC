@@ -16,7 +16,7 @@
 - [ ] Todas as 28 regras `BR-MIGRAR-*` com teste unitário próprio (parcial — ver nota abaixo)
 - [ ] `parity_specs.md`/`parity_tests/` executados contra os dados do mês corrente, batendo 100% (Tarefa 11 — **não iniciada**)
 - [ ] Checklist de ausência de PII verificado com dados reais de upload (verificável com `scripts/verificar_prontidao_cutover.py`, mas só definitivo após um upload real)
-- [ ] Design gov.br validado em pelo menos um dispositivo móvel real (passo humano)
+- [ ] Design gov.br validado em pelo menos um dispositivo móvel real (passo humano; só marcar com dispositivo, largura e data informados por Jaline: ver "Design gov.br responsivo" abaixo)
 - [x] `AMB-003` (integração do repositório `projetoFabio/CalcSISTEC`) resolvido na Tarefa 01 (`AD-05`)
 
 ### `002-baixador-planilhas-sistec` (baixador de planilhas do Sistec)
@@ -30,6 +30,27 @@
 - [ ] Extensão instalada na máquina da Pesquisa Institucional (política institucional ou modo desenvolvedor, P-10)
 - [ ] Roteiro de `_reversa_forward/002-baixador-planilhas-sistec/onboarding.md` executado (Sistec simulado + 1 baixa real de pelo menos 1 campus)
 - [ ] W001 a W008 (`_reversa_forward/002-baixador-planilhas-sistec/regression-watch.md`) conferidas sem regressão nas telas novas e alteradas
+
+### Design gov.br responsivo (`govbr-design-system`)
+
+Passo humano: só Jaline consegue fechar o item de design do checklist. O código foi verificado no Chrome
+(`.specs/features/govbr-design-system/verificacao-visual.md`), mas o teste em celular real ainda não foi feito.
+
+**Roteiro, em um celular real (largura de 320px a 430px)** e depois em uma tela de 1280px ou mais:
+
+1. Abrir as 5 páginas públicas (`/`, `/matriculas`, `/eficiencia`, `/evasao`, `/percentuais-legais`).
+   Conferir: a página não rola para o lado (só as tabelas rolam dentro do próprio quadro), o menu abre pelo
+   botão do cabeçalho, os cartões e filtros ficam em coluna única e nada fica cortado.
+2. Entrar em `/admin/login` e abrir `/admin/atualizar`. Conferir: os botões ficam empilhados e a tela cabe na largura.
+3. Trocar para o tema escuro pelo botão do cabeçalho, em uma página pública e em `/admin/atualizar`: todo texto
+   continua legível e a escolha fica salva ao recarregar.
+4. Anotar aqui: dispositivo, largura (px) e data. **Enquanto isso não for preenchido, o item de design fica desmarcado.**
+
+Resultado: dispositivo ______ · largura ______ px · data ______
+
+**Pendência de segurança (fora desta feature):** os `POST` administrativos não têm token CSRF. Hoje só o
+`SameSite=Lax` do cookie de sessão (`app/config.py`) protege. Adicionar o token antes de expor a área
+administrativa além da rede da instituição.
 
 **Nota sobre "28 regras com teste unitário"**: as Tarefas 05-07 testaram cada
 regra com dados sintéticos ad-hoc (não uma suíte de testes formal versionada,
