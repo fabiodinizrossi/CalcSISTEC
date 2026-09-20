@@ -661,10 +661,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com sessão autenticada, `GET /admin/instalacao` responde 200; todo `<input>` de texto tem `<label for>` e está em `br-input`
-- [ ] Sem menu nem breadcrumb (DS-56); nenhum `confirm(` no arquivo
-- [ ] POST com nome da instituição vazio devolve o campo em `danger` com mensagem ligada por `aria-describedby`
-- [ ] Testes em `tests/test_admin_paginas.py`; gate full passa
+- [x] Com sessão autenticada, `GET /admin/instalacao` responde 200; todo `<input>` de texto tem `<label for>` e está em `br-input`
+- [x] Sem menu nem breadcrumb (DS-56); nenhum `confirm(` no arquivo
+- [x] POST com nome da instituição vazio devolve o campo em `danger` com mensagem ligada por `aria-describedby`
+- [x] Testes em `tests/test_admin_paginas.py`; gate full passa
 
 **Tests**: integration
 **Gate**: full

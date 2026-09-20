@@ -141,6 +141,8 @@ def admin_instalacao():
     instituição — é o que permite instalar o mesmo programa em outro IF."""
     mensagem = None
     sucesso = False
+    erro_nome = erro_email = None
+    valores = None
 
     if flask.request.method == "POST":
         acao = flask.request.form.get("acao")
@@ -148,9 +150,11 @@ def admin_instalacao():
             nome = flask.request.form.get("nome", "").strip()
             email = flask.request.form.get("contato_email", "").strip()
             if not nome:
-                mensagem = "Informe o nome da instituição."
+                erro_nome = "Informe o nome da instituição."
             elif email and not email_valido(email):
-                mensagem = _MSG_EMAIL_INVALIDO
+                erro_email = _MSG_EMAIL_INVALIDO
+            if erro_nome or erro_email:
+                valores = flask.request.form
             else:
                 set_instituicao(
                     nome=nome,
@@ -192,6 +196,9 @@ def admin_instalacao():
         pendencias=instalacao.pendencias(),
         mensagem=mensagem,
         sucesso=sucesso,
+        erro_nome=erro_nome,
+        erro_email=erro_email,
+        valores=valores,
         **_contexto_base(),
     )
 

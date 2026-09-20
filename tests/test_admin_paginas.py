@@ -100,3 +100,30 @@ def test_recuperar_acesso_tem_titulo_shell_sem_menu_e_sem_breadcrumb(cliente):
 def test_recuperar_acesso_volta_ao_login_por_um_br_button(cliente):
     html = cliente.get("/recuperar-acesso").get_data(as_text=True)
     assert re.search(r'<a\b[^>]*class="br-button[^"]*"[^>]*href="/admin/login"[^>]*>\s*Voltar ao login\s*</a>', html)
+
+
+def test_instalacao_tem_rotulo_e_br_input_para_todo_campo_de_texto(cliente_autenticado):
+    resposta = cliente_autenticado.get("/admin/instalacao")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    ids = re.findall(r'<input\b[^>]*type="(?:text|email)"[^>]*id="([^"]+)"', html)
+    assert sorted(ids) == ["contato_email", "nome", "sigla", "site"]
+    for campo_id in ids:
+        assert f'<label for="{campo_id}">' in html
+    assert len(re.findall(r'class="br-input\b', html)) == len(ids)
+
+
+def test_instalacao_nao_mostra_menu_nem_breadcrumb_e_nao_usa_confirm_nativo(cliente_autenticado):
+    html = cliente_autenticado.get("/admin/instalacao").get_data(as_text=True)
+    assert 'class="br-menu"' not in html
+    assert 'class="br-breadcrumb"' not in html
+    assert "confirm(" not in html
+
+
+def test_instalacao_com_nome_vazio_marca_o_campo_em_danger_ligado_a_mensagem(cliente_autenticado):
+    resposta = cliente_autenticado.post("/admin/instalacao", data={"acao": "salvar_instituicao", "nome": "  "})
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="nome">', html)
+    assert re.search(r'<input\b[^>]*id="nome"[^>]*aria-describedby="nome-erro[^"]*"', html)
+    assert re.search(r'id="nome-erro"[^>]*>\s*<i[^>]*></i>Informe o nome da instituição\.', html)
