@@ -1,0 +1,16 @@
+{% if shell.breadcrumb %}
+<nav class="br-breadcrumb" aria-label="Você está aqui">
+  <ul class="crumb-list">
+    {% for migalha in shell.breadcrumb %}
+    <li class="crumb"{% if not migalha.href %} data-active="active"{% endif %}>
+      {% if not loop.first %}<i class="icon fas fa-chevron-right" aria-hidden="true"></i>{% endif %}
+      {% if migalha.href %}
+      <a href="{{ migalha.href }}">{{ migalha.rotulo }}</a>
+      {% else %}
+      <span aria-current="page">{{ migalha.rotulo }}</span>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}

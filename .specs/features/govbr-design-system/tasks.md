@@ -372,10 +372,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Sem migalhas (capa, login, recuperar acesso, instalação) o parcial não renderiza nada
-- [ ] Com `Início > Matrículas`: primeiro item é link para `/`; último é texto com `aria-current="page"`
-- [ ] Trilha `Configurações > Campi > Editar` renderiza os 3 itens na ordem
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] Sem migalhas (capa, login, recuperar acesso, instalação) o parcial não renderiza nada
+- [x] Com `Início > Matrículas`: primeiro item é link para `/`; último é texto com `aria-current="page"`
+- [x] Trilha `Configurações > Campi > Editar` renderiza os 3 itens na ordem
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick

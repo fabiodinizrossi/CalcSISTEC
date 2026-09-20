@@ -134,3 +134,31 @@ def test_todos_os_itens_do_menu_sao_links_com_href(servidor, instituicao_configu
 def test_sem_menu_o_parcial_nao_renderiza_nada(servidor, instituicao_configurada, caminho):
     html, _ = itens_do_menu(servidor, caminho)
     assert html.strip() == ""
+
+
+def migalhas(servidor, caminho):
+    html = renderizar(servidor, "shell/_breadcrumb.html", shell=contexto_shell(caminho))
+    return html, re.findall(r'<li class="crumb"[^>]*>(.*?)</li>', html, re.S)
+
+
+def texto(html):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", html)).strip()
+
+
+@pytest.mark.parametrize("caminho", ["/", "/admin/login", "/recuperar-acesso", "/admin/instalacao"])
+def test_sem_migalhas_o_breadcrumb_nao_renderiza_nada(servidor, instituicao_configurada, caminho):
+    html, _ = migalhas(servidor, caminho)
+    assert html.strip() == ""
+
+
+def test_breadcrumb_inicio_matriculas_tem_link_e_pagina_atual(servidor, instituicao_configurada):
+    _, itens = migalhas(servidor, "/matriculas")
+    assert len(itens) == 2
+    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Início\s*</a>', itens[0])
+    assert "<a" not in itens[1]
+    assert re.search(r'<span\b[^>]*aria-current="page"[^>]*>\s*Matrículas\s*</span>', itens[1])
+
+
+def test_breadcrumb_de_editar_campus_renderiza_3_itens_na_ordem(servidor, instituicao_configurada):
+    _, itens = migalhas(servidor, "/admin/campi/8278857/editar")
+    assert [texto(item) for item in itens] == ["Configurações", "Campi", "Editar"]
