@@ -264,11 +264,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Menu público tem 5 itens na ordem Início, Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual, Percentuais Legais; para cada um dos 5 caminhos, só esse item vem com `ativo=True`
-- [ ] Breadcrumb vazio em `/`; `["Início", "Matrículas"]` em `/matriculas` (último sem `href`); nas rotas de campi, `Configurações > Campi`, `Configurações > Campi > Editar` e `Configurações > Campi > Incluir`
-- [ ] `com_menu=False` em `/admin/login`, `/recuperar-acesso` e `/admin/instalacao`; breadcrumb vazio nessas três
-- [ ] Nome, sigla, site e e-mail vêm de `config_store` (teste com `monkeypatch`), nunca de literal; e-mail e site em branco chegam como vazios
-- [ ] Novo `tests/test_shell.py` cobre todos os itens; gate quick `python -m pytest -q tests/test_shell.py` passa
+- [x] Menu público tem 5 itens na ordem Início, Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual, Percentuais Legais; para cada um dos 5 caminhos, só esse item vem com `ativo=True`
+- [x] Breadcrumb vazio em `/`; `["Início", "Matrículas"]` em `/matriculas` (último sem `href`); nas rotas de campi, `Configurações > Campi`, `Configurações > Campi > Editar` e `Configurações > Campi > Incluir`
+- [x] `com_menu=False` em `/admin/login`, `/recuperar-acesso` e `/admin/instalacao`; breadcrumb vazio nessas três
+- [x] Nome, sigla, site e e-mail vêm de `config_store` (teste com `monkeypatch`), nunca de literal; e-mail e site em branco chegam como vazios
+- [x] Novo `tests/test_shell.py` cobre todos os itens; gate quick `python -m pytest -q tests/test_shell.py` passa
 
 **Tests**: unit
 **Gate**: quick

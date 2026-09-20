@@ -380,15 +380,15 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-08          | P1: Layout responsivo (AC 8, tabela rolável) | Design | In Tasks |
 | DS-09          | P1: Layout responsivo (AC 9, área de toque) | Design | In Tasks |
 | DS-10          | P1: Páginas públicas (AC 1, br-header)  | Design | In Tasks |
-| DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | In Tasks |
-| DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | In Tasks |
+| DS-11          | P1: Páginas públicas (AC 2, br-menu)    | Design | Implementing |
+| DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Implementing |
 | DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | In Tasks |
 | DS-14          | P1: Páginas públicas (AC 5, br-table)   | Design | In Tasks |
 | DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | In Tasks |
 | DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | In Tasks |
 | DS-17          | P1: Páginas públicas (AC 8, br-message) | Design | In Tasks |
 | DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | In Tasks |
-| DS-19          | P1: Páginas administrativas (AC 1, header e footer) | Design | In Tasks |
+| DS-19          | P1: Páginas administrativas (AC 1, header e footer) | Design | Implementing |
 | DS-20          | P1: Páginas administrativas (AC 2, formulários) | Design | In Tasks |
 | DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | In Tasks |
 | DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | In Tasks |
@@ -408,9 +408,9 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-36          | P2: Acessibilidade (AC 6, alt)          | Design | In Tasks |
 | DS-37          | P2: Acessibilidade (AC 7, abrir menu por teclado) | Design | In Tasks |
 | DS-38          | P2: Acessibilidade (AC 8, Esc fecha o menu) | Design | In Tasks |
-| DS-39          | P2: Identidade (AC 1, da configuração)  | -      | In Tasks |
+| DS-39          | P2: Identidade (AC 1, da configuração)  | -      | Implementing |
 | DS-40          | P2: Identidade (AC 2, logotipo genérico) | -     | In Tasks |
-| DS-41          | P2: Identidade (AC 3, contato em branco) | -     | In Tasks |
+| DS-41          | P2: Identidade (AC 3, contato em branco) | -     | Implementing |
 | DS-42          | P3: Dispositivo real (AC 1)             | -      | In Tasks |
 | DS-43          | P1: Layout responsivo (AC 10, 4/8/12 colunas) | Design | In Tasks |
 | DS-44          | P1: Layout responsivo (AC 11, classes de grid do DS) | Design | In Tasks |
@@ -425,12 +425,12 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | In Tasks |
 | DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | In Tasks |
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | In Tasks |
-| DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | In Tasks |
+| DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
 | DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | In Tasks |
 | DS-58          | P1: Páginas administrativas (AC 8, confirmação em br-modal) | Design | In Tasks |
 | DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | In Tasks |
 | DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | In Tasks |
-| DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | In Tasks |
+| DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
 | DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | In Tasks |
 | DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | In Tasks |
 | DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | In Tasks |
