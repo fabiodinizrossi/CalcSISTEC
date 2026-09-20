@@ -443,8 +443,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-71          | P1: CRUD de campi (AC 10, identificador ou código duplicado) | Design | Implementing |
 | DS-72          | P1: CRUD de campi (AC 11, banner de erro) | Design | Implementing |
 | DS-73          | P1: CRUD de campi (AC 12, modal de exclusão) | Design | Implementing |
-| DS-74          | P1: CRUD de campi (AC 13, confirmar exclusão) | Design | In Tasks |
-| DS-75          | P1: CRUD de campi (AC 14, cancelar exclusão) | Design | In Tasks |
+| DS-74          | P1: CRUD de campi (AC 13, confirmar exclusão) | Design | Implementing |
+| DS-75          | P1: CRUD de campi (AC 14, cancelar exclusão) | Design | Implementing |
 | DS-76          | P1: CRUD de campi (AC 15, desativar e reativar) | Design | Implementing |
 | DS-77          | P1: CRUD de campi (AC 16, tela Incluir campus) | Design | Implementing |
 | DS-78          | P1: CRUD de campi (AC 17, incluir com sucesso) | Design | Implementing |

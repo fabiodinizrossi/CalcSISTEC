@@ -48,7 +48,9 @@
               {% endif %}
             </form>
             <form method="post" action="/admin/campi/{{ c.id_perfil }}/excluir" class="confirm-form d-inline">
-              {{ botao_icone("trash", "Excluir campus " ~ c.nome_perfil, tipo="submit") }}
+              {{ botao_icone("trash", "Excluir campus " ~ c.nome_perfil, tipo="submit",
+                           confirmar="Tem certeza que deseja excluir o campus " ~ c.nome_perfil ~ "? Se ele ainda existir no Sistec, volta na próxima atualização (para deixar de baixar, use Desativar).",
+                           rotulo_confirmar="Excluir") }}
             </form>
           </td>
         </tr>

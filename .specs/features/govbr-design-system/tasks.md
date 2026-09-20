@@ -1031,11 +1031,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] O formulário de exclusão de cada linha é `.confirm-form` com `data-confirm` contendo "Tem certeza que deseja excluir o campus {perfil}?" e o aviso de que o perfil volta na próxima atualização se ainda existir no Sistec, e com o rótulo de confirmação "Excluir"
-- [ ] `POST` remove o campus e a lista seguinte mostra `br-message success` "Perfil excluído da lista."
-- [ ] Sem o `POST` (Cancelar no modal não envia nada), o campus continua na lista
-- [ ] Id inexistente redireciona com `br-message danger` "Campus não encontrado."
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa. O modal em si é conferido na T55
+- [x] O formulário de exclusão de cada linha é `.confirm-form` com `data-confirm` contendo "Tem certeza que deseja excluir o campus {perfil}?" e o aviso de que o perfil volta na próxima atualização se ainda existir no Sistec, e com o rótulo de confirmação "Excluir"
+- [x] `POST` remove o campus e a lista seguinte mostra `br-message success` "Perfil excluído da lista."
+- [x] Sem o `POST` (Cancelar no modal não envia nada), o campus continua na lista
+- [x] Id inexistente redireciona com `br-message danger` "Campus não encontrado."
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa. O modal em si é conferido na T55
 
 **Tests**: e2e
 **Gate**: full

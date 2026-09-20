@@ -6,6 +6,7 @@ from app.auth import requer_autenticacao
 from app.data.campi import (
     CampusInvalido,
     definir_ativo,
+    excluir_campus,
     id_suspeito,
     incluir_campus,
     listar_campi,
@@ -170,4 +171,14 @@ def situacao(id_perfil):
         return _campus_nao_encontrado()
     definir_ativo(id_perfil, valor == "1", DB_PATH)
     flash("Campus reativado." if valor == "1" else "Campus desativado.", "success")
+    return redirect("/admin/campi")
+
+
+@campi_bp.route("/admin/campi/<id_perfil>/excluir", methods=["POST"])
+@requer_autenticacao
+def excluir(id_perfil):
+    if obter_campus(id_perfil, DB_PATH) is None:
+        return _campus_nao_encontrado()
+    excluir_campus(id_perfil, DB_PATH)
+    flash("Perfil excluído da lista.", "success")
     return redirect("/admin/campi")

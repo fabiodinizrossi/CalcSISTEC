@@ -353,3 +353,34 @@ def test_situacao_com_valor_invalido_responde_400_e_nao_altera_o_campus(cliente_
     dados = {} if valor is None else {"ativo": valor}
     assert cliente_autenticado.post("/admin/campi/8278857/situacao", data=dados).status_code == 400
     assert dados_campi.obter_campus("8278857", banco)["ativo"] == 1
+
+
+def test_excluir_e_confirm_form_com_pergunta_aviso_do_sistec_e_rotulo(cliente_autenticado, tres_campi, banco):
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    linha = _linhas(html)[0]
+    formulario = re.search(r'<form\b[^>]*class="confirm-form[^"]*"[^>]*action="/admin/campi/8278857/excluir"[^>]*>|<form\b[^>]*action="/admin/campi/8278857/excluir"[^>]*class="confirm-form[^"]*"[^>]*>', linha)
+    assert formulario
+    botao = re.search(r'<button\b[^>]*aria-label="Excluir campus Perfil Alegrete"[^>]*>', linha).group(0)
+    assert "data-confirm=\"Tem certeza que deseja excluir o campus Perfil Alegrete?" in botao
+    assert "volta na próxima atualização" in botao
+    assert 'data-confirm-rotulo="Excluir"' in botao
+    assert dados_campi.obter_campus("8278857", banco) is not None
+
+
+def test_excluir_remove_o_campus_e_a_lista_mostra_a_mensagem(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/excluir")
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/campi")
+    assert dados_campi.obter_campus("8278857", banco) is None
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert"', html)
+    assert "Perfil excluído da lista." in html
+    assert "Perfil Alegrete" not in "".join(_linhas(html))
+
+
+def test_excluir_campus_inexistente_volta_a_lista_com_mensagem_de_erro(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post("/admin/campi/99999999/excluir")
+    assert resposta.status_code == 302
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message danger"', html)
+    assert "Campus não encontrado." in html
