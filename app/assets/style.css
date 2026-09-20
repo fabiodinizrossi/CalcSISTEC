@@ -70,46 +70,6 @@ body{
 .app-header-title{ font-weight: 700; font-size: 18px; }
 .app-header-subtitle{ font-weight: 400; font-size: 13px; opacity: 0.9; }
 
-/* ---- Navegação (nav-menu, `app/components/navigation.py`) ---- */
-
-.nav-menu{
-  background: var(--gov-color-surface);
-  border-bottom: 1px solid var(--gov-color-border);
-  padding: 0 var(--gov-spacing-lg);
-}
-.nav-toggle{
-  display: none;
-  background: none;
-  border: 1px solid var(--gov-color-border);
-  border-radius: 6px;
-  padding: var(--gov-spacing-sm) var(--gov-spacing-md);
-  margin: var(--gov-spacing-sm) 0;
-  font-weight: 700;
-  color: var(--gov-color-text-primary);
-}
-.nav-menu-list{
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gov-spacing-sm);
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0;
-  list-style: none;
-}
-.nav-menu-link, a.nav-menu-link.nav-link{
-  display: inline-block;
-  padding: var(--gov-spacing-sm) var(--gov-spacing-md);
-  color: var(--gov-color-text-primary) !important;
-  text-decoration: none;
-  font-weight: 600;
-  border-bottom: 3px solid transparent;
-}
-.nav-menu-link:hover{ color: var(--gov-color-primary) !important; }
-.nav-menu-link.active, a.nav-menu-link.nav-link.active{
-  color: var(--gov-color-primary) !important;
-  border-bottom-color: var(--gov-color-primary);
-}
-
 /* ---- Rodapé (app-footer, `app/components/footer.py` / `_base.html`) ---- */
 
 .app-footer{
@@ -137,17 +97,6 @@ body{
 
 /* ---- Formulários administrativos (`app/templates/*.html`), classes DS `br-*` ---- */
 
-.admin-nav{
-  display: flex;
-  gap: var(--gov-spacing-md);
-  padding: var(--gov-spacing-sm) var(--gov-spacing-lg);
-  background: var(--gov-color-surface);
-  border-bottom: 1px solid var(--gov-color-border);
-}
-.admin-nav a[aria-current="page"]{
-  font-weight: 700;
-  color: var(--gov-color-primary);
-}
 .admin-form{
   max-width: 480px;
   margin: var(--gov-spacing-xl) auto;
@@ -281,18 +230,6 @@ body{
 
 /* ---- Responsivo ---- */
 
-@media (max-width: 768px){
-  .nav-toggle{ display: inline-block; }
-  .nav-menu-list{
-    display: none;
-    flex-direction: column;
-    padding-bottom: var(--gov-spacing-sm);
-  }
-  .nav-menu.nav-open .nav-menu-list{
-    display: flex;
-  }
-}
-
 /* ---- Foco visível (WCAG 2.2 AA, T042) ---- */
 
 a:focus-visible, button:focus-visible, input:focus-visible,
@@ -302,7 +239,7 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
 }
 
 @media (max-width: 320px){
-  .app-main, .app-header-inner, .nav-menu-list{
+  .app-main, .app-header-inner{
     padding-left: var(--gov-spacing-sm);
     padding-right: var(--gov-spacing-sm);
   }

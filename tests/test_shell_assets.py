@@ -57,3 +57,29 @@ def test_tela_de_atualizar_referencia_o_script_em_ds(monkeypatch):
     html = cliente.get("/admin/atualizar").get_data(as_text=True)
     assert 'src="/ds/js/atualizar.js"' in html
     assert "/assets/js/" not in html
+
+
+def test_shell_antigo_foi_removido():
+    for antigo in (
+        "components/header.py",
+        "components/footer.py",
+        "components/navigation.py",
+        "assets/nav-toggle.js",
+        "templates/_admin_nav.html",
+    ):
+        assert not (RAIZ_APP / antigo).exists(), antigo
+
+
+def test_nada_em_app_referencia_o_shell_antigo():
+    referencias = ("components.header", "components.footer", "components.navigation", "_admin_nav", "nav-toggle")
+    codigo = [a for a in RAIZ_APP.rglob("*.py") if "static" not in a.parts]
+    modelos_e_assets = [
+        a
+        for pasta in ("templates", "assets")
+        for a in (RAIZ_APP / pasta).rglob("*")
+        if a.is_file() and a.suffix in (".html", ".js", ".css")
+    ]
+    for arquivo in codigo + modelos_e_assets:
+        texto = arquivo.read_text(encoding="utf-8")
+        for referencia in referencias:
+            assert referencia not in texto, f"{arquivo.name} ainda cita {referencia}"

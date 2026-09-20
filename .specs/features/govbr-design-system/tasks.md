@@ -1164,8 +1164,8 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Os cinco arquivos não existem; nenhum `import` de `app.components.header`, `footer` ou `navigation` em `app/`; nenhuma referência a `_admin_nav` nem a `nav-toggle` em `app/templates/` ou `app/assets/`
-- [ ] Teste estático em `tests/test_shell_assets.py` cobre as duas ausências; gate build passa
+- [x] Os cinco arquivos não existem; nenhum `import` de `app.components.header`, `footer` ou `navigation` em `app/`; nenhuma referência a `_admin_nav` nem a `nav-toggle` em `app/templates/` ou `app/assets/`
+- [x] Teste estático em `tests/test_shell_assets.py` cobre as duas ausências; gate build passa
 
 **Tests**: integration
 **Gate**: build
