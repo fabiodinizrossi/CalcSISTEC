@@ -39,13 +39,14 @@
 <span class="br-tag">{{ "Ativo" if ativo else "Desativado" }}</span>
 {% endmacro %}
 
-{% macro botao_icone(icone, rotulo, tipo="button", href=None, confirmar=None, rotulo_confirmar=None) %}
+{% macro botao_icone(icone, rotulo, tipo="button", href=None, confirmar=None, rotulo_confirmar=None, nome=None, valor=None) %}
 {% if href %}
 <a class="br-button circle" href="{{ href }}" aria-label="{{ rotulo }}" title="{{ rotulo }}">
   <i class="fas fa-{{ icone }}" aria-hidden="true"></i>
 </a>
 {% else %}
 <button class="br-button circle" type="{{ tipo }}" aria-label="{{ rotulo }}" title="{{ rotulo }}"
+        {%- if nome %} name="{{ nome }}" value="{{ valor }}"{% endif %}
         {%- if confirmar %} data-confirm="{{ confirmar }}"{% endif %}
         {%- if rotulo_confirmar %} data-confirm-rotulo="{{ rotulo_confirmar }}"{% endif %}>
   <i class="fas fa-{{ icone }}" aria-hidden="true"></i>

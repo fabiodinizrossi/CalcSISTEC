@@ -1,0 +1,61 @@
+{% extends "_base.html" %}
+{% from "shell/_macros.html" import mensagem, tag_situacao, botao_icone %}
+{% block title %}Campi do Sistec - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<h1>Campi do Sistec</h1>
+
+{% for categoria, texto in mensagens %}{{ mensagem(categoria, texto) }}{% endfor %}
+
+<p><a class="br-button primary" href="/admin/campi/novo">Incluir campus</a></p>
+
+{% if not campi %}
+{{ mensagem("info", "Nenhum campus cadastrado. Importe a lista de perfis no assistente de instalação ou inclua um campus.") }}
+{% else %}
+<div class="br-table">
+  <div class="responsive">
+    <table>
+      <caption>Campi do Sistec</caption>
+      <thead>
+        <tr>
+          <th>Perfil</th>
+          <th>Identificador</th>
+          <th>Código da unidade</th>
+          <th>Cidade</th>
+          <th>Nome da unidade</th>
+          <th>Situação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in campi %}
+        <tr>
+          <td>{{ c.nome_perfil }}</td>
+          <td>
+            {{ c.id_perfil }}
+            {% if id_suspeito(c.id_perfil) %}<span class="text-down-01">Identificador inválido: a atualização não roda assim</span>{% endif %}
+          </td>
+          <td>{{ c.co_unidade or "—" }}</td>
+          <td>{{ c.cidade or "—" }}</td>
+          <td>{{ c.nome_unidade or "—" }}</td>
+          <td>{{ tag_situacao(c.ativo) }}</td>
+          <td>
+            {{ botao_icone("edit", "Editar campus " ~ c.nome_perfil, href="/admin/campi/" ~ c.id_perfil ~ "/editar") }}
+            <form method="post" action="/admin/campi/{{ c.id_perfil }}/situacao" class="d-inline">
+              {% if c.ativo %}
+              {{ botao_icone("toggle-off", "Desativar campus " ~ c.nome_perfil, tipo="submit", nome="ativo", valor="0") }}
+              {% else %}
+              {{ botao_icone("toggle-on", "Reativar campus " ~ c.nome_perfil, tipo="submit", nome="ativo", valor="1") }}
+              {% endif %}
+            </form>
+            <form method="post" action="/admin/campi/{{ c.id_perfil }}/excluir" class="confirm-form d-inline">
+              {{ botao_icone("trash", "Excluir campus " ~ c.nome_perfil, tipo="submit") }}
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

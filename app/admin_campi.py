@@ -1,7 +1,18 @@
 """Lista de campi do painel administrativo: busca, paginação e telas do CRUD."""
 
+from flask import Blueprint, get_flashed_messages, render_template
+
+from app.auth import requer_autenticacao
+from app.data.campi import id_suspeito, listar_campi
+from app.data.schema import DEFAULT_DB_PATH
+
 TAMANHOS_DE_PAGINA = (10, 25, 50)
 CAMPOS_DA_BUSCA = ("nome_perfil", "cidade", "nome_unidade")
+
+# Os testes trocam o banco por um temporário.
+DB_PATH = DEFAULT_DB_PATH
+
+campi_bp = Blueprint("campi_bp", __name__)
 
 
 def _inteiro(valor):
@@ -42,3 +53,14 @@ def filtrar_e_paginar(campi, q, pagina, por_pagina):
         "inicio": primeiro + 1 if itens else 0,
         "fim": primeiro + len(itens),
     }
+
+
+@campi_bp.route("/admin/campi")
+@requer_autenticacao
+def lista():
+    return render_template(
+        "campi_lista.html",
+        campi=listar_campi(DB_PATH),
+        id_suspeito=id_suspeito,
+        mensagens=get_flashed_messages(with_categories=True),
+    )

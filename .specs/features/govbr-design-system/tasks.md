@@ -922,12 +922,12 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Sem sessão autenticada, redireciona ao login; com sessão e banco temporário (`monkeypatch` de `DB_PATH` do módulo), responde 200 com as colunas Perfil, Identificador, Código da unidade, Cidade, Nome da unidade, Situação e Ações
-- [ ] Cada linha tem `br-tag` "Ativo" ou "Desativado" e botões com nomes acessíveis "Editar campus {perfil}", "Desativar campus {perfil}" (ou "Reativar") e "Excluir campus {perfil}"
-- [ ] Identificador suspeito mostra "Identificador inválido: a atualização não roda assim" na linha; identificador válido não
-- [ ] Nenhum `<input>` dentro de `<td>` (DS-79); tabela em contêiner com rolagem própria
-- [ ] Sem campus cadastrado, `br-message info` convida a importar a lista ou incluir um campus; mensagem `flash` aparece como `br-message`
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] Sem sessão autenticada, redireciona ao login; com sessão e banco temporário (`monkeypatch` de `DB_PATH` do módulo), responde 200 com as colunas Perfil, Identificador, Código da unidade, Cidade, Nome da unidade, Situação e Ações
+- [x] Cada linha tem `br-tag` "Ativo" ou "Desativado" e botões com nomes acessíveis "Editar campus {perfil}", "Desativar campus {perfil}" (ou "Reativar") e "Excluir campus {perfil}"
+- [x] Identificador suspeito mostra "Identificador inválido: a atualização não roda assim" na linha; identificador válido não
+- [x] Nenhum `<input>` dentro de `<td>` (DS-79); tabela em contêiner com rolagem própria
+- [x] Sem campus cadastrado, `br-message info` convida a importar a lista ou incluir um campus; mensagem `flash` aparece como `br-message`
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full

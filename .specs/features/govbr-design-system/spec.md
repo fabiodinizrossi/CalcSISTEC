@@ -431,9 +431,9 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-59          | P1: Páginas administrativas (AC 9, sem confirm() nativo) | Design | Implementing |
 | DS-60          | P1: Páginas administrativas (AC 10, foco e Esc no modal) | Design | Implementing |
 | DS-61          | P1: Páginas públicas (AC 10, breadcrumb) | Design | Implementing |
-| DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | In Tasks |
+| DS-62          | P1: CRUD de campi (AC 1, lista em br-table) | Design | Implementing |
 | DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | Implementing |
-| DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | In Tasks |
+| DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | Implementing |
 | DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | Implementing |
 | DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | Implementing |
 | DS-67          | P1: CRUD de campi (AC 6, campos com rótulo visível) | Design | In Tasks |
@@ -448,7 +448,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-76          | P1: CRUD de campi (AC 15, desativar e reativar) | Design | In Tasks |
 | DS-77          | P1: CRUD de campi (AC 16, tela Incluir campus) | Design | In Tasks |
 | DS-78          | P1: CRUD de campi (AC 17, incluir com sucesso) | Design | In Tasks |
-| DS-79          | P1: CRUD de campi (AC 18, sem campos em célula de tabela) | Design | In Tasks |
+| DS-79          | P1: CRUD de campi (AC 18, sem campos em célula de tabela) | Design | Implementing |
 | DS-80          | P2: Busca e paginação (AC 1, barra de busca) | Design | In Tasks |
 | DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | Implementing |
 | DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | Implementing |

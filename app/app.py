@@ -28,6 +28,7 @@ from app.data.historico import listar as historico_listar
 from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
+from app.admin_campi import campi_bp
 from app.shell import PainelDash, init_shell
 from app.sistec import execucoes, navegador
 
@@ -53,6 +54,7 @@ init_db(DEFAULT_DB_PATH)
 from app.sistec.api import bp as sistec_api_bp  # noqa: E402
 
 server.register_blueprint(sistec_api_bp)
+server.register_blueprint(campi_bp)
 init_shell(server, app)
 
 # Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do

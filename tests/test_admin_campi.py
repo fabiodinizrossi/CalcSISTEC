@@ -76,3 +76,107 @@ def test_pagina_invalida_ou_alem_do_fim_vira_1(pagina):
     resultado = filtrar_e_paginar(_campi(22), "", pagina, 10)
     assert resultado["pagina"] == 1
     assert (resultado["inicio"], resultado["fim"]) == (1, 10)
+
+
+import re
+
+from app import admin_campi
+from app import app as app_module
+from app.data import campi as dados_campi
+from app.data.schema import init_db
+
+
+@pytest.fixture
+def banco(tmp_path, monkeypatch):
+    caminho = str(tmp_path / "campi.db")
+    init_db(caminho)
+    monkeypatch.setattr(admin_campi, "DB_PATH", caminho)
+    return caminho
+
+
+@pytest.fixture
+def cliente(banco, monkeypatch):
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    return app_module.server.test_client()
+
+
+@pytest.fixture
+def cliente_autenticado(cliente):
+    with cliente.session_transaction() as sessao:
+        sessao["admin_usuario"] = "pi@ife.edu.br"
+        sessao["admin_autenticado"] = True
+    return cliente
+
+
+@pytest.fixture
+def tres_campi(banco):
+    dados_campi.incluir_campus("8278857", "Perfil Alegrete", "101", "Alegrete", "Campus Alegrete", banco)
+    dados_campi.incluir_campus("1", "Perfil Suspeito", "102", "Jaguari", "Campus Jaguari", banco)
+    dados_campi.incluir_campus("8278859", "Perfil Inativo", "103", "Santa Maria", "Campus Santa Maria", banco)
+    dados_campi.definir_ativo("8278859", False, banco)
+
+
+def _linhas(html):
+    corpo = re.search(r"<tbody>(.*?)</tbody>", html, re.S).group(1)
+    return re.findall(r"<tr>(.*?)</tr>", corpo, re.S)
+
+
+def test_lista_sem_sessao_redireciona_ao_login(cliente):
+    resposta = cliente.get("/admin/campi")
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/login")
+
+
+def test_lista_autenticada_tem_as_7_colunas_e_o_titulo(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.get("/admin/campi")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r"<h1[^>]*>\s*Campi do Sistec\s*</h1>", html)
+    colunas = [c.strip() for c in re.findall(r"<th>(.*?)</th>", html)]
+    assert colunas == ["Perfil", "Identificador", "Código da unidade", "Cidade", "Nome da unidade", "Situação", "Ações"]
+    assert re.search(r'<a\b[^>]*class="br-button primary"[^>]*href="/admin/campi/novo"[^>]*>\s*Incluir campus', html)
+
+
+def test_cada_linha_tem_tag_de_situacao_e_botoes_com_nome_acessivel(cliente_autenticado, tres_campi):
+    linhas = _linhas(cliente_autenticado.get("/admin/campi").get_data(as_text=True))
+    assert len(linhas) == 3
+    alegrete, suspeito, inativo = linhas
+    assert re.search(r'<span class="br-tag">\s*Ativo\s*</span>', alegrete)
+    assert 'aria-label="Editar campus Perfil Alegrete"' in alegrete
+    assert 'aria-label="Desativar campus Perfil Alegrete"' in alegrete
+    assert 'aria-label="Excluir campus Perfil Alegrete"' in alegrete
+    assert re.search(r'<span class="br-tag">\s*Desativado\s*</span>', inativo)
+    assert 'aria-label="Reativar campus Perfil Inativo"' in inativo
+    assert "Desativar campus" not in inativo
+    assert 'aria-label="Excluir campus Perfil Inativo"' in inativo
+
+
+def test_identificador_suspeito_mostra_o_aviso_so_na_linha_dele(cliente_autenticado, tres_campi):
+    linhas = _linhas(cliente_autenticado.get("/admin/campi").get_data(as_text=True))
+    aviso = "Identificador inválido: a atualização não roda assim"
+    assert aviso not in linhas[0]
+    assert aviso in linhas[1]
+    assert aviso not in linhas[2]
+
+
+def test_tabela_sem_input_em_celula_e_com_rolagem_propria(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'<div class="br-table">\s*<div class="responsive">\s*<table', html)
+    for celula in re.findall(r"<td>(.*?)</td>", html, re.S):
+        assert "<input" not in celula
+
+
+def test_sem_campus_cadastrado_mostra_br_message_info_convidando_a_importar_ou_incluir(cliente_autenticado):
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message info"', html)
+    assert "Importe a lista de perfis" in html
+    assert "inclua um campus" in html
+    assert "<table" not in html
+
+
+def test_mensagem_flash_aparece_como_br_message_da_categoria(cliente_autenticado, tres_campi):
+    with cliente_autenticado.session_transaction() as sessao:
+        sessao["_flashes"] = [("success", "Campus atualizado.")]
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert"', html)
+    assert "Campus atualizado." in html
