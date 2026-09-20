@@ -345,11 +345,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Menu público renderiza 5 links na ordem da spec; só o da página atual tem `aria-current="page"` e a classe de estado ativo do DS
-- [ ] Menu administrativo renderiza os itens de `PAGINAS_ADMIN`
-- [ ] Com `com_menu=False` o parcial não renderiza nada
-- [ ] Todos os itens são `<a href>` (navegam sem JavaScript)
-- [ ] Testes em `tests/test_shell_parciais.py`; gate quick passa
+- [x] Menu público renderiza 5 links na ordem da spec; só o da página atual tem `aria-current="page"` e a classe de estado ativo do DS
+- [x] Menu administrativo renderiza os itens de `PAGINAS_ADMIN`
+- [x] Com `com_menu=False` o parcial não renderiza nada
+- [x] Todos os itens são `<a href>` (navegam sem JavaScript)
+- [x] Testes em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick
