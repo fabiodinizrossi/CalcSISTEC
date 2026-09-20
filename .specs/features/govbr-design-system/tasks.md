@@ -950,12 +950,12 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET` mostra "Editar campus | {perfil}", breadcrumb "Configurações > Campi > Editar", 4 `br-input` com `<label for>` visível e Cancelar (`secondary`) e Salvar (`primary`)
-- [ ] `POST` válido grava, redireciona para `/admin/campi` e a lista mostra `br-message success` "Campus atualizado."; identificador com menos de 5 dígitos também salva
-- [ ] `POST` com código vazio devolve 200 na mesma tela, campo em `danger` com "Preencha o campo obrigatório" e banner `danger` `role="alert"` "Erro. Preencha abaixo os campos obrigatórios antes de enviar os dados."; os valores digitados permanecem
-- [ ] Identificador ou código de outro campus: campo em `danger` com "esse identificador de perfil já está em outro campus" ou "esse código da unidade já está em outro campus"
-- [ ] Id inexistente redireciona à lista com `br-message danger` "Campus não encontrado."
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] `GET` mostra "Editar campus | {perfil}", breadcrumb "Configurações > Campi > Editar", 4 `br-input` com `<label for>` visível e Cancelar (`secondary`) e Salvar (`primary`)
+- [x] `POST` válido grava, redireciona para `/admin/campi` e a lista mostra `br-message success` "Campus atualizado."; identificador com menos de 5 dígitos também salva
+- [x] `POST` com código vazio devolve 200 na mesma tela, campo em `danger` com "Preencha o campo obrigatório" e banner `danger` `role="alert"` "Erro. Preencha abaixo os campos obrigatórios antes de enviar os dados."; os valores digitados permanecem
+- [x] Identificador ou código de outro campus: campo em `danger` com "esse identificador de perfil já está em outro campus" ou "esse código da unidade já está em outro campus"
+- [x] Id inexistente redireciona à lista com `br-message danger` "Campus não encontrado."
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full

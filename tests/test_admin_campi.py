@@ -180,3 +180,83 @@ def test_mensagem_flash_aparece_como_br_message_da_categoria(cliente_autenticado
     html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
     assert re.search(r'class="br-message success"[^>]*role="alert"', html)
     assert "Campus atualizado." in html
+
+
+DADOS_VALIDOS = {"id_perfil": "8278857", "co_unidade": "101", "cidade": "Alegrete", "nome_unidade": "Campus Alegrete"}
+
+
+def _texto(html):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", html)).strip()
+
+
+def test_editar_mostra_titulo_breadcrumb_e_4_campos_com_rotulo_visivel(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.get("/admin/campi/8278857/editar")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r"<h1[^>]*>\s*Editar campus \| Perfil Alegrete\s*</h1>", html)
+    crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
+    assert [_texto(c) for c in re.findall(r'<li class="crumb".*?</li>', crumbs, re.S)] == ["Configurações", "Campi", "Editar"]
+    assert len(re.findall(r'class="br-input\b', html)) == 4
+    for campo in ("id_perfil", "co_unidade", "cidade", "nome_unidade"):
+        assert f'<label for="{campo}">' in html
+    assert re.search(r'<a\b[^>]*class="br-button secondary[^"]*"[^>]*href="/admin/campi"[^>]*>\s*Cancelar', html)
+    assert re.search(r'<button\b[^>]*class="br-button primary[^"]*"[^>]*type="submit"[^>]*>\s*Salvar', html)
+
+
+def test_editar_valido_grava_redireciona_e_a_lista_mostra_a_mensagem_de_sucesso(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/editar", data={**DADOS_VALIDOS, "cidade": "Uruguaiana"})
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/campi")
+    assert dados_campi.obter_campus("8278857", banco)["cidade"] == "Uruguaiana"
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert"', html)
+    assert "Campus atualizado." in html
+
+
+def test_editar_aceita_identificador_com_menos_de_5_digitos(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/editar", data={**DADOS_VALIDOS, "id_perfil": "1234"})
+    assert resposta.status_code == 302
+    assert dados_campi.obter_campus("1234", banco) is not None
+    assert dados_campi.obter_campus("8278857", banco) is None
+
+
+def test_editar_com_codigo_vazio_devolve_a_tela_com_erro_no_campo_e_banner_e_mantem_valores(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post(
+        "/admin/campi/8278857/editar", data={**DADOS_VALIDOS, "co_unidade": "", "cidade": "Cidade digitada"}
+    )
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="co_unidade">', html)
+    assert re.search(r'id="co_unidade-erro"[^>]*>\s*<i[^>]*></i>Preencha o campo obrigatório', html)
+    assert re.search(
+        r'class="br-message danger"[^>]*role="alert".*Erro\. Preencha abaixo os campos obrigatórios antes de enviar os dados\.',
+        html,
+        re.S,
+    )
+    assert 'value="Cidade digitada"' in html
+
+
+def test_editar_com_identificador_de_outro_campus_mostra_a_regra_no_campo(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/editar", data={**DADOS_VALIDOS, "id_perfil": "8278859"})
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="id_perfil">', html)
+    assert "esse identificador de perfil já está em outro campus" in html
+
+
+def test_editar_com_codigo_de_outro_campus_mostra_a_regra_no_campo(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post("/admin/campi/8278857/editar", data={**DADOS_VALIDOS, "co_unidade": "103"})
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="co_unidade">', html)
+    assert "esse código da unidade já está em outro campus" in html
+
+
+@pytest.mark.parametrize("metodo", ["get", "post"])
+def test_editar_campus_inexistente_volta_a_lista_com_mensagem_de_erro(cliente_autenticado, tres_campi, metodo):
+    resposta = getattr(cliente_autenticado, metodo)("/admin/campi/99999999/editar", data=DADOS_VALIDOS)
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/campi")
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message danger"', html)
+    assert "Campus não encontrado." in html

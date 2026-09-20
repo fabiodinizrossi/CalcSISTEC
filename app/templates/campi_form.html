@@ -1,0 +1,28 @@
+{% extends "_base.html" %}
+{% from "shell/_macros.html" import campo, mensagem, botoes_formulario %}
+{% block title %}{{ titulo_pagina }} - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<h1>{{ titulo_pagina }}</h1>
+
+{% if mensagem_erro %}{{ mensagem("danger", mensagem_erro) }}{% endif %}
+
+<form method="post" action="{{ acao }}" novalidate>
+  <div class="row">
+    <div class="col-12 col-md-6">
+      {{ campo("id_perfil", "Identificador do perfil", valores.id_perfil, erro=erros.id_perfil, obrigatorio=True) }}
+    </div>
+    <div class="col-12 col-md-6">
+      {{ campo("co_unidade", "Código da unidade", valores.co_unidade, erro=erros.co_unidade, obrigatorio=True) }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-md-6">
+      {{ campo("cidade", "Cidade", valores.cidade, erro=erros.cidade, obrigatorio=True) }}
+    </div>
+    <div class="col-12 col-md-6">
+      {{ campo("nome_unidade", "Nome da unidade", valores.nome_unidade, erro=erros.nome_unidade, obrigatorio=True) }}
+    </div>
+  </div>
+  {{ botoes_formulario("/admin/campi", "Salvar") }}
+</form>
+{% endblock %}
