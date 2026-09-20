@@ -36,8 +36,8 @@ recusa o login quando identifica controle automático.)
 
 ## Antes da primeira atualização: cadastrar os campi
 
-A lista de campi é **cadastrada à mão**, em Configurações → Campi do Sistec (ou no
-assistente de instalação). O campo que decide tudo é o **identificador de perfil**:
+A lista de campi é **cadastrada à mão**, em `/admin/campi` (Configurações → Gerenciar
+campi) ou no assistente de instalação. O campo que decide tudo é o **identificador de perfil**:
 o `tipo` do Sistec, um número de 7 dígitos como `8278860`.
 
 Como descobrir:
@@ -81,7 +81,7 @@ começar** e diz quais corrigir — em vez de baixar 22 planilhas vazias.
 
 ### O que olhar enquanto roda
 
-- Os **identificadores** em Configurações → Campi do Sistec: números de 7 dígitos.
+- Os **identificadores** em `/admin/campi`: números de 7 dígitos.
   `0`, `1`, `2`… são lista velha da extensão, e a tela marca em vermelho.
 - Os **avisos**: se a planilha de um campus vier com o código de outra unidade, ou
   se dois campi trouxerem a mesma unidade, a troca de perfil não funcionou.
@@ -132,7 +132,7 @@ o assistente de instalação e o reset.
 | "A porta 8050 já está em uso" | Um CalcSISTEC antigo ficou aberto. Feche aquele terminal ou use o `Stop-Process -Id <PID>` que o script sugere |
 | "Falta a dependência ..." | Rode `pip install -r requirements.txt` |
 | "Servidor sem credenciais administrativas" | O app foi aberto fora do script (sem as variáveis). Use `.\scripts\testar.ps1` |
-| "N campus(i) estão sem um identificador de perfil válido" | Cadastre o `tipo` de cada um em Configurações → Campi do Sistec (veja a seção acima) |
+| "N campus(i) estão sem um identificador de perfil válido" | Cadastre o `tipo` de cada um em `/admin/campi` (veja a seção acima) |
 | Progresso parado em 0%, planilha nenhuma chega | Identificador errado (aceito no formato, mas não é o do campus). Confira pela URL de troca de campus, à mão |
 | Planilhas de campi diferentes com a mesma unidade | Dois campi com o mesmo `tipo`, ou o Sistec deixou de aceitar a troca por URL. A tela avisa |
 | O arquivo não chega na pasta | A tela avisa em 1 minuto: o Chrome está com "perguntar onde salvar cada arquivo". Desligue em `chrome://settings/downloads`, ou escolha a pasta de coleta na janela que abriu |
@@ -162,3 +162,13 @@ o assistente de instalação e o reset.
   detalhado por cenário (Partes A, B e C).
 - `_reversa_forward/002-baixador-planilhas-sistec/interfaces/navegador-local.md` —
   como a coleta funciona por dentro.
+
+## Conferir o design (gov.br DS)
+
+- O botão **Usar tema escuro** fica no cabeçalho de todas as telas. A escolha fica salva no navegador
+  (`localStorage`, chave `calcsistec-tema`) e a página não recarrega ao trocar.
+- Teste o menu com o teclado: **Enter** e **Espaço** abrem, **Esc** fecha; em telas de 992px ou mais ele fica
+  sempre à vista.
+- Em **Excluir** (na lista de campi) abre um modal: **Esc** ou **Cancelar** não excluem nada.
+- Os testes automáticos: `python -m pytest -q`. Os de JavaScript (`tests/test_js_*.py`) precisam do `node` no PATH
+  e são pulados sem ele.

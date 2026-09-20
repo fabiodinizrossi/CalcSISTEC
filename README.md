@@ -8,7 +8,11 @@ app/
   domain/      # BC-02/BC-03: regras de negócio puras (Tarefas 04, 06, 07)
   pages/       # 1 arquivo por página (Tarefa 09)
   components/  # UI reutilizável (Tarefa 09)
-  assets/      # CSS
+  shell.py     # shell único (cabeçalho, menu, breadcrumb, rodapé): blueprint /ds/ e PainelDash
+  admin_campi.py  # gestão de campi em /admin/campi (lista, edição, inclusão)
+  templates/   # páginas administrativas (Jinja); shell/ tem os parciais e macros que o Dash também usa
+  static/      # gov.br DS (govbr-ds/), fonte Rawline (vendor/) e scripts (tema, confirmação), servidos em /ds/
+  assets/      # só style.css e logotipos: o Dash carrega tudo desta pasta, por isso o DS fica fora dela
   app.py       # app Dash + callbacks
 run.py         # entry point
 ```
@@ -74,8 +78,8 @@ A cada atualização:
 4. O CalcSISTEC troca de campus e baixa ciclos e matrículas de cada um.
 5. Confira a prévia, clique em **Salvar na versão interna** e depois em **Publicar**.
 
-Antes da primeira atualização é preciso **cadastrar os campi** (Configurações →
-Campi do Sistec, ou o assistente de instalação). O campo decisivo é o
+Antes da primeira atualização é preciso **cadastrar os campi** (`/admin/campi`, com
+vínculo em Configurações → Gerenciar campi, ou o assistente de instalação). O campo decisivo é o
 **identificador de perfil**: o `tipo` do Sistec, um número de 7 dígitos como
 `8278860`. Para descobri-lo, na tela "Selecione o Perfil para efetuar login"
 abra `F12` → *Elements*, procure `name="tipo"` e selecione cada campus — o valor
@@ -85,10 +89,11 @@ Com identificador faltando ou inválido a atualização **não começa**: ela av
 quais campi corrigir. Isso é proposital — sem o `tipo` certo o Sistec ignora a
 troca de campus e as planilhas viriam vazias, com o progresso parado em 0%.
 
-A lista de campi fica em **Configurações → Campi do Sistec**: corrigir o
-identificador do perfil, o código, a cidade e o nome da unidade, desativar
-(deixa de ser baixado), excluir ou incluir um perfil à mão, além de colar a
-lista inteira de uma vez e ajustar o `qtdPerfis`. Código da unidade vazio é preenchido com o código que vem na
+A lista de campi fica em **`/admin/campi`** (Configurações → Gerenciar campi): buscar,
+mudar de página, ver em lista ou em cards, editar o identificador do perfil, o código,
+a cidade e o nome da unidade, desativar (deixa de ser baixado), excluir (com confirmação)
+ou incluir um perfil à mão. Colar a lista inteira de uma vez e ajustar o `qtdPerfis`
+continuam em Configurações. Código da unidade vazio é preenchido com o código que vem na
 planilha de ciclos; se a planilha de um campus vier com o código de outro, a
 tela avisa (sinal de que a troca de perfil não funcionou).
 

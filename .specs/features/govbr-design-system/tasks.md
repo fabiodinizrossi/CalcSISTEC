@@ -1639,9 +1639,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `README.md` descreve `app/static/` e `app/templates/shell/` e não cita mais `app/assets/govbr-ds/`
-- [ ] `TESTAR.md` troca "Configurações → Campi do Sistec" por `/admin/campi` onde ensina a editar identificadores
-- [ ] Gate build passa
+- [x] `README.md` descreve `app/static/` e `app/templates/shell/` e não cita mais `app/assets/govbr-ds/`
+- [x] `TESTAR.md` troca "Configurações → Campi do Sistec" por `/admin/campi` onde ensina a editar identificadores
+- [x] Gate build passa
 
 **Tests**: none
 **Gate**: build
