@@ -384,7 +384,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-12          | P1: Páginas públicas (AC 3, aria-current) | Design | Implementing |
 | DS-13          | P1: Páginas públicas (AC 4, br-card)    | Design | Implementing |
 | DS-14          | P1: Páginas públicas (AC 5, br-table)   | Design | Implementing |
-| DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | In Tasks |
+| DS-15          | P1: Páginas públicas (AC 6, filtros)    | Design | Implementing |
 | DS-16          | P1: Páginas públicas (AC 7, br-footer)  | Design | Implementing |
 | DS-17          | P1: Páginas públicas (AC 8, br-message) | Design | In Tasks |
 | DS-18          | P1: Páginas públicas (AC 9, sem Bootstrap) | Design | Implementing |

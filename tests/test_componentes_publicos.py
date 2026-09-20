@@ -98,3 +98,35 @@ def test_tabela_nao_usa_classe_de_tabela_do_bootstrap_nem_componente_dbc():
 
 def test_tabela_nao_usa_componente_do_ds_que_precisa_de_js():
     exigir_sem_componente_do_ds_que_precisa_de_js(_tabela())
+
+
+from app.components.filters import EIXOS, axis_selector, fic_toggle
+
+
+def _radio(raiz):
+    radios = [c for c in componentes(raiz) if type(c).__name__ == "RadioItems"]
+    assert len(radios) == 1
+    return radios[0]
+
+
+def test_fic_toggle_tem_com_fic_e_sem_fic_com_padrao_com_fic_e_id_preservado():
+    radio = _radio(fic_toggle("matriculas-fic"))
+    assert radio.id == "matriculas-fic"
+    assert radio.options == [{"label": "Com FIC", "value": "com_fic"}, {"label": "Sem FIC", "value": "sem_fic"}]
+    assert radio.value == "com_fic"
+
+
+def test_axis_selector_tem_os_6_eixos_com_padrao_campus_e_id_preservado():
+    radio = _radio(axis_selector("matriculas-eixo"))
+    assert radio.id == "matriculas-eixo"
+    assert [o["value"] for o in radio.options] == ["campus", "tipo_curso", "nome_curso", "modalidade", "oferta", "ciclo"]
+    assert radio.options == EIXOS
+    assert radio.value == "campus"
+
+
+@pytest.mark.parametrize("componente", [fic_toggle("x"), axis_selector("y")])
+def test_filtros_de_opcao_exclusiva_sao_br_radio_sem_classe_btn_do_bootstrap(componente):
+    radio = _radio(componente)
+    assert "br-radio" in radio.className.split()
+    assert not [c for c in classes(componente) if c == "btn" or c.startswith("btn-")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(componente)

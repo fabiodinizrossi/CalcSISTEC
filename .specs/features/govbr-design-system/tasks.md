@@ -1242,9 +1242,9 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `fic_toggle("x")` tem 2 opções ("Com FIC", "Sem FIC") com padrão `com_fic`; `axis_selector("y")` tem os 6 eixos com padrão `campus`; ids preservados
-- [ ] `className` contém `br-radio`; nenhuma classe `btn` do Bootstrap
-- [ ] Testes em `tests/test_componentes_publicos.py`; gate quick passa. O visual de `input` + `label` irmãos é conferido na T55
+- [x] `fic_toggle("x")` tem 2 opções ("Com FIC", "Sem FIC") com padrão `com_fic`; `axis_selector("y")` tem os 6 eixos com padrão `campus`; ids preservados
+- [x] `className` contém `br-radio`; nenhuma classe `btn` do Bootstrap
+- [x] Testes em `tests/test_componentes_publicos.py`; gate quick passa. O visual de `input` + `label` irmãos é conferido na T55
 
 **Tests**: unit
 **Gate**: quick

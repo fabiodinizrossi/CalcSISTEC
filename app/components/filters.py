@@ -39,6 +39,7 @@ def fic_toggle(id_, default="com_fic"):
                 options=[{"label": "Com FIC", "value": "com_fic"}, {"label": "Sem FIC", "value": "sem_fic"}],
                 value=default,
                 inline=True,
+                className="br-radio",
             ),
         ],
         className="filter-item",
@@ -52,7 +53,7 @@ def axis_selector(id_, default="campus"):
     return html.Div(
         [
             html.Label("Ver tabela por:", className="filter-label"),
-            dbc.RadioItems(id=id_, options=EIXOS, value=default, inline=True),
+            dbc.RadioItems(id=id_, options=EIXOS, value=default, inline=True, className="br-radio"),
         ],
         className="filter-item",
     )
