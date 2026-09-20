@@ -1451,10 +1451,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Sem cor hexadecimal, `rgb()` ou `hsl()` literal; sem `--gov-`; sem `768px` nem `320px`; todo `@media` de largura usa só 576, 992, 1280 ou 1600px (`prefers-color-scheme` permitido)
-- [ ] Nenhum seletor `.app-header`, `.nav-menu`, `.admin-nav`, `.kpi-card`, `.nav-card`, `.hero`
-- [ ] Novo `tests/test_style_css.py`; gate full passa
-- [ ] Faixas `.evasao-*` e medidores continuam definidos, agora por `var(--...)`
+- [x] Sem cor hexadecimal, `rgb()` ou `hsl()` literal; sem `--gov-`; sem `768px` nem `320px`; todo `@media` de largura usa só 576, 992, 1280 ou 1600px (`prefers-color-scheme` permitido)
+- [x] Nenhum seletor `.app-header`, `.nav-menu`, `.admin-nav`, `.kpi-card`, `.nav-card`, `.hero`
+- [x] Novo `tests/test_style_css.py`; gate full passa
+- [x] Faixas `.evasao-*` e medidores continuam definidos, agora por `var(--...)`
 
 **Tests**: unit
 **Gate**: full

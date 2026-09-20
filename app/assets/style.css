@@ -1,247 +1,57 @@
-:root{
-  /* Tokens gov.br (`_reversa_sdd/design-system/tokens-derived.md`),
-     confirmados contra `@govbr-ds/core@3.7.0` na Tarefa `001-govbr-design-system`
-     (T001): sem divergência entre os valores inferidos e o pacote oficial. */
-  --gov-color-primary: #1351B4;
-  --gov-color-primary-dark: #0C326F;
-  --gov-color-secondary: #168821;
-  --gov-color-warning: #FFCD07;
-  --gov-color-danger: #E52207;
-  --gov-color-background: #F8F8F8;
-  --gov-color-surface: #FFFFFF;
-  --gov-color-text-primary: #1E1E1E;
-  --gov-color-text-secondary: #555555;
-  --gov-color-border: #CCCCCC;
-  --gov-spacing-xs: 4px;
-  --gov-spacing-sm: 8px;
-  --gov-spacing-md: 16px;
-  --gov-spacing-lg: 24px;
-  --gov-spacing-xl: 40px;
-}
+/* Regras que o gov.br DS 3.7.0 não cobre. Só variáveis do DS: nenhuma cor
+   literal e nenhum ponto de quebra fora de 576, 992, 1280 e 1600px. */
 
-*, *::before, *::after{ box-sizing: border-box; }
+/* ---- Logotipo: fica sobre superfície clara nos dois temas ---- */
 
-body{
-  background: var(--gov-color-background);
-  color: var(--gov-color-text-primary);
-  font-family: Rawline, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-  margin: 0;
+.logo-superficie{
+  display: inline-flex;
+  background: var(--pure-0);
+  border-radius: var(--surface-rounder-md);
+  padding: var(--spacing-scale-half) var(--spacing-scale-base);
 }
-
-.skip-link{
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 1000;
-  background: var(--gov-color-primary);
-  color: var(--gov-color-surface);
-  padding: var(--gov-spacing-sm) var(--gov-spacing-md);
-  border-radius: 0 0 8px 0;
-}
-.skip-link:focus{
-  left: 0;
-}
-
-/* ---- Cabeçalho (app-header, `app/components/header.py` / `_base.html`) ---- */
-
-.app-header{
-  background: var(--gov-color-primary);
-  color: var(--gov-color-surface);
-  padding: var(--gov-spacing-md) var(--gov-spacing-lg);
-}
-.app-header-inner{
-  display: flex;
-  align-items: center;
-  gap: var(--gov-spacing-md);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.app-header-logo{
+.logo-superficie img{
   height: 48px;
   width: auto;
-  background: var(--gov-color-surface);
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-.app-header-text{
-  display: flex;
-  flex-direction: column;
-}
-.app-header-title{ font-weight: 700; font-size: 18px; }
-.app-header-subtitle{ font-weight: 400; font-size: 13px; opacity: 0.9; }
-
-/* ---- Rodapé (app-footer, `app/components/footer.py` / `_base.html`) ---- */
-
-.app-footer{
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gov-spacing-md);
-  align-items: center;
-  background: var(--gov-color-text-primary);
-  color: var(--gov-color-surface);
-  padding: var(--gov-spacing-md) var(--gov-spacing-lg);
-  font-size: 13px;
-  margin-top: var(--gov-spacing-xl);
-}
-.app-footer a, .app-footer-admin-link{
-  color: var(--gov-color-surface) !important;
 }
 
-/* ---- Corpo das páginas ---- */
+/* ---- KPIs, filtros e medidores das páginas públicas ---- */
 
-.app-main{
-  padding: var(--gov-spacing-lg);
-  max-width: 1200px;
-  margin: 0 auto;
+.kpi-label{
+  font-size: var(--font-size-scale-down-01);
+  color: var(--color);
+}
+.kpi-value{
+  font-size: var(--font-size-scale-up-03);
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
 }
 
-/* ---- Formulários administrativos (`app/templates/*.html`), classes DS `br-*` ---- */
-
-.admin-form{
-  max-width: 480px;
-  margin: var(--gov-spacing-xl) auto;
-  padding: var(--gov-spacing-lg);
-}
-.admin-form .br-input, .admin-form .br-password{ margin-bottom: var(--gov-spacing-md); }
-.field-error{
-  color: var(--gov-color-danger);
-  font-size: 13px;
-  margin-top: var(--gov-spacing-xs);
-}
-.form-message{
-  padding: var(--gov-spacing-sm) var(--gov-spacing-md);
-  border-radius: 4px;
-  margin-bottom: var(--gov-spacing-md);
-}
-.form-message.success{ background: color-mix(in srgb, var(--gov-color-secondary) 15%, white); color: var(--gov-color-secondary); }
-.form-message.error{ background: color-mix(in srgb, var(--gov-color-danger) 15%, white); color: var(--gov-color-danger); }
-
-/* ---- Landing / KPIs / filtros / medidores (Tarefa 09, tokens gov.br) ---- */
-
-.hero{
-  background: var(--gov-color-primary);
-  color: var(--gov-color-surface);
-  border-radius: 16px;
-  padding: var(--gov-spacing-xl) var(--gov-spacing-lg);
-  margin-bottom: var(--gov-spacing-md);
-}
-
-.updated-at-badge{
-  font-size: 13px;
-  color: var(--gov-color-text-secondary);
-  margin-bottom: var(--gov-spacing-md);
-}
-
-.landing-cards{
-  display:flex;
-  flex-wrap:wrap;
-  gap: var(--gov-spacing-md);
-}
-
-.nav-card{
-  display:block;
-  background: var(--gov-color-surface);
-  border: 1px solid var(--gov-color-border);
-  border-radius: 12px;
-  padding: var(--gov-spacing-md);
-  color: var(--gov-color-primary);
-  font-weight: 700;
-  text-decoration: none;
-  min-width: 180px;
-}
-.nav-card:hover{ border-color: var(--gov-color-primary); }
-
-.empty-state{
-  padding: var(--gov-spacing-lg);
-  color: var(--gov-color-text-secondary);
-  font-size: 16px;
-}
-
-.kpi-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap: var(--gov-spacing-md);
-  margin: var(--gov-spacing-md) 0;
-}
-
-.kpi-card{
-  border-radius: 12px;
-  padding: var(--gov-spacing-md);
-  background: var(--gov-color-surface);
-  border: 1px solid var(--gov-color-border);
-}
-
-.kpi-label{ font-size:13px; color: var(--gov-color-text-secondary); }
-.kpi-value{ font-size:28px; font-weight:700; color: var(--gov-color-text-primary); }
-.kpi-meta{ font-size:11px; color: var(--gov-color-text-secondary); }
-
-.filter-panel{
-  display:flex;
-  flex-wrap:wrap;
-  gap: var(--gov-spacing-md);
-  margin: var(--gov-spacing-md) 0;
-}
-.filter-item{ min-width: 200px; }
+.filter-panel{ margin: var(--spacing-scale-2x) 0; }
 .filter-label{
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--gov-color-text-secondary);
   display: block;
-  margin-top: var(--gov-spacing-sm);
-  margin-bottom: var(--gov-spacing-xs);
+  font-size: var(--font-size-scale-down-01);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color);
+  margin: var(--spacing-scale-base) 0 var(--spacing-scale-half);
 }
 
-.btn-primary-gov{
-  background: var(--gov-color-primary) !important;
-  border: none !important;
-  color: var(--gov-color-surface) !important;
-  font-weight: 700 !important;
-  border-radius: 4px !important;
+.gauge-value{
+  font-size: var(--font-size-scale-up-03);
+  font-weight: var(--font-weight-bold);
 }
-.btn-primary-gov:hover{ background: var(--gov-color-primary-dark) !important; }
-
-.gauge-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap: var(--gov-spacing-md);
-  margin: var(--gov-spacing-md) 0;
+.gauge-value.gauge-verde, .gauge-situacao-verde{ color: var(--success); }
+.gauge-value.gauge-vermelho, .gauge-situacao-vermelho{ color: var(--danger); }
+.gauge-meta{
+  font-size: var(--font-size-scale-down-01);
+  color: var(--color);
 }
-.gauge-card{ min-width: 200px; }
-.gauge-value{ font-size:24px; font-weight:700; }
-.gauge-value.gauge-verde{ color: var(--gov-color-secondary); }
-.gauge-value.gauge-vermelho{ color: var(--gov-color-danger); }
-.gauge-meta{ font-size:12px; color: var(--gov-color-text-secondary); }
-.gauge-situacao{ font-size:13px; font-weight:700; }
-.gauge-situacao-verde{ color: var(--gov-color-secondary); }
-.gauge-situacao-vermelho{ color: var(--gov-color-danger); }
-
-.aviso-filtro{ color: var(--gov-color-warning); font-weight:700; margin-top: var(--gov-spacing-sm); }
-
-.evasao-baixa{ background: color-mix(in srgb, var(--gov-color-secondary) 25%, white); }
-.evasao-media{ background: color-mix(in srgb, var(--gov-color-warning) 35%, white); }
-.evasao-alta{ background: color-mix(in srgb, var(--gov-color-danger) 25%, white); }
-
-/* ---- Tabelas com rolagem horizontal contida (RF-07, 320px) ---- */
-
-.table-scroll-wrapper{
-  overflow-x: auto;
-  max-width: 100%;
+.gauge-situacao{
+  font-size: var(--font-size-scale-down-01);
+  font-weight: var(--font-weight-bold);
 }
 
-/* ---- Responsivo ---- */
+/* ---- Faixas da taxa de evasão (o texto da faixa também aparece na célula) ---- */
 
-/* ---- Foco visível (WCAG 2.2 AA, T042) ---- */
-
-a:focus-visible, button:focus-visible, input:focus-visible,
-select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
-  outline: 3px solid var(--gov-color-warning);
-  outline-offset: 2px;
-}
-
-@media (max-width: 320px){
-  .app-main, .app-header-inner{
-    padding-left: var(--gov-spacing-sm);
-    padding-right: var(--gov-spacing-sm);
-  }
-  body{ overflow-x: hidden; }
-}
+.evasao-baixa{ background: color-mix(in srgb, var(--success) 25%, var(--background)); }
+.evasao-media{ background: color-mix(in srgb, var(--warning) 35%, var(--background)); }
+.evasao-alta{ background: color-mix(in srgb, var(--danger) 25%, var(--background)); }

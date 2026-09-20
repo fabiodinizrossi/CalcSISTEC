@@ -371,7 +371,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | Requirement ID | Story                                   | Phase  | Status  |
 | -------------- | --------------------------------------- | ------ | ------- |
 | DS-01          | P1: Layout responsivo (AC 1, viewport)  | Design | Implementing |
-| DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | In Tasks |
+| DS-02          | P1: Layout responsivo (AC 2, breakpoints) | Design | Implementing |
 | DS-03          | P1: Layout responsivo (AC 3, sem rolagem horizontal) | Design | Implementing |
 | DS-04          | P1: Layout responsivo (AC 4, menu sobreposto < 992px) | Design | Implementing |
 | DS-05          | P1: Layout responsivo (AC 5, menu persistente >= 992px) | Design | Implementing |
@@ -398,8 +398,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Implementing |
 | DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | Implementing |
 | DS-28          | P1: Entrega do DS (AC 5, sem avulsos)   | Design | Implementing |
-| DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | In Tasks |
-| DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | In Tasks |
+| DS-29          | P1: Entrega do DS (AC 6, style.css enxuto) | Design | Implementing |
+| DS-30          | P1: Entrega do DS (AC 7, sem --gov-*)   | Design | Implementing |
 | DS-31          | P2: Acessibilidade (AC 1, lang)         | Design | Implementing |
 | DS-32          | P2: Acessibilidade (AC 2, link de salto) | Design | Implementing |
 | DS-33          | P2: Acessibilidade (AC 3, foco visível, 2 temas) | Design | In Tasks |
@@ -423,7 +423,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-51          | P2: Tema escuro (AC 7, localStorage bloqueado) | Design | Implementing |
 | DS-52          | P2: Tema escuro (AC 8, sem flash) | Design | Implementing |
 | DS-53          | P2: Tema escuro (AC 9, todos os componentes) | Design | In Tasks |
-| DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | In Tasks |
+| DS-54          | P2: Tema escuro (AC 10, só tokens do DS) | Design | Implementing |
 | DS-55          | P2: Tema escuro (AC 11, logotipo em superfície clara) | Design | Implementing |
 | DS-56          | P1: Páginas administrativas (AC 6, breadcrumb) | Design | Implementing |
 | DS-57          | P1: Páginas administrativas (AC 7, login "Acesso ao sistema") | Design | Implementing |
