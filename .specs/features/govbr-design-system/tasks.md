@@ -843,10 +843,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Edição com cada campo vazio, um por vez, devolve só esse campo; todos vazios devolve os 4; todos preenchidos devolve `{}`
-- [ ] Valor só com espaços conta como vazio; a função não faz I/O
-- [ ] Inclusão exige `id_perfil` e `nome_perfil`; `co_unidade`, `cidade` e `nome_unidade` vazios não geram erro
-- [ ] Testes em `tests/test_campi.py`; gate quick passa
+- [x] Edição com cada campo vazio, um por vez, devolve só esse campo; todos vazios devolve os 4; todos preenchidos devolve `{}`
+- [x] Valor só com espaços conta como vazio; a função não faz I/O
+- [x] Inclusão exige `id_perfil` e `nome_perfil`; `co_unidade`, `cidade` e `nome_unidade` vazios não geram erro
+- [x] Testes em `tests/test_campi.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

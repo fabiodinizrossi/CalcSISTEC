@@ -330,3 +330,19 @@ def obter_campus(id_perfil, db_path=DEFAULT_DB_PATH):
     finally:
         conn.close()
     return dict(zip(COLUNAS, linha)) if linha else None
+
+
+MENSAGEM_CAMPO_OBRIGATORIO = "Preencha o campo obrigatório"
+
+
+def validar_campos_campus(dados, inclusao=False):
+    """Campos obrigatórios em branco, como `{campo: mensagem}`; `{}` se tudo
+    estiver preenchido. Sem I/O.
+
+    Na edição os quatro campos são obrigatórios; na inclusão, só o
+    identificador e o nome do perfil (código, cidade e nome da unidade podem
+    ficar para depois)."""
+    obrigatorios = ("id_perfil", "nome_perfil") if inclusao else ("id_perfil", "co_unidade", "cidade", "nome_unidade")
+    return {
+        campo: MENSAGEM_CAMPO_OBRIGATORIO for campo in obrigatorios if not str(dados.get(campo) or "").strip()
+    }

@@ -177,3 +177,37 @@ def test_obter_campus_devolve_none_para_id_inexistente_ou_vazio(tmp_path):
     assert campi.obter_campus("99999", db_path) is None
     assert campi.obter_campus("", db_path) is None
     assert campi.obter_campus(None, db_path) is None
+
+
+CAMPOS_DA_EDICAO = ["id_perfil", "co_unidade", "cidade", "nome_unidade"]
+CAMPUS_COMPLETO = {"id_perfil": "8278857", "nome_perfil": "Perfil", "co_unidade": "101", "cidade": "Alegrete", "nome_unidade": "Campus"}
+
+
+@pytest.mark.parametrize("campo", CAMPOS_DA_EDICAO)
+def test_edicao_com_um_campo_vazio_devolve_so_esse_campo(campo):
+    dados = {**CAMPUS_COMPLETO, campo: ""}
+    assert campi.validar_campos_campus(dados) == {campo: "Preencha o campo obrigatório"}
+
+
+def test_edicao_com_todos_vazios_devolve_os_4_campos_e_completa_devolve_vazio():
+    vazios = {campo: "" for campo in CAMPOS_DA_EDICAO}
+    assert campi.validar_campos_campus(vazios) == {campo: "Preencha o campo obrigatório" for campo in CAMPOS_DA_EDICAO}
+    assert campi.validar_campos_campus(CAMPUS_COMPLETO) == {}
+
+
+def test_valor_so_com_espacos_conta_como_vazio_e_campo_ausente_tambem():
+    assert campi.validar_campos_campus({**CAMPUS_COMPLETO, "cidade": "   "}) == {"cidade": "Preencha o campo obrigatório"}
+    sem_cidade = {chave: valor for chave, valor in CAMPUS_COMPLETO.items() if chave != "cidade"}
+    assert campi.validar_campos_campus(sem_cidade) == {"cidade": "Preencha o campo obrigatório"}
+
+
+def test_inclusao_exige_so_identificador_e_nome_do_perfil():
+    assert campi.validar_campos_campus({"id_perfil": "", "nome_perfil": ""}, inclusao=True) == {
+        "id_perfil": "Preencha o campo obrigatório",
+        "nome_perfil": "Preencha o campo obrigatório",
+    }
+    assert campi.validar_campos_campus({"id_perfil": "8278857", "nome_perfil": "Perfil"}, inclusao=True) == {}
+    assert campi.validar_campos_campus(
+        {"id_perfil": "8278857", "nome_perfil": "Perfil", "co_unidade": "", "cidade": "", "nome_unidade": ""},
+        inclusao=True,
+    ) == {}
