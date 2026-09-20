@@ -6,22 +6,21 @@
 
 {% if mensagem_erro %}{{ mensagem("danger", mensagem_erro) }}{% endif %}
 
+{% set campos = [("id_perfil", "Identificador do perfil", True)] %}
+{% if inclusao %}{% set campos = campos + [("nome_perfil", "Nome do perfil", True)] %}{% endif %}
+{% set campos = campos + [
+  ("co_unidade", "Código da unidade", not inclusao),
+  ("cidade", "Cidade", not inclusao),
+  ("nome_unidade", "Nome da unidade", not inclusao),
+] %}
+
 <form method="post" action="{{ acao }}" novalidate>
   <div class="row">
+    {% for nome, rotulo, obrigatorio in campos %}
     <div class="col-12 col-md-6">
-      {{ campo("id_perfil", "Identificador do perfil", valores.id_perfil, erro=erros.id_perfil, obrigatorio=True) }}
+      {{ campo(nome, rotulo, valores[nome], erro=erros[nome], obrigatorio=obrigatorio) }}
     </div>
-    <div class="col-12 col-md-6">
-      {{ campo("co_unidade", "Código da unidade", valores.co_unidade, erro=erros.co_unidade, obrigatorio=True) }}
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-12 col-md-6">
-      {{ campo("cidade", "Cidade", valores.cidade, erro=erros.cidade, obrigatorio=True) }}
-    </div>
-    <div class="col-12 col-md-6">
-      {{ campo("nome_unidade", "Nome da unidade", valores.nome_unidade, erro=erros.nome_unidade, obrigatorio=True) }}
-    </div>
+    {% endfor %}
   </div>
   {{ botoes_formulario("/admin/campi", "Salvar") }}
 </form>

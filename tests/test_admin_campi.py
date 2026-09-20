@@ -260,3 +260,54 @@ def test_editar_campus_inexistente_volta_a_lista_com_mensagem_de_erro(cliente_au
     html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
     assert re.search(r'class="br-message danger"', html)
     assert "Campus não encontrado." in html
+
+
+def test_incluir_mostra_titulo_e_5_campos(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.get("/admin/campi/novo")
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r"<h1[^>]*>\s*Incluir campus\s*</h1>", html)
+    assert re.findall(r'<label for="([^"]+)">', html) == ["id_perfil", "nome_perfil", "co_unidade", "cidade", "nome_unidade"]
+    assert len(re.findall(r'class="br-input\b', html)) == 5
+
+
+def test_incluir_valido_grava_como_manual_redireciona_e_a_lista_mostra_a_mensagem(cliente_autenticado, tres_campi, banco):
+    resposta = cliente_autenticado.post(
+        "/admin/campi/novo", data={"id_perfil": "8279999", "nome_perfil": "Perfil Novo", "co_unidade": "", "cidade": "", "nome_unidade": ""}
+    )
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"].endswith("/admin/campi")
+    campus = dados_campi.obter_campus("8279999", banco)
+    assert campus["origem"] == "manual"
+    assert campus["nome_perfil"] == "Perfil Novo"
+    assert campus["co_unidade"] is None
+    html = cliente_autenticado.get("/admin/campi").get_data(as_text=True)
+    assert re.search(r'class="br-message success"[^>]*role="alert"', html)
+    assert "Campus incluído." in html
+
+
+def test_incluir_dois_campi_sem_codigo_nao_bate_no_unique_do_codigo(cliente_autenticado, tres_campi, banco):
+    for identificador in ("8270001", "8270002"):
+        resposta = cliente_autenticado.post("/admin/campi/novo", data={"id_perfil": identificador, "nome_perfil": "Perfil " + identificador})
+        assert resposta.status_code == 302
+    assert dados_campi.obter_campus("8270002", banco) is not None
+
+
+@pytest.mark.parametrize("faltando", ["id_perfil", "nome_perfil"])
+def test_incluir_sem_identificador_ou_sem_nome_devolve_campo_em_danger_e_banner(cliente_autenticado, tres_campi, faltando):
+    dados = {"id_perfil": "8279999", "nome_perfil": "Perfil Novo"}
+    dados[faltando] = ""
+    resposta = cliente_autenticado.post("/admin/campi/novo", data=dados)
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(rf'class="br-input danger"[^>]*>\s*<label for="{faltando}">', html)
+    assert "Preencha o campo obrigatório" in html
+    assert "Erro. Preencha abaixo os campos obrigatórios antes de enviar os dados." in html
+
+
+def test_incluir_com_identificador_repetido_mostra_a_regra_no_campo(cliente_autenticado, tres_campi):
+    resposta = cliente_autenticado.post("/admin/campi/novo", data={"id_perfil": "8278857", "nome_perfil": "Outro"})
+    html = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert re.search(r'class="br-input danger"[^>]*>\s*<label for="id_perfil">', html)
+    assert "esse identificador de perfil já está em outro campus" in html

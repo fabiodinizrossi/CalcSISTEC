@@ -6,6 +6,7 @@ from app.auth import requer_autenticacao
 from app.data.campi import (
     CampusInvalido,
     id_suspeito,
+    incluir_campus,
     listar_campi,
     obter_campus,
     salvar_campus_manual,
@@ -114,6 +115,44 @@ def editar(id_perfil):
         "campi_form.html",
         titulo_pagina="Editar campus | " + campus["nome_perfil"],
         acao="/admin/campi/" + id_perfil + "/editar",
+        valores=valores,
+        erros=erros,
+        mensagem_erro=MENSAGEM_ERRO_DO_FORMULARIO if faltam_campos else None,
+    )
+
+
+CAMPOS_DA_INCLUSAO = ("id_perfil", "nome_perfil", "co_unidade", "cidade", "nome_unidade")
+
+
+@campi_bp.route("/admin/campi/novo", methods=["GET", "POST"])
+@requer_autenticacao
+def incluir():
+    valores, erros, faltam_campos = {}, {}, False
+    if request.method == "POST":
+        valores = {campo: request.form.get(campo, "").strip() for campo in CAMPOS_DA_INCLUSAO}
+        erros = validar_campos_campus(valores, inclusao=True)
+        faltam_campos = bool(erros)
+        if not erros:
+            try:
+                incluir_campus(
+                    valores["id_perfil"],
+                    valores["nome_perfil"],
+                    valores["co_unidade"] or None,
+                    valores["cidade"] or None,
+                    valores["nome_unidade"] or None,
+                    DB_PATH,
+                )
+            except CampusInvalido as exc:
+                erros = {exc.campo or "id_perfil": str(exc)}
+            else:
+                flash("Campus incluído.", "success")
+                return redirect("/admin/campi")
+
+    return render_template(
+        "campi_form.html",
+        titulo_pagina="Incluir campus",
+        acao="/admin/campi/novo",
+        inclusao=True,
         valores=valores,
         erros=erros,
         mensagem_erro=MENSAGEM_ERRO_DO_FORMULARIO if faltam_campos else None,

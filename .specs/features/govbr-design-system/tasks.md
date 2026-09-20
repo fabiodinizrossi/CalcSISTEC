@@ -978,11 +978,11 @@ T55 → T57
 
 **Done when**:
 
-- [ ] `GET` mostra "Incluir campus" e 5 campos: Identificador do perfil, Nome do perfil, Código da unidade, Cidade, Nome da unidade
-- [ ] `POST` com identificador e nome do perfil preenchidos grava (`origem = 'manual'`), redireciona e a lista mostra `br-message success` "Campus incluído."
-- [ ] `POST` sem identificador ou sem nome do perfil devolve 200 com campo `danger`, "Preencha o campo obrigatório" e o banner de erro
-- [ ] Identificador repetido mostra a mensagem da regra no campo
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] `GET` mostra "Incluir campus" e 5 campos: Identificador do perfil, Nome do perfil, Código da unidade, Cidade, Nome da unidade
+- [x] `POST` com identificador e nome do perfil preenchidos grava (`origem = 'manual'`), redireciona e a lista mostra `br-message success` "Campus incluído."
+- [x] `POST` sem identificador ou sem nome do perfil devolve 200 com campo `danger`, "Preencha o campo obrigatório" e o banner de erro
+- [x] Identificador repetido mostra a mensagem da regra no campo
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full
