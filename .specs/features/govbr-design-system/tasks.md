@@ -819,8 +819,8 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Devolve o dict com as colunas de `campi_sistec` para um id existente e `None` para inexistente ou vazio
-- [ ] Testes em `tests/test_campi.py`; gate quick passa
+- [x] Devolve o dict com as colunas de `campi_sistec` para um id existente e `None` para inexistente ou vazio
+- [x] Testes em `tests/test_campi.py`; gate quick passa
 
 **Tests**: unit
 **Gate**: quick

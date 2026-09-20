@@ -435,7 +435,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-63          | P1: CRUD de campi (AC 2, br-tag de situação) | Design | In Tasks |
 | DS-64          | P1: CRUD de campi (AC 3, aviso de identificador suspeito) | Design | In Tasks |
 | DS-65          | P1: CRUD de campi (AC 4, botões de ícone com nome acessível) | Design | In Tasks |
-| DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | In Tasks |
+| DS-66          | P1: CRUD de campi (AC 5, tela Editar campus) | Design | Implementing |
 | DS-67          | P1: CRUD de campi (AC 6, campos com rótulo visível) | Design | In Tasks |
 | DS-68          | P1: CRUD de campi (AC 7, Cancelar e Salvar) | Design | In Tasks |
 | DS-69          | P1: CRUD de campi (AC 8, salvar com sucesso) | Design | In Tasks |

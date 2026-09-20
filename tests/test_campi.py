@@ -158,3 +158,22 @@ def test_campus_invalido_criado_so_com_a_mensagem_tem_campo_none():
     erro = campi.CampusInvalido("mensagem antiga")
     assert erro.campo is None
     assert str(erro) == "mensagem antiga"
+
+
+def test_obter_campus_devolve_o_dict_das_colunas_de_um_id_existente(tmp_path):
+    db_path = _dois_campi(tmp_path)
+    campus = campi.obter_campus("11111", db_path)
+    assert set(campus) == set(campi.COLUNAS)
+    assert campus["id_perfil"] == "11111"
+    assert campus["nome_perfil"] == "Perfil A"
+    assert campus["co_unidade"] == "1"
+    assert campus["cidade"] == "A"
+    assert campus["nome_unidade"] == "Campus A"
+    assert campus["origem"] == "manual"
+
+
+def test_obter_campus_devolve_none_para_id_inexistente_ou_vazio(tmp_path):
+    db_path = _dois_campi(tmp_path)
+    assert campi.obter_campus("99999", db_path) is None
+    assert campi.obter_campus("", db_path) is None
+    assert campi.obter_campus(None, db_path) is None

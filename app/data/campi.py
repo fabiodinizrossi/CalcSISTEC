@@ -314,3 +314,19 @@ def existe_campus_sem_unidade(db_path=DEFAULT_DB_PATH):
         return n > 0
     finally:
         conn.close()
+
+
+def obter_campus(id_perfil, db_path=DEFAULT_DB_PATH):
+    """O campus como dict das colunas de `campi_sistec`, ou `None` se o
+    identificador for vazio ou não existir."""
+    id_perfil = str(id_perfil or "").strip()
+    if not id_perfil:
+        return None
+    conn = get_connection(db_path)
+    try:
+        linha = conn.execute(
+            f"SELECT {', '.join(COLUNAS)} FROM campi_sistec WHERE id_perfil = ?", (id_perfil,)
+        ).fetchone()
+    finally:
+        conn.close()
+    return dict(zip(COLUNAS, linha)) if linha else None
