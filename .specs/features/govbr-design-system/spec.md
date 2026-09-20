@@ -393,7 +393,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-21          | P1: Páginas administrativas (AC 3, campo inválido) | Design | Verified |
 | DS-22          | P1: Páginas administrativas (AC 4, resultado da ação) | Design | Verified |
 | DS-23          | P1: Páginas administrativas (AC 5, < 576px) | Design | Verified |
-| DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Implementing |
+| DS-24          | P1: Entrega do DS (AC 1, local)         | Design | Verified |
 | DS-25          | P1: Entrega do DS (AC 2, um CSS)        | Design | Verified |
 | DS-26          | P1: Entrega do DS (AC 3, um JS)         | Design | Verified |
 | DS-27          | P1: Entrega do DS (AC 4, só componentes sem JS no Dash) | Design | Verified |

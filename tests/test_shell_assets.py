@@ -117,6 +117,27 @@ def test_os_arquivos_de_fonte_do_css_da_rawline_resolvem_para_200(cliente):
         resposta.close()
 
 
+def test_os_webfonts_do_font_awesome_resolvem_para_200(cliente):
+    css = cliente.get("/ds/vendor/fontawesome/css/all.min.css").get_data(as_text=True)
+    urls = re.findall(r"url\(([^)]+)\)", css)
+    assert urls
+    for url in urls:
+        assert not url.startswith(("http://", "https://", "//")), url
+        caminho = url.split("?")[0].split("#")[0]
+        resposta = cliente.get("/ds/vendor/fontawesome/css/" + caminho)
+        assert resposta.status_code == 200, url
+        resposta.close()
+
+
+def test_font_awesome_e_vendorizado_localmente():
+    raiz = RAIZ_APP / "static" / "vendor" / "fontawesome"
+    assert (raiz / "css" / "all.min.css").is_file()
+    assert (raiz / "LICENSE.txt").is_file()
+    for familia in ("fa-solid-900", "fa-regular-400", "fa-brands-400"):
+        for extensao in (".woff2", ".woff", ".ttf", ".eot", ".svg"):
+            assert (raiz / "webfonts" / f"{familia}{extensao}").is_file(), f"{familia}{extensao}"
+
+
 def test_o_script_do_shell_instancia_os_componentes_do_ds_na_carga():
     """`core.min.js` só registra os comportamentos; `core-init.min.js` também instancia
     `br-menu`, `br-header` e os demais (verificado no Chrome: com `core.min.js` o botão

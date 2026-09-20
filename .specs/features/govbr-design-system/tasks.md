@@ -1559,10 +1559,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Jaline autorizou o download antes de rodar; versão baixada e origem anotadas no corpo do commit
-- [ ] Arquivos de licença do Font Awesome Free ficam junto dos fontes
-- [ ] Teste em `tests/test_shell_assets.py`: todo `href` e `src` local do HTML de `/admin/login` e do shell do Dash resolve para 200, e não há URL externo
-- [ ] Gate full passa
+- [x] Jaline autorizou o download antes de rodar; versão baixada e origem anotadas no corpo do commit
+- [x] Arquivos de licença do Font Awesome Free ficam junto dos fontes
+- [x] Teste em `tests/test_shell_assets.py`: todo `href` e `src` local do HTML de `/admin/login` e do shell do Dash resolve para 200, e não há URL externo
+- [x] Gate full passa
 
 **Tests**: integration
 **Gate**: full
