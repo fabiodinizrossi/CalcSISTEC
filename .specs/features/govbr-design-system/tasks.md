@@ -398,10 +398,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] Com tudo preenchido: nome, site (com `https://` quando faltar, `rel="noopener"`), e-mail em `mailto:` e "Área administrativa"
-- [ ] Com e-mail e site em branco: nenhum rótulo, link ou espaço vazio para eles; nome e "Área administrativa" permanecem
-- [ ] Sem nome de instituição: nenhum elemento vazio
-- [ ] Testes dos três casos em `tests/test_shell_parciais.py`; gate quick passa
+- [x] Com tudo preenchido: nome, site (com `https://` quando faltar, `rel="noopener"`), e-mail em `mailto:` e "Área administrativa"
+- [x] Com e-mail e site em branco: nenhum rótulo, link ou espaço vazio para eles; nome e "Área administrativa" permanecem
+- [x] Sem nome de instituição: nenhum elemento vazio
+- [x] Testes dos três casos em `tests/test_shell_parciais.py`; gate quick passa
 
 **Tests**: integration
 **Gate**: quick

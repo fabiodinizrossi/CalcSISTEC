@@ -1,0 +1,15 @@
+<footer class="br-footer">
+  <div class="container-fluid">
+    <div class="info">
+      <div class="d-flex flex-wrap text-down-01">
+        {% if instituicao and instituicao.nome %}<span class="mr-3">{{ instituicao.nome }}</span>{% endif %}
+        {% if instituicao and instituicao.site %}
+        {% set href = instituicao.site if instituicao.site.startswith(("http://", "https://")) else "https://" ~ instituicao.site %}
+        <a class="mr-3" href="{{ href }}" target="_blank" rel="noopener">{{ instituicao.site }}</a>
+        {% endif %}
+        {% if contato_email %}<a class="mr-3" href="mailto:{{ contato_email }}">{{ contato_email }}</a>{% endif %}
+        <a href="/admin/login">Área administrativa</a>
+      </div>
+    </div>
+  </div>
+</footer>

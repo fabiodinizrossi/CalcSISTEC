@@ -162,3 +162,39 @@ def test_breadcrumb_inicio_matriculas_tem_link_e_pagina_atual(servidor, institui
 def test_breadcrumb_de_editar_campus_renderiza_3_itens_na_ordem(servidor, instituicao_configurada):
     _, itens = migalhas(servidor, "/admin/campi/8278857/editar")
     assert [texto(item) for item in itens] == ["Configurações", "Campi", "Editar"]
+
+
+def rodape(servidor, nome="Instituto Teste", site="https://it.edu.br", email="pi@it.edu.br"):
+    return renderizar(
+        servidor,
+        "shell/_footer.html",
+        instituicao={"nome": nome, "site": site},
+        contato_email=email,
+    )
+
+
+def test_rodape_completo_mostra_nome_site_email_e_area_administrativa(servidor):
+    html = rodape(servidor)
+    assert "Instituto Teste" in html
+    assert re.search(r'<a\b[^>]*href="https://it\.edu\.br"[^>]*rel="noopener"[^>]*>', html)
+    assert re.search(r'<a\b[^>]*href="mailto:pi@it\.edu\.br"[^>]*>\s*pi@it\.edu\.br\s*</a>', html)
+    assert re.search(r'<a\b[^>]*href="/admin/login"[^>]*>\s*Área administrativa\s*</a>', html)
+
+
+def test_site_sem_protocolo_recebe_https(servidor):
+    assert 'href="https://it.edu.br"' in rodape(servidor, site="it.edu.br")
+
+
+def test_rodape_sem_email_e_sem_site_nao_deixa_rotulo_link_nem_espaco_vazio(servidor):
+    html = rodape(servidor, site="", email="")
+    assert "mailto:" not in html
+    assert len(re.findall(r"<a\b", html)) == 1
+    assert "Instituto Teste" in html
+    assert "Área administrativa" in html
+    assert not re.search(r"<(span|li|a|div|p)\b[^>]*>\s*</\1>", html)
+
+
+def test_rodape_sem_nome_nao_deixa_elemento_vazio(servidor):
+    html = rodape(servidor, nome="")
+    assert not re.search(r"<(span|li|a|div|p)\b[^>]*>\s*</\1>", html)
+    assert "Área administrativa" in html
