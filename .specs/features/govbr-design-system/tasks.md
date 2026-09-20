@@ -1085,10 +1085,10 @@ T55 → T57
 
 **Done when**:
 
-- [ ] O botão de visão aparece acima da lista com `aria-pressed` coerente com a visão atual e rótulo "Visualizar em Cards" (visão lista) ou "Visualizar em Lista" (visão cards)
-- [ ] Com `?visao=cards`, cada campus vira um `br-card` com perfil, identificador, código, cidade, nome da unidade, tag de situação e as ações Editar, Desativar (ou Reativar) e Excluir com os mesmos nomes acessíveis e `data-confirm`
-- [ ] `visao` inválida cai em lista; busca e paginação continuam valendo nos cards
-- [ ] Testes em `tests/test_admin_campi.py`; gate full passa
+- [x] O botão de visão aparece acima da lista com `aria-pressed` coerente com a visão atual e rótulo "Visualizar em Cards" (visão lista) ou "Visualizar em Lista" (visão cards)
+- [x] Com `?visao=cards`, cada campus vira um `br-card` com perfil, identificador, código, cidade, nome da unidade, tag de situação e as ações Editar, Desativar (ou Reativar) e Excluir com os mesmos nomes acessíveis e `data-confirm`
+- [x] `visao` inválida cai em lista; busca e paginação continuam valendo nos cards
+- [x] Testes em `tests/test_admin_campi.py`; gate full passa
 
 **Tests**: e2e
 **Gate**: full

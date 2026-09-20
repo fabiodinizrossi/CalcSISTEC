@@ -67,10 +67,12 @@ def filtrar_e_paginar(campi, q, pagina, por_pagina):
     }
 
 
-def _url_da_lista(q, pagina, por_pagina):
+def _url_da_lista(q, pagina, por_pagina, visao="lista"):
     params = {"por_pagina": por_pagina, "pagina": pagina}
     if q:
         params["q"] = q
+    if visao == "cards":
+        params["visao"] = "cards"
     return "/admin/campi?" + urlencode(params)
 
 
@@ -79,6 +81,7 @@ def _url_da_lista(q, pagina, por_pagina):
 def lista():
     todos = listar_campi(DB_PATH)
     q = request.args.get("q", "").strip()
+    visao = "cards" if request.args.get("visao") == "cards" else "lista"
     pagina = filtrar_e_paginar(todos, q, request.args.get("pagina"), request.args.get("por_pagina"))
     ultima = max(1, -(-pagina["total"] // pagina["por_pagina"]))
     return render_template(
@@ -86,9 +89,11 @@ def lista():
         existem_campi=bool(todos),
         pagina=pagina,
         q=q,
+        visao=visao,
+        href_visao=_url_da_lista(q, pagina["pagina"], pagina["por_pagina"], "lista" if visao == "cards" else "cards"),
         tamanhos_de_pagina=TAMANHOS_DE_PAGINA,
-        href_anterior=_url_da_lista(q, pagina["pagina"] - 1, pagina["por_pagina"]) if pagina["pagina"] > 1 else None,
-        href_proxima=_url_da_lista(q, pagina["pagina"] + 1, pagina["por_pagina"]) if pagina["pagina"] < ultima else None,
+        href_anterior=_url_da_lista(q, pagina["pagina"] - 1, pagina["por_pagina"], visao) if pagina["pagina"] > 1 else None,
+        href_proxima=_url_da_lista(q, pagina["pagina"] + 1, pagina["por_pagina"], visao) if pagina["pagina"] < ultima else None,
         id_suspeito=id_suspeito,
         mensagens=get_flashed_messages(with_categories=True),
     )

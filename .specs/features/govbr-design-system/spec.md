@@ -453,8 +453,8 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-81          | P2: Busca e paginação (AC 2, filtra ao enviar a busca) | Design | Implementing |
 | DS-82          | P2: Busca e paginação (AC 3, nenhum resultado) | Design | Implementing |
 | DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Implementing |
-| DS-84          | P3: Cards (AC 1, botão de visualização) | Design | In Tasks |
-| DS-85          | P3: Cards (AC 2, br-card por campus) | Design | In Tasks |
+| DS-84          | P3: Cards (AC 1, botão de visualização) | Design | Implementing |
+| DS-85          | P3: Cards (AC 2, br-card por campus) | Design | Implementing |
 
 **ID format:** `[CATEGORY]-[NUMBER]` (e.g., `DS-01`)
 

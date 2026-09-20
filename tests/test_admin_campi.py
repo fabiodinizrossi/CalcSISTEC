@@ -462,3 +462,56 @@ def test_links_de_pagina_mantem_a_busca_e_o_tamanho_da_pagina(cliente_autenticad
         href = html_lib.unescape(re.search(r'href="([^"]+)"', _botao(html, nome)).group(1))
         params = parse_qs(urlparse(href).query)
         assert params == {"q": ["cidade"], "por_pagina": ["10"], "pagina": [pagina_esperada]}
+
+
+def _botao_de_visao(html):
+    return re.search(r'<a\b[^>]*role="button"[^>]*aria-pressed="[^"]*"[^>]*>\s*Visualizar em \w+\s*</a>', html).group(0)
+
+
+def test_botao_de_visao_na_lista_diz_visualizar_em_cards_com_aria_pressed_falso(cliente_autenticado, tres_campi):
+    botao = _botao_de_visao(cliente_autenticado.get("/admin/campi").get_data(as_text=True))
+    assert 'aria-pressed="false"' in botao
+    assert "Visualizar em Cards" in botao
+    assert "visao=cards" in botao
+
+
+def test_botao_de_visao_nos_cards_diz_visualizar_em_lista_com_aria_pressed_verdadeiro(cliente_autenticado, tres_campi):
+    botao = _botao_de_visao(cliente_autenticado.get("/admin/campi?visao=cards").get_data(as_text=True))
+    assert 'aria-pressed="true"' in botao
+    assert "Visualizar em Lista" in botao
+    assert "visao=cards" not in botao
+
+
+def test_cards_mostram_os_dados_a_tag_e_as_acoes_de_cada_campus(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi?visao=cards").get_data(as_text=True)
+    assert "<table" not in html
+    cards = re.findall(r'<div class="br-card">.*?<div class="card-footer">.*?</div>\s*</div>\s*</div>', html, re.S)
+    assert len(cards) == 3
+    alegrete, suspeito, inativo = cards
+    for esperado in ("Perfil Alegrete", "8278857", "101", "Alegrete", "Campus Alegrete"):
+        assert esperado in alegrete
+    assert re.search(r'<span class="br-tag">\s*Ativo\s*</span>', alegrete)
+    for nome in ("Editar campus Perfil Alegrete", "Desativar campus Perfil Alegrete", "Excluir campus Perfil Alegrete"):
+        assert f'aria-label="{nome}"' in alegrete
+    assert "Identificador inválido: a atualização não roda assim" in suspeito
+    assert re.search(r'<span class="br-tag">\s*Desativado\s*</span>', inativo)
+    assert 'aria-label="Reativar campus Perfil Inativo"' in inativo
+    assert "Tem certeza que deseja excluir o campus Perfil Alegrete?" in alegrete
+
+
+def test_visao_invalida_cai_em_lista(cliente_autenticado, tres_campi):
+    html = cliente_autenticado.get("/admin/campi?visao=grade").get_data(as_text=True)
+    assert "<table" in html
+    assert 'class="br-card"' not in html
+    assert "Visualizar em Cards" in html
+
+
+def test_busca_e_paginacao_continuam_valendo_nos_cards(cliente_autenticado, vinte_e_dois_campi):
+    padrao = cliente_autenticado.get("/admin/campi?visao=cards").get_data(as_text=True)
+    assert len(re.findall(r'<div class="br-card">', padrao)) == 10
+    assert _resumo(padrao) == "1-10 de 22 itens"
+    buscado = cliente_autenticado.get("/admin/campi?visao=cards&q=cidade 05").get_data(as_text=True)
+    assert len(re.findall(r'<div class="br-card">', buscado)) == 1
+    href = html_lib.unescape(re.search(r'href="([^"]+)"', _botao(padrao, "Próxima página")).group(1))
+    assert parse_qs(urlparse(href).query)["visao"] == ["cards"]
+    assert 'name="visao" value="cards"' in padrao
