@@ -290,12 +290,15 @@ pre{
   background: var(--color-primary-default);
   color: var(--pure-0);
   border-bottom: none;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .painel-publico .header-top{
   min-height: 72px;
   display: flex;
   align-items: center;
   gap: var(--spacing-scale-2x);
+  padding: 0 var(--spacing-scale-3x);
 }
 .painel-publico .header-titulo{
   font-size: var(--font-size-scale-up-03);
