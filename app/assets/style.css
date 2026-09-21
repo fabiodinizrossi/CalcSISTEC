@@ -318,11 +318,14 @@ pre{
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--spacing-scale-base);
   padding: var(--spacing-scale-baseh) var(--spacing-scale-2x);
 }
 .painel-publico .header-titulo{
-  font-size: var(--font-size-scale-up-01);
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--font-size-scale-base);
   font-weight: var(--font-weight-bold);
   color: var(--pure-0);
   line-height: 1.2;
@@ -336,6 +339,7 @@ pre{
   border: 1px solid var(--pure-0);
   border-radius: var(--surface-rounder-pill);
   font-size: 12px;
+  padding: 0 var(--spacing-scale-baseh);
 }
 .painel-publico .painel-tema:hover{
   background: color-mix(in srgb, var(--pure-0) 15%, transparent);
@@ -355,6 +359,7 @@ pre{
     gap: var(--spacing-scale-2x);
     padding: 0 var(--spacing-scale-3x);
   }
+  .painel-publico .painel-tema{ padding: 0 var(--spacing-scale-3x); }
 }
 
 .br-footer.painel-publico{
