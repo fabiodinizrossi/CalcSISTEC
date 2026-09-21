@@ -100,10 +100,9 @@ def test_menu_fica_persistente_e_aberto_a_partir_de_992px():
 
 def test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao():
     bloco = _bloco_media("@media (min-width: 992px)")
-    assert re.search(r"\.br-menu\s*\{[^}]*position:\s*fixed", bloco)
-    assert re.search(r"\.br-menu\s*\{[^}]*width:\s*var\(--menu-largura\)", bloco)
+    assert re.search(r"body\s*\{[^}]*grid-template-columns:\s*var\(--menu-largura\)", bloco)
+    assert re.search(r"\.br-menu\s*\{[^}]*position:\s*static", bloco)
     assert re.search(r"\.header-menu-trigger\s*\{[^}]*display:\s*none", bloco)
-    assert re.search(r"body\s*\{[^}]*padding-left:\s*var\(--menu-largura\)", bloco)
 
 
 def test_sem_js_o_menu_fica_sempre_visivel():

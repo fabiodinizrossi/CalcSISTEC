@@ -85,13 +85,36 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
 /* ---- Menu: barra lateral fixa à esquerda a partir de 992px, sobreposto abaixo disso ---- */
 
 @media (min-width: 992px){
-  .br-menu{ position: fixed; top: 0; bottom: 0; left: 0; width: var(--menu-largura); overflow-y: auto; }
+  body{
+    display: grid;
+    grid-template-columns: var(--menu-largura) 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "cabecalho cabecalho"
+      "menu      conteudo"
+      "rodape    rodape";
+    min-height: 100vh;
+    padding-left: 0;
+  }
+  body > header.br-header{ grid-area: cabecalho; }
+  body > .br-menu{ grid-area: menu; }
+  body > footer.br-footer{ grid-area: rodape; }
+  body > *:not(header.br-header):not(.br-menu):not(footer.br-footer){ grid-column: 2; }
+
+  .br-menu{
+    position: static;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    align-self: stretch;
+    width: auto;
+    height: auto;
+  }
   .br-menu .menu-container, .br-menu.active .menu-container{ display: block; position: static; }
-  .br-menu .menu-panel{ height: 100vh; }
   .br-menu .menu-body{ display: block; }
   .br-menu .menu-header, .br-menu .menu-scrim{ display: none; }
   .header-menu-trigger{ display: none; }
-  body{ padding-left: var(--menu-largura); }
+  .br-menu .menu-container{ height: 100%; }
 }
 
 /* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */
