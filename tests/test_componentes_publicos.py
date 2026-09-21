@@ -175,19 +175,17 @@ def test_filter_panel_e_uma_row_com_cada_campo_em_coluna_que_comeca_em_col_12():
 from app.components import aviso_sem_pnp
 
 TEXTO_DO_AVISO = (
-    "Os dados exibidos vêm direto do Sistec, sem a correção de status pelos "
-    "microdados do PNP — os números podem divergir dos publicados oficialmente "
-    "pelo PNP até essa correção ser reintroduzida."
+    "Os dados exibidos vêm direto do Sistec e por isso, podem divergir dos "
+    "publicados oficialmente na PNP. Trata-se de simulação para acompanhamento."
 )
 
 
-def test_aviso_sem_pnp_e_br_message_warning_com_role_status_e_o_texto_original(monkeypatch):
+def test_aviso_sem_pnp_e_uma_observacao_discreta_sem_br_message(monkeypatch):
     monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", False)
     aviso = aviso_sem_pnp.make_aviso_sem_pnp()
-    assert {"br-message", "warning"} <= set(aviso.className.split())
-    assert aviso.role == "status"
+    assert aviso.className == "aviso-simulacao"
     assert TEXTO_DO_AVISO in textos(aviso)
-    assert "aviso-sem-pnp" not in classes(aviso)
+    assert not ({"br-message", "warning"} & set(aviso.className.split()))
 
 
 def test_aviso_sem_pnp_devolve_none_com_a_correcao_ativa(monkeypatch):

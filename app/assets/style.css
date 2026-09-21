@@ -417,6 +417,19 @@ pre{
   color: var(--gray-60);
   text-align: center;
 }
+:root[data-tema="escuro"] .kpi-figma .valor,
+:root[data-tema="escuro"] .kpi-figma .rotulo{
+  color: var(--pure-0);
+}
+
+.aviso-simulacao{
+  margin: var(--spacing-scale-2x) 0 0;
+  font-size: 12px;
+  color: var(--gray-60);
+}
+:root[data-tema="escuro"] .aviso-simulacao{
+  color: var(--gray-20);
+}
 
 .card-chips{
   display: flex;

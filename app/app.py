@@ -66,7 +66,7 @@ init_shell(server, app)
 # renderiza só o aviso de dataset sem correção PNP e a página atual. O layout
 # continua sendo uma função para reler o dataset a cada carregamento.
 def serve_layout():
-    return html.Div([aviso for aviso in [make_aviso_sem_pnp()] if aviso is not None] + [dash.page_container])
+    return html.Div([dash.page_container] + [aviso for aviso in [make_aviso_sem_pnp()] if aviso is not None])
 
 
 app.layout = serve_layout
