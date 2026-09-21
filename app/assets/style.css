@@ -316,12 +316,13 @@ pre{
 .painel-publico .header-top{
   min-height: 72px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--spacing-scale-2x);
-  padding: 0 var(--spacing-scale-3x);
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-baseh) var(--spacing-scale-2x);
 }
 .painel-publico .header-titulo{
-  font-size: var(--font-size-scale-up-03);
+  font-size: var(--font-size-scale-up-01);
   font-weight: var(--font-weight-bold);
   color: var(--pure-0);
   line-height: 1.2;
@@ -334,7 +335,7 @@ pre{
   color: var(--pure-0);
   border: 1px solid var(--pure-0);
   border-radius: var(--surface-rounder-pill);
-  font-size: 13px;
+  font-size: 12px;
 }
 .painel-publico .painel-tema:hover{
   background: color-mix(in srgb, var(--pure-0) 15%, transparent);
@@ -344,6 +345,16 @@ pre{
   background: transparent;
   color: var(--pure-0);
   border-color: var(--pure-0);
+}
+@media (min-width: 576px){
+  .painel-publico .header-titulo{ font-size: var(--font-size-scale-up-03); }
+  .painel-publico .painel-tema{ font-size: 13px; }
+}
+@media (min-width: 992px){
+  .painel-publico .header-top{
+    gap: var(--spacing-scale-2x);
+    padding: 0 var(--spacing-scale-3x);
+  }
 }
 
 .br-footer.painel-publico{
