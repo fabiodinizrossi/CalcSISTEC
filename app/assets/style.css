@@ -329,6 +329,14 @@ pre{
   border-color: var(--pure-0);
 }
 
+.br-footer.painel-publico{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  min-height: 48px;
+}
+.br-footer.painel-publico .container-fluid{ padding: var(--spacing-scale-2x) var(--spacing-scale-3x); }
+.br-footer.painel-publico a{ color: var(--pure-0); }
+
 /* ---- Página inicial Matrículas (visual do Figma) ---- */
 
 .painel-landing{

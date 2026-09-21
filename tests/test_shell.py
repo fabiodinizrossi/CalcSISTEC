@@ -169,7 +169,7 @@ def test_pagina_dash_traz_o_shell_e_marca_o_item_da_pagina_atual():
     html = montar_pagina_dash("/")
     assert '<html lang="pt-BR"' in html
     assert 'class="br-header' in html
-    assert 'class="br-footer"' in html
+    assert 'class="br-footer painel-publico"' in html
     com_aria = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">(.*?)</span>', html, re.S)
     assert [rotulo.strip() for rotulo in com_aria] == ["Matrículas"]
 
