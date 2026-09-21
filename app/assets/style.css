@@ -472,7 +472,9 @@ pre{
 .card-chips .form-check{ display: inline-flex; padding: 0; margin: 0; }
 .card-chips input{ position: absolute; opacity: 0; width: 0; height: 0; }
 .card-chips label.chip{
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--spacing-scale-4x);
   padding: var(--spacing-scale-base) var(--spacing-scale-2x);
   border: 1px solid var(--interactive);
   border-radius: 999px;
@@ -578,10 +580,15 @@ pre{
   padding: var(--spacing-scale-2x);
 }
 .card-filtros .filter-item{
-  width: 185px;
+  flex: 1 1 185px;
+  width: auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-scale-half);
+}
+@media (min-width: 992px){
+  .card-filtros .filter-item{ flex: 0 0 185px; width: 185px; }
 }
 .card-filtros .filter-label{
   font-size: 12px;
