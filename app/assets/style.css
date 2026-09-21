@@ -396,7 +396,6 @@ pre{
   align-items: center;
   gap: var(--spacing-scale-baseh) var(--spacing-scale-2x);
   background: var(--background);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: var(--spacing-scale-2x);
 }
@@ -405,7 +404,13 @@ pre{
   font-weight: var(--font-weight-bold);
   color: var(--color);
 }
-.card-chips .form-check{ padding: 0; margin: 0; }
+.card-chips .chips-grupo{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-scale-base) var(--spacing-scale-baseh);
+}
+.card-chips .form-check{ display: inline-flex; padding: 0; margin: 0; }
 .card-chips input{ position: absolute; opacity: 0; width: 0; height: 0; }
 .card-chips label.chip{
   display: inline-block;
@@ -491,11 +496,14 @@ pre{
   flex-direction: column;
   gap: var(--spacing-scale-half);
 }
-.card-filtros .fic-segmentado .form-check{ padding: 0; margin: 0; }
+.card-filtros .fic-segmentado .seg-grupo{ display: flex; }
+.card-filtros .fic-segmentado .form-check{ display: inline-flex; padding: 0; margin: 0; }
 .card-filtros .fic-segmentado input{ position: absolute; opacity: 0; width: 0; height: 0; }
 .card-filtros .fic-segmentado label.seg{
-  display: inline-block;
-  padding: var(--spacing-scale-baseh) var(--spacing-scale-2x);
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--spacing-scale-2x);
   border: 1px solid var(--interactive);
   color: var(--interactive);
   font-size: 13px;
