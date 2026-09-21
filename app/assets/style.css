@@ -115,6 +115,37 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
   .br-menu .menu-header, .br-menu .menu-scrim{ display: none; }
   .header-menu-trigger{ display: none; }
   .br-menu .menu-container{ height: 100%; }
+  .br-menu .menu-panel{
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 100%;
+    background: var(--background);
+    border-right: 1px solid var(--border-color);
+    padding: var(--spacing-scale-3x) 0;
+    gap: var(--spacing-scale-half);
+  }
+  .br-menu .menu-body .menu-item{
+    padding: var(--spacing-scale-baseh) var(--spacing-scale-2x) var(--spacing-scale-baseh) var(--spacing-scale-3x);
+    font-size: var(--font-size-scale-base);
+    color: var(--color);
+    background: transparent;
+  }
+  .br-menu .menu-body .menu-item.active{
+    background: var(--blue-warm-vivid-5);
+    color: var(--color-primary-default);
+    font-weight: var(--font-weight-bold);
+    padding-left: var(--spacing-scale-baseh);
+    gap: var(--spacing-scale-base);
+  }
+  .br-menu .menu-body .menu-item.active::before{
+    content: "";
+    flex: 0 0 auto;
+    width: 4px;
+    height: 20px;
+    border-radius: 2px;
+    background: var(--color-primary-default);
+  }
 }
 
 /* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */
