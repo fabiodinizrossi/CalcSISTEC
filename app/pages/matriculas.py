@@ -162,13 +162,18 @@ def _tabela_matriculas(df, filtros):
     def _td(valor, classe="num"):
         return html.Td(formatar_valor(valor, "#,0"), className=classe)
 
+    def _td_integralizadas(valor):
+        if valor == 0:
+            return html.Td("—", className="num vazio")
+        return html.Td(formatar_valor(valor, "#,0"), className="num")
+
     corpo = [
         html.Tr(
             [
                 html.Td(linha["eixo"], className="campus"),
                 _td(linha["total"]),
                 _td(linha["concluidas"]),
-                _td(linha["integralizadas"], "num" if linha["integralizadas"] else "num zero"),
+                _td_integralizadas(linha["integralizadas"]),
                 _td(linha["em_curso"]),
                 html.Td(formatar_valor(linha["evasoes"], "#,0"), className="evasao"),
             ]
@@ -186,7 +191,7 @@ def _tabela_matriculas(df, filtros):
             html.Td("Total", className="campus"),
             _td(total),
             _td(concluidas),
-            _td(integralizadas),
+            _td_integralizadas(integralizadas),
             _td(em_curso),
             html.Td(formatar_valor(evasoes, "#,0"), className="evasao"),
         ]
@@ -213,8 +218,16 @@ def _tabela_matriculas(df, filtros):
         ]
     )
 
+    colgroup = html.Colgroup([
+        html.Col(className="col-eixo"),
+        html.Col(className="col-total"),
+        html.Col(className="col-concluidas"),
+        html.Col(className="col-integralizadas"),
+        html.Col(className="col-em-curso"),
+        html.Col(className="col-evasoes"),
+    ])
     return html.Div(
-        html.Table([cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
+        html.Table([colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
         className="matriz-figma",
     )
 

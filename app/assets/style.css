@@ -242,6 +242,9 @@ body{
 :root[data-tema="escuro"] .br-table td{
   border-color: var(--border-color);
 }
+:root[data-tema="escuro"] .tabela-landing tbody tr:nth-child(even) td{
+  background: var(--background-alternative);
+}
 :root[data-tema="escuro"] .br-input,
 :root[data-tema="escuro"] .br-textarea{
   --color: var(--color-dark);
@@ -433,11 +436,23 @@ pre{
   outline-offset: var(--spacing-scale-half);
 }
 
+.matriz-figma{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
 .matriz-figma .tabela-landing{
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   background: var(--background);
 }
+.tabela-landing .col-total{ width: 160px; }
+.tabela-landing .col-concluidas{ width: 110px; }
+.tabela-landing .col-integralizadas{ width: 130px; }
+.tabela-landing .col-em-curso{ width: 120px; }
+.tabela-landing .col-evasoes{ width: 110px; }
 .tabela-landing thead th{
   background: var(--color-primary-default);
   color: var(--pure-0);
@@ -445,6 +460,11 @@ pre{
   font-weight: var(--font-weight-regular);
   padding: var(--spacing-scale-base) var(--spacing-scale-baseh);
   border: 1px solid var(--color-primary-default);
+  text-align: right;
+}
+.tabela-landing thead th[rowspan="2"]:first-child,
+.tabela-landing thead th[colspan]{
+  text-align: center;
 }
 .tabela-landing thead th.negrito{
   font-weight: var(--font-weight-bold);
@@ -454,12 +474,14 @@ pre{
   color: var(--color);
   padding: var(--spacing-scale-base) var(--spacing-scale-baseh);
   border-bottom: 1px solid var(--gray-10);
+  height: 36px;
 }
 .tabela-landing tbody tr:nth-child(even) td{
-  background: var(--background-alternative);
+  background: var(--gray-2);
 }
 .tabela-landing td.campus{ text-align: left; }
 .tabela-landing td.num{ text-align: right; }
+.tabela-landing td.vazio{ color: var(--gray-40); }
 .tabela-landing td.evasao{
   text-align: right;
   color: var(--danger);
@@ -468,6 +490,7 @@ pre{
   font-weight: var(--font-weight-bold);
   border-top: 2px solid var(--color-primary-default);
   background: color-mix(in srgb, var(--color-primary-default) 10%, var(--background));
+  height: 36px;
 }
 
 .card-filtros{

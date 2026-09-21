@@ -78,9 +78,9 @@ def test_matriculas_mostra_a_tabela_figma_com_total_por_campus(matriculas_com_da
     assert matriz.className == "matriz-figma"
     celulas = [[textos(td) for td in componentes(tr) if type(td).__name__ == "Td"] for tr in componentes(matriz) if type(tr).__name__ == "Tr"]
     assert [linha for linha in celulas if linha] == [
-        ["Alegrete", "2", "1", "0", "1", "0"],
-        ["Jaguari", "1", "0", "0", "1", "0"],
-        ["Total", "3", "1", "0", "2", "0"],
+        ["Alegrete", "2", "1", "—", "1", "0"],
+        ["Jaguari", "1", "0", "—", "1", "0"],
+        ["Total", "3", "1", "—", "2", "0"],
     ]
 
 
