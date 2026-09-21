@@ -427,6 +427,11 @@ pre{
   color: var(--pure-0);
   font-weight: var(--font-weight-bold);
 }
+.card-chips .chip-input:focus-visible + label.chip,
+.card-filtros .seg-input:focus-visible + label.seg{
+  outline: 3px solid var(--focus-color);
+  outline-offset: var(--spacing-scale-half);
+}
 
 .matriz-figma .tabela-landing{
   width: 100%;
