@@ -93,6 +93,16 @@ def test_matriculas_nao_usa_classes_nem_componentes_de_tabela_ou_card_do_bootstr
         exigir_sem_componente_do_ds_que_precisa_de_js(componente)
 
 
+def test_matriculas_tabela_vem_em_rolagem_tabela_acessivel(matriculas_com_dados):
+    _, matriz = _atualizar(matriculas_com_dados)
+    rolagens = com_classe(matriz, "rolagem-tabela")
+    assert len(rolagens) == 1
+    wrapper = rolagens[0]
+    assert wrapper.tabIndex == "0"
+    assert wrapper.role == "region"
+    assert getattr(wrapper, "aria-label") == "Tabela de matrículas por campus"
+
+
 def test_matriculas_sem_dados_mostra_br_message_info(monkeypatch):
     pagina_matriculas = pagina("matriculas")
     monkeypatch.setattr(pagina_matriculas, "dataset_disponivel", lambda: False)

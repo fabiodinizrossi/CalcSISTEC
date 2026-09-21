@@ -147,3 +147,23 @@ def test_botao_do_ds_quebra_o_rotulo_em_vez_de_estourar_a_largura():
 
 def test_style_css_nao_redefine_as_classes_de_grade_row_e_col_do_ds():
     assert not re.search(r"(?m)^\s*\.(?:row|col(?:-[\w-]+)?)\s*[,{]", SEM_COMENTARIOS)
+
+
+def test_main_tem_padding_na_regra_base_fora_de_media():
+    corpo = re.search(r"(?m)^main#main-content\s*\{([^}]*)\}", SEM_COMENTARIOS).group(1)
+    assert "padding:" in corpo
+
+
+def test_kpis_figma_quebram_em_grade_na_regra_base():
+    corpo = _regra(".kpis-figma")
+    assert re.search(r"grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(150px", corpo)
+
+
+def test_a_tabela_rola_na_horizontal_com_min_width():
+    assert re.search(r"overflow-x:\s*auto", _regra(".rolagem-tabela"))
+    assert re.search(r"min-width:\s*790px", _regra(".matriz-figma .tabela-landing"))
+
+
+def test_cabecalho_pagina_quebra_linha_na_regra_base():
+    corpo = _regra(".painel-landing .cabecalho-pagina")
+    assert re.search(r"flex-wrap:\s*wrap", corpo)
