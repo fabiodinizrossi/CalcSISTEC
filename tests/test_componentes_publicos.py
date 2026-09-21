@@ -119,7 +119,7 @@ def test_fic_toggle_tem_com_fic_e_sem_fic_com_padrao_com_fic_e_id_preservado():
 def test_axis_selector_tem_os_6_eixos_com_padrao_campus_e_id_preservado():
     radio = _radio(axis_selector("matriculas-eixo"))
     assert radio.id == "matriculas-eixo"
-    assert [o["value"] for o in radio.options] == ["campus", "tipo_curso", "nome_curso", "modalidade", "oferta", "ciclo"]
+    assert [o["value"] for o in radio.options] == ["campus", "tipo_curso", "oferta", "nome_curso", "modalidade", "ciclo"]
     assert radio.options == EIXOS
     assert radio.value == "campus"
 

@@ -20,9 +20,9 @@ TODOS = "__todos__"
 EIXOS = [
     {"label": "Campus", "value": "campus"},
     {"label": "Tipo de Curso", "value": "tipo_curso"},
+    {"label": "Oferta (Técnico)", "value": "oferta"},
     {"label": "Nome do Curso", "value": "nome_curso"},
     {"label": "Modalidade", "value": "modalidade"},
-    {"label": "Oferta (Técnico)", "value": "oferta"},
     {"label": "Ciclo", "value": "ciclo"},
 ]
 
