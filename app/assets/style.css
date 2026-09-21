@@ -132,14 +132,14 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
     color: var(--color);
     background: transparent;
   }
-  .br-menu .menu-body .menu-item.active{
-    background: var(--blue-warm-vivid-5);
+  .br-menu .menu-body a.menu-item.active{
+    background: color-mix(in srgb, var(--color-primary-default) 8%, var(--background));
     color: var(--color-primary-default);
     font-weight: var(--font-weight-bold);
     padding-left: var(--spacing-scale-baseh);
     gap: var(--spacing-scale-base);
   }
-  .br-menu .menu-body .menu-item.active::before{
+  .br-menu .menu-body a.menu-item.active::before{
     content: "";
     flex: 0 0 auto;
     width: 4px;
@@ -220,6 +220,10 @@ main#main-content{
 }
 :root[data-tema="escuro"] .br-menu{
   --menu-background-submenu: var(--background-alternative);
+}
+:root[data-tema="escuro"] .br-menu .menu-body a.menu-item.active{
+  background: var(--background-alternative);
+  color: var(--pure-0);
 }
 :root[data-tema="escuro"] .br-menu .menu-panel{
   background: var(--background);
@@ -345,6 +349,7 @@ pre{
   background: var(--color-primary-default);
   color: var(--pure-0);
   min-height: 48px;
+  border-top: none;
 }
 .br-footer.painel-publico .container-fluid{ padding: var(--spacing-scale-2x) var(--spacing-scale-3x); }
 .br-footer.painel-publico a{ color: var(--pure-0); }
