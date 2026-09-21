@@ -487,11 +487,20 @@ pre{
   border-radius: 12px;
   overflow: hidden;
 }
+.matriz-figma > .rolagem-tabela{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.matriz-figma > .rolagem-tabela:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: -3px;
+}
 .matriz-figma .tabela-landing{
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   background: var(--background);
+  min-width: 790px;
 }
 .tabela-landing .col-total{ width: 160px; }
 .tabela-landing .col-concluidas{ width: 110px; }
@@ -537,6 +546,15 @@ pre{
   background: color-mix(in srgb, var(--color-primary-default) 10%, var(--background));
   height: 36px;
 }
+.dica-rolagem{
+  font-size: 12px;
+  color: var(--gray-60);
+  margin: var(--spacing-scale-base) var(--spacing-scale-baseh);
+}
+@media (min-width: 992px){
+  .dica-rolagem{ display: none; }
+}
+:root[data-tema="escuro"] .dica-rolagem{ color: var(--gray-20); }
 
 .card-filtros{
   display: flex;

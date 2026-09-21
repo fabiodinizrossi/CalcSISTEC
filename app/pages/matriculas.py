@@ -227,7 +227,16 @@ def _tabela_matriculas(df, filtros):
         html.Col(className="col-evasoes"),
     ])
     return html.Div(
-        html.Table([colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
+        [
+            html.Div(
+                html.Table([colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
+                className="rolagem-tabela",
+                tabIndex="0",
+                role="region",
+                **{"aria-label": f"Tabela de matrículas por {rotulo_eixo.lower()}"},
+            ),
+            html.P("Deslize a tabela para o lado para ver todas as colunas.", className="dica-rolagem"),
+        ],
         className="matriz-figma",
     )
 
