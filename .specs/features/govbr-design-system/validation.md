@@ -334,3 +334,53 @@ DS-01 a DS-41 e DS-43 a DS-85: **Verified**. DS-24: **Verified** por completo (D
 ## Verificação visual
 
 Playwright (Chromium) em 1280x1078, 1600x900, 900x900 (claro) e 1280x1078 (escuro). Todos os ACs acima medidos no DOM. Abaixo de 992px o menu fica sobreposto e fechado por padrão (AC-1.4), sem regressão.
+
+---
+
+# Rodada Parte B — adaptação a telas estreitas (< 992px) — PASS
+
+**Data**: 2026-09-21
+**Fonte**: `.specs/features/govbr-design-system/tarefa-paridade-figma-telas-largas.md` §"Parte B" (Defeitos 14 a 20, AC-14.1 a AC-20.2)
+**Intervalo de commits**: `a31086b`..`1f6b61a` (7 commits, um por defeito, ordem B2)
+**Método**: mobile-first (regra base + restauração em 576/992px); medição no DOM via Playwright em 360/390/576/900/1280px e 390/1280px no tema escuro.
+
+## Gate
+
+- `python -m compileall -q app` → exit 0.
+- `python -m pytest -q` → **546 passed, 0 failed, 0 skipped**.
+
+## Critérios de aceite — evidência no DOM
+
+| AC | Medição | Status |
+| -- | ------- | ------ |
+| AC-14.1 | 390px: `main` `padding-left/right: 16px` | PASS |
+| AC-14.2 | 390px: topo do `h1` a 24px do topo do `main` | PASS |
+| AC-14.3 | 1280px: `main` `padding: 32px 24px 40px` | PASS |
+| AC-15.1 | 390px: `.atualizado` em linha própria, 8px abaixo do `.titulo-bloco` | PASS |
+| AC-15.2 | 1280px: `.atualizado` na mesma linha, alinhado à direita e pela base | PASS |
+| AC-16.1 | 390px: 5 `.kpi-figma` em 3 linhas (2+2+1), cada w=173px (≥150) | PASS |
+| AC-16.2 | 390px: nenhum `.valor`/`.rotulo` transborda; rótulos em 1 linha | PASS |
+| AC-16.3 | 1280px: 5 cards em 1 linha, w=189 iguais | PASS |
+| AC-17.1 | 390px: `.rolagem-tabela` scroll 790 > client 356; 6 colunas no DOM e alcançáveis | PASS |
+| AC-17.2 | `.rolagem-tabela` `tabindex=0`, `role=region`, `aria-label`; contorno de foco no `:focus-visible` | PASS |
+| AC-17.3 | `.matriz-figma` `border-radius: 12px` + borda 1px, cabeçalho azul recortado | PASS |
+| AC-17.4 | nomes de campus com no máx. 2 linhas (36px) | PASS |
+| AC-17.5 | 1280px: `.rolagem-tabela` `scrollWidth == clientWidth` (990==990), `.dica-rolagem` `display:none` | PASS |
+| AC-18.1 | 390px: título 2 linhas, faixa azul h=72px (≤88) | PASS |
+| AC-18.2 | botão "Tema escuro" 99×40px (≥24×24), sem sobrepor o título | PASS |
+| AC-18.3 | 1280px: `.header-top` h=72, `padding: 0 24px` | PASS |
+| AC-19.1 | 390px: `.filter-item` w=324 (largura do card), um por linha | PASS |
+| AC-19.2 | 1280px: `.filter-item` 185px fixos | PASS |
+| AC-19.3 | `label.chip` h=32, `label.seg` h=40 (≥32) | PASS |
+| AC-20.1 | 4 testes base novos; mutação do `padding` base do `main` derruba o teste (retcode 1) | PASS |
+| AC-20.2 | teste `.rolagem-tabela` (tabIndex, role, aria-label) em `tests/test_paginas_publicas.py` | PASS |
+
+## Desvios registrados (não reabrir)
+
+1. **Defeito 18** exigiu, além do prescrito: `justify-content: flex-start` (o DS põe `flex-end` no `.header-top`), `flex: 1 1 0; min-width: 0` no `.header-titulo`, fonte 14px no celular (em vez de 16,8px — 16,8px dá 3 linhas) e `padding: 0 12px` no `.painel-tema` no celular. Só com isso o título coube em 2 linhas em 390px.
+2. 360px (menor que o alvo de 390px) e 576px (fonte volta a 24,192px) ainda mostram o título em 3 linhas — fora do alvo do AC-18.1 (390px) e igual ao comportamento pré-existente em 576px.
+3. 900px: a `.dica-rolagem` fica visível (a regra esconde só a partir de 992px) mesmo com a tabela sem rolagem (790px < 868px de largura útil) — cosmético, segue a regra prescrita.
+
+## Verificação visual
+
+Playwright em 360/390/576/900/1280px (claro) e 390/1280px (escuro). Partes A reconferidas e preservadas: AC-4.x (cabeçalho 72px), AC-5.2 (KPIs iguais em 1280px), AC-9.x (larguras de coluna) e AC-13.x (superfície).

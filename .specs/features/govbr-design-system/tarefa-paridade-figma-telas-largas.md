@@ -6,7 +6,13 @@
 **Branch atual**: `migracao-dash-gov-br`
 **Situação**: a validação `validation.md` deu PASS nos critérios textuais (DS-01 a DS-85), mas o resultado renderizado em telas largas diverge do protótipo em vários pontos estruturais. Esta tarefa corrige essas divergências.
 
+> **O documento tem duas partes.**
+> **Parte A** (seções 1 a 7, Defeitos 1 a 13, AC-1.1 a AC-13.3): telas largas, **já implementada** nos commits `26ddeca`..`127da82`.
+> **Parte B** (a partir da seção "Parte B", Defeitos 14 a 20, AC-14.1 a AC-20.2): **adaptação a celular, pendente**. Aberta em 21/09/2026 a partir de uma captura em 390px, depois da Parte A. É o trabalho a fazer agora.
+
 ---
+
+# Parte A — telas largas (≥ 992px) — concluída
 
 ## 1. Como reproduzir o estado atual
 
@@ -556,3 +562,337 @@ Um commit atômico por defeito, no padrão Conventional Commits já usado no bra
 4. Repetir a inspeção de 1280px no **tema escuro**, confirmando que nenhuma das novas regras fixa cor clara.
 5. Reconferir cada critério de aceite (AC-1.1 a AC-13.3) com medição no DOM, não a olho.
 6. Atualizar `.specs/features/govbr-design-system/validation.md` com o resultado desta rodada.
+
+---
+---
+
+# Parte B — adaptação a telas estreitas (celular, abaixo de 992px)
+
+**Adicionada em**: 21/09/2026, depois da rodada de correções da Parte A (commits `26ddeca`..`127da82`).
+**Origem**: captura de tela enviada pela dona do produto, viewport de ~390px (celular), tema claro, página `/`.
+**Diagnóstico da dona do produto**: "os cards precisam de quebra em duas linhas pelo menos; a tabela sumiu alguns dados; falta respiro entre os elementos".
+**Escopo**: a mesma página `/` (Matrículas) e o cabeçalho público, **abaixo de 992px**. Nada aqui deve alterar o resultado já aprovado de ≥992px.
+
+## B0. Como reproduzir
+
+```bash
+python -c "from app.app import app; app.run(host='127.0.0.1', port=8051)"
+# abrir http://127.0.0.1:8051/ com o viewport em 390 x 844 (DevTools, "iPhone 14 Pro" ou largura manual)
+```
+
+Se o banco estiver vazio, rode antes `python scripts/seed_sintetico.py`.
+
+## B1. Regra de ouro desta parte: **mobile-first**
+
+`tests/test_style_css.py::test_todo_media_de_largura_usa_so_os_pontos_do_ds` só aceita `576`, `992`, `1280` e `1600` como inteiros — `575.98px` **quebra o teste** (a regex captura `98px`). Além disso, hoje quase toda regra de layout do painel está no bloco `@media (min-width: 992px)`, o que deixa o celular **sem regra nenhuma**.
+
+Portanto, para cada defeito abaixo:
+
+1. Escreva o valor do celular na regra **base** (fora de qualquer `@media`).
+2. Restaure o valor de tela larga dentro do `@media (min-width: 992px)` já existente (ou do de 576px, quando indicado).
+3. Não crie `max-width` novo, salvo onde o texto do defeito disser explicitamente.
+
+As demais restrições da seção 2 continuam valendo sem mudança (sem cor literal, sem `--gov-*`, sem seletor do shell antigo).
+
+---
+
+### Defeito 14 — Abaixo de 992px o conteúdo não tem margem lateral nenhuma
+
+**Sintoma (captura)**: "Matrículas", os KPIs e a tabela encostam nas duas bordas da tela; o título começa imediatamente abaixo da faixa azul do cabeçalho.
+
+**Causa-raiz**: `app/assets/style.css:186-188` define só o fundo do `main#main-content`; **todo** o `padding` vive em `app/assets/style.css:190-193`, dentro de `@media (min-width: 992px)`. Abaixo de 992px o `main` fica com padding zero.
+
+**Correção** (mobile-first):
+
+```css
+main#main-content{
+  background: var(--background);
+  padding: var(--spacing-scale-3x) var(--spacing-scale-2x) var(--spacing-scale-4x);   /* 24px 16px 32px */
+}
+
+@media (min-width: 992px){
+  main#main-content{
+    padding: var(--spacing-scale-4x) var(--spacing-scale-3x) var(--spacing-scale-5x); /* inalterado */
+  }
+}
+```
+
+O `gap: var(--spacing-scale-3x)` do `.painel-landing` (`app/assets/style.css:359-363`) já dá 24px entre os blocos e **não precisa mudar** — o que faltava era a goteira lateral e o respiro do topo.
+
+**Critérios de aceite**
+- AC-14.1: com viewport de 390px, `getComputedStyle(main).paddingLeft === "16px"` e `paddingRight === "16px"`.
+- AC-14.2: a distância entre o topo do `main` e o topo do `<h1>Matrículas</h1>` é ≥ 24px.
+- AC-14.3: em 1280px, o padding do `main` continua `32px 24px 40px` (AC da Parte A preservado).
+
+---
+
+### Defeito 15 — "Atualizado em …" colado no subtítulo, na mesma linha
+
+**Sintoma**: "Acompanhamento Sistec | Ano PNP 2026" e "Atualizado em 20/09/2026" dividem uma linha só, sem folga entre eles; em telas de 360px o segundo texto transborda.
+
+**Causa-raiz**: `app/assets/style.css:365-369` deixa `.cabecalho-pagina` como flex **sem `flex-wrap`**, e `app/assets/style.css:386-391` dá `margin-left: auto` + `white-space: nowrap` ao `.atualizado`. Não há como os dois blocos se separarem em linhas.
+
+**Correção**:
+
+```css
+.painel-landing .cabecalho-pagina{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-scale-base) var(--spacing-scale-2x);   /* 8px entre linhas, 16px entre colunas */
+}
+.painel-landing .cabecalho-pagina .atualizado{ margin-left: 0; }
+
+@media (min-width: 992px){
+  .painel-landing .cabecalho-pagina{ align-items: flex-end; }
+  .painel-landing .cabecalho-pagina .atualizado{ margin-left: auto; }
+}
+```
+
+**Critérios de aceite**
+- AC-15.1: em 390px, o `.atualizado` fica numa linha própria, abaixo do `.titulo-bloco`, com ≥ 8px de distância vertical.
+- AC-15.2: em 1280px, `.atualizado` volta a ficar na mesma linha do título, alinhado à direita e pela base (paridade com o Figma).
+
+---
+
+### Defeito 16 — Os cinco KPIs espremidos numa linha só (≈60px cada)
+
+**Sintoma**: cada card fica com ~60px de largura; "855,44" quase não cabe e os rótulos quebram em três e quatro linhas. É o item que a dona do produto pediu explicitamente: **quebrar em duas linhas, no mínimo**.
+
+**Causa-raiz**: `app/assets/style.css:393-396` põe `.kpis-figma` em `display: flex` **sem `flex-wrap`**, e `app/assets/style.css:397-409` dá `flex: 1 1 0; min-width: 0` a cada card — ou seja, os cinco cards dividem qualquer largura disponível, sem piso. Em 390px: `(390 − 4×16 de gap) / 5 ≈ 65px` por card, e menos ainda depois da goteira do Defeito 14.
+
+**Correção**: trocar o flex por um grid com piso de largura. Isso resolve o celular **sem nenhum ponto de quebra novo** e preserva os cinco cards em linha nas telas largas:
+
+```css
+.kpis-figma{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-scale-baseh);   /* 12px */
+}
+.kpi-figma{
+  /* remover `flex: 1 1 0` — o grid já distribui */
+  min-width: 0;
+  /* o resto da regra (flex em coluna, padding, borda, radius) fica como está */
+}
+```
+
+Por que funciona nos dois extremos:
+
+| Viewport | Largura útil do `main` | Colunas que cabem | Resultado |
+| --- | --- | --- | --- |
+| 390px | ~358px | `floor((358+12)/162) = 2` | 3 linhas: 2 + 2 + 1 |
+| 576px | ~544px | 3 | 2 linhas: 3 + 2 |
+| 1280px | 992px | 6 cabem, mas só há 5 itens — o `auto-fit` colapsa a faixa vazia | 1 linha, 5 cards iguais (AC-5.2 mantido) |
+
+**Decisão já tomada, não reabrir**: o quinto card sobra sozinho na última linha em 390px, com a largura de uma coluna. Isso é aceitável. Se a dona do produto pedir que ele ocupe a linha inteira, a única regra permitida é:
+
+```css
+@media (max-width: 576px){
+  .kpis-figma > :last-child{ grid-column: 1 / -1; }
+}
+```
+
+(`576` é ponto válido do DS; saiba que em **exatamente** 576px cabem 3 colunas e o quarto card fica sozinho na segunda linha — defeito cosmético num viewport de 1px de largura. Só aplique se pedirem.)
+
+Mantenha `font-size: 24px` no `.valor`: com cards de ~173px, "855,44" cabe numa linha.
+
+**Critérios de aceite**
+- AC-16.1: em 390px, os cinco `.kpi-figma` ocupam **no mínimo duas linhas**, cada card com largura ≥ 150px.
+- AC-16.2: em 390px, nenhum `.valor` e nenhum `.rotulo` transborda o card (`scrollWidth <= clientWidth`), e nenhum rótulo quebra em mais de duas linhas.
+- AC-16.3: em 1280px, os cinco cards continuam numa linha só, de larguras iguais (±1px), preenchendo o `main` — AC-5.2 da Parte A não regride.
+
+---
+
+### Defeito 17 — A tabela perde as colunas "Em Curso" e "Evasões" (o dado some de vez)
+
+**Sintoma**: no celular a tabela mostra só Campus, Total de Matrículas, Concluídas e Integralizadas. "Em Curso" e "Evasões" **não aparecem e não há como alcançá-las** — sem barra de rolagem, sem gesto. Os nomes de campus quebram uma palavra por linha ("Júlio / de / Castilhos").
+
+**Causa-raiz** (é a combinação de três regras da Parte A):
+1. `app/assets/style.css:477-482` — `.matriz-figma{ overflow: hidden }`, que existe para recortar o cabeçalho azul nos cantos arredondados;
+2. `app/assets/style.css:483-488` — `.tabela-landing{ table-layout: fixed }`;
+3. `app/assets/style.css:489-493` — larguras fixas de coluna somando **630px** (160 + 110 + 130 + 120 + 110), mais a coluna de eixo.
+
+Num card de ~358px a tabela fica bem mais larga que o contêiner, e o `overflow: hidden` **corta** o excedente em vez de rolar. A coluna `.col-eixo` (sem largura declarada) fica com a sobra, que é mínima — daí a quebra palavra a palavra.
+
+**Correção**: manter o card recortado e dar à tabela um contêiner de rolagem horizontal próprio, acessível pelo teclado.
+
+1. `app/pages/matriculas.py:229-232`:
+
+```python
+return html.Div(
+    html.Div(
+        html.Table([colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
+        className="rolagem-tabela",
+        tabIndex="0",
+        role="region",
+        **{"aria-label": f"Tabela de matrículas por {rotulo_eixo.lower()}"},
+    ),
+    className="matriz-figma",
+)
+```
+
+2. No CSS:
+
+```css
+.matriz-figma > .rolagem-tabela{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.matriz-figma > .rolagem-tabela:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: -3px;
+}
+.matriz-figma .tabela-landing{
+  min-width: 790px;   /* 630px das cinco colunas fixas + 160px de piso para a coluna de eixo */
+}
+```
+
+3. Aviso de rolagem, dentro do `.matriz-figma` e **depois** do `.rolagem-tabela`:
+
+```python
+html.P("Deslize a tabela para o lado para ver todas as colunas.", className="dica-rolagem")
+```
+
+```css
+.dica-rolagem{
+  font-size: 12px;
+  color: var(--gray-60);
+  margin: var(--spacing-scale-base) var(--spacing-scale-baseh);
+}
+@media (min-width: 992px){
+  .dica-rolagem{ display: none; }
+}
+:root[data-tema="escuro"] .dica-rolagem{ color: var(--gray-20); }
+```
+
+**Cuidados com os testes**:
+- `tests/test_paginas_publicas.py:78` exige `matriz.className == "matriz-figma"` — o `Div` externo **não muda**, o novo `Div` é filho. Continua passando.
+- `tests/test_paginas_publicas.py:80` percorre `componentes(matriz)` atrás de `Tr`/`Td`; `tests/arvore_dash.py:17-26` é recursivo, então o nível a mais não quebra a asserção.
+- `tests/test_paginas_publicas.py:87` **proíbe a classe `table-scroll-wrapper`** (nome do shell antigo). Use `rolagem-tabela`, nunca aquele nome.
+- `min-width: 790px` só tem efeito abaixo de ~822px de `main`; em 1280px (main de 992px) e em 900px (main de ~868px) nada muda. Confirme os dois.
+
+**Efeito colateral bom**: com a tabela em 790px, o cabeçalho de duas faixas volta a caber, "Total de Matrículas" para de quebrar e o `th` de `rowspan="2"` ("Campus") deixa de parecer solto entre as faixas — a distorção visível na captura.
+
+**Critérios de aceite**
+- AC-17.1: em 390px, as seis colunas existem no DOM **e são alcançáveis**: rolando `.rolagem-tabela` até o fim, "Em Curso" e "Evasões" ficam visíveis.
+- AC-17.2: `.rolagem-tabela` recebe foco pelo `Tab`, tem contorno de foco visível e rola com as setas do teclado.
+- AC-17.3: os cantos arredondados e a borda do `.matriz-figma` continuam intactos, e a faixa azul do cabeçalho não escapa do recorte durante a rolagem.
+- AC-17.4: nenhum nome de campus quebra em mais de duas linhas.
+- AC-17.5: em 1280px, a tabela não tem rolagem horizontal (`scrollWidth === clientWidth` no `.rolagem-tabela`) e o aviso `.dica-rolagem` está oculto.
+
+---
+
+### Defeito 18 — Cabeçalho público: título em três linhas, ações espremidas
+
+**Sintoma**: "Painel de Acompanhamento Sistec do IFFar" ocupa três linhas ao lado do botão "Tema escuro"; a faixa azul passa de 100px de altura e empurra o conteúdo.
+
+**Causa-raiz**: `app/assets/style.css:310-316` fixa `padding: 0 var(--spacing-scale-3x)` (24px de cada lado) e `gap: var(--spacing-scale-2x)` no `.header-top`, sem `flex-wrap`; `app/assets/style.css:322-327` mantém o título em `--font-size-scale-up-03` (24,192px) em qualquer largura. Em 390px sobram ~170px para o título.
+
+**Correção** (mobile-first; o valor de ≥992px é o que a Parte A aprovou no Defeito 4 e **não pode regredir**):
+
+```css
+.painel-publico .header-top{
+  min-height: 72px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-baseh) var(--spacing-scale-2x);
+}
+.painel-publico .header-titulo{ font-size: var(--font-size-scale-up-01); }   /* 16,8px */
+.painel-publico .painel-tema{ font-size: 12px; }
+
+@media (min-width: 576px){
+  .painel-publico .header-titulo{ font-size: var(--font-size-scale-up-03); }
+  .painel-publico .painel-tema{ font-size: 13px; }
+}
+@media (min-width: 992px){
+  .painel-publico .header-top{
+    gap: var(--spacing-scale-2x);
+    padding: 0 var(--spacing-scale-3x);
+  }
+}
+```
+
+**Critérios de aceite**
+- AC-18.1: em 390px, o `.header-titulo` ocupa no máximo duas linhas e a faixa azul fica com altura ≤ 88px.
+- AC-18.2: o botão "Tema escuro" continua com área de toque ≥ 24×24px e não sobrepõe o título.
+- AC-18.3: em 1280px, o `.header-top` volta a ter 72px de altura e `padding: 0 24px` — AC-4.x da Parte A não regride.
+
+---
+
+### Defeito 19 — Card de filtros: campos de 185px fixos com sobra à direita
+
+**Sintoma**: no celular cada filtro ocupa 185px dentro de um card de ~358px, deixando metade da linha vazia; o card fica alto e desalinhado.
+
+**Causa-raiz**: `app/assets/style.css:544-549` fixa `.card-filtros .filter-item{ width: 185px }` (valor do Figma para 1280px) sem alternativa para telas estreitas.
+
+**Correção**:
+
+```css
+.card-filtros .filter-item{
+  flex: 1 1 185px;
+  width: auto;
+  min-width: 0;
+  /* display, direção e gap ficam como estão */
+}
+
+@media (min-width: 992px){
+  .card-filtros .filter-item{ flex: 0 0 185px; width: 185px; }
+}
+```
+
+Enquanto estiver nessa regra, confira também o alvo de toque dos chips: `app/assets/style.css:456-465` dá `padding: 8px 16px` + `line-height: 1` em 13px, o que resulta em ~31px de altura. Suba para `min-height: var(--spacing-scale-4x)` (32px) e centralize o texto (`display: inline-flex; align-items: center`) — continua idêntico no desktop e fica confortável no toque.
+
+**Critérios de aceite**
+- AC-19.1: em 390px, cada `.filter-item` ocupa a largura útil do card (sem sobra à direita) e os campos ficam um por linha.
+- AC-19.2: em 1280px, os `.filter-item` voltam a 185px fixos, lado a lado — paridade com o Figma preservada.
+- AC-19.3: todo `label.chip` e todo `label.seg` tem altura ≥ 32px em qualquer largura.
+
+---
+
+### Defeito 20 — Nada na suíte protege o comportamento abaixo de 992px
+
+**Causa-raiz**: `tests/test_style_css.py` só afirma coisas sobre o bloco `@media (min-width: 992px)` (linhas 96-106). Foi exatamente por isso que os Defeitos 14 a 19 passaram despercebidos: a Parte A pôde mover todo o layout para dentro do bloco de 992px sem nenhum teste reclamar.
+
+**Correção**: acrescentar a `tests/test_style_css.py` asserções sobre as regras **base** (fora de `@media`), no mesmo estilo dos helpers `_regra` / `_bloco_media` já existentes:
+
+1. `main#main-content` tem `padding` na regra base, não só dentro do bloco de 992px.
+2. `.kpis-figma` usa `grid-template-columns: repeat(auto-fit, minmax(...))` na regra base — ou seja, os KPIs podem quebrar linha.
+3. Existe regra de `overflow-x: auto` para `.rolagem-tabela`, e `.tabela-landing` tem `min-width`.
+4. `.cabecalho-pagina` tem `flex-wrap: wrap` na base.
+
+E a `tests/test_paginas_publicas.py`: um teste de que a tabela vem embrulhada num `.rolagem-tabela` com `tabIndex`, `role="region"` e `aria-label` (é requisito de acessibilidade, não só de layout).
+
+**Critérios de aceite**
+- AC-20.1: os quatro testes de CSS acima existem e falham se a regra base correspondente for removida (verifique invertendo a regra uma vez, à mão, antes de commitar).
+- AC-20.2: o teste do `.rolagem-tabela` existe em `tests/test_paginas_publicas.py` e cobre os três atributos de acessibilidade.
+
+---
+
+## B2. Ordem sugerida de execução e commits
+
+1. `fix(ui): conteúdo ganha goteira lateral no celular` — Defeito 14
+2. `fix(ui): cabeçalho da página quebra linha em telas estreitas` — Defeito 15
+3. `fix(ui): KPIs quebram em grade no celular` — Defeito 16
+4. `fix(a11y): tabela rola na horizontal em vez de perder colunas` — Defeito 17
+5. `fix(ui): cabeçalho público cabe em duas linhas no celular` — Defeito 18
+6. `fix(ui): filtros ocupam a largura do card no celular` — Defeito 19
+7. `test(ui): protege o layout abaixo de 992px` — Defeito 20
+
+O Defeito 17 é o mais grave (**dado inacessível**, não só feio): se for preciso fatiar a entrega, faça 17 e 14 primeiro.
+
+## B3. O que foi verificado e o que não foi
+
+**Verificado, lendo o código**: a causa-raiz e as linhas citadas em cada um dos sete defeitos, os valores dos tokens usados e as três restrições de teste que as correções tocam (`table-scroll-wrapper` proibido, `matriz.className == "matriz-figma"`, `componentes()` recursivo).
+
+**Não verificado — meça durante a implementação**: todos os números de "largura em 390px" desta parte vêm de aritmética sobre o CSS e da captura da dona do produto, **não** de `getBoundingClientRect()` com o app rodando. Confirme cada um antes de marcar o AC.
+
+## B4. Verificação obrigatória antes de declarar a Parte B pronta
+
+1. `python -m compileall -q app` → exit 0.
+2. `python -m pytest -q` → 0 falhas, já com os testes novos do Defeito 20.
+3. Inspeção visual em **cinco larguras**: 360px, 390px (a da captura), 576px, 900px (menu sobreposto) e 1280px (paridade com o Figma). As duas últimas servem para provar que a Parte A não regrediu.
+4. Repetir 390px e 1280px no **tema escuro** — atenção especial à `.dica-rolagem` e ao contorno de foco do `.rolagem-tabela`.
+5. Conferir AC-14.1 a AC-20.2 com medição no DOM, e reconferir AC-4.x, AC-5.2, AC-9.x e AC-13.x da Parte A, que são os que essas mudanças podem quebrar.
+6. Atualizar `.specs/features/govbr-design-system/validation.md` com o resultado desta rodada, na mesma seção que hoje aponta para a Parte A (linha 268).
