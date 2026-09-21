@@ -365,8 +365,9 @@ pre{
 
 .painel-landing .cabecalho-pagina{
   display: flex;
-  align-items: flex-end;
-  gap: var(--spacing-scale-2x);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-scale-base) var(--spacing-scale-2x);
 }
 .painel-landing .cabecalho-pagina .titulo-bloco{
   display: flex;
@@ -385,10 +386,15 @@ pre{
   color: var(--gray-60);
 }
 .painel-landing .cabecalho-pagina .atualizado{
-  margin-left: auto;
+  margin-left: 0;
   font-size: 12px;
   color: var(--gray-60);
   white-space: nowrap;
+}
+
+@media (min-width: 992px){
+  .painel-landing .cabecalho-pagina{ align-items: flex-end; }
+  .painel-landing .cabecalho-pagina .atualizado{ margin-left: auto; }
 }
 
 .kpis-figma{
