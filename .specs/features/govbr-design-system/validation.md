@@ -259,3 +259,78 @@ DS-01 a DS-41 e DS-43 a DS-85: **Verified**. DS-24: **Verified** por completo (D
 - Depois de corrigir um mutante por asserção de classe CSS (`flex-column`), conferir que a classe existe no CSS do DS e na faixa certa (`core.css:1761`, 576px): a asserção sem essa conferência prova a string, não o efeito.
 - Nome de teste com valor de breakpoint antigo (768px) envelhece; nomear pela regra ("metade em telas médias").
 - Ao vendorizar um asset, testar também o `<link>`/`<script>` que o inclui no template (presença), não só os arquivos no disco e a resolução das URLs: o mutante que apaga o link do Font Awesome em `_head.html` sobreviveu, pois os testes só cobriam arquivo e URL.
+
+---
+
+# Rodada paridade Figma — página inicial (Matrículas) em telas largas — PASS
+
+**Data**: 2026-09-21
+**Fonte**: `.specs/features/govbr-design-system/tarefa-paridade-figma-telas-largas.md` (13 defeitos, AC-1.1 a AC-13.3)
+**Intervalo de commits**: `63569ae` (baseline da migração) a `45b5c72` (10 commits de defeito + 1 correção de follow-up), branch `migracao-dash-gov-br`
+**Método**: correção por defeito, um commit atômico por defeito (ordem da seção 5); medição no DOM via Playwright (Chromium) nas larguras 1280/1600/900px e no tema escuro a 1280px.
+
+## Gate
+
+- `python -m compileall -q app` → exit 0.
+- `python -m pytest -q` → **541 passed, 0 failed, 0 skipped** (2 FutureWarnings de pandas em `app/data/fatores.py`, fora da feature).
+
+## Testes atualizados junto com o código (não ignorados)
+
+| Teste | Motivo |
+| ----- | ------ |
+| `tests/test_style_css.py:101-106` | Defeito 1 trocou `position:fixed`/`padding-left` do `body` por grid; agora assevera `grid-template-columns: var(--menu-largura)`, `position: static` e `.header-menu-trigger{display:none}` |
+| `tests/test_paginas_publicas.py:72` | Defeito 5: o callback devolve lista de 5 `kpi-figma`, não um `Div.kpis-figma` aninhado |
+| `tests/test_paginas_publicas.py:76-84` | Defeito 10: "Integralizadas" zero vira "—" |
+| `tests/test_componentes_publicos.py:122` | Defeito 11: ordem dos `EIXOS` |
+| `tests/test_shell.py:172` | Defeito 12: rodapé público `br-footer painel-publico` |
+| `tests/test_js_fiacao.py:19,38-40` | rótulo do tema encurtou para "Tema escuro"/"Tema claro" (baseline) |
+
+## Critérios de aceite — evidência no DOM (1280px, tema claro, salvo indicação)
+
+| AC | Medição (`getBoundingClientRect`/`getComputedStyle`) | Status |
+| -- | ----------------------------------------------------- | ------ |
+| AC-1.1 | `header.br-header` x=0 w=1280 | PASS |
+| AC-1.2 | `footer.br-footer` x=0 w=1280 | PASS |
+| AC-1.3 | `.br-menu` topo y=72, logo abaixo do cabeçalho (h=72); item ativo visível, não encoberto | PASS |
+| AC-1.4 | 900px: `.br-menu` recolhido (h=0), cabeçalho com o botão, `main` largura total | PASS |
+| AC-2.1 | `.br-menu .menu-panel` w=240 | PASS |
+| AC-2.2 | os 4 rótulos com altura de uma linha (labelLines=20) | PASS |
+| AC-2.3 | painel `background: rgb(255,255,255)` (`--background`) + `border-right: 1px solid var(--border-color)` | PASS |
+| AC-3.1 | item ativo bg `color(srgb 0.925961 0.945412 0.976471)` (~#ECF1F9, claro) + texto `rgb(19,81,180)`; **não** azul-escuro/branco | PASS |
+| AC-3.2 | `::before` do ativo: 4px x 20px, bg `rgb(19,81,180)` | PASS |
+| AC-3.3 | ativo `padding-left: 12px`, inativos `24px` | PASS |
+| AC-3.4 | `--color-primary-default` sobre o fundo claro ≈ 5,5:1 (AA) | PASS |
+| AC-4.1 | `header.br-header.painel-publico` h=72 | PASS |
+| AC-5.1 | `nestedKpis == 0` (sem `.kpis-figma` dentro de `.kpis-figma`) | PASS |
+| AC-5.2 | 5 `.kpi-figma` com w=186 cada (iguais), somando a largura do Main (992) | PASS |
+| AC-6.1 | 6 chips na mesma linha (y=423); `.card-chips` h=67 (teto 66; +1px de arredondamento) | PASS |
+| AC-6.2 | chip ativo bg `rgb(19,81,180)` + texto branco; inativos borda e texto `--interactive` | PASS |
+| AC-6.3 | `.card-chips` `border: 0px none` | PASS |
+| AC-7.1 | duas opções FIC lado a lado, `min-height: 40px` | PASS |
+| AC-7.2 | base do grupo FIC `bottom` == base dos Dropdowns (1125 == 1125) | PASS |
+| AC-8.1 | foco no input de chip/seg desenha `outline: 3px solid var(--focus-color)` no label irmão (ambos os temas) | PASS |
+| AC-9.1 | `.matriz-figma` `border: 1px solid`, `border-radius: 12px`, `overflow: hidden` | PASS |
+| AC-9.2 | colWidths `[359,160,110,130,120,110]` (Campus flexível; 1600px → Campus 679) | PASS |
+| AC-9.3 | "Campus"/"Concluintes" `center`; demais `th` `right` | PASS |
+| AC-9.4 | zebra claro `rgb(248,248,248)` (`--gray-2`); escuro `rgb(12,50,111)` (`--background-alternative`) | PASS |
+| AC-10.1/10.2 | célula "Integralizadas" zero (corpo e Total) mostra "—" em `td.vazio` (`--gray-40`) | PASS |
+| AC-10.3 | classe `zero` removida de `matriculas.py` | PASS |
+| AC-11.1 | ordem renderizada: Campus, Tipo de Curso, Oferta (Técnico), Nome do Curso, Modalidade, Ciclo | PASS |
+| AC-12.1 | rodapé público `bg rgb(19,81,180)`, `min-height: 48px` (h=49 com o conteúdo), sem borda superior | PASS |
+| AC-12.2 | rodapé administrativo mantém o DS (`class="br-footer"`, sem `painel-publico`) | PASS |
+| AC-12.3 | links brancos sobre o azul institucional passam AA | PASS |
+| AC-13.1 | `body` bg `rgb(248,248,248)` (cinza claro); `main` bg branco | PASS |
+| AC-13.2 | conteúdo do `main` em x=264 (240 + 24px), mesmo recuo do título do cabeçalho | PASS |
+| AC-13.3 | tema escuro: `body` e `main` em `rgb(7,29,65)`; sem branco-sobre-branco nem cinza-sobre-cinza | PASS |
+
+## Desvios registrados (não reabrir)
+
+1. **Correção de follow-up** (`45b5c72`): o seletor `a.menu-item.active` (especificidade 0,4,1) era necessário para vencer o `.br-menu a.menu-item:not(:disabled).active` do DS; o fundo ativo usa `color-mix(in srgb, var(--color-primary-default) 8%, var(--background))` (adaptável ao escuro) em vez de `--blue-warm-vivid-5` fixo, com par escuro próprio.
+2. Rodapé h=49px (o conteúdo de 4 links o estica 1px além dos 48; o AC permite crescer).
+3. `.card-chips` h=67px (teto de 66; 1px de arredondamento do chip).
+4. Tema escuro: `--superficie-pagina` = `--background-dark` e `main` = `--background` (= `--background-dark`), então a distinção de superfície colapsa no escuro — comportamento da própria regra do Defeito 13, sem branco/cinza indevidos.
+5. Fonte Rawline (não Inter), banner do Sistec, link "Área administrativa", skiplink e breadcrumb mantidos (seção 4 da tarefa).
+
+## Verificação visual
+
+Playwright (Chromium) em 1280x1078, 1600x900, 900x900 (claro) e 1280x1078 (escuro). Todos os ACs acima medidos no DOM. Abaixo de 992px o menu fica sobreposto e fechado por padrão (AC-1.4), sem regressão.
