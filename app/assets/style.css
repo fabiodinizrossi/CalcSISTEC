@@ -61,6 +61,7 @@
 :root{
   --alvo-toque-minimo: 24px;
   --menu-largura: 240px;
+  --superficie-pagina: var(--gray-2);
 }
 
 /* A partir de 1600px o conteúdo para em --grid-tv-maxwidth e fica centralizado. */
@@ -178,8 +179,18 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
    pares -dark; as regras abaixo cobrem o que o DS não remapeia sozinho. */
 
 body{
-  background: var(--background);
+  background: var(--superficie-pagina);
   color: var(--color);
+}
+
+main#main-content{
+  background: var(--background);
+}
+
+@media (min-width: 992px){
+  main#main-content{
+    padding: var(--spacing-scale-4x) var(--spacing-scale-3x) var(--spacing-scale-5x);
+  }
 }
 
 :root[data-tema="escuro"]{
@@ -198,6 +209,7 @@ body{
   --pressed: var(--pressed-dark);
   --focus-color: var(--focus-color-dark);
   --focus: var(--focus-color-dark);
+  --superficie-pagina: var(--background-dark);
 }
 
 /* Componentes que fixam os tokens claros ou não têm `.dark-mode` no DS 3.7.0. */
