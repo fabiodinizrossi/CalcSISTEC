@@ -398,11 +398,11 @@ pre{
 }
 
 .kpis-figma{
-  display: flex;
-  gap: var(--spacing-scale-2x);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-scale-baseh);
 }
 .kpi-figma{
-  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
