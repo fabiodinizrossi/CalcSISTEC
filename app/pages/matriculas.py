@@ -245,16 +245,13 @@ def atualizar(fic, eixo, campus, tipo_curso, programa):
             for linha in df_ano_base.itertuples()
         )
 
-    kpis = html.Div(
-        [
-            _kpi("Cursos", cursos_ativos),
-            _kpi("Matrículas", total, formato="#,0"),
-            _kpi("Matrículas equivalentes", equivalentes, formato="#,0.00", empty_state="dado incompleto"),
-            _kpi("Matrículas concluídas", concluidas),
-            _kpi("Ingressantes", ingressantes),
-        ],
-        className="kpis-figma",
-    )
+    kpis = [
+        _kpi("Cursos", cursos_ativos),
+        _kpi("Matrículas", total, formato="#,0"),
+        _kpi("Matrículas equivalentes", equivalentes, formato="#,0.00", empty_state="dado incompleto"),
+        _kpi("Matrículas concluídas", concluidas),
+        _kpi("Ingressantes", ingressantes),
+    ]
 
     if df.empty:
         matriz = mensagem_ds("info", "Sem dados para o eixo selecionado.")

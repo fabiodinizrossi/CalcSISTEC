@@ -69,8 +69,8 @@ def test_matriculas_mostra_os_kpis_em_card_figma_com_os_mesmos_numeros(matricula
 
 def test_matriculas_poe_cinco_kpis_em_linha(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
-    assert kpis.className == "kpis-figma"
-    assert len(com_classe(kpis, "kpi-figma")) == 5
+    assert len(kpis) == 5
+    assert all(c.className == "kpi-figma" for c in kpis)
 
 
 def test_matriculas_mostra_a_tabela_figma_com_total_por_campus(matriculas_com_dados):
