@@ -21,7 +21,7 @@
   }
 
   function rotuloDoBotao(tema) {
-    return tema === "escuro" ? "Usar tema claro" : "Usar tema escuro";
+    return tema === "escuro" ? "Tema claro" : "Tema escuro";
   }
 
   function lerTemaSalvo(storage) {

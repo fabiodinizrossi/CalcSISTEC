@@ -175,7 +175,7 @@ def test_historico_tem_breadcrumb_inicio_e_pagina_atual(cliente_autenticado, mon
     monkeypatch.setattr(app_module, "historico_listar", lambda: [])
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
-    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Início\s*</a>', crumbs)
+    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Matrículas\s*</a>', crumbs)
     assert re.search(r'<span aria-current="page">Histórico de atualizações</span>', crumbs)
 
 

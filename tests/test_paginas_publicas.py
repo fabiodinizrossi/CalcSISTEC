@@ -14,56 +14,6 @@ def pagina(nome):
     return importlib.import_module(f"pages.{nome}")
 
 
-@pytest.fixture
-def home_com_dados(monkeypatch):
-    home = pagina("home")
-    monkeypatch.setattr(home, "dataset_disponivel", lambda: True)
-    monkeypatch.setattr(home, "data_ultimo_upload_valido", lambda: "01/09/2026")
-    return home
-
-
-def test_inicio_com_dados_tem_4_cartoes_de_navegacao_com_os_links_e_rotulos_atuais(home_com_dados):
-    cartoes = com_classe(home_com_dados.layout(), "br-card")
-    assert [(c.href, textos(c)) for c in cartoes] == [
-        ("/matriculas", "Matrículas"),
-        ("/eficiencia", "Eficiência Acadêmica"),
-        ("/evasao", "Taxa de Evasão Anual"),
-        ("/percentuais-legais", "Percentuais Legais"),
-    ]
-
-
-def test_inicio_poe_os_cartoes_numa_row_com_colunas_col_12_col_md_6_col_xl_3(home_com_dados):
-    linhas = com_classe(home_com_dados.layout(), "row")
-    assert len(linhas) == 1
-    colunas = linhas[0].children
-    assert len(colunas) == 4
-    for coluna in colunas:
-        assert {"col-12", "col-md-6", "col-xl-3"} <= set(coluna.className.split())
-
-
-def test_inicio_mostra_a_data_de_atualizacao(home_com_dados):
-    assert "Atualizado em 01/09/2026" in textos(home_com_dados.layout())
-
-
-def test_inicio_sem_dados_mostra_br_message_info_e_nenhum_cartao(monkeypatch):
-    home = pagina("home")
-    monkeypatch.setattr(home, "dataset_disponivel", lambda: False)
-    layout = home.layout()
-    mensagens = com_classe(layout, "br-message")
-    assert len(mensagens) == 1
-    assert {"br-message", "info"} <= set(mensagens[0].className.split())
-    assert SEM_DADOS in textos(mensagens[0])
-    assert not com_classe(layout, "br-card")
-
-
-def test_inicio_nao_usa_classes_proprias_antigas_nem_componente_do_ds_que_precisa_de_js(home_com_dados, monkeypatch):
-    for layout in (home_com_dados.layout(),):
-        assert not (classes(layout) & {"nav-card", "hero", "landing-cards", "updated-at-badge"})
-        exigir_sem_componente_do_ds_que_precisa_de_js(layout)
-    monkeypatch.setattr(home_com_dados, "dataset_disponivel", lambda: False)
-    assert not (classes(home_com_dados.layout()) & {"nav-card", "hero", "empty-state"})
-
-
 import pandas as pd
 
 
@@ -105,36 +55,39 @@ def _atualizar(pagina_matriculas):
     return pagina_matriculas.atualizar("com_fic", "campus", "__todos__", "__todos__", "__todos__")
 
 
-def test_matriculas_mostra_os_kpis_em_br_card_com_os_mesmos_numeros(matriculas_com_dados):
+def test_matriculas_mostra_os_kpis_em_card_figma_com_os_mesmos_numeros(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
-    cartoes = [textos(c) for coluna in kpis for c in com_classe(coluna, "br-card")]
-    assert cartoes == [
-        "Cursos 2",
-        "Matrículas 3",
-        "Matrículas equivalentes 3,00",
-        "Matrículas concluídas 1",
-        "Ingressantes 2",
+    cartoes = com_classe(kpis, "kpi-figma")
+    assert [textos(c) for c in cartoes] == [
+        "2 Cursos",
+        "3 Matrículas",
+        "3,00 Matrículas equivalentes",
+        "1 Matrículas concluídas",
+        "2 Ingressantes",
     ]
 
 
-def test_matriculas_poe_cada_kpi_em_coluna_que_comeca_em_col_12(matriculas_com_dados):
+def test_matriculas_poe_cinco_kpis_em_linha(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
-    assert len(kpis) == 5
-    for coluna in kpis:
-        assert "col-12" in coluna.className.split()
+    assert kpis.className == "kpis-figma"
+    assert len(com_classe(kpis, "kpi-figma")) == 5
 
 
-def test_matriculas_mostra_a_matriz_em_br_table_com_os_mesmos_numeros(matriculas_com_dados):
+def test_matriculas_mostra_a_tabela_figma_com_total_por_campus(matriculas_com_dados):
     _, matriz = _atualizar(matriculas_com_dados)
-    assert matriz.className == "br-table"
+    assert matriz.className == "matriz-figma"
     celulas = [[textos(td) for td in componentes(tr) if type(td).__name__ == "Td"] for tr in componentes(matriz) if type(tr).__name__ == "Tr"]
-    assert [linha for linha in celulas if linha] == [["101", "2"], ["102", "1"]]
+    assert [linha for linha in celulas if linha] == [
+        ["Alegrete", "2", "1", "0", "1", "0"],
+        ["Jaguari", "1", "0", "0", "1", "0"],
+        ["Total", "3", "1", "0", "2", "0"],
+    ]
 
 
 def test_matriculas_nao_usa_classes_nem_componentes_de_tabela_ou_card_do_bootstrap(matriculas_com_dados):
     kpis, matriz = _atualizar(matriculas_com_dados)
     usadas = classes(kpis) | classes(matriz) | classes(matriculas_com_dados.layout())
-    assert not (usadas & {"kpi-row", "table", "table-striped", "card", "card-body", "kpi-card", "table-scroll-wrapper"})
+    assert not (usadas & {"kpi-row", "table", "table-striped", "card", "card-body", "kpi-card", "table-scroll-wrapper", "br-table", "br-card"})
     for componente in (kpis, matriz):
         assert not [c for c in componentes(componente) if type(c).__name__ in ("Table", "Card", "CardBody") and type(c).__module__.startswith("dash_bootstrap_components")]
         exigir_sem_componente_do_ds_que_precisa_de_js(componente)

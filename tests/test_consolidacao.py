@@ -71,6 +71,19 @@ def test_consolidar_cria_status_matricula_pnp_nulo_e_corrige_pelo_sistec():
     assert resultado["matriculas"].loc[0, "status_corrigido"] == "EM_CURSO"
 
 
+def test_consolidar_mantem_varias_matriculas_do_mesmo_ciclo():
+    ciclos = pd.DataFrame([_linha_ciclo()])
+    matriculas = pd.DataFrame(
+        [
+            _linha_matricula(CO_MATRICULA="M1"),
+            _linha_matricula(CO_MATRICULA="M2"),
+            _linha_matricula(CO_MATRICULA="M3"),
+        ]
+    )
+    resultado = consolidar([ciclos], [matriculas])
+    assert sorted(resultado["matriculas"]["CO_MATRICULA"]) == ["M1", "M2", "M3"]
+
+
 def test_consolidar_filtra_ciclo_excluido():
     ciclos = pd.DataFrame([_linha_ciclo(STATUS_CICLO="EXCLUÍDO")])
     resultado = consolidar([ciclos], [])

@@ -38,6 +38,17 @@ def data_ultimo_upload_valido(db_path=DEFAULT_DB_PATH):
         conn.close()
 
 
+def data_ultima_publicacao(db_path=DEFAULT_DB_PATH):
+    """Timestamp da última publicação (`estado_versoes.publicada_em`), usado
+    pela página inicial no rótulo "Atualizado em"."""
+    conn = get_connection(db_path)
+    try:
+        row = conn.execute("SELECT publicada_em FROM estado_versoes WHERE id = 1").fetchone()
+        return row[0] if row else None
+    finally:
+        conn.close()
+
+
 def ano_base_ativo(db_path=DEFAULT_DB_PATH):
     """BR-MIGRAR-016: ano-base como único ponto de configuração."""
     conn = get_connection(db_path)

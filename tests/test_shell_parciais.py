@@ -80,7 +80,7 @@ def test_cabecalho_mostra_titulo_do_painel_e_nome_da_instituicao(servidor):
 def test_botao_de_tema_tem_rotulo_textual_e_aria_pressed_falso(servidor):
     botao = re.search(r'<button\b[^>]*id="botao-tema"[^>]*>(.*?)</button>', cabecalho(servidor), re.S)
     assert 'aria-pressed="false"' in botao.group(0)
-    assert "Usar tema escuro" in botao.group(1)
+    assert "Tema escuro" in botao.group(1)
 
 
 def test_botao_hamburguer_declara_estado_e_alvo_e_some_sem_menu(servidor):
@@ -110,10 +110,9 @@ def instituicao_configurada(monkeypatch):
     monkeypatch.setattr(shell_modulo, "get_contato_email", lambda: "")
 
 
-def test_menu_publico_renderiza_5_links_na_ordem_da_spec(servidor, instituicao_configurada):
-    _, itens = itens_do_menu(servidor, "/matriculas")
+def test_menu_publico_renderiza_4_links_na_ordem_da_spec(servidor, instituicao_configurada):
+    _, itens = itens_do_menu(servidor, "/")
     assert [rotulo.strip() for _, rotulo in itens] == [
-        "Início",
         "Matrículas",
         "Eficiência Acadêmica",
         "Taxa de Evasão Anual",
@@ -122,7 +121,7 @@ def test_menu_publico_renderiza_5_links_na_ordem_da_spec(servidor, instituicao_c
 
 
 def test_so_o_link_da_pagina_atual_tem_aria_current_e_classe_ativa(servidor, instituicao_configurada):
-    _, itens = itens_do_menu(servidor, "/matriculas")
+    _, itens = itens_do_menu(servidor, "/")
     com_aria = [rotulo.strip() for atributos, rotulo in itens if 'aria-current="page"' in atributos]
     com_classe = [rotulo.strip() for atributos, rotulo in itens if re.search(r'class="[^"]*\bactive\b', atributos)]
     assert com_aria == ["Matrículas"]
@@ -136,7 +135,7 @@ def test_menu_administrativo_renderiza_os_itens_de_paginas_admin(servidor, insti
 
 def test_todos_os_itens_do_menu_sao_links_com_href(servidor, instituicao_configurada):
     _, itens = itens_do_menu(servidor, "/")
-    assert len(itens) == 5
+    assert len(itens) == 4
     assert all(re.search(r'href="/[^"]*"', atributos) for atributos, _ in itens)
 
 
@@ -161,12 +160,12 @@ def test_sem_migalhas_o_breadcrumb_nao_renderiza_nada(servidor, instituicao_conf
     assert html.strip() == ""
 
 
-def test_breadcrumb_inicio_matriculas_tem_link_e_pagina_atual(servidor, instituicao_configurada):
-    _, itens = migalhas(servidor, "/matriculas")
+def test_breadcrumb_matriculas_eficiencia_tem_link_e_pagina_atual(servidor, instituicao_configurada):
+    _, itens = migalhas(servidor, "/eficiencia")
     assert len(itens) == 2
-    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Início\s*</a>', itens[0])
+    assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Matrículas\s*</a>', itens[0])
     assert "<a" not in itens[1]
-    assert re.search(r'<span\b[^>]*aria-current="page"[^>]*>\s*Matrículas\s*</span>', itens[1])
+    assert re.search(r'<span\b[^>]*aria-current="page"[^>]*>\s*Eficiência Acadêmica\s*</span>', itens[1])
 
 
 def test_breadcrumb_de_editar_campus_renderiza_3_itens_na_ordem(servidor, instituicao_configurada):

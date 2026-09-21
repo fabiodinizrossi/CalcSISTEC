@@ -36,7 +36,7 @@ app = PainelDash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
-    title="Início - Pesquisa Institucional - SISTEC",
+    title="Matrículas - Pesquisa Institucional - SISTEC",
 )
 
 server = app.server
@@ -203,6 +203,13 @@ def admin_instalacao():
         valores=valores,
         **_contexto_base(),
     )
+
+
+@server.route("/matriculas")
+def matriculas_legado():
+    """Rota antiga da página Matrículas: agora a landing é `/` (Matrículas),
+    então redireciona para lá para não quebrar links antigos."""
+    return flask.redirect("/")
 
 
 @server.route("/recuperar-acesso")

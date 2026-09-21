@@ -24,6 +24,7 @@ from app.data.correction import corrigir_status_sistec_pnp
 from app.data.transform import t06_filtrar_ciclos_excluidos, t07_grao_matricula_atendida, t08_grao_eficiencia_academica
 
 COL_CICLO_CHAVE = "CODIGO_CICLO_MATRICULA"
+COL_MATRICULA_CHAVE = "CO_MATRICULA"
 COL_PORTFOLIO = "CÓDIGO DO PORTFÓLIO"
 COL_UNIDADE = "CO_UNIDADE"
 
@@ -105,7 +106,7 @@ def consolidar(pares_ciclo, pares_matricula):
         df_ciclo = df_ciclo.loc[df_ciclo["SITUACAO_CICLO"] != "EXCLUÍDO"].copy()
 
     if not df_matricula.empty:
-        df_matricula = _deduplicar_por_chave(df_matricula, COL_CICLO_CHAVE)
+        df_matricula = _deduplicar_por_chave(df_matricula, COL_MATRICULA_CHAVE)
         # RN-23: sem correção PNP nesta feature — STATUS_MATRICULA_PNP nulo,
         # o corrigido vale sempre o Sistec (t02_corrigir_status já cobre isso).
         df_matricula = df_matricula.assign(STATUS_MATRICULA_PNP=pd.NA)

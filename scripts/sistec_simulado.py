@@ -63,27 +63,14 @@ PERFIS = [
 ]
 UNIDADE_POR_PERFIL = {p["id"]: p["co_unidade"] for p in PERFIS}
 
-CABECALHO_CICLO = (
-    "CÓDIGO CICLO DE MATRÍCULA;CÓDIGO UNIDADE DE ENSINO;CÓDIGO DO PORTFÓLIO;"
-    "NOME DO CURSO;SUBTIPO CURSOS;CARGA HORÁRIA TOTAL;MODALIDADE ENSINO;"
-    "TIPO OFERTA DO CURSO;EIXO TECNOLÓGICO;TIPO PROGRAMA DO CURSO;"
-    "DATA INÍCIO DO CURSO;DATA FIM PREVISTO DO CURSO;"
-    "STATUS DO CICLO DE MATRÍCULA;SITUAÇÃO DO CICLO ;NOME_RESPONSAVEL;CPF\r\n"
-)
-CABECALHO_MATRICULA = "CO_MATRICULA;CO_CICLO_MATRICULA;NO_STATUS_MATRICULA;MES_DE_OCORRENCIA\r\n"
+# As planilhas saem de `sintetico.py`, com a estrutura real do Sistec (37
+# colunas no ciclo e 26 na matrícula) e dados fictícios de cursos e alunos.
+try:
+    import sintetico
+except ImportError:  # importado como `scripts.sistec_simulado` nos testes
+    from scripts import sintetico
 
-
-def linha_ciclo(co_unidade):
-    return (
-        f"{co_unidade}01;{co_unidade};{co_unidade}9;TÉCNICO EM INFORMÁTICA;TÉCNICO;800;PRESENCIAL;INTEGRADO;"
-        "INFORMAÇÃO E COMUNICAÇÃO;PROEJA;01/02/2024;31/12/2026;EM_ANDAMENTO;ATIVO;RESPONSAVEL FICTICIO;00000000000\r\n"
-    )
-
-
-def linha_matricula(co_unidade):
-    # O Sistec exporta o status com sublinhado (o painel Power BI compara
-    # `NO_STATUS_MATRICULA` direto com "EM_CURSO").
-    return f"{co_unidade}0001;{co_unidade}01;EM_CURSO;03/2026\r\n"
+NOME_UNIDADE = {"101": "Alegrete", "102": "Júlio de Castilhos"}
 
 
 PAGINA_LOGIN = """<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Sistec simulado</title></head>
@@ -161,10 +148,16 @@ class HandlerSimulado(BaseHTTPRequestHandler):
             )
         elif caminho == "/gridciclo/exportar-ciclo-turmas/":
             co_unidade = self._unidade_ativa()
-            self._responder_csv(CABECALHO_CICLO + (linha_ciclo(co_unidade) if co_unidade else ""))
+            self._responder_csv(
+                sintetico.csv_ciclo(co_unidade, NOME_UNIDADE.get(co_unidade, "")) if co_unidade else sintetico.CABECALHO_CICLO,
+                nome="ciclo-matricula.csv",
+            )
         elif caminho == "/aluno/gerar-csv/":
             co_unidade = self._unidade_ativa()
-            self._responder_csv(CABECALHO_MATRICULA + (linha_matricula(co_unidade) if co_unidade else ""))
+            self._responder_csv(
+                sintetico.csv_matricula(co_unidade, NOME_UNIDADE.get(co_unidade, "")) if co_unidade else sintetico.CABECALHO_MATRICULA,
+                nome="sistec.csv",
+            )
         else:
             self.send_response(404)
             self.end_headers()
@@ -219,10 +212,12 @@ class HandlerSimulado(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(corpo)
 
-    def _responder_csv(self, texto):
+    def _responder_csv(self, texto, nome=None):
         corpo = texto.encode("cp1252")
         self.send_response(200)
         self.send_header("Content-Type", "text/csv")
+        if nome:
+            self.send_header("Content-Disposition", f'attachment; filename="{nome}"')
         self.send_header("Content-Length", str(len(corpo)))
         self.end_headers()
         self.wfile.write(corpo)

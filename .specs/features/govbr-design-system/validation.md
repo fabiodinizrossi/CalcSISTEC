@@ -4,8 +4,8 @@
 
 **Data**: 2026-09-20
 **Spec**: `.specs/features/govbr-design-system/spec.md` (DS-01 a DS-85)
-**Intervalo de commits**: `42c5f43^..HEAD`, HEAD = `22a439602d06f032802a218b3fa2a7559c37232c` (branch `migracao-dash-gov-br`, iteração 2 de 3 do laço corrigir e reverificar)
-**Verificador**: sub-agente independente (autor diferente do verificador); verificação refeita do zero, sem o relatório anterior.
+**Intervalo de commits**: `42c5f43^..HEAD`, HEAD = `07439805ea1cc99e20b29267d83f66facebb9fdb` (branch `migracao-dash-gov-br`, iteração 5 do laço corrigir e reverificar; inclui `fix(ui): menu vira barra lateral fixa em telas largas`, além da iteração 4 com o Font Awesome)
+**Verificador**: sub-agente independente (autor diferente do verificador); verificação do delta do commit `0743980` (DS-05 vira barra lateral fixa, AD-005) sobre o relatório da iteração 4, que seguia válido.
 
 O código e os testes do working tree real não foram tocados. Único arquivo criado: este. O sensor rodou em `git worktree` descartável, já removido.
 
@@ -15,27 +15,27 @@ O código e os testes do working tree real não foram tocados. Único arquivo cr
 
 | Item | Resultado |
 | ---- | --------- |
-| Gate | `python -m compileall -q app` exit 0; `python -m pytest -q` = **545 passed, 0 failed, 0 skipped**, 2 warnings (FutureWarning de pandas em `app/data/fatores.py:199`, fora da feature) |
-| ACs verificáveis | 84 de 85 com evidência `arquivo:linha` cujo valor asserido bate com a spec (DS-24 só na parte do DS local e Rawline); PENDENTES por passo humano ou dependência externa: DS-42 e a parte Font Awesome de DS-24 |
-| Sensor | 26 mutações, **26 mortas, 0 sobreviveram** (incluindo as 14 famílias pedidas; os 7 mutantes de fiação de DOM e os 7 de template/CSS que sobreviveram antes agora morrem) |
-| Defeito de produto | Nenhum achado. DS-05 (botão do cabeçalho a partir de 992px) está corrigido e coberto |
+| Gate | `python -m compileall -q app` exit 0; `python -m pytest -q` = **548 passed, 0 failed, 0 skipped**, 2 warnings (FutureWarning de pandas em `app/data/fatores.py:199`, fora da feature) |
+| ACs verificáveis | 84 de 85 com evidência `arquivo:linha` cujo valor asserido bate com a spec (DS-24 agora completo: DS local + Rawline + Font Awesome); PENDENTE só por passo humano: DS-42 |
+| Sensor | 32 mutações no total, **32 mortas, 0 sobreviveram** (29 das iterações anteriores todas mortas; no delta DS-05, as 3 novas mortas — ver seção "Sensor do delta DS-05") |
+| Defeito de produto | Nenhum achado. DS-05 (barra lateral fixa a partir de 992px, sem hambúrguer) está corrigido e coberto |
 | Isolamento do sensor | `git status --porcelain` do repositório real idêntico antes e depois: só `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/` (não rastreados, fora da feature) |
 | `validate_state.py govbr-design-system` | exit 0 ("0 error(s)") |
 
 ### Integridade dos testes
 
-- Linha de base antes da feature: 181 testes (`tasks.md`, matriz de cobertura). Agora: 545. Delta **+364**.
-- `git diff 42c5f43^..HEAD -- tests`: 16 arquivos, **3137 inserções, 0 remoções** (só `tests/test_campi.py` é modificado, e só com linhas adicionadas). Nenhum teste foi removido nem pulado.
-- Edições internas ao intervalo (commit `0b32445`), todas legítimas frente à spec:
+- Linha de base antes da feature: 181 testes (`tasks.md`, matriz de cobertura). Agora: 548. Delta **+367** (o commit `0743980` trocou 2 testes por 2 — `tests/test_js_fiacao.py` e `tests/test_style_css.py` — sem mudar a contagem).
+- `git diff 42c5f43^..HEAD -- tests`: 16 arquivos, **3157 inserções, 0 remoções** (os 16 são novos frente à linha de base). Nenhum teste foi removido nem pulado.
+- Edições internas ao intervalo (commits `0b32445` e `0743980`), todas legítimas frente à spec:
   1. `tests/test_shell.py:187` e `tests/test_shell_parciais.py:211`: só renomeados (`core_min` para "o script do DS"); as asserções passam a exigir `core-init.min.js` uma vez, coerente com AD-004 e com DS-26 reescrito.
-  2. `tests/test_style_css.py:96` (antes `test_menu_fica_persistente_a_partir_de_992px`): a versão antiga exigia `.header-menu-trigger` **oculto** em 992px, o que contradiz DS-05 (botão presente). Reescrito para exigir persistente e aberto e, em `:101`, para proibir o botão dentro de qualquer regra `display: none` e exigir a regra `.br-menu.menu-recolhido`. Mais forte, alinhado à spec.
+  2. `tests/test_style_css.py:101` e `tests/test_js_fiacao.py:71` (DS-05): no commit `0743980` (AD-005), o teste do menu a 992px deixou de exigir "botão presente que recolhe" e passou a exigir a barra lateral fixa — `test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao` (`.br-menu{position:fixed;width:var(--menu-largura)}`, `.header-menu-trigger{display:none}`, `body{padding-left:var(--menu-largura)}`) e `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (clique e teclas não marcam `menu-recolhido`).
   3. `tests/test_shell_parciais.py:216-220`: a lista proibida trocou `"core-init"` por `"core-init.js"` (o script minificado agora é o correto). Continua proibindo `dist/components/`, `core-base`, a versão não minificada `core-init.js` e `core.js` (DS-28).
 
 ---
 
 ## Tarefas
 
-T1 a T52, T54, T55 e T56: concluídas (código + testes no gate). **T53** (Font Awesome 5): não feita, por falta de autorização de rede de Jaline (externa, ver PENDENTES). **T57**: roteiro e pendência de CSRF escritos em `CUTOVER.md:34-49`; o item de design fica desmarcado até Jaline informar dispositivo, largura e data (humano, ver PENDENTES).
+T1 a T56: concluídas (código + testes no gate). **T53** (Font Awesome 5 Free): agora concluída — `@fortawesome/fontawesome-free` 5.15.4 vendorizado em `app/static/vendor/fontawesome/` e linkado em `_head.html:22`. **T57**: roteiro e pendência de CSRF escritos em `CUTOVER.md:34-49`; o item de design fica desmarcado até Jaline informar dispositivo, largura e data (humano, ver PENDENTES). **Rework DS-05** (commit `0743980`, AD-005): concluído — o menu a 992px+ virou barra lateral fixa, `menu.js` perdeu o modo persistente/recolher e os dois testes trocados no delta passam no gate.
 
 ---
 
@@ -48,8 +48,8 @@ Siglas: `S`=`tests/test_shell.py`, `P`=`tests/test_shell_parciais.py`, `A`=`test
 | DS-01 | `<meta name="viewport" content="width=device-width, initial-scale=1">` em toda página | `P:30` `'<meta name="viewport" content="width=device-width, initial-scale=1">' in html`; o parcial é usado por `_base.html` (admin) e pelo Dash (`S:171`) | PASS |
 | DS-02 | `@media` só em 576/992/1280/1600 | `C:27-33` `larguras <= PONTOS_DO_DS`; `C:22-24` sem `768px` nem `320px` | PASS |
 | DS-03 | sem rolagem horizontal de 320 a 1920px | Manual: `VV:13-32` (14 telas x 5 larguras, `scrollWidth <= clientWidth`); complementos automáticos `C:138-140` (`overflow-wrap: anywhere`, `pre` com `overflow-x: auto`) e `C:143-147` (`.br-button` quebra rótulo) | PASS (manual) |
-| DS-04 | < 992px: menu sobreposto, fechado por padrão, `aria-expanded` no botão | `JF:204` largura 576 `== {"inicial": "false", "recolhido": False}`; `JF:214` `aria-expanded` `"true"` ao abrir e `"false"` ao fechar; `P:80` `aria-expanded="false"` e `aria-controls="main-navigation"`; sobreposto no navegador: `VV:38` | PASS |
-| DS-05 | >= 992px: menu persistente, aberto por padrão, **botão presente para recolhê-lo** | `JF:182-201` largura 1280: inicial `{"expanded":"true","recolhido":False}`, clique `{"false",True}`, Enter `{"true",False}`, Espaço `{"false",True}`, outra tecla não muda; `C:96-98` regex `.br-menu .menu-container, .br-menu.active .menu-container{...display: block}` em `@media (min-width: 992px)`; `C:101-107` nenhuma regra `display: none` do bloco contém `header-menu-trigger` e `.br-menu.menu-recolhido .menu-container` tem `display: none`; manual `VV:41` (Chrome a 1910px) | PASS |
+| DS-04 | < 992px: menu sobreposto, fechado por padrão, `aria-expanded` no botão | `JF:94` largura 576 `== {"inicial": "false", "recolhido": False}`; `JF:108` `aria-expanded` `"true"` ao abrir e `"false"` ao fechar; `P:80` `aria-expanded="false"` e `aria-controls="main-navigation"`; sobreposto no navegador: `VV:39` | PASS |
+| DS-05 | >= 992px: menu persistente, aberto por padrão, como **barra lateral fixa à esquerda, sem botão hambúrguer** | `C:96-98` `test_menu_fica_persistente_e_aberto_a_partir_de_992px` (`.br-menu .menu-container, .br-menu.active .menu-container{display:block}` em `@media (min-width: 992px)`); `C:101-106` `test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao` (`.br-menu{position:fixed;width:var(--menu-largura)}`, `.header-menu-trigger{display:none}`, `body{padding-left:var(--menu-largura)}`); `JF:71-84` `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (a 1280px, clique/Enter/Espaço não marcam `menu-recolhido`); manual `VV:40` (Chrome a 992/1600px, AD-005) | PASS |
 | DS-06 | < 576px: KPIs, medidores e filtros em coluna única | `PP:120` `"col-12" in coluna.className`, `PP:186`, `PP:304`, `PP:35` (`{"col-12","col-md-6","col-xl-3"}`), `CP:166` (filtros: cada coluna com `col-12`) | PASS |
 | DS-07 | >= 1600px: conteúdo limitado a 1520px, centralizado | `C:77-80` `max-width: var(--grid-tv-maxwidth)` (= 1520px em `core-tokens.css:1201`) e `margin-inline: auto` no `@media (min-width: 1600px)`; manual `VV:37` (1520px medido nas 14 telas) | PASS |
 | DS-08 | tabela larga rola só dentro do contêiner | `AC:166` `<div class="br-table"><div class="responsive"><table`; `CP:63-67` `raiz.className == "br-table"`, `children.className == "responsive"`; `AP:159` (histórico) | PASS |
@@ -68,7 +68,7 @@ Siglas: `S`=`tests/test_shell.py`, `P`=`tests/test_shell_parciais.py`, `A`=`test
 | DS-21 | campo inválido em `danger` com mensagem ligada por `aria-describedby` | `P:280-285` `class="br-input danger"` e o `id` citado em `aria-describedby` contém o texto; `AP:73-79`; `AP:123-129` | PASS |
 | DS-22 | fim de ação: `br-message` `success`/`danger` com `role="alert"` | `P:301-305` `success` e `danger` => `alert`; `AP:82-86`; `AP:270-284`; `AC:183` `class="br-message success"[^>]*role="alert"` | PASS |
 | DS-23 | < 576px: formulários em largura total, botões empilhados | `P:343-346` container de `botoes_formulario` contém `{"d-flex","flex-column","flex-sm-row","justify-content-sm-end"}` (as duas classes existem no `core.css:1761`, `@media (min-width: 576px)`); `AC:520-525` cada coluna dos 4 campos tem `{"col-12","col-md-6"}`; `AP:206-211` `flex-column` e `flex-sm-row` em `atualizar-acoes`; sensor M15, M16, M18 | PASS |
-| DS-24 | DS 3.7.0 servido localmente, sem CDN | `A:20-24` `assets/govbr-ds` inexiste e `static/govbr-ds/dist/core.min.css` existe; `A:26-32` `resposta.data == arquivo`; `A:97-106` todo recurso do HTML de `/admin/login` e `/` resolve 200 e não começa com `http`; `P:35-38` sem URL externa; `A:109-117` 7 fontes Rawline resolvem | PASS (Font Awesome: PENDENTE, ver seção própria) |
+| DS-24 | DS 3.7.0 servido localmente, sem CDN | `A:20-24` `assets/govbr-ds` inexiste e `static/govbr-ds/dist/core.min.css` existe; `A:26-32` `resposta.data == arquivo`; `A:97-106` todo recurso do HTML de `/admin/login` e `/` resolve 200 e não começa com `http`; `P:35-38` sem URL externa; `A:109-117` 7 fontes Rawline resolvem; `A:120-129` os webfonts do Font Awesome (`fa-solid-900`/`fa-regular-400`/`fa-brands-400`) resolvem 200; `A:132-138` arquivos vendorizados presentes (`css/all.min.css`, `LICENSE.txt`, 15 webfonts); `_head.html:22` linka `/ds/vendor/fontawesome/css/all.min.css` antes de `core.min.css` | PASS |
 | DS-25 | `core.min.css` exatamente uma vez | `P:31` `len(...core\.min\.css...) == 1`; `S:192`, `S:221`; `AP:27` | PASS |
 | DS-26 | `core-init.min.js` exatamente uma vez | `P:213` `len(re.findall(...core-init.min.js...)) == 1`; `S:193`, `S:222`; `AP:28`; `A:120-129` (o `core-init.min.js` tem uma chamada `.initInstanceAll()` a mais que `core.min.js`, e `_scripts.html` cita `core-init.min.js`) | PASS |
 | DS-27 | Dash só com componentes do DS que funcionam sem JS | `tests/arvore_dash.py:59-60` (`classes(raiz) & CLASSES_DO_DS_QUE_PRECISAM_DE_JS` vazio), usado em `CP:39-40`, `CP:99-100`, `CP:132`, `CP:161`, `PP:62`, `PP:140`, `PP:202`, `PP:261`, `PP:311`; o auxiliar é validado em `CP:43-47` | PASS |
@@ -181,13 +181,37 @@ Siglas: `S`=`tests/test_shell.py`, `P`=`tests/test_shell_parciais.py`, `A`=`test
 
 **Resultado do sensor**: 26/26 mortos, 0 sobreviveram. Os 14 mutantes que sobreviviam na verificação anterior (`botoes_formulario` sem `flex-column`/`justify-content-sm-end`, `col-12`, `href` de Editar, `action` de situação, script de tema depois das folhas, mudança da preferência do sistema, e a fiação de DOM de `tema.js`, `menu.js` e `confirmar.js`) estão todos cobertos por teste que falha com a mutação.
 
+> M01, M02, M03, M05 e M06 miravam o DS-05 antigo (barra horizontal com botão para recolher). O commit `0743980` (AD-005) substituiu esse código; as mutações equivalentes para a nova barra lateral estão em M30-M32.
+
+### Sensor do delta T53 (Font Awesome) — leve, 3 mutações
+
+Rodei em `git worktree --detach` do HEAD (`7daec61`), com os alvos em scratch, restaurando cada arquivo antes da próxima mutação e removendo o worktree ao final; `git status --porcelain` idêntico antes e depois.
+
+| # | Arquivo | Mutação | Teste que matou (ou ausência) | Status |
+| - | ------- | ------- | ----------------------------- | ------ |
+| M27 | `app/static/vendor/fontawesome/webfonts/fa-solid-900.woff2` | arquivo apagado | `A:120` `test_os_webfonts_do_font_awesome_resolvem_para_200` (o `url(...)` vira 404) e `A:132` `test_font_awesome_e_vendorizado_localmente` (arquivo ausente) | MORTO |
+| M28 | `app/static/vendor/fontawesome/css/all.min.css` | `fa-solid-900.woff2` trocado por `fa-solid-900-X.woff2` no `url(...)` | `A:120` (a URL não resolve 200) | MORTO |
+| M29 | `app/templates/shell/_head.html` | `<link .../fontawesome/css/all.min.css>` removido (linha 22) | `P:37` `test_head_linka_o_font_awesome_local_antes_do_ds` | MORTO |
+
 Isolamento: `git worktree remove --force` + `git worktree prune`; `git worktree list` mostra só o repositório real; `git status --porcelain` idêntico ao de antes (4 linhas não rastreadas: `.agents/`, `.claude/skills/tlc-spec-driven/`, `.cursor/`, `.windsurf/`).
+
+### Sensor do delta DS-05 (barra lateral fixa) — leve, 3 mutações
+
+Rodei em `git worktree --detach` do HEAD (`0743980`), com os alvos em scratch, restaurando cada arquivo antes da próxima mutação e removendo o worktree ao final; `git status --porcelain` idêntico antes e depois.
+
+| # | Arquivo | Mutação | Teste que matou (ou ausência) | Status |
+| - | ------- | ------- | ----------------------------- | ------ |
+| M30 | `app/assets/style.css` | `position: fixed` removido do `.br-menu` no bloco 992px | `C:103` `test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao` | MORTO |
+| M31 | `app/assets/style.css` | `display: none` removido do `.header-menu-trigger` | `C:105` (mesmo teste) | MORTO |
+| M32 | `app/static/js/menu.js` | reintroduz `menu.classList.toggle("menu-recolhido")` no clique | `JF:81` `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (e `JF:94` `test_abaixo_de_992px_o_menu_comeca_fechado_e_o_botao_nao_recolhe_nada`) | MORTO |
+
+**Resultado do sensor do delta DS-05**: 3/3 mortos, 0 sobreviveram. O teste da barra lateral prende `position: fixed`, `width: var(--menu-largura)`, `.header-menu-trigger{display:none}` e `body{padding-left:var(--menu-largura)}`; o teste de fiação prende a ausência do recolhimento persistente.
 
 ---
 
 ## Regra de payload e conjunção
 
-Os campos nomeados alvejam valor ou estado, não apenas a chamada: `AC:212` (`["cidade"] == "Uruguaiana"`), `AC:283-285` (`origem == "manual"`, `nome_perfil`, `co_unidade is None`), `AC:322` e `AC:332` (`ativo == 0` e `== 1`), `AC:376` (`obter_campus(...) is None`), `AC:357` (o campus não muda com `400`), `CA:167-172` (cada coluna de `obter_campus`), `CA:189` e `CA:194` (mapa exato campo -> mensagem), `JF:149-151` (`tema`, `pressed`, `rotulo`, `salvo` juntos), `JF:197-201` (`expanded` e `recolhido` juntos), `JF:337` (`enviados` e `marcado`), `PP:249-253` (valor e classe de cor por campus). Nenhuma asserção só de "a chamada ocorreu" foi achada nos ACs desta iteração.
+Os campos nomeados alvejam valor ou estado, não apenas a chamada: `AC:212` (`["cidade"] == "Uruguaiana"`), `AC:283-285` (`origem == "manual"`, `nome_perfil`, `co_unidade is None`), `AC:322` e `AC:332` (`ativo == 0` e `== 1`), `AC:376` (`obter_campus(...) is None`), `AC:357` (o campus não muda com `400`), `CA:167-172` (cada coluna de `obter_campus`), `CA:189` e `CA:194` (mapa exato campo -> mensagem), `JF:149-151` (`tema`, `pressed`, `rotulo`, `salvo` juntos), `JF:81-84` (`expanded` e `recolhido` juntos), `JF:337` (`enviados` e `marcado`), `PP:249-253` (valor e classe de cor por campus). Nenhuma asserção só de "a chamada ocorreu" foi achada nos ACs desta iteração.
 
 ---
 
@@ -206,11 +230,11 @@ Os campos nomeados alvejam valor ou estado, não apenas a chamada: `AC:212` (`["
 
 ## Lacunas ranqueadas (não derrubam o PASS)
 
-1. **Menor, DS-05/DS-37/DS-38 em navegador real**: o comportamento de `menu.js` com o `core-init.min.js` (clique e tecla no mesmo botão) só é exercido em navegador pelo autor (`VV:41`, `VV:46-52`, com `KeyboardEvent` sintético porque as teclas reais não chegaram ao `iframe`). Eu inspecionei o código do DS (`core.js:8656-8670`): o `keydown` de Enter/Espaço chama `event.preventDefault()`, o que impede o `click` nativo e evita o duplo alternar quando `menu.js` também trata a tecla. Nenhum teste automático prende essa interação; se uma versão futura do DS deixar de chamar `preventDefault`, Enter e Espaço alternariam duas vezes a 992px ou mais. Risco baixo; a regra AD-004 já pede conferir o `core-init.min.js` ao atualizar o DS.
+1. **Menor, DS-37/DS-38 em navegador real**: o comportamento de `menu.js` com o `core-init.min.js` (manter `aria-expanded` e devolver o foco ao botão ao fechar) só é exercido em navegador pelo autor (`VV:46-52`, com `KeyboardEvent` sintético porque as teclas reais não chegaram ao `iframe`). Abaixo de 992px o DS abre/fecha o menu sobreposto e `menu.js` só sincroniza `aria-expanded` e o foco. Nenhum teste automático prende a interação das teclas do DS; risco baixo, e a regra AD-004 pede conferir o `core-init.min.js` ao atualizar o DS.
 2. **Menor, spec-precision em DS-34 e DS-43**: DS-34 é provado só para os pares de token (`--color`, `--interactive`, `--focus-color` sobre `--background` e `--background-alternative`, `K:43-70`), não para cada componente; DS-43 (4/8/12 colunas) é propriedade do `core.min.css` e o teste afirma as classes `col-*`, não a contagem de colunas por faixa. Complemento: `VV:13-32`, `VV:66`. Não há resultado impreciso na spec que o teste contradiga.
 3. **Cosmética**: o nome do teste `AC:520` diz "metade a partir de 768px", mas `col-md-6` é 992px no DS (`core.css:2518`); a asserção `{"col-12","col-md-6"}` está correta, só o nome é antigo. Sugestão: renomear.
 4. **Fora do escopo desta feature, herdada** (`VV:78`): `/matriculas?x=1` não renderiza porque os cinco `layout()` do Dash não aceitam parâmetros; anotado no relatório visual.
-5. **Menor**: `menu.js` trata `evento.code` `Enter`/`Space` (não `NumpadEnter`), igual ao do DS; sem impacto.
+5. **Cosmética, fora do que posso editar**: `verificacao-visual.md:41` ainda descreve o DS-05 antigo ("Botão do cabeçalho presente a partir de 992px ... `menu.js` recolhe e mostra"), contradizendo o AD-005; a linha `VV:40` já tem a nota de atualização. O implementador deve corrigir `VV:41` (esta verificação só escreve `validation.md`).
 
 ---
 
@@ -219,13 +243,12 @@ Os campos nomeados alvejam valor ou estado, não apenas a chamada: `AC:212` (`["
 | Item | Motivo | Efeito enquanto pendente | Quem resolve |
 | ---- | ------ | ------------------------ | ------------ |
 | **DS-42** (celular real, 320-430px, e tela de 1280px ou mais; 5 páginas públicas e `/admin/atualizar`) | Passo humano de Jaline (T57): roteiro pronto em `CUTOVER.md:34-49`; o item de design (`CUTOVER.md:19`) só é marcado com dispositivo, largura e data | `CUTOVER.md` continua com o item desmarcado; DS-42 não passa a "Verified" | Jaline |
-| **DS-24, parte Font Awesome 5** (T53) | `app/static/vendor/` só tem `rawline/`; o Font Awesome não foi vendorizado por falta de autorização de rede de Jaline (a Rawline foi liberada e vendorizada) | Os botões de ícone (hambúrguer, Editar, Excluir, lupa, tema, paginação) ficam sem glifo, mas têm `aria-label` e `title` (`P:323-334`) e o layout continua legível. Atenção: sem o glifo, o botão do hambúrguer de DS-05 existe e funciona, porém aparece como um círculo vazio | Jaline autoriza o download; depois T53 (Font Awesome 5 Free em `app/static/vendor/fontawesome/`) |
 
 ---
 
 ## Rastreabilidade (atualizar `spec.md`, tabela de requisitos)
 
-DS-01 a DS-41 e DS-43 a DS-85: **Verified**. DS-24: Verified na parte do DS local e Rawline; parte Font Awesome pendente. DS-42: pendente de passo humano. (Esta verificação não alterou `spec.md`; a atualização de status fica para o orquestrador.)
+DS-01 a DS-41 e DS-43 a DS-85: **Verified**. DS-24: **Verified** por completo (DS local, Rawline e Font Awesome). DS-42: pendente de passo humano. (Esta verificação não alterou `spec.md`; a atualização de status DS-24 já foi feita pelo implementador no commit do Font Awesome.)
 
 ---
 
@@ -235,3 +258,4 @@ DS-01 a DS-41 e DS-43 a DS-85: **Verified**. DS-24: Verified na parte do DS loca
 - Ao trocar um AC da spec (DS-05), reescrever o teste que afirmava o comportamento antigo (`C:96`) em vez de apenas acrescentar outro: o teste antigo exigia o botão oculto e teria travado a correção.
 - Depois de corrigir um mutante por asserção de classe CSS (`flex-column`), conferir que a classe existe no CSS do DS e na faixa certa (`core.css:1761`, 576px): a asserção sem essa conferência prova a string, não o efeito.
 - Nome de teste com valor de breakpoint antigo (768px) envelhece; nomear pela regra ("metade em telas médias").
+- Ao vendorizar um asset, testar também o `<link>`/`<script>` que o inclui no template (presença), não só os arquivos no disco e a resolução das URLs: o mutante que apaga o link do Font Awesome em `_head.html` sobreviveu, pois os testes só cobriam arquivo e URL.

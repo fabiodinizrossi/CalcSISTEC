@@ -7,8 +7,7 @@ from app import shell
 from app.shell import contexto_shell
 
 PUBLICAS = [
-    ("Início", "/"),
-    ("Matrículas", "/matriculas"),
+    ("Matrículas", "/"),
     ("Eficiência Acadêmica", "/eficiencia"),
     ("Taxa de Evasão Anual", "/evasao"),
     ("Percentuais Legais", "/percentuais-legais"),
@@ -25,7 +24,7 @@ def instituicao_configurada(monkeypatch):
     monkeypatch.setattr(shell, "get_contato_email", lambda: "pi@it.edu.br")
 
 
-def test_menu_publico_tem_5_itens_na_ordem_da_spec():
+def test_menu_publico_tem_4_itens_na_ordem_da_spec():
     menu = contexto_shell("/")["menu"]
     assert [(i["rotulo"], i["href"]) for i in menu] == PUBLICAS
 
@@ -41,9 +40,9 @@ def test_capa_nao_tem_breadcrumb():
 
 
 @pytest.mark.parametrize("rotulo,caminho", PUBLICAS[1:])
-def test_pagina_publica_tem_breadcrumb_inicio_e_titulo(rotulo, caminho):
+def test_pagina_publica_tem_breadcrumb_matriculas_e_titulo(rotulo, caminho):
     assert contexto_shell(caminho)["breadcrumb"] == [
-        {"rotulo": "Início", "href": "/"},
+        {"rotulo": "Matrículas", "href": "/"},
         {"rotulo": rotulo, "href": None},
     ]
 
@@ -77,7 +76,7 @@ def test_pagina_administrativa_tem_menu_proprio_e_breadcrumb_inicio_e_titulo(rot
     contexto = contexto_shell(caminho)
     assert [i["rotulo"] for i in contexto["menu"]] == ["Atualizar dados", "Histórico de atualizações", "Configurações"]
     assert [i["rotulo"] for i in contexto["menu"] if i["ativo"]] == [rotulo]
-    assert contexto["breadcrumb"] == [{"rotulo": "Início", "href": "/"}, {"rotulo": rotulo, "href": None}]
+    assert contexto["breadcrumb"] == [{"rotulo": "Matrículas", "href": "/"}, {"rotulo": rotulo, "href": None}]
 
 
 @pytest.mark.parametrize("caminho", ["/admin/login", "/recuperar-acesso", "/admin/instalacao"])
@@ -167,9 +166,9 @@ def test_painel_dash_e_um_dash():
 def test_pagina_dash_traz_o_shell_e_marca_o_item_da_pagina_atual():
     import re
 
-    html = montar_pagina_dash("/matriculas")
+    html = montar_pagina_dash("/")
     assert '<html lang="pt-BR"' in html
-    assert 'class="br-header"' in html
+    assert 'class="br-header' in html
     assert 'class="br-footer"' in html
     com_aria = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>\s*<span class="content">(.*?)</span>', html, re.S)
     assert [rotulo.strip() for rotulo in com_aria] == ["Matrículas"]
@@ -178,7 +177,7 @@ def test_pagina_dash_traz_o_shell_e_marca_o_item_da_pagina_atual():
 def test_pagina_dash_mantem_entrada_config_scripts_e_renderer_com_a_entrada_no_main():
     import re
 
-    html = montar_pagina_dash("/matriculas")
+    html = montar_pagina_dash("/")
     for parte in (ENTRADA, CONFIG, SCRIPTS, RENDERER):
         assert parte in html
     assert re.search(r'<main id="main-content"[^>]*>.*CONTEUDO-DASH.*</main>', html, re.S)
@@ -188,19 +187,18 @@ def test_pagina_dash_carrega_o_css_e_o_js_do_ds_uma_vez_e_style_css_uma_vez_mesm
     import re
 
     css = '<link rel="stylesheet" href="/assets/style.css?m=1700000000.0">'
-    html = montar_pagina_dash("/matriculas", css=css)
+    html = montar_pagina_dash("/", css=css)
     assert len(re.findall(r"core\.min\.css", html)) == 1
     assert len(re.findall(r"core-init.min.js", html)) == 1
     assert len(re.findall(r"style\.css", html)) == 1
 
 
 def test_pagina_dash_nao_carrega_folha_do_bootstrap():
-    assert "bootstrap" not in montar_pagina_dash("/matriculas").lower()
+    assert "bootstrap" not in montar_pagina_dash("/").lower()
 
 
 PAGINAS_DASH = [
-    ("/", "Início"),
-    ("/matriculas", "Matrículas"),
+    ("/", "Matrículas"),
     ("/eficiencia", "Eficiência Acadêmica"),
     ("/evasao", "Taxa de Evasão Anual"),
     ("/percentuais-legais", "Percentuais Legais"),
@@ -217,7 +215,7 @@ def test_paginas_publicas_usam_o_shell_do_ds(caminho, rotulo):
     html = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
     for classe in ("br-header", "br-menu", "br-footer"):
-        assert f'class="{classe}"' in html
+        assert f'class="{classe}' in html
     assert len(re.findall(r"core\.min\.css", html)) == 1
     assert len(re.findall(r"core-init.min.js", html)) == 1
     assert not re.search(r"<link[^>]*bootstrap", html, re.I)
@@ -228,7 +226,7 @@ def test_paginas_publicas_usam_o_shell_do_ds(caminho, rotulo):
     else:
         crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
         textos = [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", c)).strip() for c in re.findall(r'<li class="crumb".*?</li>', crumbs, re.S)]
-        assert textos == ["Início", rotulo]
+        assert textos == ["Matrículas", rotulo]
 
 
 def test_layout_do_dash_nao_tem_mais_cabecalho_menu_nem_rodape():

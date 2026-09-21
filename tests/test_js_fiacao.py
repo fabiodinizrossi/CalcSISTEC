@@ -16,7 +16,7 @@ doc.documentElement.setAttribute("data-tema", "claro");
 const rotulo = criarElemento("rotulo");
 const botao = criarElemento("botao-tema");
 botao.filhosPorSeletor["span"] = rotulo;
-rotulo.textContent = "Usar tema escuro";
+rotulo.textContent = "Tema escuro";
 registrar(botao, "botao-tema");
 globalThis.__estado = { armazenado, rotulo, botao };
 """
@@ -35,9 +35,9 @@ def test_clique_no_botao_de_tema_troca_o_tema_o_aria_pressed_o_rotulo_e_grava_a_
     preparar = PREPARAR_TEMA.replace("globalThis.__estado", "contexto.__estado")
     verificar = verificar.replace("globalThis.__estado", "contexto.__estado")
     resultado = rodar("tema.js", preparar, verificar)
-    assert resultado["inicial"] == {"tema": "claro", "pressed": "false", "rotulo": "Usar tema escuro", "salvo": None}
-    assert resultado["aposEscuro"] == {"tema": "escuro", "pressed": "true", "rotulo": "Usar tema claro", "salvo": "escuro"}
-    assert resultado["aposClaro"] == {"tema": "claro", "pressed": "false", "rotulo": "Usar tema escuro", "salvo": "claro"}
+    assert resultado["inicial"] == {"tema": "claro", "pressed": "false", "rotulo": "Tema escuro", "salvo": None}
+    assert resultado["aposEscuro"] == {"tema": "escuro", "pressed": "true", "rotulo": "Tema claro", "salvo": "escuro"}
+    assert resultado["aposClaro"] == {"tema": "claro", "pressed": "false", "rotulo": "Tema escuro", "salvo": "claro"}
 
 
 @pytest.mark.parametrize(

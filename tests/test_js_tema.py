@@ -92,7 +92,7 @@ def test_alternar_tema_troca_claro_e_escuro():
 
 
 def test_rotulo_do_botao_oferece_o_tema_que_ainda_nao_esta_ativo():
-    assert avaliar_tema_js('[m.rotuloDoBotao("claro"), m.rotuloDoBotao("escuro")]') == ["Usar tema escuro", "Usar tema claro"]
+    assert avaliar_tema_js('[m.rotuloDoBotao("claro"), m.rotuloDoBotao("escuro")]') == ["Tema escuro", "Tema claro"]
 
 
 def test_gravar_tema_usa_a_chave_calcsistec_tema_com_claro_ou_escuro():

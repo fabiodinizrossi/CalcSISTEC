@@ -414,9 +414,11 @@ def test_pt007_paginas_publicas_nao_exigem_autenticacao():
     import app.app as app_module
 
     client = app_module.app.server.test_client()
-    for path in ["/", "/matriculas", "/eficiencia", "/evasao", "/percentuais-legais"]:
+    for path in ["/", "/eficiencia", "/evasao", "/percentuais-legais"]:
         resposta = client.get(path)
         assert resposta.status_code == 200
+    # Matrículas agora é a landing em `/`; a rota antiga redireciona para lá.
+    assert client.get("/matriculas").status_code == 302
 
 
 def test_pt007_upload_administrativo_exige_autenticacao():

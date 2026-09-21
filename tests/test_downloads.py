@@ -216,7 +216,7 @@ def test_coleta_baixa_todos_os_campi_e_nao_deixa_arquivo_no_disco(sistec, tmp_pa
     execucao = sessao.execucao
     assert [p.status for p in execucao.fila] == ["baixado"] * 4
     assert execucao.estado == "previa"
-    assert sorted(execucao.previa["ciclos"]["CO_UNIDADE"]) == ["101", "102"]
+    assert sorted(execucao.previa["ciclos"]["CO_UNIDADE"].unique()) == ["101", "102"]
     assert list(coleta.iterdir()) == []  # nada com CPF fica no disco
     assert list(baixados.iterdir()) == []
     assert sessao.progresso == {"feitos": 4, "total": 4}

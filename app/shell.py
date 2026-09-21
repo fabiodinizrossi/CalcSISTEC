@@ -16,8 +16,7 @@ PASTA_STATIC = os.path.join(os.path.dirname(__file__), "static")
 ds_static = Blueprint("ds_static", __name__, static_folder=PASTA_STATIC, static_url_path="/ds")
 
 PAGINAS_PUBLICAS = [
-    ("Início", "/"),
-    ("Matrículas", "/matriculas"),
+    ("Matrículas", "/"),
     ("Eficiência Acadêmica", "/eficiencia"),
     ("Taxa de Evasão Anual", "/evasao"),
     ("Percentuais Legais", "/percentuais-legais"),
@@ -44,7 +43,7 @@ def _trilha(caminho):
         return campi + [("Editar", caminho)]
     for rotulo, href in PAGINAS_PUBLICAS[1:] + PAGINAS_ADMIN:
         if caminho == href:
-            return [("Início", "/"), (rotulo, href)]
+            return [("Matrículas", "/"), (rotulo, href)]
     return []
 
 
@@ -58,6 +57,7 @@ def contexto_shell(caminho):
     itens = PAGINAS_ADMIN if caminho.startswith("/admin/") else PAGINAS_PUBLICAS
     trilha = _trilha(caminho)
     return {
+        "publico": not caminho.startswith("/admin/") and caminho not in _SEM_MENU,
         "com_menu": caminho not in _SEM_MENU,
         "menu": [{"rotulo": rotulo, "href": href, "ativo": href == caminho} for rotulo, href in itens],
         "breadcrumb": [
