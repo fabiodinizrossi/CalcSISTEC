@@ -185,6 +185,7 @@ body{
 
 main#main-content{
   background: var(--background);
+  padding: var(--spacing-scale-3x) var(--spacing-scale-2x) var(--spacing-scale-4x);
 }
 
 @media (min-width: 992px){
