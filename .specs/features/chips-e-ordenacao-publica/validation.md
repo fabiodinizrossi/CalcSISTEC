@@ -62,3 +62,5 @@ Sensor leve em worktree descartada. A árvore real ficou idêntica ao baseline a
 ## Summary
 
 **Overall**: ✅ PASS. Chips, hierarquia, total, exclusões, inserção dinâmica e os três eventos de ordenação estão cobertos.
+
+**Verdict**: PASS
