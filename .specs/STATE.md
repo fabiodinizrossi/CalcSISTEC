@@ -44,17 +44,17 @@
 
 ## Handoff
 
-Estado revisado em 2026-09-21. Nada abaixo depende de ferramenta proprietária; as verificações usam `python`, `node` e `git`.
+Estado revisado em 2026-09-22. As verificações usam `uv`, `pytest`, `node` e `git`.
 
 - **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: implementação e validação automatizada concluídas; Parte A e Parte B em PASS em `validation.md`
-- **Completed**: T1 a T56 e a parte automatizável de T57; Font Awesome/Rawline locais, dashboard de Matrículas em `/` e responsividade de 390px a telas largas validados
-- **In-progress**: ordenação compartilhada de tabelas em `app/static/js/ordenacao-tabelas.js`, já acompanhada por testes; DS-42 continua humano
-- **Next step**: Jaline testa em celular real (roteiro em `CUTOVER.md`, seção “Design gov.br responsivo”) e informa dispositivo, largura e data; só então marcar DS-42. T53/DS-24 já estão concluídos com Font Awesome 5.15.4 e Rawline locais. A Parte B de responsividade e a paridade da página inicial passaram no gate documentado em `validation.md`.
+- **Phase / Task**: T58 a T60 concluídas; T61 é a próxima tarefa autorizável da extensão.
+- **Completed**: T1 a T60 e a parte automatizável de T57; a composição pública, a variante de tabela e os estilos compartilhados passaram nos gates locais.
+- **In-progress**: nenhuma tarefa de código; DS-42 continua humano.
+- **Next step**: implementar T61 para reorganizar `/eficiencia`; depois seguir T62 a T65 somente com autorização explícita, pois a fase está marcada como não executável neste pedido.
 - **Blockers**: somente DS-42 exige o teste de Jaline em celular real, com dispositivo, largura e data
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto
 - **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`)
 - **Ambiente**: `app/data/sistec.db` está no estado original (vazio, restaurado após a verificação visual); nenhum servidor ficou rodando
-- **Working tree**: há mudanças recentes de código e testes para ordenação de tabelas; não as descartar ao continuar a feature
+- **Working tree**: somente diretórios locais não rastreados `.agents/` e `.test-tmp/`; não os incluir sem conferir a origem.
 - **Branch**: migracao-dash-gov-br
-- **Planejamento adicional (2026-09-22)**: mesma feature `govbr-design-system` recebeu DS-86 a DS-100 e T58 a T65 para padronizar `/eficiencia`, `/evasao` e `/percentuais-legais` segundo o dashboard de Matrículas. Spec, design e tasks estão escritos; nenhuma task da extensão foi executada. Iniciar por T58 quando houver solicitação de implementação. DS-42 continua independente e pendente do teste em celular real antes do cutover.
+- **Planejamento adicional (2026-09-22)**: T58 a T60 foram implementadas nos commits `9816bff`, `0bff60a` e `d059945`. DS-42 continua independente e pendente do teste em celular real antes do cutover.
