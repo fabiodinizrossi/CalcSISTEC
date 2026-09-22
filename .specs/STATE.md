@@ -47,14 +47,13 @@
 Estado revisado em 2026-09-22. As verificações usam `uv`, `pytest`, `node` e `git`.
 
 - **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: T58 a T60 concluídas; T61 é a próxima tarefa autorizável da extensão.
-- **Completed**: T1 a T60 e a parte automatizável de T57; a composição pública, a variante de tabela e os estilos compartilhados passaram nos gates locais.
-- **In-progress**: nenhuma tarefa de código; DS-42 continua humano.
-- **Next step**: implementar T61 para reorganizar `/eficiencia`; depois seguir T62 a T65 somente com autorização explícita, pois a fase está marcada como não executável neste pedido.
-- **Blockers**: somente DS-42 exige o teste de Jaline em celular real, com dispositivo, largura e data
-- **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto
-- **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`)
-- **Ambiente**: `app/data/sistec.db` está no estado original (vazio, restaurado após a verificação visual); nenhum servidor ficou rodando
-- **Working tree**: somente diretórios locais não rastreados `.agents/` e `.test-tmp/`; não os incluir sem conferir a origem.
-- **Branch**: migracao-dash-gov-br
-- **Planejamento adicional (2026-09-22)**: T58 a T60 foram implementadas nos commits `9816bff`, `0bff60a` e `d059945`. DS-42 continua independente e pendente do teste em celular real antes do cutover.
+- **Phase / Task**: T58 a T65 concluídas e verificadas independentemente.
+- **Completed**: extensão pública T58–T65 nos commits `9816bff`, `0bff60a`, `d059945`, `9f014cd`, `ba5756d`, `6338d8d`, `6b71457` e `5d3f3c8`; relatório independente em `validation.md` (PASS).
+- **In-progress**: nenhuma tarefa de código.
+- **Blocker humano**: DS-42 exige teste de Jaline em celular real, com dispositivo, largura e data registrados em `CUTOVER.md`; não é falha técnica da extensão.
+- **Verificação final**: compilação e 574 testes passaram; o sensor do verificador matou 2 de 2 mutações. `verificar_prontidao_cutover.py` permanece NO-GO apenas por credenciais administrativas e HTTPS ausentes no ambiente local.
+- **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto.
+- **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`).
+- **Ambiente**: `app/data/sistec.db` foi restaurado ao hash original após a inspeção com dados sintéticos; nenhum servidor ficou rodando.
+- **Working tree**: diretórios locais não rastreados `.agents/` e `.test-tmp*/`; não os incluir sem conferir a origem.
+- **Branch**: migracao-dash-gov-br.

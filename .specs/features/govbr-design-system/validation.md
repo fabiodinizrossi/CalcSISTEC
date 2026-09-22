@@ -1,5 +1,53 @@
 **Veredito: PASS**
 
+## Validation: extensão das páginas públicas (T58–T65) — PASS
+
+**Result**: PASS técnico para o intervalo `9816bff..5d3f3c8`. DS-86 a DS-100 têm evidência automatizada e visual. **DS-42 continua pendente de teste humano em celular real**, sem falha de código.
+
+### Gate independente
+
+- `python -m compileall -q app`: exit 0.
+- Suíte completa: 218 + 16 + 340 = **574 passed, 0 failed**.
+- Não houve redução de testes: o diff amplia `tests/test_componentes_publicos.py`, `tests/test_paginas_publicas.py`, `tests/test_style_css.py` e `tests/test_js_ordenacao_tabelas.py`.
+
+### Cobertura ancorada na spec
+
+| DS | Evidência que exige o resultado da spec | Resultado |
+| --- | --- | --- |
+| DS-86 | `tests/test_shell.py:209` renderiza cada rota; `tests/test_shell.py:217` exige `br-header`, `br-menu` e `br-footer`; `tests/test_shell.py:227` exige breadcrumb. | PASS |
+| DS-87 | `tests/test_componentes_publicos.py:230` compara título, Ano PNP e data; `tests/test_componentes_publicos.py:231` omite só data ausente. | PASS |
+| DS-88 | `tests/test_paginas_publicas.py:243` e `tests/test_paginas_publicas.py:420` comparam a sequência DOM. | PASS |
+| DS-89 | `tests/test_componentes_publicos.py:241`–`tests/test_componentes_publicos.py:245`; `tests/test_paginas_publicas.py:226`, `tests/test_paginas_publicas.py:321` e `tests/test_paginas_publicas.py:379` fixam ordem e destaques. | PASS |
+| DS-90 | `tests/test_componentes_publicos.py:112`–`tests/test_componentes_publicos.py:116`; `tests/test_style_css.py:163`, `tests/test_style_css.py:175` e `tests/test_style_css.py:176` exigem região, rolagem, azul e números à direita. | PASS |
+| DS-91/DS-97 | `tests/test_componentes_publicos.py:154`–`tests/test_componentes_publicos.py:160`, `tests/test_componentes_publicos.py:182`–`tests/test_componentes_publicos.py:188`; resets em `tests/test_paginas_publicas.py:341` e `tests/test_paginas_publicas.py:444`. | PASS |
+| DS-92 | `tests/test_paginas_publicas.py:225` exige IEA `0,75`; `tests/test_paginas_publicas.py:235` exige `0,50` e `1,00` por campus. | PASS |
+| DS-93 | `tests/test_paginas_publicas.py:312`–`tests/test_paginas_publicas.py:316` e `tests/test_paginas_publicas.py:321` exigem taxa, classe, rótulo e agregado. | PASS |
+| DS-94 | `tests/test_paginas_publicas.py:370`–`tests/test_paginas_publicas.py:385` exige percentuais, meta, situação, equivalentes e só Técnico destacado. | PASS |
+| DS-95 | `tests/test_paginas_publicas.py:390`–`tests/test_paginas_publicas.py:413` calcula grupo por função de domínio e exige Total e legenda; `validacao-paginas-publicas.md:39`–`validacao-paginas-publicas.md:41` registra o navegador. | PASS |
+| DS-96 | `tests/test_paginas_publicas.py:428`–`tests/test_paginas_publicas.py:431` exige classe e texto integral do alerta PROEJA. | PASS |
+| DS-98 | `tests/test_paginas_publicas.py:249`–`tests/test_paginas_publicas.py:258`, `tests/test_paginas_publicas.py:336`–`tests/test_paginas_publicas.py:341` e `tests/test_paginas_publicas.py:439`–`tests/test_paginas_publicas.py:452` distinguem vazio, zero e dado incompleto. | PASS |
+| DS-99 | `tests/test_contraste_tema.py:45`–`tests/test_contraste_tema.py:53`; `tests/test_style_css.py:163`; matriz em `validacao-paginas-publicas.md:19`–`validacao-paginas-publicas.md:36`. | PASS, com lacuna de precisão abaixo |
+| DS-100 | `tests/test_paginas_publicas.py:225`, `tests/test_paginas_publicas.py:312`, `tests/test_paginas_publicas.py:373`, `tests/test_paginas_publicas.py:411`; paridade DOM em `validacao-paginas-publicas.md:45`–`validacao-paginas-publicas.md:57`. | PASS |
+
+Os casos sem dados exigem `br-message info` em `tests/test_paginas_publicas.py:268`–`tests/test_paginas_publicas.py:273`, `tests/test_paginas_publicas.py:328`–`tests/test_paginas_publicas.py:333` e `tests/test_paginas_publicas.py:447`–`tests/test_paginas_publicas.py:452`. As asserções verificam valor, classe, texto e ordem, não só chamadas.
+
+### Discrimination sensor
+
+O baseline e o final da árvore real foram idênticos, mantendo apenas diretórios temporários anteriores. As mutações ocorreram em worktree descartada e removida ao final.
+
+| Mutação | Teste | Resultado |
+| --- | --- | --- |
+| `app/pages/eficiencia.py:102`: `destaque=True` → `False` | `tests/test_paginas_publicas.py:222`–`tests/test_paginas_publicas.py:226` | MORTO: 1 falha pela perda de `kpi-figma--destaque`. |
+| `app/pages/percentuais_legais.py:110`: alerta PROEJA → texto genérico | `tests/test_paginas_publicas.py:428`–`tests/test_paginas_publicas.py:431` | MORTO: 1 falha pelo texto obrigatório ausente. |
+
+**Sensor**: 2 mutações, 2 mortas, 0 sobreviventes.
+
+### Limites e pendências
+
+1. **Lacuna de precisão, sem falha técnica**: DS-99 declara 320–1920px continuamente; a matriz mede 390, 768, 1280, 1600 e 640 CSS em `validacao-paginas-publicas.md:19`–`validacao-paginas-publicas.md:36`. A spec não define medidas por breakpoint além de não haver corte.
+2. **Pendência humana**: DS-42 requer aparelho físico. `validacao-paginas-publicas.md:67`–`validacao-paginas-publicas.md:68` registra que Jaline deve anotar dispositivo, largura e data em `CUTOVER.md`.
+3. **Higiene documental menor**: `spec.md:491`–`spec.md:505` ainda indica `In Tasks`, e `tasks.md:2001` ainda afirma que T58–T65 não executaram, embora as tarefas estejam concluídas. Isso não altera o comportamento validado.
+
 # Validation: govbr-design-system - PASS
 
 **Data**: 2026-09-20

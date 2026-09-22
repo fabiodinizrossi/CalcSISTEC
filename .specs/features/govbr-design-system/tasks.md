@@ -1998,7 +1998,7 @@ Nenhum teste foi adiado para outra task. T33 e T22 cobrem o servidor e a funçã
 | DS-99 | T59, T60, T61, T62, T63, T64, T65 |
 | DS-100 | T61, T62, T63, T65 |
 
-**Cobertura:** 100 de 100 requisitos mapeados a ao menos uma task. T58–T65 estão planejadas e não executadas.
+**Cobertura:** 100 de 100 requisitos mapeados a ao menos uma task. T58–T65 foram concluídas e verificadas; DS-42 continua pendente de passo humano.
 
 ### Validação das tasks planejadas
 

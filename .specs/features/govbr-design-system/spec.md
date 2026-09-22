@@ -488,27 +488,27 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Verified |
 | DS-84          | P3: Cards (AC 1, botão de visualização) | Design | Verified |
 | DS-85          | P3: Cards (AC 2, br-card por campus) | Design | Verified |
-| DS-86          | P1: Demais páginas públicas (AC 1, shell) | Tasks | In Tasks |
-| DS-87          | P1: Demais páginas públicas (AC 2, contexto) | Tasks | In Tasks |
-| DS-88          | P1: Demais páginas públicas (AC 3, ordem de leitura) | Tasks | In Tasks |
-| DS-89          | P1: Demais páginas públicas (AC 4, cartões) | Tasks | In Tasks |
-| DS-90          | P1: Demais páginas públicas (AC 5, tabelas) | Tasks | In Tasks |
-| DS-91          | P1: Demais páginas públicas (AC 6, filtros) | Tasks | In Tasks |
-| DS-92          | P1: Demais páginas públicas (AC 7, eficiência) | Tasks | In Tasks |
-| DS-93          | P1: Demais páginas públicas (AC 8, evasão) | Tasks | In Tasks |
-| DS-94          | P1: Demais páginas públicas (AC 9, percentuais) | Tasks | In Tasks |
-| DS-95          | P1: Demais páginas públicas (AC 10, recorte legal) | Tasks | In Tasks |
-| DS-96          | P1: Demais páginas públicas (AC 11, aviso PROEJA) | Tasks | In Tasks |
-| DS-97          | P1: Demais páginas públicas (AC 12, limpar filtros) | Tasks | In Tasks |
-| DS-98          | P1: Demais páginas públicas (AC 13, estados sem dados) | Tasks | In Tasks |
-| DS-99          | P1: Demais páginas públicas (AC 14, responsividade e acessibilidade) | Tasks | In Tasks |
-| DS-100         | P1: Demais páginas públicas (AC 15, paridade) | Tasks | In Tasks |
+| DS-86          | P1: Demais páginas públicas (AC 1, shell) | Tasks | Verified |
+| DS-87          | P1: Demais páginas públicas (AC 2, contexto) | Tasks | Verified |
+| DS-88          | P1: Demais páginas públicas (AC 3, ordem de leitura) | Tasks | Verified |
+| DS-89          | P1: Demais páginas públicas (AC 4, cartões) | Tasks | Verified |
+| DS-90          | P1: Demais páginas públicas (AC 5, tabelas) | Tasks | Verified |
+| DS-91          | P1: Demais páginas públicas (AC 6, filtros) | Tasks | Verified |
+| DS-92          | P1: Demais páginas públicas (AC 7, eficiência) | Tasks | Verified |
+| DS-93          | P1: Demais páginas públicas (AC 8, evasão) | Tasks | Verified |
+| DS-94          | P1: Demais páginas públicas (AC 9, percentuais) | Tasks | Verified |
+| DS-95          | P1: Demais páginas públicas (AC 10, recorte legal) | Tasks | Verified |
+| DS-96          | P1: Demais páginas públicas (AC 11, aviso PROEJA) | Tasks | Verified |
+| DS-97          | P1: Demais páginas públicas (AC 12, limpar filtros) | Tasks | Verified |
+| DS-98          | P1: Demais páginas públicas (AC 13, estados sem dados) | Tasks | Verified |
+| DS-99          | P1: Demais páginas públicas (AC 14, responsividade e acessibilidade) | Tasks | Verified |
+| DS-100         | P1: Demais páginas públicas (AC 15, paridade) | Tasks | Verified |
 
 **ID format:** `[CATEGORY]-[NUMBER]` (e.g., `DS-01`)
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified
 
-**Coverage:** 100 total, 100 mapped to tasks, 0 unmapped. DS-86 a DS-100 estão planejados, sem execução.
+**Coverage:** 100 total, 100 mapped to tasks, 0 unmapped. DS-86 a DS-100 foram verificados na extensão T58–T65; DS-42 continua pendente de passo humano.
 
 ---
 
