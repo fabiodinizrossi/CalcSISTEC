@@ -1860,9 +1860,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Matriz de rota × 390/768/1280/1600px × claro/escuro registra menu, cartões, tabela, filtros, `scrollWidth ≤ innerWidth`, foco e zoom 200%
-- [ ] Evidência de comparação dos números antes/depois para os mesmos dados e filtros; `pytest` completo verde e `verificar_prontidao_cutover.py` registrado sem interpretar NO-GO ambiental como falha visual
-- [ ] Capturas e limitações ficam ligadas ao relatório; revisão independente exigida pela skill somente na futura execução; teste em celular real DS-42 permanece pendente até ser feito por Jaline
+- [x] Matriz de rota × 390/768/1280/1600px × claro/escuro registra menu, cartões, tabela, filtros, `scrollWidth ≤ innerWidth`, foco e zoom 200%
+- [x] Evidência de comparação dos números antes/depois para os mesmos dados e filtros; `pytest` completo verde e `verificar_prontidao_cutover.py` registrado sem interpretar NO-GO ambiental como falha visual
+- [x] Capturas e limitações ficam ligadas ao relatório; revisão independente exigida pela skill somente na futura execução; teste em celular real DS-42 permanece pendente até ser feito por Jaline
 
 **Tests**: none (verificação; testes de código são co-localizados em T58–T63)
 **Gate**: build
