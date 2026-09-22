@@ -75,6 +75,8 @@ T5 → T6 → T7
 
 ### T3: Aplicar chips à Eficiência Acadêmica
 
+**Status**: Complete
+
 **What**: substituir o seletor único pelo estado ordenado de chips e agrupar a matriz por todos os eixos ativos.
 **Where**: `app/pages/eficiencia.py`
 **Depends on**: T2
@@ -83,8 +85,8 @@ T5 → T6 → T7
 **Gate**: Full
 **Done when**:
 
-- [ ] Chips, ordem de clique, hierarquia e reset Campus são observáveis na página.
-- [ ] O KPI de IEA mantém o cálculo existente.
+- [x] Chips, ordem de clique, hierarquia e reset Campus são observáveis na página.
+- [x] O KPI de IEA mantém o cálculo existente.
 
 ### T4: Aplicar chips à Taxa de Evasão
 

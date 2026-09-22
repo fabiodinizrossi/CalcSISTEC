@@ -232,7 +232,16 @@ def test_eficiencia_mostra_a_matriz_publica_com_o_iea_de_cada_campus(eficiencia_
     cabecalhos = [textos(th) for th in componentes(matriz) if type(th).__name__ == "Th"]
     assert cabecalhos == ["Campus", "IEA"]
     celulas = [[textos(td) for td in componentes(tr) if type(td).__name__ == "Td"] for tr in componentes(matriz) if type(tr).__name__ == "Tr"]
-    assert [linha for linha in celulas if linha] == [["Alegrete", "0,50"], ["Jaguari", "1,00"]]
+    assert [linha for linha in celulas if linha] == [["Alegrete", "0,50"], ["Jaguari", "1,00"], ["Total", "0,75"]]
+
+
+def test_eficiencia_chips_multiplos_ordenam_hierarquia_e_limpar_restaura_campus(eficiencia_com_dados):
+    _, matriz = eficiencia_com_dados.atualizar("com_fic", ["modalidade", "campus"], "__todos__", "__todos__")
+    tabela = [c for c in componentes(matriz) if type(c).__name__ == "Table"][0]
+    grupos = [c for c in componentes(tabela) if type(c).__name__ == "Tr" and getattr(c, "data-group-id", None) is not None]
+    assert [textos(th) for th in componentes(tabela) if type(th).__name__ == "Th"] == ["Modalidade › Campus", "IEA"]
+    assert [(getattr(linha, "data-level"), getattr(linha, "data-parent-id")) for linha in grupos] == [(0, ""), (1, "0"), (1, "0")]
+    assert eficiencia_com_dados.limpar_filtros(1)[-1] == ["campus"]
 
 
 def test_eficiencia_layout_poem_contexto_kpi_eixo_tabela_e_filtros_nesta_ordem(eficiencia_com_dados, monkeypatch):
@@ -240,9 +249,9 @@ def test_eficiencia_layout_poem_contexto_kpi_eixo_tabela_e_filtros_nesta_ordem(e
     layout = eficiencia_com_dados.layout()
     filhos = layout.children
     assert layout.className == "painel-dashboard"
-    assert [getattr(filho, "className", None) for filho in filhos] == ["cabecalho-pagina", None, "filter-item", None, "card-filtros"]
+    assert [getattr(filho, "className", None) for filho in filhos] == ["cabecalho-pagina", None, "card-chips", None, None, "card-filtros"]
     assert filhos[1].children.className == "kpis-figma"
-    assert "br-radio" in classes(filhos[2])
+    assert "chips-grupo" in classes(filhos[2])
     assert "Atualizado em 22/09/2026" in textos(filhos[0])
 
 

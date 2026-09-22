@@ -12,12 +12,12 @@ dados (a Tarefa 09 calculava `filtros.incluir_fic` mas nunca aplicava
 
 import dash
 import pandas as pd
-from dash import Input, Output, callback, dcc, html
+from dash import Input, Output, State, callback, dcc, html
 
-from app.components.filters import axis_selector, clear_filters_button, fic_toggle, select_filter
+from app.components.filters import EIXOS, axis_selector, clear_filters_button, fic_toggle, ordenar_eixos, select_filter
 from app.components.mensagem import mensagem_ds
 from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
-from app.components.tabela import tabela_ds
+from app.components.tabela import tabela_hierarquica_ds
 from app.data.consulta import ano_base_ativo, carregar_eficiencia, data_ultima_publicacao, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.eficiencia import iea
@@ -54,6 +54,7 @@ def layout():
             cabecalho_pagina("Eficiência Acadêmica", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
             dcc.Loading(html.Div(id="eficiencia-kpi", className="kpis-figma")),
             axis_selector("eficiencia-eixo", default="campus"),
+            dcc.Store(id="eficiencia-eixos-ordenados", data=["campus"]),
             dcc.Loading(html.Div(id="eficiencia-matriz")),
             filtros,
         ],
@@ -70,32 +71,41 @@ def _filtrar(df, campus, modalidade):
 
 
 @callback(
+    Output("eficiencia-eixos-ordenados", "data"),
+    Input("eficiencia-eixo", "value"),
+    State("eficiencia-eixos-ordenados", "data"),
+)
+def atualizar_ordem_eixos(marcados, ordem_anterior):
+    return ordenar_eixos(marcados, ordem_anterior)
+
+
+@callback(
     Output("eficiencia-kpi", "children"),
     Output("eficiencia-matriz", "children"),
     Input("eficiencia-fic", "value"),
-    Input("eficiencia-eixo", "value"),
+    Input("eficiencia-eixos-ordenados", "data"),
     Input("eficiencia-filtro-campus", "value"),
     Input("eficiencia-filtro-modalidade", "value"),
 )
-def atualizar(fic, eixo, campus, modalidade):
+def atualizar(fic, eixos, campus, modalidade):
     ano_base = ano_base_ativo() or 2026
     incluir_fic = fic == "com_fic"
     df = filtrar_fic(_filtrar(carregar_eficiencia(), campus, modalidade), incluir_fic)
-    filtros = FiltrosAtivos(ano_base=ano_base, eixo=eixo or "campus", incluir_fic=incluir_fic)
+    eixos = ordenar_eixos(eixos if isinstance(eixos, list) else [eixos], eixos if isinstance(eixos, list) else [eixos])
+    filtros = FiltrosAtivos(ano_base=ano_base, eixo=(eixos[-1] if eixos else "campus"), incluir_fic=incluir_fic)
 
     if df.empty:
         return html.Div(), mensagem_ds("info", "Sem dados para o eixo selecionado.")
 
     valor_iea = iea(df, filtros)
 
-    # "campus" usa `cidade` (legível), os demais eixos usam a coluna real de
-    # `app/domain/shared.COLUNA_POR_EIXO` (fonte única — BR-MIGRAR-019/020).
-    coluna_eixo = "cidade" if eixo == "campus" else coluna_para_eixo(eixo or "campus")
-    linhas = []
-    for chave, grupo in df.groupby(coluna_eixo, dropna=False):
-        linhas.append([chave, f"{iea(grupo, filtros):.2f}".replace(".", ",")])
-    rotulo_eixo = "Campus" if eixo == "campus" else eixo.replace("_", " ").title()
-    matriz = tabela_ds([rotulo_eixo, "IEA"], linhas, f"IEA por {rotulo_eixo.lower()}", quadro=True)
+    colunas_eixos = {eixo: "cidade" if eixo == "campus" else coluna_para_eixo(eixo) for eixo in (opcao["value"] for opcao in EIXOS)}
+    rotulos = {opcao["value"]: opcao["label"] for opcao in EIXOS}
+    matriz = tabela_hierarquica_ds(
+        df, eixos, colunas_eixos, rotulos, ["IEA"], "IEA por recorte selecionado",
+        lambda grupo: [f"{iea(grupo, filtros):.2f}".replace(".", ",")],
+        [f"{valor_iea:.2f}".replace(".", ",")],
+    )
 
     # BR-MIGRAR-013/BR-HUMANA-001: 0, nunca NaN, quando pC+pE=0 — já garantido
     # por `app.domain.eficiencia.calcular_iea`.
@@ -111,4 +121,4 @@ def atualizar(fic, eixo, campus, modalidade):
     prevent_initial_call=True,
 )
 def limpar_filtros(_n_clicks):
-    return "__todos__", "__todos__", "sem_fic", "campus"
+    return "__todos__", "__todos__", "sem_fic", ["campus"]
