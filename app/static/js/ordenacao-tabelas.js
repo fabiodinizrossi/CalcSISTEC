@@ -197,6 +197,7 @@
     iniciar: iniciar,
     ordenar: ordenar,
     ordenarLinhas: ordenarLinhas,
+    preparar: preparar,
     valorComparavel: valorComparavel,
   };
 });

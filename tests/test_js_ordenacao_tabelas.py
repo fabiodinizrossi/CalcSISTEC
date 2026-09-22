@@ -124,12 +124,20 @@ def test_clique_logico_no_cabecalho_alterna_direcao_e_reordena_o_corpo():
     assert avaliar(expressao) == [["10", "2", "1"], ["1", "2", "10"], "ascending"]
 
 
-def test_tabela_hierarquica_marcada_como_nao_ordenavel_e_ignorada():
+def test_tabela_hierarquica_ordenavel_prepara_cabecalho_e_preserva_coluna_excluida():
     expressao = """(() => {
-      const atributos = {'data-no-sort': ''};
-      const tabela = {tBodies: [{}], getAttribute(nome) { return nome === 'data-sortable' ? 'false' : null; }};
-      const th = {colSpan: 1, closest(seletor) { return seletor === 'table' ? tabela : seletor === 'thead' ? {} : null; }, hasAttribute(nome) { return nome in atributos; }};
-      m.ordenar(th);
-      return true;
+      function cabecalho(excluido) {
+        const atributos = excluido ? {'data-no-sort': 'true'} : {};
+        return {
+          colSpan: 1, classList: {adicionadas: [], add(valor) { this.adicionadas.push(valor); }},
+          closest(seletor) { return seletor === 'table' ? tabela : seletor === 'thead' ? {} : null; },
+          hasAttribute(nome) { return nome in atributos; }, setAttribute(nome, valor) { atributos[nome] = String(valor); }, atributos,
+        };
+      }
+      const tabela = {dataset: {}, tBodies: [{}], getAttribute(nome) { return nome === 'data-sortable' ? 'true' : null; }};
+      const ordenavel = cabecalho(false), excluido = cabecalho(true);
+      tabela.tHead = {querySelectorAll() { return [ordenavel, excluido]; }};
+      m.preparar(tabela);
+      return [ordenavel.classList.adicionadas, ordenavel.atributos['tabindex'], ordenavel.atributos['aria-sort'], ordenavel.atributos.title, excluido.classList.adicionadas];
     })()"""
-    assert avaliar(expressao) is True
+    assert avaliar(expressao) == [["cabecalho-ordenavel"], "0", "none", "Ordenar por esta coluna", []]

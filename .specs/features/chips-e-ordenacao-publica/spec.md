@@ -78,10 +78,10 @@ atualização dinâmica do Dash faça a ordenação parecer indisponível.
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| CHIP-01 | P1: Eixos públicos consistentes | Implementing | Pending |
-| CHIP-02 | P1: Eixos públicos consistentes | Implementing | Pending |
-| SORT-01 | P1: Ordenação resiliente | Implementing | Pending |
-| SORT-02 | P1: Ordenação resiliente | Implementing | Pending |
+| CHIP-01 | P1: Eixos públicos consistentes | Execute | Verified |
+| CHIP-02 | P1: Eixos públicos consistentes | Execute | Verified |
+| SORT-01 | P1: Ordenação resiliente | Execute | Verified |
+| SORT-02 | P1: Ordenação resiliente | Execute | Verified |
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified
 

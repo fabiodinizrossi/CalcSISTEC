@@ -135,6 +135,8 @@ T5 → T6 → T7
 
 ### T7: Garantir reinicialização da ordenação após atualização do Dash
 
+**Status**: Complete
+
 **What**: cobrir a preparação de cabeçalhos inseridos dinamicamente e a ordenação de blocos por clique e teclado.
 **Where**: `app/static/js/ordenacao-tabelas.js`
 **Depends on**: T6
@@ -143,8 +145,8 @@ T5 → T6 → T7
 **Gate**: Build
 **Done when**:
 
-- [ ] Uma tabela adicionada depois da inicialização recebe foco, título e `aria-sort`.
-- [ ] Clique e teclado alternam direção e nunca separam descendentes do pai.
+- [x] Uma tabela adicionada depois da inicialização recebe foco, título e `aria-sort`.
+- [x] Clique e teclado alternam direção e nunca separam descendentes do pai.
 
 ## Cross-checks
 
