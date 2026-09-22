@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 5,
+  "next_id": 6,
   "lessons": [
     {
       "id": "L-001",
@@ -76,6 +76,24 @@
       ],
       "created": "2026-09-20T03:05:33Z",
       "last_seen": "2026-09-20T03:05:33Z"
+    },
+    {
+      "id": "L-005",
+      "key": "surviving_mutant::testes de tabelas dinamicas devem exercitar o observador de dom e os eventos de teclado nao apenas funcoes internas",
+      "text": "Testes de tabelas dinâmicas devem exercitar o observador de DOM e os eventos de teclado, não apenas funções internas.",
+      "signal": "surviving_mutant",
+      "scope": "app/static/js",
+      "status": "candidate",
+      "features": [
+        "chips-e-ordenacao-publica"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "app/static/js/ordenacao-tabelas.js:184 (M3) (app/static/js)"
+      ],
+      "created": "2026-09-22T17:51:19Z",
+      "last_seen": "2026-09-22T17:51:19Z"
     }
   ]
 }

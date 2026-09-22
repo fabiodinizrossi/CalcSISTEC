@@ -38,6 +38,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: AD-004 (.specs)
 - last seen: 2026-09-20T03:05:33Z
 
+### L-005 - Testes de tabelas dinâmicas devem exercitar o observador de DOM e os eventos de teclado, não apenas funções internas.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `app/static/js` · harmful: 0
+- features: chips-e-ordenacao-publica
+- evidence: app/static/js/ordenacao-tabelas.js:184 (M3) (app/static/js)
+- last seen: 2026-09-22T17:51:19Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
