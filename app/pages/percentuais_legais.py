@@ -107,8 +107,9 @@ def atualizar_ordem_eixos(marcados, ordem_anterior):
     Input("percentuais-filtro-programa", "value"),
 )
 def atualizar(eixos, campus, programa):
-    ano_base_ativo()
+    ano_base = ano_base_ativo() or 2026
     df = carregar_matriculas()
+    df = df[df["ano_base"] == ano_base]
     if campus and campus != "__todos__":
         df = df[df["cidade"] == campus]
 

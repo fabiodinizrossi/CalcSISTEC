@@ -78,8 +78,8 @@ O botão de limpeza precisa restaurar todos os controles alteráveis do painel. 
 | --- | --- | --- | --- |
 | PUBFIX-01 | Restaurar a visão padrão | Execute | Verified |
 | PUBFIX-02 | Exibir o rodapé após o conteúdo | Execute | Verified |
-| PUBFIX-03 | Calcular percentuais no ano publicado | Execute | Pending |
-| PUBFIX-04 | Ano-base sem registros | Execute | Pending |
+| PUBFIX-03 | Calcular percentuais no ano publicado | Execute | Verified |
+| PUBFIX-04 | Ano-base sem registros | Execute | Verified |
 
 **Coverage:** 4 total, 4 mapped to inline execution steps, 0 unmapped.
 
