@@ -14,11 +14,11 @@ import dash
 import pandas as pd
 from dash import Input, Output, callback, dcc, html
 
-from app.components.filters import axis_selector, clear_filters_button, fic_toggle, filter_panel, select_filter
-from app.components.kpi import kpi_card, kpi_colunas
+from app.components.filters import axis_selector, clear_filters_button, fic_toggle, select_filter
 from app.components.mensagem import mensagem_ds
+from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
 from app.components.tabela import tabela_ds
-from app.data.consulta import ano_base_ativo, carregar_eficiencia, dataset_disponivel
+from app.data.consulta import ano_base_ativo, carregar_eficiencia, data_ultima_publicacao, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.eficiencia import iea
 from app.domain.matriculas import filtrar_fic
@@ -27,25 +27,37 @@ from app.domain.shared import coluna_para_eixo
 dash.register_page(__name__, path="/eficiencia", title="Eficiência Acadêmica - Pesquisa Institucional - SISTEC")
 
 
+def _data_curta(valor):
+    if not valor:
+        return None
+    texto = str(valor)[:10]
+    return "/".join(reversed(texto.split("-"))) if "-" in texto else texto
+
+
 def layout():
     if not dataset_disponivel():
         return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_eficiencia()
+    filtros = html.Div(
+        [
+            select_filter("eficiencia-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+            select_filter("eficiencia-filtro-modalidade", "Modalidade", sorted(df["modalidade_ensino"].dropna().unique())),
+            # BR-MIGRAR-021: estado inicial SEM FIC nesta página, intencional.
+            fic_toggle("eficiencia-fic", default="sem_fic"),
+            clear_filters_button("eficiencia-limpar"),
+        ],
+        className="card-filtros",
+    )
     return html.Div(
         [
-            html.H1("Eficiência Acadêmica"),
-            # BR-MIGRAR-021: estado inicial SEM FIC nesta página, intencional (não alterar).
-            fic_toggle("eficiencia-fic", default="sem_fic"),
+            cabecalho_pagina("Eficiência Acadêmica", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
+            dcc.Loading(html.Div(id="eficiencia-kpi", className="kpis-figma")),
             axis_selector("eficiencia-eixo", default="campus"),
-            dcc.Loading(html.Div(id="eficiencia-kpi", className="row")),
             dcc.Loading(html.Div(id="eficiencia-matriz")),
-            filter_panel(
-                select_filter("eficiencia-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
-                select_filter("eficiencia-filtro-modalidade", "Modalidade", sorted(df["modalidade_ensino"].dropna().unique())),
-            ),
-            clear_filters_button("eficiencia-limpar"),
-        ]
+            filtros,
+        ],
+        className="painel-dashboard",
     )
 
 
@@ -72,7 +84,7 @@ def atualizar(fic, eixo, campus, modalidade):
     filtros = FiltrosAtivos(ano_base=ano_base, eixo=eixo or "campus", incluir_fic=incluir_fic)
 
     if df.empty:
-        return kpi_colunas([kpi_card("IEA", None, empty_state="0")]), mensagem_ds("info", "Sem dados para o eixo selecionado.")
+        return html.Div(), mensagem_ds("info", "Sem dados para o eixo selecionado.")
 
     valor_iea = iea(df, filtros)
 
@@ -81,13 +93,13 @@ def atualizar(fic, eixo, campus, modalidade):
     coluna_eixo = "cidade" if eixo == "campus" else coluna_para_eixo(eixo or "campus")
     linhas = []
     for chave, grupo in df.groupby(coluna_eixo, dropna=False):
-        linhas.append({coluna_eixo: chave, "IEA": round(iea(grupo, filtros), 4)})
-    quadro = pd.DataFrame(linhas)
-    matriz = tabela_ds(list(quadro.columns), quadro.values.tolist(), "IEA por eixo")
+        linhas.append([chave, f"{iea(grupo, filtros):.2f}".replace(".", ",")])
+    rotulo_eixo = "Campus" if eixo == "campus" else eixo.replace("_", " ").title()
+    matriz = tabela_ds([rotulo_eixo, "IEA"], linhas, f"IEA por {rotulo_eixo.lower()}", quadro=True)
 
     # BR-MIGRAR-013/BR-HUMANA-001: 0, nunca NaN, quando pC+pE=0 — já garantido
     # por `app.domain.eficiencia.calcular_iea`.
-    return kpi_colunas([kpi_card("IEA (Índice de Eficiência Acadêmica)", valor_iea, formato="#,0.00")]), matriz
+    return cartoes_indicadores([cartao_indicador("IEA (Índice de Eficiência Acadêmica)", valor_iea, formato="#,0.00", destaque=True)]), matriz
 
 
 @callback(

@@ -212,20 +212,43 @@ def _atualizar_eficiencia(pagina_eficiencia):
     return pagina_eficiencia.atualizar("com_fic", "campus", "__todos__", "__todos__")
 
 
-def test_eficiencia_mostra_o_iea_em_br_card_com_o_mesmo_numero(eficiencia_com_dados):
+def test_eficiencia_mostra_o_iea_destacado_com_o_mesmo_numero_da_regra_oficial(eficiencia_com_dados):
     kpi, _ = _atualizar_eficiencia(eficiencia_com_dados)
-    cartoes = com_classe(kpi, "br-card")
+    cartoes = com_classe(kpi, "kpi-figma")
     assert [textos(c) for c in cartoes] == ["IEA (Índice de Eficiência Acadêmica) 0,75"]
-    assert all("col-12" in coluna.className.split() for coluna in kpi)
+    assert cartoes[0].className == "kpi-figma kpi-figma--destaque"
 
 
-def test_eficiencia_mostra_a_matriz_em_br_table_com_o_iea_de_cada_campus(eficiencia_com_dados):
+def test_eficiencia_mostra_a_matriz_publica_com_o_iea_de_cada_campus(eficiencia_com_dados):
     _, matriz = _atualizar_eficiencia(eficiencia_com_dados)
-    assert matriz.className == "br-table"
+    assert matriz.className == "matriz-figma tabela-publica-quadro"
     cabecalhos = [textos(th) for th in componentes(matriz) if type(th).__name__ == "Th"]
-    assert cabecalhos == ["cidade", "IEA"]
+    assert cabecalhos == ["Campus", "IEA"]
     celulas = [[textos(td) for td in componentes(tr) if type(td).__name__ == "Td"] for tr in componentes(matriz) if type(tr).__name__ == "Tr"]
-    assert [linha for linha in celulas if linha] == [["Alegrete", "0.5"], ["Jaguari", "1.0"]]
+    assert [linha for linha in celulas if linha] == [["Alegrete", "0,50"], ["Jaguari", "1,00"]]
+
+
+def test_eficiencia_layout_poem_contexto_kpi_eixo_tabela_e_filtros_nesta_ordem(eficiencia_com_dados, monkeypatch):
+    monkeypatch.setattr(eficiencia_com_dados, "data_ultima_publicacao", lambda: "2026-09-22")
+    layout = eficiencia_com_dados.layout()
+    filhos = layout.children
+    assert layout.className == "painel-dashboard"
+    assert [getattr(filho, "className", None) for filho in filhos] == ["cabecalho-pagina", None, "filter-item", None, "card-filtros"]
+    assert filhos[1].children.className == "kpis-figma"
+    assert "br-radio" in classes(filhos[2])
+    assert "Atualizado em 22/09/2026" in textos(filhos[0])
+
+
+def test_eficiencia_zero_real_e_recorte_vazio_nao_se_confundem(eficiencia_com_dados):
+    base = _eficiencia_de_teste().copy()
+    base["status_corrigido2"] = "EM_CURSO"
+    eficiencia_com_dados.carregar_eficiencia = lambda: base
+    kpi_zero, _ = _atualizar_eficiencia(eficiencia_com_dados)
+    kpi_vazio, aviso = eficiencia_com_dados.atualizar("sem_fic", "campus", "Inexistente", "__todos__")
+
+    assert "0,00" in textos(kpi_zero)
+    assert textos(kpi_vazio) == ""
+    assert "Sem dados para o eixo selecionado." in textos(aviso)
 
 
 def test_eficiencia_nao_usa_componentes_de_tabela_do_bootstrap(eficiencia_com_dados):

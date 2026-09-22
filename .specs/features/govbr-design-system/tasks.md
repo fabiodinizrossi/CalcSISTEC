@@ -1772,9 +1772,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Ordem DOM: contexto, KPI, eixo, tabela, filtros; menu e breadcrumb continuam os do shell comum
-- [ ] Fixtures nominais, eixo alternativo, `pC+pE=0`, recorte vazio e limpar filtros mantêm IEA e estado esperado
-- [ ] Testes em `tests/test_paginas_publicas.py` comparam números com `iea` e verificam estrutura; gate full passa
+- [x] Ordem DOM: contexto, KPI, eixo, tabela, filtros; menu e breadcrumb continuam os do shell comum
+- [x] Fixtures nominais, eixo alternativo, `pC+pE=0`, recorte vazio e limpar filtros mantêm IEA e estado esperado
+- [x] Testes em `tests/test_paginas_publicas.py` comparam números com `iea` e verificam estrutura; gate full passa (109 passed)
 
 **Tests**: unit
 **Gate**: full
