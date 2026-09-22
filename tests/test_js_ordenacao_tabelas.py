@@ -30,7 +30,7 @@ def test_valores_vazios_ficam_depois_dos_preenchidos():
 
 def test_ordena_linhas_nas_duas_direcoes_e_mantem_vazio_no_fim():
     expressao = """(() => {
-      const linhas = ['10', '2', '—'].map(texto => ({cells: [{textContent: texto, dataset: {}}]}));
+      const linhas = ['10', '2', '\\u2014'].map(texto => ({cells: [{textContent: texto, dataset: {}}]}));
       const tbody = {rows: linhas, insertBefore(linha, referencia) {
         this.rows.splice(this.rows.indexOf(linha), 1);
         const destino = referencia ? this.rows.indexOf(referencia) : this.rows.length;
@@ -40,9 +40,12 @@ def test_ordena_linhas_nas_duas_direcoes_e_mantem_vazio_no_fim():
       m.ordenarLinhas(tabela, 0, 'descending');
       const descendente = tbody.rows.map(l => l.cells[0].textContent);
       m.ordenarLinhas(tabela, 0, 'ascending');
-      return [descendente, tbody.rows.map(l => l.cells[0].textContent)];
+      return [
+        descendente.map(texto => texto.codePointAt(0)),
+        tbody.rows.map(l => l.cells[0].textContent.codePointAt(0)),
+      ];
     })()"""
-    assert avaliar(expressao) == [["10", "2", "—"], ["2", "10", "—"]]
+    assert avaliar(expressao) == [[49, 50, 8212], [50, 49, 8212]]
 
 
 def test_ordena_grupos_pelo_valor_da_linha_externa_sem_separar_subitens():
@@ -75,7 +78,7 @@ def test_ordena_grupos_pelo_valor_da_linha_externa_sem_separar_subitens():
 
 def test_nao_move_linhas_que_ja_estao_ordenadas_e_nao_realimenta_observador():
     expressao = """(() => {
-      const linhas = ['2', '10', '—'].map(texto => ({cells: [{textContent: texto, dataset: {}}]}));
+      const linhas = ['2', '10', '\\u2014'].map(texto => ({cells: [{textContent: texto, dataset: {}}]}));
       let movimentos = 0;
       const tbody = {rows: linhas, insertBefore(linha, referencia) {
         movimentos += 1;
@@ -87,9 +90,9 @@ def test_nao_move_linhas_que_ja_estao_ordenadas_e_nao_realimenta_observador():
       m.ordenarLinhas(tabela, 0, 'ascending');
       const primeira = movimentos;
       m.ordenarLinhas(tabela, 0, 'ascending');
-      return [primeira, movimentos, tbody.rows.map(l => l.cells[0].textContent)];
+      return [primeira, movimentos, tbody.rows.map(l => l.cells[0].textContent.codePointAt(0))];
     })()"""
-    assert avaliar(expressao) == [0, 0, ["2", "10", "—"]]
+    assert avaliar(expressao) == [0, 0, [50, 49, 8212]]
 
 
 def test_clique_logico_no_cabecalho_alterna_direcao_e_reordena_o_corpo():
