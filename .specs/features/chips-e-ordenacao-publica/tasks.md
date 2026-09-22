@@ -38,7 +38,7 @@ T2 → T3 → T4 → T5
 ### Phase 3: Ordenação resiliente
 
 ```
-T5 → T6 → T7 → T8
+T5 → T6 → T7 → T8 → T9
 ```
 
 ## Task Breakdown
@@ -162,6 +162,19 @@ T5 → T6 → T7 → T8
 - [x] Remover o observador faz o teste falhar.
 - [x] A tabela inserida recebe foco, título e `aria-sort`.
 
+### T9: Cobrir eventos de ordenação delegados
+
+**Status**: Complete
+**What**: testar os listeners reais de clique, Enter e Espaço configurados na inicialização.
+**Where**: `tests/test_js_ordenacao_tabelas.py`
+**Depends on**: T8
+**Requirement**: SORT-01
+**Tests**: unit (`tests/test_js_ordenacao_tabelas.py`)
+**Gate**: Quick
+**Done when**:
+
+- [x] Clique e as duas teclas ordenam e atualizam a direção.
+
 ## Cross-checks
 
 | Dependency declared | Diagram edge | Match |
@@ -173,9 +186,11 @@ T5 → T6 → T7 → T8
 | T6 depends on T5 | T5 → T6 | ✅ |
 | T7 depends on T6 | T6 → T7 | ✅ |
 | T8 depends on T7 | T7 → T8 | ✅ |
+| T9 depends on T8 | T8 → T9 | ✅ |
 
 | Task | Test co-located with deliverable | Match |
 | --- | --- | --- |
 | T1–T2 | Component tests | ✅ |
 | T3–T6 | Public-page integration tests | ✅ |
 | T7 | JavaScript unit tests | ✅ |
+| T8–T9 | JavaScript unit tests | ✅ |

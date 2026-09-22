@@ -162,3 +162,28 @@ def test_tabela_inserida_pelo_dash_e_preparada_pelo_observador():
       return [atributos.tabindex, atributos['aria-sort'], atributos.title];
     })()"""
     assert avaliar(expressao) == ["0", "none", "Ordenar por esta coluna"]
+
+
+def test_listeners_delegados_ordenam_por_clique_enter_e_espaco():
+    expressao = """(() => {
+      const eventos = {};
+      const atributos = {};
+      const linhas = ['2', '1'].map(texto => ({cells: [{textContent: texto, dataset: {}}], dataset: {}}));
+      const tbody = {rows: linhas, insertBefore(linha, referencia) { this.rows.splice(this.rows.indexOf(linha), 1); this.rows.splice(referencia ? this.rows.indexOf(referencia) : this.rows.length, 0, linha); }};
+      const tabela = {dataset: {}, tBodies: [tbody], getAttribute() { return 'true'; }};
+      const thead = {rows: [{cells: []}]};
+      const th = {
+        colSpan: 1, rowSpan: 1, classList: {add() {}}, closest(seletor) { return seletor === 'table' ? tabela : seletor === 'thead' ? thead : null; },
+        hasAttribute(nome) { return nome in atributos; }, setAttribute(nome, valor) { atributos[nome] = String(valor); },
+      };
+      thead.rows[0].cells = [th]; tabela.tHead = {querySelectorAll() { return [th]; }};
+      const documento = {readyState: 'complete', body: {}, querySelectorAll() { return [tabela]; }, addEventListener(nome, funcao) { eventos[nome] = funcao; }};
+      m.iniciar(documento);
+      const alvo = {closest() { return th; }};
+      eventos.click({target: alvo});
+      let prevenidos = 0;
+      eventos.keydown({target: alvo, key: 'Enter', preventDefault() { prevenidos += 1; }});
+      eventos.keydown({target: alvo, key: ' ', preventDefault() { prevenidos += 1; }});
+      return [prevenidos, atributos['aria-sort'], tbody.rows.map(linha => linha.cells[0].textContent)];
+    })()"""
+    assert avaliar(expressao) == [2, "descending", ["2", "1"]]
