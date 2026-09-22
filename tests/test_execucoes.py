@@ -7,6 +7,7 @@ import sys
 from datetime import datetime, timedelta
 
 import pytest
+import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -35,6 +36,32 @@ def limpar_registro():
 
 def _campi():
     return [{"id_perfil": "1", "nome_perfil": "Campus A"}, {"id_perfil": "2", "nome_perfil": "Campus B"}]
+
+
+def _leitura_envio(ciclos=None):
+    ciclo = {
+        "CODIGO_CICLO_MATRICULA": "C1",
+        "CO_UNIDADE": "U1",
+        "CÓDIGO DO PORTFÓLIO": "P1",
+        "NOME_CURSO": "TÉCNICO EM X",
+        "TIPO_CURSO": "TECNICO",
+        "CARGA_HORARIA_TOTAL": 1200,
+        "MODALIDADE_ENSINO": "PRESENCIAL",
+        "OFERTA": "ANUAL",
+        "EIXO_TECNOLOGICO": "EIXO1",
+        "TIPO_PROGRAMA_CURSO": "REGULAR",
+        "DT_DATA_INICIO": "2026-01-01",
+        "DT_DATA_FIM_PREVISTO": "2027-01-01",
+        "STATUS_CICLO": "ATIVO",
+        "SITUACAO_CICLO": "ATIVO",
+    }
+    matricula = {
+        "CO_MATRICULA": "M1",
+        "CODIGO_CICLO_MATRICULA": "C1",
+        "STATUS_MATRICULA_SISTEC": "EM_CURSO",
+        "MES_OCORRENCIA_CORRIGIDO": "2026-01-01",
+    }
+    return {"ciclo": ciclos or [("ciclos.csv", pd.DataFrame([ciclo]))], "matricula": [("matriculas.csv", pd.DataFrame([matricula]))]}
 
 
 def test_criar_execucao_monta_fila_ciclos_depois_matriculas():
@@ -237,6 +264,61 @@ def test_fila_vazia_consolida_e_vai_para_previa(monkeypatch):
     assert resultado == {"acao": "encerrar"}
     assert execucao.estado == "previa"
     assert execucao.previa is not None
+
+
+def test_criar_execucao_envio_recusa_admin_com_execucao_nao_terminal():
+    relogio = RelogioFalso()
+    execucoes.criar_execucao("pi@iffarroupilha.edu.br", _campi(), relogio=relogio)
+
+    with pytest.raises(execucoes.ExecucaoInvalida):
+        execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"], relogio=relogio)
+
+
+def test_criar_execucao_envio_aceita_admin_apos_execucao_terminal():
+    relogio = RelogioFalso()
+    anterior = execucoes.criar_execucao("pi@iffarroupilha.edu.br", _campi(), relogio=relogio)
+    anterior.estado = "cancelada"
+
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"], relogio=relogio)
+
+    assert envio is execucoes.obter_do_admin("pi@iffarroupilha.edu.br")
+
+
+def test_criar_execucao_envio_monta_um_par_por_arquivo_e_define_origem():
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["c1.csv", "c2.csv"], ["m1.csv"])
+
+    assert envio.origem == "envio"
+    assert envio.estado == "consolidando"
+    assert [(par.tipo, par.id_perfil, par.nome_perfil) for par in envio.fila] == [
+        ("ciclo", None, "c1.csv"), ("ciclo", None, "c2.csv"), ("matricula", None, "m1.csv")
+    ]
+
+
+def test_criar_execucao_de_baixa_mantem_origem_padrao():
+    baixa = execucoes.criar_execucao("pi@iffarroupilha.edu.br", _campi())
+
+    assert baixa.origem == "baixa"
+
+
+def test_registrar_leitura_preenche_pares_e_leva_envio_para_previa():
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+
+    execucoes.registrar_leitura(envio, _leitura_envio())
+
+    assert [(par.status, par.linhas, par.df is not None) for par in envio.fila] == [("baixado", 1, True), ("baixado", 1, True)]
+    assert envio.estado == "previa"
+    assert envio.previa is not None
+
+
+def test_registrar_leitura_marca_falha_de_consolidacao_sem_previa():
+    primeiro = _leitura_envio()["ciclo"][0][1].iloc[0].to_dict()
+    segundo = {**primeiro, "NOME_CURSO": "DIVERGENTE"}
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["c1.csv", "c2.csv"], ["matriculas.csv"])
+
+    execucoes.registrar_leitura(envio, _leitura_envio([("c1.csv", pd.DataFrame([primeiro])), ("c2.csv", pd.DataFrame([segundo]))]))
+
+    assert envio.estado == "falhou_consolidacao"
+    assert envio.previa is None
 
 
 # ===================== Captura de perfis (roadmap §5.1) =====================

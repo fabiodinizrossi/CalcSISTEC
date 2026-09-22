@@ -54,13 +54,14 @@ class Par:
 
 
 class Execucao:
-    def __init__(self, execucao_id, admin_email, campi, qtd_perfis, historico_id, relogio):
+    def __init__(self, execucao_id, admin_email, campi, qtd_perfis, historico_id, relogio, origem="baixa"):
         self.id = execucao_id
         self.admin_email = admin_email
         self.token = secrets.token_urlsafe(32)
         self.estado = "aguardando_login"
         self.qtd_perfis = qtd_perfis
         self.historico_id = historico_id
+        self.origem = origem
         self.relogio = relogio
         self.pausas = 0
         self.pausada_desde = None
@@ -138,6 +139,34 @@ def criar_execucao(admin_email, campi, historico_id=None, relogio=None):
         execucao = Execucao(execucao_id, admin_email, campi, len(campi), historico_id, relogio)
         _REGISTRO[admin_email] = execucao
         return execucao
+
+
+def criar_execucao_envio(admin_email, nomes_ciclo, nomes_matricula, historico_id=None, relogio=None):
+    """Cria uma execução cuja fila é composta pelos arquivos enviados."""
+    relogio = relogio or _relogio_padrao
+    with _LOCK:
+        atual = _REGISTRO.get(admin_email)
+        if atual is not None and atual.estado not in ESTADOS_TERMINAIS:
+            raise ExecucaoInvalida("já existe uma execução em andamento para este administrador")
+
+        execucao = Execucao(secrets.token_urlsafe(16), admin_email, [], 0, historico_id, relogio, origem="envio")
+        execucao.estado = "consolidando"
+        nomes = [("ciclo", nome) for nome in nomes_ciclo] + [("matricula", nome) for nome in nomes_matricula]
+        execucao.fila = [Par(n, tipo, None, nome) for n, (tipo, nome) in enumerate(nomes, start=1)]
+        _REGISTRO[admin_email] = execucao
+        return execucao
+
+
+def registrar_leitura(execucao, leitura):
+    """Preenche a fila de um envio e consolida os DataFrames recebidos."""
+    for tipo in ("ciclo", "matricula"):
+        pares = [par for par in execucao.fila if par.tipo == tipo]
+        for par, (_nome, df) in zip(pares, leitura[tipo], strict=True):
+            par.df = df
+            par.linhas = len(df)
+            par.assinatura_cabecalho = tuple(sorted(df.columns))
+            par.status = "baixado"
+    _consolidar_ou_falhar(execucao)
 
 
 def obter_por_token(execucao_id, token):
