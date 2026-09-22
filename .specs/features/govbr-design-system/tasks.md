@@ -1839,8 +1839,8 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Roteiro instrui conferir as três rotas, eixo de Percentuais, aviso PROEJA, temas, teclado e celular real sem dizer que recortes avaliam meta legal
-- [ ] Gate build passa; DS-42 só é marcado depois da evidência de dispositivo real informada por Jaline
+- [x] Roteiro instrui conferir as três rotas, eixo de Percentuais, aviso PROEJA, temas, teclado e celular real sem dizer que recortes avaliam meta legal
+- [x] Gate build passa; DS-42 só é marcado depois da evidência de dispositivo real informada por Jaline
 
 **Tests**: none (documentação)
 **Gate**: build

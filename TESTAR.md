@@ -176,5 +176,20 @@ percentuais, datas, células vazias, cabeçalhos com `rowspan`/`colspan` e tecla
   decrescente e crescente. Cabeçalhos de agrupamento e a coluna **Ações** não ordenam.
 - Em 390px, confira que o título público fica em no máximo duas linhas, os filtros ocupam
   a largura do card e somente a região da tabela rola horizontalmente.
+- Nas páginas públicas, confira nesta ordem: **Eficiência Acadêmica** (`/eficiencia`),
+  **Taxa de Evasão Anual** (`/evasao`) e **Percentuais Legais** (`/percentuais-legais`).
+  Em cada uma, leia o contexto e o indicador principal antes do seletor de eixo, da tabela
+  e dos filtros; altere os filtros FIC disponíveis e use **Limpar Filtros** para confirmar
+  o retorno aos valores iniciais.
+- Em **Percentuais Legais**, alterne o eixo da tabela entre Campus, Unidade, Modalidade
+  e Tipo de curso. A tabela é um **recorte exploratório**: as metas legais são avaliadas
+  no conjunto filtrado, não em cada linha ou grupo. Ao filtrar Programa Associado, confira
+  que o aviso sobre a possível distorção do percentual PROEJA continua junto do resumo.
+- Nas três rotas, repita a conferência nos temas claro e escuro. Use teclado para alcançar
+  o seletor de eixo, os filtros, **Limpar Filtros** e os cabeçalhos ordenáveis das tabelas;
+  o foco deve permanecer visível.
+- Antes do cutover, repita esse roteiro em celular real entre 320px e 430px e em uma tela
+  de 1280px ou mais. Registre dispositivo, largura e data em `CUTOVER.md`; o item de
+  validação em celular só pode ser marcado depois dessa evidência.
 - Os testes automáticos: `python -m pytest -q`. Os de JavaScript (`tests/test_js_*.py`) precisam do `node` no PATH
   e são pulados sem ele.
