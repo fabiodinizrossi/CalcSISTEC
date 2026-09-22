@@ -1726,9 +1726,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Com e sem total, a tabela tem `caption`, `th scope="col"`, região rolável nomeada e células numéricas alinháveis; chamada antiga ainda gera a estrutura anterior
-- [ ] Tabelas simples são ordenáveis por clique e teclado; tabela hierárquica de Matrículas permanece excluída da ordenação
-- [ ] Testes em `tests/test_componentes_publicos.py` cobrem compatibilidade, valor brasileiro, vazio e semântica; `tests/test_js_ordenacao_tabelas.py` cobre clique/teclado e `aria-sort`; gate full passa
+- [x] Com e sem total, a tabela tem `caption`, `th scope="col"`, região rolável nomeada e células numéricas alinháveis; chamada antiga ainda gera a estrutura anterior
+- [x] Tabelas simples são ordenáveis por clique e teclado; tabela hierárquica de Matrículas permanece excluída da ordenação
+- [x] Testes em `tests/test_componentes_publicos.py` cobrem compatibilidade, valor brasileiro, vazio e semântica; `tests/test_js_ordenacao_tabelas.py` cobre clique/teclado e `aria-sort`; gate full passa (72 passed)
 
 **Tests**: unit
 **Gate**: full

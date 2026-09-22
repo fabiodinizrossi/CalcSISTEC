@@ -119,3 +119,14 @@ def test_clique_logico_no_cabecalho_alterna_direcao_e_reordena_o_corpo():
       return [primeira, tbody.rows.map(l => l.cells[0].textContent), atributos['aria-sort']];
     })()"""
     assert avaliar(expressao) == [["10", "2", "1"], ["1", "2", "10"], "ascending"]
+
+
+def test_tabela_hierarquica_marcada_como_nao_ordenavel_e_ignorada():
+    expressao = """(() => {
+      const atributos = {'data-no-sort': ''};
+      const tabela = {tBodies: [{}], getAttribute(nome) { return nome === 'data-sortable' ? 'false' : null; }};
+      const th = {colSpan: 1, closest(seletor) { return seletor === 'table' ? tabela : seletor === 'thead' ? {} : null; }, hasAttribute(nome) { return nome in atributos; }};
+      m.ordenar(th);
+      return true;
+    })()"""
+    assert avaliar(expressao) is True

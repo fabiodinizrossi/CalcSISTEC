@@ -100,6 +100,22 @@ def test_tabela_nao_usa_componente_do_ds_que_precisa_de_js():
     exigir_sem_componente_do_ds_que_precisa_de_js(_tabela())
 
 
+def test_variante_de_quadro_tem_regiao_nomeada_numeros_alinhaveis_e_total():
+    raiz = tabela_ds(
+        ["Campus", "IEA"], [["Alegrete", "0,75"]], "IEA por campus",
+        quadro=True, total=["Total", "0,75"],
+    )
+    tabela = [c for c in componentes(raiz) if type(c).__name__ == "Table"][0]
+    regiao = [c for c in componentes(raiz) if getattr(c, "role", None) == "region"][0]
+    celulas = [c for c in componentes(tabela) if type(c).__name__ == "Td"]
+
+    assert raiz.className == "matriz-figma tabela-publica-quadro"
+    assert getattr(regiao, "aria-label") == "IEA por campus"
+    assert tabela.children[-1].children.children[1].className == "num"
+    assert [(textos(c), c.scope) for c in componentes(tabela) if type(c).__name__ == "Th"] == [("Campus", "col"), ("IEA", "col")]
+    assert [(textos(c), c.className) for c in celulas] == [("Alegrete", None), ("0,75", "num"), ("Total", None), ("0,75", "num")]
+
+
 from app.components.filters import EIXOS, axis_selector, fic_toggle
 
 
