@@ -7,14 +7,22 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 import dash
 from dash import Input, Output, callback, dcc, html
 
-from app.components.filters import clear_filters_button, fic_toggle, filter_panel, select_filter
+from app.components.filters import clear_filters_button, fic_toggle, select_filter
 from app.components.mensagem import mensagem_ds
+from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
 from app.components.tabela import tabela_ds
-from app.data.consulta import ano_base_ativo, carregar_matriculas, dataset_disponivel
+from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_publicacao, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.matriculas import filtrar_fic, taxa_evasao
 
 dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesquisa Institucional - SISTEC")
+
+
+def _data_curta(valor):
+    if not valor:
+        return None
+    texto = str(valor)[:10]
+    return "/".join(reversed(texto.split("-"))) if "-" in texto else texto
 
 
 def layout():
@@ -22,17 +30,23 @@ def layout():
         return mensagem_ds("info", "Ainda não há dados publicados.")
 
     df = carregar_matriculas()
+    filtros = html.Div(
+        [
+            select_filter("evasao-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+            select_filter("evasao-filtro-tipo-curso", "Tipo de Curso", sorted(df["tipo_curso_pnp"].dropna().unique())),
+            fic_toggle("evasao-fic", default="sem_fic"),
+            clear_filters_button("evasao-limpar"),
+        ],
+        className="card-filtros",
+    )
     return html.Div(
         [
-            html.H1("Taxa de Evasão Anual"),
-            fic_toggle("evasao-fic", default="sem_fic"),
+            cabecalho_pagina("Taxa de Evasão Anual", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
+            dcc.Loading(html.Div(id="evasao-kpi", className="kpis-figma")),
             dcc.Loading(html.Div(id="evasao-heatmap")),
-            filter_panel(
-                select_filter("evasao-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
-                select_filter("evasao-filtro-tipo-curso", "Tipo de Curso", sorted(df["tipo_curso_pnp"].dropna().unique())),
-            ),
-            clear_filters_button("evasao-limpar"),
-        ]
+            filtros,
+        ],
+        className="painel-dashboard",
     )
 
 
@@ -68,6 +82,7 @@ _LABEL_EVASAO = {"evasao-alta": "Alta", "evasao-media": "Média", "evasao-baixa"
 
 
 @callback(
+    Output("evasao-kpi", "children"),
     Output("evasao-heatmap", "children"),
     Input("evasao-fic", "value"),
     Input("evasao-filtro-campus", "value"),
@@ -80,7 +95,7 @@ def atualizar(fic, campus, tipo_curso):
     filtros = FiltrosAtivos(ano_base=ano_base, incluir_fic=incluir_fic)
 
     if df.empty:
-        return mensagem_ds("info", "Sem dados para os filtros selecionados.")
+        return html.Div(), mensagem_ds("info", "Sem dados para os filtros selecionados.")
 
     linhas = []
     for cidade, grupo in df.groupby("cidade", dropna=False):
@@ -89,7 +104,9 @@ def atualizar(fic, campus, tipo_curso):
         percentual = f"{taxa:.1%}".replace(".", ",")
         linhas.append([cidade, {"valor": f"{percentual} ({_LABEL_EVASAO.get(classe, '—')})", "classe": classe or None}])
 
-    return tabela_ds(["Campus", "Taxa de Evasão"], linhas, "Taxa de evasão por campus")
+    taxa_total = taxa_evasao(df, filtros)
+    kpi = cartoes_indicadores([cartao_indicador("Taxa de evasão anual", taxa_total, formato="#,0.00", destaque=True)])
+    return kpi, tabela_ds(["Campus", "Taxa de Evasão"], linhas, "Taxa de evasão por campus", quadro=True)
 
 
 @callback(

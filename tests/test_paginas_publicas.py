@@ -301,17 +301,18 @@ def _celulas_de_evasao(tabela):
 
 
 def test_evasao_mostra_percentual_e_texto_da_faixa_com_a_classe_de_cor(evasao_com_dados):
-    tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
+    _, tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
     assert _celulas_de_evasao(tabela) == {
-        "Alta": ("50,0% (Alta)", "evasao-alta"),
-        "Media": ("20,0% (Média)", "evasao-media"),
-        "Baixa": ("0,0% (Baixa)", "evasao-baixa"),
+        "Alta": ("50,0% (Alta)", "evasao-alta num"),
+        "Media": ("20,0% (Média)", "evasao-media num"),
+        "Baixa": ("0,0% (Baixa)", "evasao-baixa num"),
     }
 
 
-def test_evasao_e_br_table_sem_dbc_nem_wrapper_antigo(evasao_com_dados):
-    tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
-    assert tabela.className == "br-table"
+def test_evasao_mostra_taxa_agregada_destacada_antes_da_tabela_publica(evasao_com_dados):
+    kpi, tabela = evasao_com_dados.atualizar("com_fic", "__todos__", "__todos__")
+    assert textos(com_classe(kpi, "kpi-figma")[0]) == "Taxa de evasão anual 0,20"
+    assert tabela.className == "matriz-figma tabela-publica-quadro"
     assert "table-scroll-wrapper" not in classes(tabela)
     assert not [c for c in componentes(tabela) if type(c).__module__.startswith("dash_bootstrap_components")]
     exigir_sem_componente_do_ds_que_precisa_de_js(tabela)
@@ -323,6 +324,14 @@ def test_evasao_sem_dados_mostra_br_message_info(monkeypatch):
     layout = pagina_evasao.layout()
     assert {"br-message", "info"} <= set(layout.className.split())
     assert SEM_DADOS in textos(layout)
+
+
+def test_evasao_recorte_vazio_nao_exibe_cartao_zero_e_limpar_preserva_sem_fic(evasao_com_dados):
+    kpi, aviso = evasao_com_dados.atualizar("sem_fic", "Inexistente", "__todos__")
+    assert textos(kpi) == ""
+    assert "Sem dados para os filtros selecionados." in textos(aviso)
+    valores_limpos = evasao_com_dados.limpar_filtros(1)
+    assert valores_limpos == ("__todos__", "__todos__", "sem_fic")
 
 
 @pytest.fixture

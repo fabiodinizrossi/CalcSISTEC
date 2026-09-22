@@ -1794,9 +1794,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Cartão principal mostra a taxa do conjunto filtrado, e cada linha mostra taxa do campus com percentual brasileiro e Baixa/Média/Alta
-- [ ] Recorte vazio mostra mensagem informativa sem cartão `0`; zero verdadeiro permanece `0,0%`; limpar retorna a `sem_fic` e Todos
-- [ ] Testes em `tests/test_paginas_publicas.py` verificam resultado com `taxa_evasao`, filtro FIC e estrutura; gate full passa
+- [x] Cartão principal mostra a taxa do conjunto filtrado, e cada linha mostra taxa do campus com percentual brasileiro e Baixa/Média/Alta
+- [x] Recorte vazio mostra mensagem informativa sem cartão `0`; zero verdadeiro permanece `0,0%`; limpar retorna a `sem_fic` e Todos
+- [x] Testes em `tests/test_paginas_publicas.py` verificam resultado com `taxa_evasao`, filtro FIC e estrutura; gate full passa (110 passed)
 
 **Tests**: unit
 **Gate**: full
