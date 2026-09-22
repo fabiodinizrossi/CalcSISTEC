@@ -276,7 +276,7 @@ def _tabela_matriculas(df, eixos):
                 html.Table(
                     [colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)],
                     className="tabela-landing tabela-hierarquica",
-                    **{"data-sortable": "false"},
+                    **{"data-sortable": "true"},
                 ),
                 className="rolagem-tabela",
                 tabIndex="0",

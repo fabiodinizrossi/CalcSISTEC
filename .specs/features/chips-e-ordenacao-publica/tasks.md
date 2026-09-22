@@ -120,6 +120,8 @@ T5 → T6 → T7
 
 ### T6: Reativar ordenação de blocos em Matrículas
 
+**Status**: Complete
+
 **What**: remover a exclusão da tabela hierárquica e manter colunas agrupadoras não ordenáveis.
 **Where**: `app/pages/matriculas.py`
 **Depends on**: T5
@@ -128,8 +130,8 @@ T5 → T6 → T7
 **Gate**: Full
 **Done when**:
 
-- [ ] A tabela hierárquica declara-se ordenável.
-- [ ] Colunas `data-no-sort` continuam excluídas.
+- [x] A tabela hierárquica declara-se ordenável.
+- [x] Colunas `data-no-sort` continuam excluídas.
 
 ### T7: Garantir reinicialização da ordenação após atualização do Dash
 

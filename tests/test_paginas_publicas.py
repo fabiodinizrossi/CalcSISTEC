@@ -171,13 +171,15 @@ def test_matriculas_tabela_vem_em_rolagem_tabela_acessivel(matriculas_com_dados)
     assert getattr(wrapper, "aria-label") == "Tabela de matrículas por campus"
 
 
-def test_matriculas_hierarquica_fica_excluida_da_ordenacao_compartilhada(matriculas_com_dados):
+def test_matriculas_hierarquica_participa_da_ordenacao_compartilhada(matriculas_com_dados):
     _, matriz = matriculas_com_dados.atualizar(
         "com_fic", ["campus", "nome_curso"], "__todos__", "__todos__", "__todos__"
     )
     tabelas = [c for c in componentes(matriz) if type(c).__name__ == "Table"]
     assert len(tabelas) == 1
-    assert getattr(tabelas[0], "data-sortable", None) == "false"
+    assert getattr(tabelas[0], "data-sortable", None) == "true"
+    cabecalhos = [c for c in componentes(tabelas[0]) if type(c).__name__ == "Th"]
+    assert getattr(cabecalhos[1], "data-no-sort", None) == "true"
 
 
 def test_matriculas_sem_dados_mostra_br_message_info(monkeypatch):
