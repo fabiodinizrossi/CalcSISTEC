@@ -1704,9 +1704,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Helper recebe textos/valores já calculados e não importa `app/domain/` nem executa consultas
-- [ ] Data ausente omite só `Atualizado em`; `0` e `dado incompleto` ficam distintos; DOM põe título antes do valor
-- [ ] Testes de componente em `tests/test_componentes_publicos.py` cobrem os dois temas por classe e os três estados de valor; gate quick passa
+- [x] Helper recebe textos/valores já calculados e não importa `app/domain/` nem executa consultas
+- [x] Data ausente omite só `Atualizado em`; `0` e `dado incompleto` ficam distintos; DOM põe título antes do valor
+- [x] Testes de componente em `tests/test_componentes_publicos.py` cobrem os dois temas por classe e os três estados de valor; gate quick passa (39 passed)
 
 **Tests**: unit
 **Gate**: quick

@@ -202,3 +202,37 @@ def test_mensagem_ds_usa_a_classe_do_tipo_e_o_papel_aria_da_spec(tipo, papel):
     assert {"br-message", tipo} <= set(mensagem.className.split())
     assert mensagem.role == papel
     assert "Texto" in textos(mensagem)
+
+
+from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
+
+
+def test_cabecalho_publico_tem_contexto_e_omite_somente_data_ausente():
+    completo = cabecalho_pagina("Eficiência Acadêmica", 2026, "22/09/2026")
+    sem_data = cabecalho_pagina("Eficiência Acadêmica", 2026)
+
+    assert textos(completo) == "Eficiência Acadêmica Acompanhamento Sistec | Ano PNP 2026 Atualizado em 22/09/2026"
+    assert textos(sem_data) == "Eficiência Acadêmica Acompanhamento Sistec | Ano PNP 2026"
+    assert len(completo.children) == 2
+    assert len(sem_data.children) == 2
+    assert sem_data.children[1] is None
+
+
+def test_cartao_indicador_mantem_titulo_antes_do_valor_e_distingue_zero_de_incompleto():
+    zero = cartao_indicador("IEA", 0, "#,0.00", empty_state="dado incompleto", destaque=True)
+    incompleto = cartao_indicador("IEA", None, "#,0.00", empty_state="dado incompleto")
+
+    assert textos(zero) == "IEA 0,00"
+    assert zero.className == "kpi-figma kpi-figma--destaque"
+    assert zero.children[0].className == "rotulo"
+    assert zero.children[1].className == "valor"
+    assert textos(incompleto) == "IEA dado incompleto"
+    assert incompleto.children[1].className == "valor valor--texto"
+
+
+@pytest.mark.parametrize("tema", ["claro", "escuro"])
+def test_cartoes_publicos_usam_classes_semanticas_iguais_nos_dois_temas(tema):
+    grade = cartoes_indicadores([cartao_indicador("Taxa", 0, destaque=tema == "claro")])
+
+    assert grade.className == "kpis-figma"
+    assert "kpi-figma" in grade.children[0].className.split()
