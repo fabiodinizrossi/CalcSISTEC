@@ -89,9 +89,10 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
   body{
     display: grid;
     grid-template-columns: var(--menu-largura) 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
       "cabecalho cabecalho"
+      "menu      breadcrumb"
       "menu      conteudo"
       "rodape    rodape";
     min-height: 100vh;
@@ -99,8 +100,9 @@ button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-tri
   }
   body > header.br-header{ grid-area: cabecalho; }
   body > .br-menu{ grid-area: menu; }
+  body > .br-breadcrumb{ grid-area: breadcrumb; }
+  body > main#main-content{ grid-area: conteudo; }
   body > footer.br-footer{ grid-area: rodape; }
-  body > *:not(header.br-header):not(.br-menu):not(footer.br-footer){ grid-column: 2; }
 
   .br-menu{
     position: static;

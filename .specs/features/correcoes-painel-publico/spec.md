@@ -77,7 +77,7 @@ O botão de limpeza precisa restaurar todos os controles alteráveis do painel. 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
 | PUBFIX-01 | Restaurar a visão padrão | Execute | Verified |
-| PUBFIX-02 | Exibir o rodapé após o conteúdo | Execute | Pending |
+| PUBFIX-02 | Exibir o rodapé após o conteúdo | Execute | Verified |
 | PUBFIX-03 | Calcular percentuais no ano publicado | Execute | Pending |
 | PUBFIX-04 | Ano-base sem registros | Execute | Pending |
 

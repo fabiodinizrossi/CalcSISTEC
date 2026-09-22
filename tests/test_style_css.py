@@ -105,6 +105,17 @@ def test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao():
     assert re.search(r"\.header-menu-trigger\s*\{[^}]*display:\s*none", bloco)
 
 
+def test_grid_desktop_ordena_breadcrumb_conteudo_e_rodape_sem_auto_posicionamento_generico():
+    bloco = _bloco_media("@media (min-width: 992px)")
+    assert re.search(
+        r'grid-template-areas:\s*"cabecalho cabecalho"\s*"menu\s+breadcrumb"\s*"menu\s+conteudo"\s*"rodape\s+rodape"',
+        bloco,
+    )
+    assert re.search(r"body > \.br-breadcrumb\s*\{\s*grid-area:\s*breadcrumb", bloco)
+    assert re.search(r"body > main#main-content\s*\{\s*grid-area:\s*conteudo", bloco)
+    assert not re.search(r"body > \*:not\(", bloco)
+
+
 def test_sem_js_o_menu_fica_sempre_visivel():
     assert re.search(r"\.ds-sem-js \.br-menu \.menu-container\s*\{\s*display:\s*block", SEM_COMENTARIOS)
 
