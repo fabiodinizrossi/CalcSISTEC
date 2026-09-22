@@ -148,6 +148,20 @@ T5 → T6 → T7
 - [x] Uma tabela adicionada depois da inicialização recebe foco, título e `aria-sort`.
 - [x] Clique e teclado alternam direção e nunca separam descendentes do pai.
 
+### T8: Cobrir inserção dinâmica observada
+
+**Status**: Complete
+**What**: testar a tabela adicionada após a inicialização para proteger o `MutationObserver`.
+**Where**: `tests/test_js_ordenacao_tabelas.py`
+**Depends on**: T7
+**Requirement**: SORT-01
+**Tests**: unit (`tests/test_js_ordenacao_tabelas.py`)
+**Gate**: Quick
+**Done when**:
+
+- [x] Remover o observador faz o teste falhar.
+- [x] A tabela inserida recebe foco, título e `aria-sort`.
+
 ## Cross-checks
 
 | Dependency declared | Diagram edge | Match |

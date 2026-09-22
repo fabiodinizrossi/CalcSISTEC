@@ -141,3 +141,24 @@ def test_tabela_hierarquica_ordenavel_prepara_cabecalho_e_preserva_coluna_exclui
       return [ordenavel.classList.adicionadas, ordenavel.atributos['tabindex'], ordenavel.atributos['aria-sort'], ordenavel.atributos.title, excluido.classList.adicionadas];
     })()"""
     assert avaliar(expressao) == [["cabecalho-ordenavel"], "0", "none", "Ordenar por esta coluna", []]
+
+
+def test_tabela_inserida_pelo_dash_e_preparada_pelo_observador():
+    expressao = """(() => {
+      let observar;
+      global.MutationObserver = class { constructor(callback) { observar = callback; } observe() {} };
+      const atributos = {};
+      const tabela = {nodeType: 1, dataset: {}, tBodies: [{}], getAttribute() { return 'true'; }};
+      const th = {
+        colSpan: 1, classList: {add() {}}, closest(seletor) { return seletor === 'table' ? tabela : seletor === 'thead' ? {} : null; },
+        hasAttribute(nome) { return nome in atributos; }, setAttribute(nome, valor) { atributos[nome] = String(valor); },
+      };
+      tabela.tHead = {querySelectorAll() { return [th]; }};
+      tabela.matches = seletor => seletor === 'table';
+      tabela.closest = () => null;
+      const documento = {readyState: 'complete', body: {}, querySelectorAll() { return []; }, addEventListener() {}};
+      m.iniciar(documento);
+      observar([{addedNodes: [tabela]}]);
+      return [atributos.tabindex, atributos['aria-sort'], atributos.title];
+    })()"""
+    assert avaliar(expressao) == ["0", "none", "Ordenar por esta coluna"]
