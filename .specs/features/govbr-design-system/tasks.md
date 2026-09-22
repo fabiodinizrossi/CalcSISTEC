@@ -1748,9 +1748,9 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Cartão principal tem a mesma superfície azul suave e demais cartões a superfície neutra; cabeçalhos de tabela usam o mesmo azul e a mesma tipografia em todas as rotas
-- [ ] Layout não usa cor literal, nova folha Bootstrap nem ponto de quebra diferente de 576/992/1280/1600px; foco e contraste seguem DS-99
-- [ ] `tests/test_style_css.py` e `tests/test_contraste_tema.py` cobrem as classes novas; gate full passa
+- [x] Cartão principal tem a mesma superfície azul suave e demais cartões a superfície neutra; cabeçalhos de tabela usam o mesmo azul e a mesma tipografia em todas as rotas
+- [x] Layout não usa cor literal, nova folha Bootstrap nem ponto de quebra diferente de 576/992/1280/1600px; foco e contraste seguem DS-99
+- [x] `tests/test_style_css.py` e `tests/test_contraste_tema.py` cobrem as classes novas; gate full passa (77 passed)
 
 **Tests**: unit (estático)
 **Gate**: full

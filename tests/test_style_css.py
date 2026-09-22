@@ -167,3 +167,10 @@ def test_a_tabela_rola_na_horizontal_com_min_width():
 def test_cabecalho_pagina_quebra_linha_na_regra_base():
     corpo = _regra(".painel-landing .cabecalho-pagina")
     assert re.search(r"flex-wrap:\s*wrap", corpo)
+
+
+def test_dashboard_compartilhado_reusa_hierarquia_e_tabela_publica_sem_cor_literal():
+    assert ".painel-dashboard" in SEM_COMENTARIOS
+    assert ".tabela-publica-quadro .tabela-publica thead th" in SEM_COMENTARIOS
+    assert "background: var(--color-primary-default)" in _regra(".tabela-publica-quadro .tabela-publica thead th")
+    assert "text-align: right" in _regra(".tabela-publica-quadro .tabela-publica .num")
