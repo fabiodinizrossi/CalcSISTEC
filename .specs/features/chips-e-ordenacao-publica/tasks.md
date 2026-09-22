@@ -90,6 +90,8 @@ T5 → T6 → T7
 
 ### T4: Aplicar chips à Taxa de Evasão
 
+**Status**: Complete
+
 **What**: adicionar o seletor e estado ordenado de chips e agrupar a tabela de evasão pelos eixos ativos.
 **Where**: `app/pages/evasao.py`
 **Depends on**: T3
@@ -98,8 +100,8 @@ T5 → T6 → T7
 **Gate**: Full
 **Done when**:
 
-- [ ] A página possui os mesmos seis chips e reset Campus.
-- [ ] Taxas e faixas de evasão continuam corretas em cada grupo.
+- [x] A página possui os mesmos seis chips e reset Campus.
+- [x] Taxas e faixas de evasão continuam corretas em cada grupo.
 
 ### T5: Aplicar chips aos Percentuais Legais
 

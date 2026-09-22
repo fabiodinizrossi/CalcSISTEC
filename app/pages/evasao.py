@@ -5,15 +5,16 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 """
 
 import dash
-from dash import Input, Output, callback, dcc, html
+from dash import Input, Output, State, callback, dcc, html
 
-from app.components.filters import clear_filters_button, fic_toggle, select_filter
+from app.components.filters import EIXOS, axis_selector, clear_filters_button, fic_toggle, ordenar_eixos, select_filter
 from app.components.mensagem import mensagem_ds
 from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
-from app.components.tabela import tabela_ds
+from app.components.tabela import tabela_hierarquica_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_publicacao, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
 from app.domain.matriculas import filtrar_fic, taxa_evasao
+from app.domain.shared import coluna_para_eixo
 
 dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesquisa Institucional - SISTEC")
 
@@ -43,6 +44,8 @@ def layout():
         [
             cabecalho_pagina("Taxa de Evasão Anual", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
             dcc.Loading(html.Div(id="evasao-kpi", className="kpis-figma")),
+            axis_selector("evasao-eixo", default="campus"),
+            dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
             dcc.Loading(html.Div(id="evasao-heatmap")),
             filtros,
         ],
@@ -82,13 +85,23 @@ _LABEL_EVASAO = {"evasao-alta": "Alta", "evasao-media": "Média", "evasao-baixa"
 
 
 @callback(
+    Output("evasao-eixos-ordenados", "data"),
+    Input("evasao-eixo", "value"),
+    State("evasao-eixos-ordenados", "data"),
+)
+def atualizar_ordem_eixos(marcados, ordem_anterior):
+    return ordenar_eixos(marcados, ordem_anterior)
+
+
+@callback(
     Output("evasao-kpi", "children"),
     Output("evasao-heatmap", "children"),
     Input("evasao-fic", "value"),
+    Input("evasao-eixos-ordenados", "data"),
     Input("evasao-filtro-campus", "value"),
     Input("evasao-filtro-tipo-curso", "value"),
 )
-def atualizar(fic, campus, tipo_curso):
+def atualizar(fic, eixos, campus, tipo_curso):
     ano_base = ano_base_ativo() or 2026
     incluir_fic = fic == "com_fic"
     df = _filtrar(carregar_matriculas(), campus, tipo_curso, incluir_fic)
@@ -97,24 +110,32 @@ def atualizar(fic, campus, tipo_curso):
     if df.empty:
         return html.Div(), mensagem_ds("info", "Sem dados para os filtros selecionados.")
 
-    linhas = []
-    for cidade, grupo in df.groupby("cidade", dropna=False):
+    eixos = ordenar_eixos(eixos if isinstance(eixos, list) else [eixos], eixos if isinstance(eixos, list) else [eixos])
+
+    def metricas(grupo):
         taxa = taxa_evasao(grupo, filtros)
         classe = _classe_evasao(taxa)
         percentual = f"{taxa:.1%}".replace(".", ",")
-        linhas.append([cidade, {"valor": f"{percentual} ({_LABEL_EVASAO.get(classe, '—')})", "classe": classe or None}])
+        return [{"valor": f"{percentual} ({_LABEL_EVASAO.get(classe, '—')})", "classe": classe or None}]
 
     taxa_total = taxa_evasao(df, filtros)
     kpi = cartoes_indicadores([cartao_indicador("Taxa de evasão anual", taxa_total, formato="#,0.00", destaque=True)])
-    return kpi, tabela_ds(["Campus", "Taxa de Evasão"], linhas, "Taxa de evasão por campus", quadro=True)
+    colunas_eixos = {eixo: "cidade" if eixo == "campus" else coluna_para_eixo(eixo) for eixo in (opcao["value"] for opcao in EIXOS)}
+    rotulos = {opcao["value"]: opcao["label"] for opcao in EIXOS}
+    tabela = tabela_hierarquica_ds(
+        df, eixos, colunas_eixos, rotulos, ["Taxa de Evasão"], "Taxa de evasão por recorte selecionado", metricas,
+        metricas(df),
+    )
+    return kpi, tabela
 
 
 @callback(
     Output("evasao-filtro-campus", "value"),
     Output("evasao-filtro-tipo-curso", "value"),
     Output("evasao-fic", "value"),
+    Output("evasao-eixo", "value"),
     Input("evasao-limpar", "n_clicks"),
     prevent_initial_call=True,
 )
 def limpar_filtros(_n_clicks):
-    return "__todos__", "__todos__", "sem_fic"
+    return "__todos__", "__todos__", "sem_fic", ["campus"]
