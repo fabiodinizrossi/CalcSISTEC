@@ -38,7 +38,7 @@ T2 → T3 → T4 → T5
 ### Phase 3: Ordenação resiliente
 
 ```
-T5 → T6 → T7
+T5 → T6 → T7 → T8
 ```
 
 ## Task Breakdown
@@ -172,6 +172,7 @@ T5 → T6 → T7
 | T5 depends on T4 | T4 → T5 | ✅ |
 | T6 depends on T5 | T5 → T6 | ✅ |
 | T7 depends on T6 | T6 → T7 | ✅ |
+| T8 depends on T7 | T7 → T8 | ✅ |
 
 | Task | Test co-located with deliverable | Match |
 | --- | --- | --- |
