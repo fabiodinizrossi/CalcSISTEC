@@ -46,14 +46,11 @@
 
 Estado revisado em 2026-09-22. As verificações usam `uv`, `pytest`, `node` e `git`.
 
-- **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: T58 a T65 concluídas e verificadas independentemente.
-- **Completed**: extensão pública T58–T65 nos commits `9816bff`, `0bff60a`, `d059945`, `9f014cd`, `ba5756d`, `6338d8d`, `6b71457` e `5d3f3c8`; relatório independente em `validation.md` (PASS).
-- **In-progress**: nenhuma tarefa de código.
-- **Blocker humano**: DS-42 exige teste de Jaline em celular real, com dispositivo, largura e data registrados em `CUTOVER.md`; não é falha técnica da extensão.
-- **Verificação final**: compilação e 574 testes passaram; o sensor do verificador matou 2 de 2 mutações. `verificar_prontidao_cutover.py` permanece NO-GO apenas por credenciais administrativas e HTTPS ausentes no ambiente local.
+- **Feature**: `.specs/features/correcoes-painel-publico`
+- **Phase / Task**: concluída e validada.
+- **Completed**: reset completo dos filtros coberto no commit `07a8c22`; grid do shell corrigido em `4cf9487`; Percentuais Legais restringidos ao ano-base ativo em `0f6149a`; validação em `af820d4`.
+- **Verificação final**: 34 testes de páginas públicas e 44 de CSS passaram. O sensor alterou `== ano_base` para `!= ano_base` em worktree isolado e o teste falhou, confirmando a detecção. `pytest` na raiz é inválido porque coleta diretórios arquivados em `APAGAR/` sem permissão.
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto.
 - **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`).
-- **Ambiente**: `app/data/sistec.db` foi restaurado ao hash original após a inspeção com dados sintéticos; nenhum servidor ficou rodando.
-- **Working tree**: diretórios locais não rastreados `.agents/` e `.test-tmp*/`; não os incluir sem conferir a origem.
+- **Working tree**: diretórios locais não rastreados `.agents/`, `.test-tmp*/` e `.verifier-scratch-t9/`; não os incluir sem conferir a origem.
 - **Branch**: migracao-dash-gov-br.
