@@ -105,6 +105,8 @@ T5 → T6 → T7
 
 ### T5: Aplicar chips aos Percentuais Legais
 
+**Status**: Complete
+
 **What**: usar chips ordenados na tabela exploratória, preservando cartões e total geral.
 **Where**: `app/pages/percentuais_legais.py`
 **Depends on**: T4
@@ -113,8 +115,8 @@ T5 → T6 → T7
 **Gate**: Full
 **Done when**:
 
-- [ ] A página agrupa por múltiplos eixos na ordem de seleção.
-- [ ] O reset seleciona somente Campus e os percentuais gerais não mudam.
+- [x] A página agrupa por múltiplos eixos na ordem de seleção.
+- [x] O reset seleciona somente Campus e os percentuais gerais não mudam.
 
 ### T6: Reativar ordenação de blocos em Matrículas
 

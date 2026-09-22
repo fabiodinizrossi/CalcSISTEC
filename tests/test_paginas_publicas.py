@@ -419,7 +419,7 @@ def test_percentuais_tabela_por_eixo_usa_denominador_proprio_e_total_dos_cartoes
             f"{matriculas_equivalentes(grupo).sum():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
         ])
     assert linhas == esperados + [["Total", "66,7%", "0,0%", "0,0%", "3,00"]]
-    assert "Recorte exploratório por Campus" in textos(tabela)
+    assert "Recorte exploratório." in textos(tabela)
     assert "Técnico 66,7%" in textos(cartoes)
 
 
@@ -428,10 +428,10 @@ def test_percentuais_layout_ordena_contexto_cartoes_eixo_tabela_e_filtros(percen
     layout = percentuais_com_dados.layout()
     assert layout.className == "painel-dashboard"
     assert [getattr(filho, "className", None) for filho in layout.children] == [
-        "cabecalho-pagina", None, "filter-item", None, "card-filtros",
+        "cabecalho-pagina", None, "card-chips", None, None, "card-filtros",
     ]
     assert layout.children[1].children.className == "kpis-figma"
-    assert "br-radio" in classes(layout.children[2])
+    assert "chips-grupo" in classes(layout.children[2])
     assert "Atualizado em 22/09/2026" in textos(layout.children[0])
 
 
@@ -451,7 +451,7 @@ def test_percentuais_recorte_vazio_nao_transforma_dado_incompleto_em_zero(percen
     assert "Sem dados para os filtros selecionados." in textos(cartoes)
     assert textos(tabela) == ""
     assert "0,0%" not in textos(cartoes)
-    assert percentuais_com_dados.limpar_filtros(1) == ("__todos__", "__todos__", "campus")
+    assert percentuais_com_dados.limpar_filtros(1) == ("__todos__", "__todos__", ["campus"])
 
 
 def test_percentuais_sem_dados_mostra_br_message_info(monkeypatch):

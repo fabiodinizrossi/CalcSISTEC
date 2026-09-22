@@ -6,12 +6,12 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 """
 
 import dash
-from dash import Input, Output, callback, dcc, html
+from dash import Input, Output, State, callback, dcc, html
 
-from app.components.filters import axis_selector, clear_filters_button, select_filter
+from app.components.filters import EIXOS, axis_selector, clear_filters_button, ordenar_eixos, select_filter
 from app.components.mensagem import mensagem_ds
 from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
-from app.components.tabela import tabela_ds
+from app.components.tabela import tabela_hierarquica_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_publicacao, dataset_disponivel
 from app.domain.percentuais_legais import (
     META_PROEJA,
@@ -73,6 +73,7 @@ def layout():
             cabecalho_pagina("Percentuais Legais", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
             dcc.Loading(html.Div(id="percentuais-cartoes", className="kpis-figma")),
             axis_selector("percentuais-eixo", default="campus"),
+            dcc.Store(id="percentuais-eixos-ordenados", data=["campus"]),
             dcc.Loading(html.Div(id="percentuais-tabela")),
             filtros,
         ],
@@ -89,14 +90,23 @@ def _base_percentuais(df):
 
 
 @callback(
+    Output("percentuais-eixos-ordenados", "data"),
+    Input("percentuais-eixo", "value"),
+    State("percentuais-eixos-ordenados", "data"),
+)
+def atualizar_ordem_eixos(marcados, ordem_anterior):
+    return ordenar_eixos(marcados, ordem_anterior)
+
+
+@callback(
     Output("percentuais-cartoes", "children"),
     Output("percentuais-tabela", "children"),
     Output("percentuais-aviso-proeja", "children"),
-    Input("percentuais-eixo", "value"),
+    Input("percentuais-eixos-ordenados", "data"),
     Input("percentuais-filtro-campus", "value"),
     Input("percentuais-filtro-programa", "value"),
 )
-def atualizar(eixo, campus, programa):
+def atualizar(eixos, campus, programa):
     ano_base_ativo()
     df = carregar_matriculas()
     if campus and campus != "__todos__":
@@ -144,32 +154,16 @@ def atualizar(eixo, campus, programa):
             cartao_indicador("Matrículas equivalentes", equivalentes_total, formato="#,0.00"),
         ]
     )
-    eixo = eixo or "campus"
-    coluna_eixo = "cidade" if eixo == "campus" else coluna_para_eixo(eixo)
-    rotulo_eixo = _rotulo_eixo(eixo)
-    linhas = []
-    for chave, grupo in base.groupby(coluna_eixo, dropna=False):
-        linhas.append(
-            [
-                chave,
-                _formatar_percentual(percentual_tecnico(grupo)),
-                _formatar_percentual(percentual_professores(grupo)),
-                _formatar_percentual(percentual_proeja(grupo)),
-                _formatar_equivalentes(matriculas_equivalentes(grupo).sum()),
-            ]
-        )
-    tabela = tabela_ds(
-        [rotulo_eixo, "Técnico", "Formação de Professores", "PROEJA", "Matrículas equivalentes"],
-        linhas,
-        f"Recorte exploratório por {rotulo_eixo}. Os percentuais não avaliam o cumprimento da meta por grupo.",
-        quadro=True,
-        total=[
-            "Total",
-            _formatar_percentual(pt),
-            _formatar_percentual(pp),
-            _formatar_percentual(pj),
-            _formatar_equivalentes(equivalentes_total),
-        ],
+    eixos = ordenar_eixos(eixos if isinstance(eixos, list) else [eixos], eixos if isinstance(eixos, list) else [eixos])
+    colunas_eixos = {eixo: "cidade" if eixo == "campus" else coluna_para_eixo(eixo) for eixo in (opcao["value"] for opcao in EIXOS)}
+    rotulos = {opcao["value"]: opcao["label"] for opcao in EIXOS}
+    def metricas(grupo):
+        return [_formatar_percentual(percentual_tecnico(grupo)), _formatar_percentual(percentual_professores(grupo)), _formatar_percentual(percentual_proeja(grupo)), _formatar_equivalentes(matriculas_equivalentes(grupo).sum())]
+    tabela = tabela_hierarquica_ds(
+        base, eixos, colunas_eixos, rotulos,
+        ["Técnico", "Formação de Professores", "PROEJA", "Matrículas equivalentes"],
+        "Recorte exploratório. Os percentuais não avaliam o cumprimento da meta por grupo.", metricas,
+        [_formatar_percentual(pt), _formatar_percentual(pp), _formatar_percentual(pj), _formatar_equivalentes(equivalentes_total)],
     )
 
     return cartoes, tabela, aviso
@@ -183,4 +177,4 @@ def atualizar(eixo, campus, programa):
     prevent_initial_call=True,
 )
 def limpar_filtros(_n_clicks):
-    return "__todos__", "__todos__", "campus"
+    return "__todos__", "__todos__", ["campus"]
