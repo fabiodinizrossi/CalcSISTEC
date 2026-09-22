@@ -38,7 +38,7 @@ Sensor leve em worktree descartada. A árvore real ficou idêntica ao baseline a
 | M2 | `app/pages/matriculas.py:249` | Remove `data-no-sort` de Ano PNP. | ✅ `tests/test_paginas_publicas.py:174`–`tests/test_paginas_publicas.py:182` falhou. |
 | M3 | `app/static/js/ordenacao-tabelas.js:184` | Desabilita o `MutationObserver` que prepara tabelas inseridas pelo Dash. | ✅ MORTO: `tests/test_js_ordenacao_tabelas.py:146`–`tests/test_js_ordenacao_tabelas.py:164` falhou. |
 
-**Sensor depth**: lightweight. **Result**: 3/3 killed. O sensor passou, mas o gap independente de eventos reais mantém o veredito FAIL ❌.
+**Sensor depth**: lightweight. **Result**: 3/3 killed. O teste T9 cobre adicionalmente os eventos delegados de clique, Enter e Espaço.
 
 ## Code Quality
 
