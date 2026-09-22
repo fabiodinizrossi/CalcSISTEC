@@ -12,14 +12,10 @@ O relógio é injetável (`relogio`, um `callable` sem argumento devolvendo
 `datetime`) para os testes de tempo (T023) não dependerem de `sleep` real.
 """
 
-import io
 import secrets
 import threading
 from datetime import datetime, timedelta
 
-import pandas as pd
-
-from app.sistec.colunas import aplicar_permissao
 from app.sistec.urls import TEMPO_MAX_EXPORTACAO_S, par_para_extensao
 
 TEMPO_MAX_PAUSA_S = 4 * 60 * 60
@@ -208,28 +204,9 @@ def receber_bytes(execucao, n, conteudo_bytes):
     if par is None or par.n != n:
         raise ValueError("par_inesperado")
 
-    try:
-        cabecalho = pd.read_csv(
-            io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, nrows=0
-        )
-    except Exception as exc:
-        raise ValueError("leitura_csv") from exc
+    from app.sistec.colunas import ler_planilha
 
-    from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA
-
-    mapa = COLUNAS_CICLO if par.tipo == "ciclo" else COLUNAS_MATRICULA
-    ausentes = [c for c in mapa if c not in cabecalho.columns]
-    if ausentes:
-        raise ValueError("colunas_ausentes")
-
-    try:
-        df_bruto = pd.read_csv(
-            io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, usecols=list(mapa.keys())
-        )
-    except Exception as exc:
-        raise ValueError("leitura_csv") from exc
-
-    par.df = aplicar_permissao(df_bruto, par.tipo)
+    par.df = ler_planilha(conteudo_bytes, par.tipo)
     par.assinatura_cabecalho = tuple(sorted(par.df.columns))
     par.linhas = len(par.df)
     par.status = "baixado"

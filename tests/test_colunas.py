@@ -9,6 +9,9 @@ D-04, `data-delta.md` §4).
 import os
 import sys
 
+import pandas as pd
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.data.transform import COLUNAS_PII  # noqa: E402
@@ -16,6 +19,7 @@ from app.sistec.colunas import (  # noqa: E402
     COLUNAS_CICLO,
     COLUNAS_MATRICULA,
     aplicar_permissao,
+    ler_planilha,
 )
 
 
@@ -94,3 +98,31 @@ def test_aplicar_permissao_tipo_invalido_levanta_erro():
         pass
     else:
         raise AssertionError("esperava ValueError para tipo desconhecido")
+
+
+@pytest.mark.parametrize(
+    ("tipo", "colunas", "esperadas"),
+    [
+        ("ciclo", COLUNAS_CICLO, list(COLUNAS_CICLO.values())),
+        ("matricula", COLUNAS_MATRICULA, list(COLUNAS_MATRICULA.values())),
+    ],
+)
+def test_ler_planilha_le_os_dois_tipos_com_colunas_permitidas(tipo, colunas, esperadas):
+    conteudo = pd.DataFrame([{coluna: "valor" for coluna in colunas}]).to_csv(sep=";", index=False).encode("cp1252")
+
+    resultado = ler_planilha(conteudo, tipo)
+
+    assert list(resultado.columns) == esperadas
+    assert resultado.iloc[0].tolist() == ["valor"] * len(esperadas)
+
+
+def test_ler_planilha_recusa_coluna_obrigatoria_ausente():
+    conteudo = pd.DataFrame([{next(iter(COLUNAS_CICLO)): "C1"}]).to_csv(sep=";", index=False).encode("cp1252")
+
+    with pytest.raises(ValueError, match="^colunas_ausentes$"):
+        ler_planilha(conteudo, "ciclo")
+
+
+def test_ler_planilha_recusa_csv_que_nao_pode_ser_lido():
+    with pytest.raises(ValueError, match="^leitura_csv$"):
+        ler_planilha(b"\x81", "ciclo")

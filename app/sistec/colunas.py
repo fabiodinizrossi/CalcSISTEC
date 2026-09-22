@@ -14,6 +14,10 @@ convenção provisória para a planilha de matrícula, ainda não confirmada em
 exploração ao vivo — a de ciclo já foi, pela F0).
 """
 
+import io
+
+import pandas as pd
+
 from app.data.transform import COLUNAS_PII
 
 # §4.1 Planilha de ciclo (`ciclo-matricula.csv`).
@@ -71,3 +75,28 @@ def aplicar_permissao(df, tipo):
 
     colunas_presentes = [c for c in mapa if c in df.columns]
     return df[colunas_presentes].rename(columns=mapa)
+
+
+def ler_planilha(conteudo_bytes, tipo):
+    """Lê uma exportação CSV do Sistec e mantém apenas colunas permitidas."""
+    try:
+        mapa = _PERMISSAO_POR_TIPO[tipo]
+    except KeyError:
+        raise ValueError(f"tipo de planilha desconhecido: {tipo!r}") from None
+
+    try:
+        cabecalho = pd.read_csv(io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, nrows=0)
+    except Exception as exc:
+        raise ValueError("leitura_csv") from exc
+
+    if any(coluna not in cabecalho.columns for coluna in mapa):
+        raise ValueError("colunas_ausentes")
+
+    try:
+        df_bruto = pd.read_csv(
+            io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, usecols=list(mapa)
+        )
+    except Exception as exc:
+        raise ValueError("leitura_csv") from exc
+
+    return aplicar_permissao(df_bruto, tipo)
