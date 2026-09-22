@@ -62,6 +62,21 @@ def _atualizar(pagina_matriculas):
     return pagina_matriculas.atualizar("com_fic", ["campus"], "__todos__", "__todos__", "__todos__")
 
 
+def test_limpar_filtros_restaura_todos_os_controles_publicos_a_visao_padrao():
+    assert pagina("matriculas").limpar_filtros(1) == (
+        "__todos__", "__todos__", "__todos__", "com_fic", ["campus"]
+    )
+    assert pagina("eficiencia").limpar_filtros(1) == (
+        "__todos__", "__todos__", "sem_fic", ["campus"]
+    )
+    assert pagina("evasao").limpar_filtros(1) == (
+        "__todos__", "__todos__", "sem_fic", ["campus"]
+    )
+    assert pagina("percentuais_legais").limpar_filtros(1) == (
+        "__todos__", "__todos__", ["campus"]
+    )
+
+
 def test_matriculas_mostra_os_kpis_em_card_figma_com_os_mesmos_numeros(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
     cartoes = com_classe(kpis, "kpi-figma")
@@ -454,6 +469,26 @@ def test_percentuais_recorte_vazio_nao_transforma_dado_incompleto_em_zero(percen
     assert textos(tabela) == ""
     assert "0,0%" not in textos(cartoes)
     assert percentuais_com_dados.limpar_filtros(1) == ("__todos__", "__todos__", ["campus"])
+
+
+def test_percentuais_ignora_matricula_de_outro_ano_base(percentuais_com_dados):
+    base = _matriculas_de_teste()
+    registro_antigo = base.iloc[[0]].assign(ano_base=2025, subtipo_curso="Técnico")
+    percentuais_com_dados.carregar_matriculas = lambda: pd.concat([base, registro_antigo], ignore_index=True)
+
+    cartoes, tabela, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+
+    assert "Técnico 0,0%" in textos(cartoes)
+    assert "3,00" in textos(tabela)
+
+
+def test_percentuais_sem_registro_no_ano_base_mostra_aviso_em_vez_de_indicadores(percentuais_com_dados):
+    percentuais_com_dados.carregar_matriculas = lambda: _matriculas_de_teste().assign(ano_base=2025)
+
+    cartoes, tabela, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+
+    assert "Sem dados para os filtros selecionados." in textos(cartoes)
+    assert textos(tabela) == ""
 
 
 def test_percentuais_sem_dados_mostra_br_message_info(monkeypatch):
