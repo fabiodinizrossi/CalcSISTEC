@@ -1,6 +1,7 @@
 """Componentes públicos em Dash no padrão do gov.br DS (DS-13, DS-14, DS-15, DS-17, DS-27)."""
 
 import pytest
+import pandas as pd
 from dash import html
 
 from app.components.kpi import kpi_card
@@ -52,7 +53,7 @@ def test_o_helper_acha_componentes_por_classe_em_arvore_aninhada():
     assert len(com_classe(arvore, "a")) == 2
 
 
-from app.components.tabela import tabela_ds
+from app.components.tabela import tabela_ds, tabela_hierarquica_ds
 from arvore_dash import componentes
 
 
@@ -114,6 +115,20 @@ def test_variante_de_quadro_tem_regiao_nomeada_numeros_alinhaveis_e_total():
     assert tabela.children[-1].children.children[1].className == "num"
     assert [(textos(c), c.scope) for c in componentes(tabela) if type(c).__name__ == "Th"] == [("Campus", "col"), ("IEA", "col")]
     assert [(textos(c), c.className) for c in celulas] == [("Alegrete", None), ("0,75", "num"), ("Total", None), ("0,75", "num")]
+
+
+def test_tabela_hierarquica_mantem_blocos_pai_filho_ordenaveis_e_total():
+    dados = pd.DataFrame({"cidade": ["A", "A", "B"], "modalidade": ["Presencial", "EAD", "EAD"], "valor": [2, 1, 3]})
+    raiz = tabela_hierarquica_ds(
+        dados, ["campus", "modalidade"], {"campus": "cidade", "modalidade": "modalidade"},
+        {"campus": "Campus", "modalidade": "Modalidade"}, ["Valor"], "Matriz", lambda grupo: [grupo["valor"].sum()], [6],
+    )
+    tabela = [c for c in componentes(raiz) if type(c).__name__ == "Table"][0]
+    linhas = [c for c in componentes(tabela) if type(c).__name__ == "Tr" and getattr(c, "data-group-id", None) is not None]
+    assert tabela.className == "tabela-publica tabela-hierarquica"
+    assert getattr(tabela, "data-sortable") == "true"
+    assert [(getattr(linha, "data-group-id"), getattr(linha, "data-parent-id")) for linha in linhas] == [("0", ""), ("0-0", "0"), ("0-1", "0"), ("1", ""), ("1-0", "1")]
+    assert [textos(td) for td in componentes(tabela) if type(td).__name__ == "Td"][-2:] == ["Total", "6"]
 
 
 from app.components.filters import EIXOS, axis_selector, fic_toggle, ordenar_eixos

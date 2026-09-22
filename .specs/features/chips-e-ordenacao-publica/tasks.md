@@ -60,6 +60,8 @@ T5 → T6 → T7
 
 ### T2: Renderizar matriz hierárquica reutilizável
 
+**Status**: Complete
+
 **What**: disponibilizar uma tabela pública que conserve grupos pai-filho e seus atributos de ordenação.
 **Where**: `app/components/tabela.py`
 **Depends on**: T1
@@ -68,8 +70,8 @@ T5 → T6 → T7
 **Gate**: Quick
 **Done when**:
 
-- [ ] A tabela recebe os eixos ativos na ordem escolhida e marca grupos para o script de ordenação.
-- [ ] Sem eixos, a tabela mostra apenas o total informado.
+- [x] A tabela recebe os eixos ativos na ordem escolhida e marca grupos para o script de ordenação.
+- [x] Sem eixos, a tabela mostra apenas o total informado.
 
 ### T3: Aplicar chips à Eficiência Acadêmica
 
