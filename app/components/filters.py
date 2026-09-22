@@ -47,16 +47,31 @@ def fic_toggle(id_, default="com_fic"):
 
 
 def axis_selector(id_, default="campus"):
-    """BR-MIGRAR-020: "Ver tabela por:" — seleção única por construção
-    (`dbc.RadioItems`, nunca um componente multi-select), corrigindo o bug
-    M-D3 do legado (`DEV-002`)."""
+    """"Ver tabela por" como chips; a ordem dos cliques forma a hierarquia."""
     return html.Div(
         [
-            html.Label("Ver tabela por:", className="filter-label"),
-            dbc.RadioItems(id=id_, options=EIXOS, value=default, inline=True, className="br-radio"),
+            html.Span("Ver tabela por:", className="rotulo-chips"),
+            dbc.Checklist(
+                id=id_,
+                options=EIXOS,
+                value=[default] if default else [],
+                inline=True,
+                className="chips-grupo",
+                labelClassName="chip",
+                labelCheckedClassName="chip--ativo",
+                inputClassName="chip-input",
+            ),
         ],
-        className="filter-item",
+        className="card-chips",
     )
+
+
+def ordenar_eixos(marcados, ordem_anterior):
+    """Mantém os campos ativos na ordem em que foram marcados."""
+    marcados = list(dict.fromkeys(marcados or []))
+    ordem = [eixo for eixo in (ordem_anterior or []) if eixo in marcados]
+    ordem.extend(eixo for eixo in marcados if eixo not in ordem)
+    return ordem
 
 
 def select_filter(id_, label, opcoes):

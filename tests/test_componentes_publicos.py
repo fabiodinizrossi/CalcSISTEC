@@ -116,13 +116,19 @@ def test_variante_de_quadro_tem_regiao_nomeada_numeros_alinhaveis_e_total():
     assert [(textos(c), c.className) for c in celulas] == [("Alegrete", None), ("0,75", "num"), ("Total", None), ("0,75", "num")]
 
 
-from app.components.filters import EIXOS, axis_selector, fic_toggle
+from app.components.filters import EIXOS, axis_selector, fic_toggle, ordenar_eixos
 
 
 def _radio(raiz):
     radios = [c for c in componentes(raiz) if type(c).__name__ == "RadioItems"]
     assert len(radios) == 1
     return radios[0]
+
+
+def _checklist(raiz):
+    checklists = [c for c in componentes(raiz) if type(c).__name__ == "Checklist"]
+    assert len(checklists) == 1
+    return checklists[0]
 
 
 def test_fic_toggle_tem_com_fic_e_sem_fic_com_padrao_com_fic_e_id_preservado():
@@ -133,19 +139,29 @@ def test_fic_toggle_tem_com_fic_e_sem_fic_com_padrao_com_fic_e_id_preservado():
 
 
 def test_axis_selector_tem_os_6_eixos_com_padrao_campus_e_id_preservado():
-    radio = _radio(axis_selector("matriculas-eixo"))
-    assert radio.id == "matriculas-eixo"
-    assert [o["value"] for o in radio.options] == ["campus", "tipo_curso", "oferta", "nome_curso", "modalidade", "ciclo"]
-    assert radio.options == EIXOS
-    assert radio.value == "campus"
+    checklist = _checklist(axis_selector("matriculas-eixo"))
+    assert checklist.id == "matriculas-eixo"
+    assert [o["value"] for o in checklist.options] == ["campus", "tipo_curso", "oferta", "nome_curso", "modalidade", "ciclo"]
+    assert checklist.options == EIXOS
+    assert checklist.value == ["campus"]
+    assert {"card-chips", "chips-grupo"} <= classes(axis_selector("matriculas-eixo"))
+    assert checklist.labelClassName == "chip"
+    assert checklist.labelCheckedClassName == "chip--ativo"
+    assert checklist.inputClassName == "chip-input"
 
 
-@pytest.mark.parametrize("componente", [fic_toggle("x"), axis_selector("y")])
-def test_filtros_de_opcao_exclusiva_sao_br_radio_sem_classe_btn_do_bootstrap(componente):
+def test_fic_toggle_de_opcao_exclusiva_e_br_radio_sem_classe_btn_do_bootstrap():
+    componente = fic_toggle("x")
     radio = _radio(componente)
     assert "br-radio" in radio.className.split()
     assert not [c for c in classes(componente) if c == "btn" or c.startswith("btn-")]
     exigir_sem_componente_do_ds_que_precisa_de_js(componente)
+
+
+def test_ordenar_eixos_preserva_cliques_e_reinsere_eixo_no_fim():
+    assert ordenar_eixos(["campus", "modalidade"], ["campus"]) == ["campus", "modalidade"]
+    assert ordenar_eixos(["modalidade"], ["campus", "modalidade"]) == ["modalidade"]
+    assert ordenar_eixos(["campus", "modalidade"], ["modalidade"]) == ["modalidade", "campus"]
 
 
 from app.components.filters import TODOS, clear_filters_button, filter_panel, select_filter
