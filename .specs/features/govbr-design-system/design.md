@@ -82,10 +82,10 @@ Regras que valem para todo o desenho:
 - **Location**: `app/static/govbr-ds/` (movido com `git mv` de `app/assets/govbr-ds/`), `app/static/vendor/fontawesome/`, `app/static/vendor/rawline/`, `app/static/js/`.
 - **Interfaces**:
   - `GET /ds/govbr-ds/dist/core.min.css`, `GET /ds/govbr-ds/dist/core.min.js`
-  - `GET /ds/js/tema.js`, `GET /ds/js/confirmar.js`, `GET /ds/js/atualizar.js`
+  - `GET /ds/js/tema.js`, `GET /ds/js/menu.js`, `GET /ds/js/confirmar.js`, `GET /ds/js/atualizar.js`, `GET /ds/js/ordenacao-tabelas.js`
 - **Dependencies**: Blueprint `ds_static` em `app/shell.py`.
 - **Reuses**: O conteúdo já versionado de `app/assets/govbr-ds/`.
-- **Pré-requisito**: o CSS do DS pede a família "Font Awesome 5 Free" (`core.css:29845`) e a fonte Rawline (`core-tokens.css:970`), e nenhuma das duas está no pacote. Baixar `@fortawesome/fontawesome-free` 5.x (só os `webfonts` de `fa-solid-900`, `fa-regular-400` e `fa-brands-400`, mais o CSS) e a Rawline exige rede e autorização suas. Não sei a licença de redistribuição da Rawline: confirmar antes de versionar. Sem ela, o `--font-family-base` cai em Raleway e depois em sans-serif.
+- **Assets concluídos**: o CSS do DS pede "Font Awesome 5 Free" (`core.css:29845`) e Rawline (`core-tokens.css:970`), que não vêm no pacote. Ambos estão vendorizados em `app/static/vendor/`; o Font Awesome 5.15.4 inclui CSS, webfonts necessários e licença, e o shell os carrega antes do CSS principal do DS.
 
 ### Shell (`app/shell.py`)
 
@@ -266,3 +266,60 @@ class PaginaCampi(TypedDict):
 | DS-80 a DS-83 | CRUD de campi (`filtrar_e_paginar`) |
 | DS-84, DS-85 | CRUD de campi (`visao=cards`) |
 | DS-42 | Verificação em dispositivo real (`CUTOVER.md`) |
+
+---
+
+## Extensão planejada: Eficiência, Evasão e Percentuais Legais (2026-09-22)
+
+**Status:** desenho concluído; implementação não iniciada. **Requisitos:** DS-86 a DS-100. O dashboard de Matrículas em `/` é a referência visual, inclusive sua hierarquia de KPIs revista em `tarefa-cards-matriculas.md` e `validacao-cards-matriculas.md`.
+
+### Abordagem e reutilização
+
+O shell Jinja permanece a fonte única para cabeçalho, menu lateral, breadcrumb e rodapé (AD-001, AD-004, AD-005). As três páginas Dash passam a compartilhar uma pequena composição de conteúdo: cabeçalho da página, cartão de indicador, quadro de tabela e painel de filtros. O CSS existente de `.painel-landing`, `.cabecalho-pagina`, `.kpi-figma`, `.matriz-figma` e `.card-filtros` será generalizado para as quatro páginas, preservando o resultado visual de Matrículas. `app/components/tabela.py` mantém sua interface existente e ganha uma variante de apresentação compatível com o quadro de Matrículas; a tabela hierárquica de Matrículas conserva seu comportamento próprio.
+
+Alternativas consideradas: copiar toda a marcação/CSS em cada página (cria divergência) ou reescrever Matrículas e as três páginas de uma vez (amplia o risco para a referência já validada). A composição pequena concentra apenas apresentação e deixa os callbacks e as funções de domínio em seus módulos atuais.
+
+### Contrato de conteúdo por página
+
+| Página | Síntese primeiro | Detalhe depois | Recortes e interpretação |
+| --- | --- | --- | --- |
+| `/eficiencia` | IEA do conjunto filtrado, com rótulo completo e sem cor de julgamento | Tabela de IEA por eixo atual; `0` verdadeiro continua `0`, inclusive no caso `pC+pE=0` | Eixo antes da tabela; Campus, Modalidade e FIC no painel final; inicial `sem_fic` |
+| `/evasao` | Taxa agregada do conjunto filtrado pela função `taxa_evasao` | Campus e taxa com percentual brasileiro e rótulo Baixa/Média/Alta; preserva o limiar atual `LIMIAR_EVASAO_MEDIO` | Campus, Tipo de Curso e FIC no painel final; inicial `sem_fic`; nenhuma nova interpretação de desempenho |
+| `/percentuais-legais` | Percentual Técnico destacado; Formação de Professores, PROEJA e Matrículas equivalentes no mesmo conjunto de cartões | Tabela por eixo escolhido com os três percentuais e equivalentes de cada grupo; legenda explícita de recorte exploratório, sem situação de cumprimento por linha | Eixo antes da tabela; Campus e Programa Associado no painel final; aviso PROEJA junto aos cartões quando filtrado |
+
+Em todas as páginas: título → ano PNP/data da última publicação → cartões → controle do detalhamento, se houver → tabela → painel de filtros. Texto de apoio explica a leitura de cada tabela, sem afirmar tendência, causalidade, comparação temporal ou meta por campus. Sem novos gráficos, bibliotecas ou fontes de dados. A data vem de `data_ultima_publicacao()`; sem data, omite-se apenas esse texto.
+
+### Componentes e interfaces
+
+| Componente | Local | Responsabilidade | Dependências |
+| --- | --- | --- | --- |
+| Composição pública | `app/components/painel_publico.py` (novo) | Helpers de cabeçalho, cartão destacado/normal e organização sem lógica de indicador; aceita texto já calculado e ano/data | `dash.html`, `app.components.kpi.formatar_valor` quando necessário |
+| Tabela pública | `app/components/tabela.py` | Variante opcional de `tabela_ds` com moldura, cabeçalho, alinhamento numérico, caption, eventual total e região rolável nomeada; mantém chamadas atuais válidas | `dash.html`; JS compartilhado de ordenação já existente |
+| Estilos | `app/assets/style.css` | Aplicar as classes visuais de Matrículas às demais páginas; tokens do DS nos dois temas (AD-003), sem hexadecimal novo e sem folha Bootstrap | `core-tokens.css` local |
+| Páginas | `app/pages/eficiencia.py`, `evasao.py`, `percentuais_legais.py` | Montagem narrativa, filtros e callbacks; chamada às funções de domínio atuais | `app/data/consulta.py`, `app/domain/*`, componentes acima |
+
+**Dados e fórmulas:** não há schema novo. Eficiência usa `carregar_eficiencia` e `iea`; Evasão usa `carregar_matriculas` e `taxa_evasao`; Percentuais usa `carregar_matriculas`, `_base_percentuais`, `percentual_tecnico`, `percentual_professores`, `percentual_proeja` e `matriculas_equivalentes`. A tabela por eixo de Percentuais agrupa a base já filtrada pela coluna de `coluna_para_eixo` (`cidade` para Campus), calcula cada percentual dentro do grupo com as funções existentes e não altera os cartões do conjunto. O total da tabela não será soma nem média simples dos percentuais de linhas: seus valores totais vêm do mesmo conjunto dos cartões. Confirmar a semântica de agrupamento com fixtures que têm denominadores distintos.
+
+### Riscos e mitigação
+
+| Risco observado | Evidência | Mitigação planejada |
+| --- | --- | --- |
+| CSS de Matrículas é escopado em `.painel-landing`; as outras páginas ainda usam `.br-card`/`.br-table` genéricos | `app/assets/style.css`, `app/pages/*.py` | Generalizar as classes com testes de regressão da página `/` e conferência visual nas quatro rotas |
+| `percentuais-eixo` é recebido mas ignorado | `app/pages/percentuais_legais.py:66` | Fazer o eixo controlar apenas a nova tabela, mantendo cartões globais e seu denominador; legenda explícita impede inferência de obrigação por grupo |
+| Um IEA igual a zero pode ser valor real | `app/domain/eficiencia.py:54` | Distinguir recorte vazio, dado incompleto e zero verdadeiro em testes e UI |
+| A classificação colorida de Evasão usa limiar provisório do contrato legado | `app/pages/evasao.py:49` | Preservar limiar e rótulos atuais, sem declarar novos níveis oficiais; mudança de regra fica fora do escopo |
+| Ordenação simples e tabela hierárquica têm comportamentos distintos | `app/static/js/ordenacao-tabelas.js`, `app/pages/matriculas.py` | Aplicar ordenação só às tabelas simples; checar cabeçalhos, `aria-sort`, foco e tabela sem dados |
+| Publicação e dados reais podem diferir das fixtures | `app/data/consulta.py`, princípio VII | Testar com dados simulados/publicados de desenvolvimento sem substituir o banco do usuário; confirmar que o público só consulta a versão publicada |
+
+### Verificação da extensão
+
+Cada página terá teste de árvore Dash com dados nominais, recorte vazio, zero real, limpeza de filtros e comparação numérica com as funções de domínio. A variante de tabela e os helpers terão testes próprios; CSS/contraste usarão os testes existentes. A revisão visual cobrirá `/`, `/eficiencia`, `/evasao` e `/percentuais-legais` em 390, 768, 1280 e 1600px, temas claro/escuro, zoom 200%, teclado, menu e rolagem horizontal. Depois, a suíte completa `pytest`; o teste em celular real de DS-42 continua passo humano obrigatório antes do cutover.
+
+**Conformidade:** I preservado por testes de paridade; II sem lógica em componentes; III sem PII; IV testes com cada task; V identidade/ano via configuração e consulta; VI sem alteração da coleta; VII leitura pública somente da versão publicada. Nenhuma dependência nova.
+
+| Requisitos | Elementos planejados |
+| --- | --- |
+| DS-86, DS-87, DS-88 | Shell existente e composição pública |
+| DS-89, DS-90, DS-91, DS-99 | Componentes públicos, tabela e CSS |
+| DS-92, DS-93, DS-94, DS-95, DS-96, DS-97, DS-98 | Três páginas e seus testes |
+| DS-100 | Testes de paridade das saídas e gate completo |

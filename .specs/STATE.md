@@ -35,8 +35,8 @@
 - **Status**: active
 
 ### AD-005
-- **Decision**: A partir de 992px o menu principal é uma barra lateral fixa à esquerda (largura `--menu-largura: 240px`), sempre aberta, sem botão hambúrguer; o conteúdo (cabeçalho, breadcrumb, `<main>`, rodapé) desloca para a direita por `padding-left` no `<body>`.
-- **Reason**: A primeira versão (barra horizontal com botão hambúrguer para recolher) ficou ruim em telas largas, relatado por Jaline após o teste em celular e tela grande. O `br-menu` 3.7.0 só tem o modo push/sobreposto; a barra lateral é construída em `style.css` (`position: fixed` + `width` + `padding-left`).
+- **Decision**: A partir de 992px o menu principal ocupa a coluna lateral esquerda de 240px, sempre aberto e sem botão hambúrguer; cabeçalho e rodapé continuam na largura total. Abaixo de 992px ele é sobreposto e fechado por padrão.
+- **Reason**: A primeira versão (barra horizontal com botão hambúrguer para recolher) ficou ruim em telas largas. O layout atual usa grid no `<body>` e posicionamento estático do menu, evitando que a lateral cubra ou desloque cabeçalho e rodapé.
 - **Trade-off**: O menu deixa de ser recolhível em telas largas (não há como escondê-lo); abaixo de 992px continua sobreposto e fechado por padrão, aberto pelo hambúrguer.
 - **Scope**: Todas as páginas públicas e administrativas com menu (DS-05; antes era "barra horizontal com hambúrguer").
 - **Date**: 2026-09-20
@@ -44,16 +44,17 @@
 
 ## Handoff
 
-Pausa em 2026-09-20. Quem retomar pode ser outro agente (opencode), sem as ferramentas do Claude: nada abaixo depende delas, só de `python`, `node` e `git`.
+Estado revisado em 2026-09-21. Nada abaixo depende de ferramenta proprietária; as verificações usam `python`, `node` e `git`.
 
 - **Feature**: `.specs/features/govbr-design-system`
-- **Phase / Task**: Execute concluído; Verifier em PASS na 2ª iteração (`validation.md`, `validate_state.py` exit 0)
-- **Completed**: T1 a T52, T54, T55, T56 e T57 (menos o passo humano). 60 commits na branch, último `8f18f3b`; 545 testes passam (`python -m pytest -q`; os de `tests/test_js_*.py` precisam do `node`)
-- **In-progress** (file:line): none
-- **Next step**: (1) T53: com autorização de Jaline para baixar da rede, vendorizar `@fortawesome/fontawesome-free` 5.x (CSS, `webfonts/fa-solid-900`, `fa-regular-400`, `fa-brands-400` e a licença) em `app/static/vendor/fontawesome/`, linkar o CSS em `app/templates/shell/_head.html` antes de `core.min.css`, e estender `tests/test_shell_assets.py` (todo recurso local do HTML resolve para 200, sem URL externo; já há o padrão para a Rawline). Commit: `feat(assets): Font Awesome 5 Free local para os ícones do DS`, com versão e origem no corpo. Sem isso os botões de ícone (editar, excluir, menu, busca) aparecem sem glifo, mas têm `aria-label`. (2) T57: Jaline testa em celular real (roteiro em `CUTOVER.md`, seção "Design gov.br responsivo") e informa dispositivo, largura e data; só então marcar o item de design de `CUTOVER.md` (DS-42). (3) Depois disso, rodar o Verifier de novo (`.claude/skills/tlc-spec-driven/references/validate.md`) para fechar DS-24
-- **Blockers**: T53 exige autorização de rede de Jaline (só a Rawline foi liberada; ela veio de `Downloads/rawline-cdnfonts`, sem arquivo de licença junto). DS-42 exige o teste de Jaline
+- **Phase / Task**: implementação e validação automatizada concluídas; Parte A e Parte B em PASS em `validation.md`
+- **Completed**: T1 a T56 e a parte automatizável de T57; Font Awesome/Rawline locais, dashboard de Matrículas em `/` e responsividade de 390px a telas largas validados
+- **In-progress**: ordenação compartilhada de tabelas em `app/static/js/ordenacao-tabelas.js`, já acompanhada por testes; DS-42 continua humano
+- **Next step**: Jaline testa em celular real (roteiro em `CUTOVER.md`, seção “Design gov.br responsivo”) e informa dispositivo, largura e data; só então marcar DS-42. T53/DS-24 já estão concluídos com Font Awesome 5.15.4 e Rawline locais. A Parte B de responsividade e a paridade da página inicial passaram no gate documentado em `validation.md`.
+- **Blockers**: somente DS-42 exige o teste de Jaline em celular real, com dispositivo, largura e data
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto
 - **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`)
 - **Ambiente**: `app/data/sistec.db` está no estado original (vazio, restaurado após a verificação visual); nenhum servidor ficou rodando
-- **Uncommitted files**: none da feature (fora de escopo e sem stage: `.agents/`, `.cursor/`, `.windsurf/`, `.claude/skills/tlc-spec-driven/`)
+- **Working tree**: há mudanças recentes de código e testes para ordenação de tabelas; não as descartar ao continuar a feature
 - **Branch**: migracao-dash-gov-br
+- **Planejamento adicional (2026-09-22)**: mesma feature `govbr-design-system` recebeu DS-86 a DS-100 e T58 a T65 para padronizar `/eficiencia`, `/evasao` e `/percentuais-legais` segundo o dashboard de Matrículas. Spec, design e tasks estão escritos; nenhuma task da extensão foi executada. Iniciar por T58 quando houver solicitação de implementação. DS-42 continua independente e pendente do teste em celular real antes do cutover.

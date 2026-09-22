@@ -46,6 +46,8 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 | Assets vendorizados, docs | none | - (gate de build; T53 acrescenta um teste de que todo asset local do HTML resolve) | - | build gate only |
 | Navegador real (larguras, foco, teclado, tema) | manual | 11 páginas em 320, 576, 992, 1280 e 1600px; tema escuro; teclado; resultado registrado em arquivo (T55) | `.specs/features/govbr-design-system/verificacao-visual.md` | Chrome MCP |
 
+**Extensão T58–T65 (2026-09-22):** a matriz de componentes/páginas Dash cobre `app/components/painel_publico.py`, `app/components/tabela.py` e as três páginas, com testes em `tests/test_componentes_publicos.py` e `tests/test_paginas_publicas.py`. CSS usa `tests/test_style_css.py` e `tests/test_contraste_tema.py`; documentação e verificação visual mantêm `Tests: none` porque a matriz exige gate build e conferência manual, respectivamente. A linha de base de 181 testes é histórica; na execução, medir a contagem atual antes de T58 e impedir redução silenciosa.
+
 ## Gate Check Commands
 
 > Generated from codebase - confirm before Execute.
@@ -161,6 +163,18 @@ T53   T54
 ```
 T55 → T56
 T55 → T57
+```
+
+### Phase 14: Padrão visual das demais páginas públicas (planejada)
+
+```
+T58 → T59 → T60
+```
+
+### Phase 15: Páginas e conferência (planejada)
+
+```
+T61 → T62 → T63 → T64 → T65
 ```
 
 **Pacotes de execução (~7 tasks, fases inteiras):** 57 tasks passam de um lote; no Execute a skill oferece sub-agentes por lote antes de despachar qualquer um.
@@ -1674,11 +1688,194 @@ T55 → T57
 
 ---
 
+### Phase 14: Padrão visual das demais páginas públicas (não executar nesta solicitação)
+
+**Pré-condição:** preservar as mudanças locais de Matrículas, CSS e ordenação; verificar o baseline da suíte antes de iniciar. Os dois testes de ordenação apontados em `validacao-cards-matriculas.md` devem ser corrigidos ou reconciliados antes de qualquer gate completo. DS-42 continua pendente de teste humano em celular real.
+
+### T58: Composição comum de conteúdo público
+
+**What**: Criar helpers apenas de apresentação para cabeçalho com ano/data, cartões com destaque seletivo e ordem de seções, tendo Matrículas como referência visual sem mudar seus cálculos ou sua marcação nesta task.
+**Where**: `app/components/painel_publico.py` (novo; teste no mesmo commit)
+**Depends on**: T45, T52
+**Reuses**: `app/pages/matriculas.py`, `data_ultima_publicacao`, `formatar_valor`, classes de `style.css`
+**Requirement**: DS-87, DS-88, DS-89, DS-98
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Helper recebe textos/valores já calculados e não importa `app/domain/` nem executa consultas
+- [ ] Data ausente omite só `Atualizado em`; `0` e `dado incompleto` ficam distintos; DOM põe título antes do valor
+- [ ] Testes de componente em `tests/test_componentes_publicos.py` cobrem os dois temas por classe e os três estados de valor; gate quick passa
+
+**Tests**: unit
+**Gate**: quick
+**Commit**: `feat(ui): compõe cabeçalho e cartões públicos compartilhados`
+
+---
+
+### T59: Variante de tabela para os demais dashboards
+
+**What**: Estender `tabela_ds` com apresentação de quadro compatível com Matrículas, alinhamento numérico, legenda e total opcional, sem alterar a tabela hierárquica de `/` nem chamadas existentes.
+**Where**: `app/components/tabela.py` (teste no mesmo commit)
+**Depends on**: T58
+**Reuses**: `tabela_ds`, `.matriz-figma`, `.rolagem-tabela`, `ordenacao-tabelas.js`
+**Requirement**: DS-90, DS-99
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Com e sem total, a tabela tem `caption`, `th scope="col"`, região rolável nomeada e células numéricas alinháveis; chamada antiga ainda gera a estrutura anterior
+- [ ] Tabelas simples são ordenáveis por clique e teclado; tabela hierárquica de Matrículas permanece excluída da ordenação
+- [ ] Testes em `tests/test_componentes_publicos.py` cobrem compatibilidade, valor brasileiro, vazio e semântica; `tests/test_js_ordenacao_tabelas.py` cobre clique/teclado e `aria-sort`; gate full passa
+
+**Tests**: unit
+**Gate**: full
+**Commit**: `feat(ui): adiciona variante de tabela para dashboards públicos`
+
+---
+
+### T60: Generalizar estilos de Matrículas
+
+**What**: Aplicar às novas classes públicas a hierarquia visual de Matrículas para cabeçalho, cartões, tabela e filtros, com tokens do DS e estados claro/escuro, sem mudar o resultado visual de `/`.
+**Where**: `app/assets/style.css` (teste no mesmo commit)
+**Depends on**: T59
+**Reuses**: regras `.painel-landing`, `.kpi-figma`, `.matriz-figma`, `.card-filtros`; AD-003
+**Requirement**: DS-89, DS-90, DS-91, DS-99
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Cartão principal tem a mesma superfície azul suave e demais cartões a superfície neutra; cabeçalhos de tabela usam o mesmo azul e a mesma tipografia em todas as rotas
+- [ ] Layout não usa cor literal, nova folha Bootstrap nem ponto de quebra diferente de 576/992/1280/1600px; foco e contraste seguem DS-99
+- [ ] `tests/test_style_css.py` e `tests/test_contraste_tema.py` cobrem as classes novas; gate full passa
+
+**Tests**: unit (estático)
+**Gate**: full
+**Commit**: `style(ui): compartilha o padrão visual de Matrículas`
+
+---
+
+### Phase 15: Páginas e conferência (não executar nesta solicitação)
+
+### T61: Eficiência Acadêmica no padrão de Matrículas
+
+**What**: Reorganizar `/eficiencia` em contexto, IEA destacado, seletor de eixo, tabela e painel de filtros; manter `sem_fic` inicial e `iea` como fonte única.
+**Where**: `app/pages/eficiencia.py` (teste no mesmo commit)
+**Depends on**: T60
+**Reuses**: T58/T59, `app.domain.eficiencia.iea`, `app.components.filters`
+**Requirement**: DS-86 a DS-92, DS-97 a DS-100
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Ordem DOM: contexto, KPI, eixo, tabela, filtros; menu e breadcrumb continuam os do shell comum
+- [ ] Fixtures nominais, eixo alternativo, `pC+pE=0`, recorte vazio e limpar filtros mantêm IEA e estado esperado
+- [ ] Testes em `tests/test_paginas_publicas.py` comparam números com `iea` e verificam estrutura; gate full passa
+
+**Tests**: unit
+**Gate**: full
+**Commit**: `feat(ui): padroniza o dashboard de Eficiência Acadêmica`
+
+---
+
+### T62: Taxa de Evasão Anual no padrão de Matrículas
+
+**What**: Reorganizar `/evasao` com cartão de taxa agregada antes da tabela por campus, preservando FIC, faixas e seus rótulos textuais.
+**Where**: `app/pages/evasao.py` (teste no mesmo commit)
+**Depends on**: T61
+**Reuses**: T58/T59, `taxa_evasao`, `_classe_evasao`, filtros atuais
+**Requirement**: DS-86 a DS-91, DS-93, DS-97 a DS-100
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Cartão principal mostra a taxa do conjunto filtrado, e cada linha mostra taxa do campus com percentual brasileiro e Baixa/Média/Alta
+- [ ] Recorte vazio mostra mensagem informativa sem cartão `0`; zero verdadeiro permanece `0,0%`; limpar retorna a `sem_fic` e Todos
+- [ ] Testes em `tests/test_paginas_publicas.py` verificam resultado com `taxa_evasao`, filtro FIC e estrutura; gate full passa
+
+**Tests**: unit
+**Gate**: full
+**Commit**: `feat(ui): padroniza o dashboard de Evasão Anual`
+
+---
+
+### T63: Percentuais Legais no padrão de Matrículas
+
+**What**: Reorganizar os quatro cartões, ativar o seletor de eixo para uma tabela exploratória e posicionar aviso PROEJA junto do resumo, sem alterar fórmulas nem escopo das metas.
+**Where**: `app/pages/percentuais_legais.py` (teste no mesmo commit)
+**Depends on**: T62
+**Reuses**: T58/T59, `_base_percentuais`, funções e metas de `app/domain/percentuais_legais.py`
+**Requirement**: DS-86 a DS-91, DS-94 a DS-100
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Técnico é o único cartão visualmente destacado; os três medidores mantêm valor, meta e situação textual; Matrículas equivalentes mantém duas casas decimais
+- [ ] Seleção de eixo muda só a tabela; linha Total e cartões usam o conjunto filtrado, e cada grupo usa seu próprio denominador; a legenda distingue recorte exploratório de cumprimento institucional
+- [ ] Programa filtrado mantém aviso PROEJA; base vazia e `dado incompleto` não viram desempenho zero; limpar restaura Campus/Todos
+- [ ] Testes em `tests/test_paginas_publicas.py` cobrem grupos de denominadores diferentes e comparações com as funções de domínio; gate full passa
+
+**Tests**: unit
+**Gate**: full
+**Commit**: `feat(ui): padroniza Percentuais Legais e detalha recortes`
+
+---
+
+### T64: Atualizar roteiro de uso e teste das páginas públicas
+
+**What**: Documentar em `TESTAR.md` a nova ordem de leitura, os filtros e o significado exploratório da tabela de Percentuais Legais.
+**Where**: `TESTAR.md`
+**Depends on**: T63
+**Reuses**: roteiro atual de páginas públicas e `CUTOVER.md` para o teste em celular real
+**Requirement**: DS-95, DS-99
+
+**Tools**: MCP: NONE; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Roteiro instrui conferir as três rotas, eixo de Percentuais, aviso PROEJA, temas, teclado e celular real sem dizer que recortes avaliam meta legal
+- [ ] Gate build passa; DS-42 só é marcado depois da evidência de dispositivo real informada por Jaline
+
+**Tests**: none (documentação)
+**Gate**: build
+**Commit**: `docs: atualiza roteiro das páginas públicas padronizadas`
+
+---
+
+### T65: Verificação visual e paridade da extensão
+
+**What**: Registrar evidências de comparação das quatro páginas, teste responsivo e paridade numérica em um relatório próprio da mesma feature.
+**Where**: `.specs/features/govbr-design-system/validacao-paginas-publicas.md`
+**Depends on**: T64
+**Reuses**: `verificacao-visual.md`, `validacao-cards-matriculas.md`, fixtures de `tests/test_paginas_publicas.py`
+**Requirement**: DS-86 a DS-100
+
+**Tools**: MCP: navegador disponível para inspeção; Skill: `tlc-spec-driven`
+
+**Done when**:
+
+- [ ] Matriz de rota × 390/768/1280/1600px × claro/escuro registra menu, cartões, tabela, filtros, `scrollWidth ≤ innerWidth`, foco e zoom 200%
+- [ ] Evidência de comparação dos números antes/depois para os mesmos dados e filtros; `pytest` completo verde e `verificar_prontidao_cutover.py` registrado sem interpretar NO-GO ambiental como falha visual
+- [ ] Capturas e limitações ficam ligadas ao relatório; revisão independente exigida pela skill somente na futura execução; teste em celular real DS-42 permanece pendente até ser feito por Jaline
+
+**Tests**: none (verificação; testes de código são co-localizados em T58–T63)
+**Gate**: build
+**Commit**: `docs(ui): valida padronização das páginas públicas`
+
+---
+
 ## Phase Execution Map
 
 ```
 Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7
 Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11 → Phase 12 → Phase 13
+Phase 13 → Phase 14 → Phase 15
 ```
 
 Execução estritamente sequencial: um agente (ou um worker de lote) faz uma task por vez, na ordem.
@@ -1790,5 +1987,30 @@ Nenhum teste foi adiado para outra task. T33 e T22 cobrem o servidor e a funçã
 | DS-80 | T34 |
 | DS-81, DS-82, DS-83 | T27, T34 |
 | DS-84, DS-85 | T35 |
+| DS-86, DS-87, DS-88 | T58, T61, T62, T63, T65 |
+| DS-89, DS-90, DS-91 | T58, T59, T60, T61, T62, T63, T65 |
+| DS-92 | T61, T65 |
+| DS-93 | T62, T65 |
+| DS-94 | T63, T65 |
+| DS-95 | T63, T64, T65 |
+| DS-96 | T63, T65 |
+| DS-97, DS-98 | T61, T62, T63, T65 |
+| DS-99 | T59, T60, T61, T62, T63, T64, T65 |
+| DS-100 | T61, T62, T63, T65 |
 
-**Cobertura:** 85 de 85 requisitos mapeados a ao menos uma task.
+**Cobertura:** 100 de 100 requisitos mapeados a ao menos uma task. T58–T65 estão planejadas e não executadas.
+
+### Validação das tasks planejadas
+
+| Task | Entrega coesa | Camada / teste co-localizado | Dependências |
+| --- | --- | --- | --- |
+| T58 | composição pública | componente Dash / unit | T45, T52 (fases anteriores) |
+| T59 | variante de tabela | componente Dash / unit | T58; diagrama T58 → T59 |
+| T60 | estilo compartilhado | CSS / estático e contraste | T59; diagrama T59 → T60 |
+| T61 | página Eficiência | página Dash / unit e paridade | T60 (fase anterior) |
+| T62 | página Evasão | página Dash / unit e paridade | T61; diagrama T61 → T62 |
+| T63 | página Percentuais | página Dash / unit e paridade | T62; diagrama T62 → T63 |
+| T64 | roteiro | documentação / build | T63; diagrama T63 → T64 |
+| T65 | relatório de evidências | verificação manual / build | T64; diagrama T64 → T65 |
+
+As oito tasks formam um lote conforme a skill. Não requerem subagentes; se o escopo crescer na execução, aplicar a regra de oferta e confirmação da skill. Cada mudança de código inclui teste e gate na mesma task; o relatório final não substitui esses testes. Nenhuma task desta extensão depende de T57/DS-42, que continua sendo gate humano antes do cutover.

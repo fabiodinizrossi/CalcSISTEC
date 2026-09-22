@@ -134,7 +134,7 @@ def test_lista_autenticada_tem_as_7_colunas_e_o_titulo(cliente_autenticado, tres
     html = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
     assert re.search(r"<h1[^>]*>\s*Campi do Sistec\s*</h1>", html)
-    colunas = [c.strip() for c in re.findall(r"<th>(.*?)</th>", html)]
+    colunas = [c.strip() for c in re.findall(r"<th(?:\s[^>]*)?>(.*?)</th>", html)]
     assert colunas == ["Perfil", "Identificador", "Código da unidade", "Cidade", "Nome da unidade", "Situação", "Ações"]
     assert re.search(r'<a\b[^>]*class="br-button primary"[^>]*href="/admin/campi/novo"[^>]*>\s*Incluir campus', html)
 

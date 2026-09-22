@@ -7,7 +7,7 @@ Figma. Nenhuma regra de negócio é calculada aqui — apenas consumo de
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import Input, Output, callback, dcc, html
+from dash import Input, Output, State, callback, dcc, html
 
 from app.components.filters import EIXOS, clear_filters_button, select_filter
 from app.components.kpi import formatar_valor
@@ -32,22 +32,24 @@ def _data_curta(valor):
 
 
 def _kpi(label, valor, formato="0", empty_state=None):
-    texto = empty_state if (empty_state is not None and valor is None) else formatar_valor(valor, formato)
+    estado_textual = empty_state is not None and valor is None
+    texto = empty_state if estado_textual else formatar_valor(valor, formato)
+    classe_valor = "valor valor--texto" if estado_textual else "valor"
     return html.Div(
-        [html.Div(texto, className="valor"), html.Div(label, className="rotulo")],
-        className="kpi-figma",
+        [html.Div(label, className="rotulo"), html.Div(texto, className=classe_valor)],
+        className="kpi-figma kpi-figma--destaque",
     )
 
 
 def _chip_selector(id_):
-    """"Ver tabela por" como chips (pílulas), seleção única."""
+    """"Ver tabela por" como chips; a ordem dos cliques forma a hierarquia."""
     return html.Div(
         [
             html.Span("Ver tabela por:", className="rotulo-chips"),
-            dbc.RadioItems(
+            dbc.Checklist(
                 id=id_,
                 options=EIXOS,
-                value="campus",
+                value=["campus"],
                 inline=True,
                 className="chips-grupo",
                 labelClassName="chip",
@@ -57,6 +59,14 @@ def _chip_selector(id_):
         ],
         className="card-chips",
     )
+
+
+def _ordenar_eixos(marcados, ordem_anterior):
+    """Mantém os campos ativos na ordem em que foram marcados."""
+    marcados = list(dict.fromkeys(marcados or []))
+    ordem = [eixo for eixo in (ordem_anterior or []) if eixo in marcados]
+    ordem.extend(eixo for eixo in marcados if eixo not in ordem)
+    return ordem
 
 
 def _fic_selector(id_):
@@ -117,6 +127,7 @@ def layout():
             cabecalho,
             dcc.Loading(html.Div(id="matriculas-kpis", className="kpis-figma")),
             _chip_selector("matriculas-eixo"),
+            dcc.Store(id="matriculas-eixos-ordenados", data=["campus"]),
             dcc.Loading(html.Div(id="matriculas-matriz")),
             filtros,
         ],
@@ -135,29 +146,50 @@ def _filtrar(df, campus, tipo_curso, programa, fic):
     return df
 
 
-def _tabela_matriculas(df, filtros):
-    """Tabela do Figma: quebra por campus com Ano PNP / Total de Matrículas,
-    Concluídas, Integralizadas, Em Curso e Evasões, e linha de total."""
-    coluna = "cidade" if filtros.eixo == "campus" else coluna_para_eixo(filtros.eixo)
-    rotulo_eixo = {o["value"]: o["label"] for o in EIXOS}.get(filtros.eixo, filtros.eixo)
+def _metricas(grupo):
+    return {
+        "total": len(grupo),
+        "concluidas": int((grupo["status_corrigido"] == STATUS_CONCLUIDA).sum()),
+        "integralizadas": int((grupo["status_corrigido"] == STATUS_INTEGRALIZADA).sum()),
+        "em_curso": int((grupo["status_corrigido"] == STATUS_EM_CURSO).sum()),
+        "evasoes": int(grupo["status_corrigido"].apply(eh_evadido).sum()),
+    }
+
+
+def _linhas_hierarquicas(df, eixos):
+    """Cria uma pré-ordem da árvore, agregada novamente em cada nível."""
     linhas = []
-    for chave, grupo in df.groupby(coluna, dropna=False):
-        total = len(grupo)
-        concluidas = int((grupo["status_corrigido"] == STATUS_CONCLUIDA).sum())
-        integralizadas = int((grupo["status_corrigido"] == STATUS_INTEGRALIZADA).sum())
-        em_curso = int((grupo["status_corrigido"] == STATUS_EM_CURSO).sum())
-        evasoes = int(grupo["status_corrigido"].apply(eh_evadido).sum())
-        linhas.append(
-            {
-                "eixo": chave,
-                "total": total,
-                "concluidas": concluidas,
-                "integralizadas": integralizadas,
-                "em_curso": em_curso,
-                "evasoes": evasoes,
-            }
-        )
-    linhas.sort(key=lambda l: str(l["eixo"]))
+
+    def visitar(grupo, nivel, caminho, pai=None):
+        eixo = eixos[nivel]
+        coluna = "cidade" if eixo == "campus" else coluna_para_eixo(eixo)
+        grupos = list(grupo.groupby(coluna, dropna=False, sort=False))
+        grupos.sort(key=lambda item: str(item[0]))
+        for indice, (chave, subgrupo) in enumerate(grupos):
+            id_grupo = "grupo-" + "-".join(map(str, caminho + (indice,)))
+            linhas.append(
+                {
+                    "eixo": "Não informado" if chave is None or chave != chave else chave,
+                    "nivel": nivel,
+                    "id": id_grupo,
+                    "pai": pai,
+                    "tem_filhos": nivel + 1 < len(eixos),
+                    **_metricas(subgrupo),
+                }
+            )
+            if nivel + 1 < len(eixos):
+                visitar(subgrupo, nivel + 1, caminho + (indice,), id_grupo)
+
+    visitar(df, 0, ())
+    return linhas
+
+
+def _tabela_matriculas(df, eixos):
+    """Matriz hierárquica com agregações em todos os campos selecionados."""
+    eixos = _ordenar_eixos(eixos, eixos)
+    rotulos = {o["value"]: o["label"] for o in EIXOS}
+    rotulo_eixo = " › ".join(rotulos.get(eixo, eixo) for eixo in eixos) or "Total geral"
+    linhas = _linhas_hierarquicas(df, eixos) if eixos else []
 
     def _td(valor, classe="num"):
         return html.Td(formatar_valor(valor, "#,0"), className=classe)
@@ -167,33 +199,45 @@ def _tabela_matriculas(df, filtros):
             return html.Td("—", className="num vazio")
         return html.Td(formatar_valor(valor, "#,0"), className="num")
 
-    corpo = [
-        html.Tr(
+    corpo = []
+    for linha in linhas:
+        controle = (
+            html.Button(
+                html.I(className="fas fa-chevron-down", **{"aria-hidden": "true"}),
+                className="matriz-expansor",
+                type="button",
+                title="Recolher grupo",
+                **{"aria-expanded": "true", "aria-label": f"Recolher {linha['eixo']}"},
+            )
+            if linha["tem_filhos"]
+            else html.Span(className="matriz-expansor-espaco", **{"aria-hidden": "true"})
+        )
+        corpo.append(html.Tr(
             [
-                html.Td(linha["eixo"], className="campus"),
+                html.Td(
+                    html.Div([controle, html.Span(str(linha["eixo"]))], className="matriz-rotulo"),
+                    className="campus",
+                    style={"--nivel": str(linha["nivel"])},
+                ),
                 _td(linha["total"]),
                 _td(linha["concluidas"]),
                 _td_integralizadas(linha["integralizadas"]),
                 _td(linha["em_curso"]),
                 html.Td(formatar_valor(linha["evasoes"], "#,0"), className="evasao"),
-            ]
-        )
-        for linha in linhas
-    ]
+            ],
+            className=f"matriz-nivel-{linha['nivel']}",
+            **{"data-group-id": linha["id"], "data-parent-id": linha["pai"] or "", "data-level": linha["nivel"]},
+        ))
 
-    total = sum(l["total"] for l in linhas)
-    concluidas = sum(l["concluidas"] for l in linhas)
-    integralizadas = sum(l["integralizadas"] for l in linhas)
-    em_curso = sum(l["em_curso"] for l in linhas)
-    evasoes = sum(l["evasoes"] for l in linhas)
+    totais = _metricas(df)
     rodape = html.Tr(
         [
             html.Td("Total", className="campus"),
-            _td(total),
-            _td(concluidas),
-            _td_integralizadas(integralizadas),
-            _td(em_curso),
-            html.Td(formatar_valor(evasoes, "#,0"), className="evasao"),
+            _td(totais["total"]),
+            _td(totais["concluidas"]),
+            _td_integralizadas(totais["integralizadas"]),
+            _td(totais["em_curso"]),
+            html.Td(formatar_valor(totais["evasoes"], "#,0"), className="evasao"),
         ]
     )
 
@@ -202,7 +246,7 @@ def _tabela_matriculas(df, filtros):
             html.Tr(
                 [
                     html.Th(rotulo_eixo, rowSpan=2, scope="col"),
-                    html.Th("Ano PNP", scope="col"),
+                    html.Th("Ano PNP", scope="col", **{"data-no-sort": "true"}),
                     html.Th("Concluintes", colSpan=2, scope="colgroup"),
                     html.Th("Em Curso", rowSpan=2, scope="col", className="negrito"),
                     html.Th("Evasões", rowSpan=2, scope="col", className="negrito"),
@@ -229,7 +273,10 @@ def _tabela_matriculas(df, filtros):
     return html.Div(
         [
             html.Div(
-                html.Table([colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)], className="tabela-landing"),
+                html.Table(
+                    [colgroup, cabecalho, html.Tbody(corpo), html.Tfoot(rodape)],
+                    className="tabela-landing tabela-hierarquica",
+                ),
                 className="rolagem-tabela",
                 tabIndex="0",
                 role="region",
@@ -242,18 +289,28 @@ def _tabela_matriculas(df, filtros):
 
 
 @callback(
+    Output("matriculas-eixos-ordenados", "data"),
+    Input("matriculas-eixo", "value"),
+    State("matriculas-eixos-ordenados", "data"),
+)
+def atualizar_ordem_eixos(marcados, ordem_anterior):
+    return _ordenar_eixos(marcados, ordem_anterior)
+
+
+@callback(
     Output("matriculas-kpis", "children"),
     Output("matriculas-matriz", "children"),
     Input("matriculas-fic", "value"),
-    Input("matriculas-eixo", "value"),
+    Input("matriculas-eixos-ordenados", "data"),
     Input("matriculas-filtro-campus", "value"),
     Input("matriculas-filtro-tipo-curso", "value"),
     Input("matriculas-filtro-programa", "value"),
 )
-def atualizar(fic, eixo, campus, tipo_curso, programa):
+def atualizar(fic, eixos, campus, tipo_curso, programa):
     ano_base = ano_base_ativo() or 2026
     df = _filtrar(carregar_matriculas(), campus, tipo_curso, programa, fic)
-    filtros = FiltrosAtivos(ano_base=ano_base, eixo=eixo or "campus", incluir_fic=(fic == "com_fic"))
+    eixos = eixos or []
+    filtros = FiltrosAtivos(ano_base=ano_base, eixo=eixos[0] if eixos else "campus", incluir_fic=(fic == "com_fic"))
 
     df_ano_base = df[df["ano_base"] == ano_base]
     total = contar_matriculas(df, filtros)
@@ -272,15 +329,15 @@ def atualizar(fic, eixo, campus, tipo_curso, programa):
     kpis = [
         _kpi("Cursos", cursos_ativos),
         _kpi("Matrículas", total, formato="#,0"),
-        _kpi("Matrículas equivalentes", equivalentes, formato="#,0.00", empty_state="dado incompleto"),
-        _kpi("Matrículas concluídas", concluidas),
         _kpi("Ingressantes", ingressantes),
+        _kpi("Matrículas concluídas", concluidas),
+        _kpi("Matrículas equivalentes", equivalentes, formato="#,0.00", empty_state="dado incompleto"),
     ]
 
     if df.empty:
         matriz = mensagem_ds("info", "Sem dados para o eixo selecionado.")
     else:
-        matriz = _tabela_matriculas(df, filtros)
+        matriz = _tabela_matriculas(df, eixos)
 
     return kpis, matriz
 
@@ -296,4 +353,4 @@ def atualizar(fic, eixo, campus, tipo_curso, programa):
 )
 def limpar_filtros(_n_clicks):
     """BR-MIGRAR-023."""
-    return "__todos__", "__todos__", "__todos__", "com_fic", "campus"
+    return "__todos__", "__todos__", "__todos__", "com_fic", ["campus"]

@@ -3,7 +3,7 @@
 ## Problem Statement
 
 O painel precisa funcionar bem em celulares (a partir de 320px) e em telas grandes (até 1920px), usando o
-Padrão Digital de Governo (gov.br DS) de fato, e não só as suas cores, em tema claro e em tema escuro. O código atual usa o DS pela metade e não tem tema escuro:
+Padrão Digital de Governo (gov.br DS) de fato, e não só as suas cores, em tema claro e em tema escuro. No baseline anterior à implementação, o código usava o DS pela metade e não tinha tema escuro:
 
 - As 5 páginas públicas (Dash) têm cabeçalho, menu, rodapé e cartões próprios (`app-header`, `nav-menu`,
   `nav-card`, `kpi-card`) e usam `dbc.Card`, `dbc.Table`, `dbc.Nav` e `dbc.Button` sobre `dbc.themes.BOOTSTRAP`
@@ -24,12 +24,12 @@ celular real antes do cutover; `CUTOVER.md` mantém esse item aberto.
 
 ## Goals
 
-- [ ] As 5 páginas públicas e as 6 páginas administrativas usam componentes `br-*` do gov.br DS 3.7.0 para cabeçalho,
+- [x] As 4 páginas públicas atuais e as páginas administrativas usam componentes `br-*` do gov.br DS 3.7.0 para cabeçalho,
       menu, rodapé, cartões, tabelas, filtros, botões e mensagens.
-- [ ] Nenhuma página tem rolagem horizontal entre 320px e 1920px, e os pontos de quebra são os do DS.
-- [ ] O DS é carregado uma única vez por página (1 CSS + 1 JS), sem os 162 arquivos avulsos e sem Bootstrap.
-- [ ] As 11 páginas têm tema claro e tema escuro, escolhidos pela preferência do sistema ou por um botão no cabeçalho.
-- [ ] A gestão de campi do Sistec (listar, editar, incluir, desativar, excluir) segue o padrão de CRUD do DS: lista em tabela, edição em página própria com rótulos visíveis e exclusão com modal de confirmação.
+- [x] Nenhuma página tem rolagem horizontal entre 320px e 1920px, exceto tabelas dentro da própria região rolável; os pontos de quebra são os do DS.
+- [x] O DS é carregado uma única vez por página, sem os 162 arquivos avulsos e sem Bootstrap.
+- [x] As telas públicas e administrativas têm tema claro e tema escuro, escolhidos pela preferência do sistema ou por um botão no cabeçalho.
+- [x] A gestão de campi do Sistec (listar, editar, incluir, desativar, excluir) segue o padrão de CRUD do DS: lista em tabela, edição em página própria com rótulos visíveis e exclusão com modal de confirmação.
 - [ ] O item "design gov.br validado em dispositivo móvel real" de `CUTOVER.md` fica marcado com resultado registrado.
 
 ## Out of Scope
@@ -46,7 +46,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | Banner de cookies (`cookiebar`) do DS                    | O painel não usa cookies de rastreamento                               |
 | Modelos de LGPD (termo de consentimento, política de privacidade, preferências de dados) | O painel não coleta nem guarda dado pessoal (Princípio III da constituição) |
 | Aviso de expiração de sessão, "Entrar com gov.br", "Primeiro acesso" e "Manter-me conectado" dos modelos de sessão | Decisão do usuário: o painel não tem vínculo com o login gov.br; o login é só do administrador local (e-mail e senha) |
-| Seleção em lote, ordenação por coluna, menu de três pontos e ação "Visualizar" da lista de CRUD do modelo | Não há caso de uso na gestão de campi |
+| Seleção em lote, menu de três pontos e ação "Visualizar" da lista de CRUD do modelo | Não há caso de uso na gestão de campi; a ordenação por coluna passou a ser comportamento compartilhado das tabelas de dados |
 | Painel "Filtros" recolhível da lista de CRUD              | A busca por texto cobre a lista de cerca de 22 campi                    |
 | Assistente em etapas (`br-step`) do modelo de cadastro   | Os formulários de campus têm 5 campos, sem etapas                       |
 
@@ -65,7 +65,7 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 | Largura mínima suportada | 320px | WCAG 1.4.10 (reflow) e já era RF-07 da feature anterior | n |
 | Grid fluida ou fixa | Fluida (`container-fluid`, 100%) até 1599px; fixa com `max-width` de 1520px a partir de 1600px | O DS recomenda grid fluida para sistemas que precisam do espaço útil (tabelas largas) e fixa para TV, por legibilidade; 1520px é `--grid-tv-maxwidth` | n |
 | Colunas, margem e medianiz | 4 colunas, margem 8px, medianiz 16px abaixo de 576px; 8 colunas, margem 40px, medianiz 24px de 576px a 1279px; 12 colunas, margem 40px, medianiz 24px de 1280px a 1599px e 40px a partir de 1600px | Tokens `--grid-portrait/tablet/desktop/tv-*` e página Sistema de Grid | n |
-| Escopo de telas | 5 páginas públicas (Dash) e 6 administrativas (Flask: login, recuperar acesso, instalação, atualizar, histórico, configurações) | O pedido é "o design da aplicação" | n |
+| Escopo de telas | 4 páginas públicas atuais (Dash), `/matriculas` como redirecionamento legado, e páginas administrativas Flask | A landing foi consolidada como dashboard de Matrículas | y |
 | Origem dos arquivos do DS | Local, sem CDN | Já versionado; painel não pode depender de rede externa nem enviar acessos a terceiros | n |
 | Ativação do tema escuro | Começa pela preferência do sistema (`prefers-color-scheme`); botão no cabeçalho alterna claro e escuro e a escolha fica salva no navegador | Resposta do usuário | y |
 | Escopo do tema escuro | As 11 telas (5 públicas e 6 administrativas) | Resposta do usuário; evita o sistema mudar de aparência ao entrar na área administrativa | y |
@@ -87,6 +87,10 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 | Área mínima de toque | 24×24px CSS | WCAG 2.2 AA, critério 2.5.8; o projeto já adota 2.2 AA | n |
 | Como verificar larguras reais | `pytest` para HTML, classes e CSS estáticos; conferência visual em 320, 576, 992, 1280 e 1600px no navegador; sem nova dependência de teste de navegador | Constituição exige justificar nova dependência no plano | n |
 | Varredura de dimensões implícitas | Validação de entrada: coberta por DS-21. Falha: casos de borda. Dependência externa: DS-24 (DS local, sem CDN). Auth, idempotência, concorrência, ciclo de vida de dados, observabilidade e transição de estado: N/A porque a feature só muda apresentação | Dimensões da varredura do Specify | n |
+| Referência visual das demais páginas públicas (extensão de 2026-09-22) | Dashboard de Matrículas em `/`, no estado atual: cabeçalho com ano PNP e data, cartões com título acima do valor e destaque seletivo, tabela azul com total, filtros em painel e menu lateral do shell | É o padrão já entregue e validado na mesma feature; não exige nova identidade visual | y |
+| Recortes dos Percentuais Legais | O seletor de eixo passa a controlar uma tabela exploratória por grupo; os três cartões de meta continuam calculados para o conjunto filtrado, e a tabela não classifica cada grupo como cumprimento legal | Hoje o seletor é inerte; o recorte ajuda a explicar a composição do total sem atribuir obrigação legal a cada campus ou grupo | n |
+| Indicadores adicionais | A página Evasão ganha um cartão de taxa agregada calculado pela função `taxa_evasao` já usada na tabela; nenhum percentual, tendência ou comparação sem fonte é criado | Dá uma síntese antes da decomposição, preservando a regra oficial | n |
+| Dimensões implícitas da extensão visual | Filtros, estados vazios e ausência de publicação: DS-91, DS-95 e DS-96; dependência externa: N/A, DS local; auth, persistência, concorrência, retry e transições: N/A, nenhuma dessas operações muda | A extensão modifica apenas a apresentação pública da versão publicada | n |
 
 **Open questions:** none - all resolved or logged above (required before the spec is confirmed).
 
@@ -129,19 +133,20 @@ padrão de governo e uso os controles sem estranhar.
 
 **Acceptance Criteria**:
 
-1. The system SHALL renderizar o cabeçalho das 5 páginas públicas com o componente `br-header` do DS, contendo o logotipo, o título "Painel de Acompanhamento Sistec" e o nome da instituição.  <!-- ubiquitous -->
-2. The system SHALL renderizar o menu principal com o componente `br-menu`, com os itens Início, Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual e Percentuais Legais, nessa ordem.  <!-- ubiquitous -->
+1. The system SHALL renderizar o cabeçalho das 4 páginas públicas atuais com o componente `br-header` do DS, contendo o logotipo, o título "Painel de Acompanhamento Sistec" e o nome da instituição; `/matriculas` SHALL redirecionar para o dashboard de Matrículas em `/`.  <!-- ubiquitous -->
+2. The system SHALL renderizar o menu principal com o componente `br-menu`, com os itens Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual e Percentuais Legais, nessa ordem.  <!-- ubiquitous -->
 3. WHEN uma página pública é exibida THEN the system SHALL marcar o item de menu dessa página com `aria-current="page"` e com o estado ativo do DS.  <!-- event-driven -->
-4. The system SHALL renderizar KPIs, medidores e cartões de navegação da capa com o componente `br-card`.  <!-- ubiquitous -->
+4. The system SHALL renderizar em `/` o dashboard de Matrículas com cinco KPIs, seletor do eixo da matriz, filtros de campus/tipo de curso/programa/FIC e ação para limpar filtros.  <!-- ubiquitous -->
 5. The system SHALL renderizar as tabelas de dados com o componente `br-table`.  <!-- ubiquitous -->
 6. The system SHALL renderizar os filtros de opção exclusiva com `br-radio`, os filtros de lista com `dcc.Dropdown` estilizado pelas variáveis do DS e o botão "Limpar Filtros" com `br-button`.  <!-- ubiquitous -->
 7. The system SHALL renderizar o rodapé com o componente `br-footer`, contendo nome, site e e-mail de contato da instituição e o link "Área administrativa".  <!-- ubiquitous -->
 8. The system SHALL exibir o aviso "sem correção PNP" e o aviso de filtro PROEJA com o componente `br-message` do tipo `warning`.  <!-- ubiquitous -->
 9. The system SHALL NOT carregar a folha de estilo `dbc.themes.BOOTSTRAP` nas páginas públicas.  <!-- ubiquitous -->
 10. WHEN uma página pública diferente da capa é exibida THEN the system SHALL mostrar abaixo do cabeçalho o `br-breadcrumb` "Início > título da página".  <!-- event-driven -->
+11. WHEN uma tabela de dados é exibida THEN the system SHALL tornar ordenáveis os cabeçalhos simples por clique, Enter e Espaço, atualizar `aria-sort`, comparar texto, número brasileiro, percentual e data, manter vazios ao fim e ignorar agrupadores ou `data-no-sort`.  <!-- event-driven -->
 
-**Independent Test**: Abrir `/`, `/matriculas`, `/eficiencia`, `/evasao` e `/percentuais-legais` e conferir no HTML
-renderizado as classes `br-header`, `br-menu`, `br-card`, `br-table`, `br-footer`, sem `card`/`table`/`navbar` do Bootstrap.
+**Independent Test**: Abrir `/`, `/eficiencia`, `/evasao` e `/percentuais-legais`, conferir o shell DS e o dashboard
+de Matrículas; confirmar que `/matriculas` redireciona para `/` e testar a ordenação das tabelas por mouse e teclado.
 
 ---
 
@@ -340,9 +345,37 @@ testes de largura não pegam (toque, teclado virtual, barra de endereço).
 
 **Acceptance Criteria**:
 
-1. WHEN a validação de cutover é feita THEN o checklist de `CUTOVER.md` SHALL registrar o resultado do teste em ao menos 1 celular real (largura de 320px a 430px) e em 1 tela de 1280px ou mais, para as 5 páginas públicas e a tela `/admin/atualizar`.  <!-- event-driven -->
+1. WHEN a validação de cutover é feita THEN o checklist de `CUTOVER.md` SHALL registrar o resultado do teste em ao menos 1 celular real (largura de 320px a 430px) e em 1 tela de 1280px ou mais, para as 4 páginas públicas atuais, o redirecionamento `/matriculas` e a tela `/admin/atualizar`.  <!-- event-driven -->
 
 **Independent Test**: Ler `CUTOVER.md` e ver o item de design marcado, com dispositivo, largura e data.
+
+---
+
+### P1: Padronização e narrativa das demais páginas públicas ⭐ MVP (extensão planejada em 2026-09-22)
+
+**User Story**: Como visitante, quero ler Eficiência Acadêmica, Taxa de Evasão Anual e Percentuais Legais com a mesma linguagem visual de Matrículas, para entender primeiro o resultado principal e depois seus recortes sem reaprender a interface.
+
+**Why P1**: O shell já é comum, mas as três páginas ainda têm estrutura, cartões, tabelas e posição dos filtros diferentes do dashboard de Matrículas.
+
+**Acceptance Criteria** (DS-86 a DS-100, na ordem):
+
+1. WHEN `/eficiencia`, `/evasao` ou `/percentuais-legais` é exibida THEN the system SHALL manter o `br-header`, o `br-menu` lateral, o item ativo, o breadcrumb e o `br-footer` fornecidos pelo shell comum, na mesma posição e com o mesmo comportamento de `/`.
+2. WHEN qualquer uma das três páginas tem dados publicados THEN the system SHALL exibir título, subtítulo `Acompanhamento Sistec | Ano PNP {ano_base}` e `Atualizado em {dd/mm/aaaa}` quando houver data de publicação, com a hierarquia tipográfica de Matrículas.
+3. WHEN qualquer uma das três páginas tem dados publicados THEN the system SHALL apresentar, nesta ordem de leitura e de DOM, resumo numérico, controle de recorte da tabela quando aplicável, detalhamento tabular e painel de filtros.
+4. WHEN um indicador é mostrado em cartão THEN the system SHALL usar título acima do valor, alinhamento à esquerda, borda e espaçamento de Matrículas, com destaque de superfície apenas no indicador principal da página.
+5. WHEN uma tabela de detalhamento é mostrada THEN the system SHALL usar cabeçalho azul, linhas legíveis, valores numéricos alinhados à direita, legenda acessível e rolagem contida, de acordo com a tabela de Matrículas.
+6. WHEN os filtros são mostrados THEN the system SHALL usar o painel, os rótulos, os controles FIC e a ação `Limpar Filtros` no padrão visual de Matrículas, preservando opções e valores iniciais de cada página.
+7. WHEN a página Eficiência Acadêmica tem dados após os filtros THEN the system SHALL exibir o IEA do conjunto filtrado em cartão principal e a matriz de IEA por eixo selecionado, calculados com `app.domain.eficiencia.iea`.
+8. WHEN a página Taxa de Evasão Anual tem dados após os filtros THEN the system SHALL exibir a taxa agregada em cartão principal e a taxa por campus na tabela, ambas calculadas com `app.domain.matriculas.taxa_evasao`, mantendo o rótulo textual Baixa, Média ou Alta em cada linha.
+9. WHEN a página Percentuais Legais tem dados após os filtros THEN the system SHALL exibir os três percentuais, suas metas e situações textuais, mais Matrículas equivalentes, com o percentual Técnico como destaque visual principal.
+10. WHEN o eixo da página Percentuais Legais muda THEN the system SHALL atualizar uma tabela exploratória por esse eixo com os três percentuais e Matrículas equivalentes por grupo, usando as funções de domínio existentes e a legenda `Recorte exploratório; as metas legais são avaliadas no conjunto filtrado`.
+11. WHEN o filtro de Programa Associado limita Percentuais Legais THEN the system SHALL manter visível o aviso atual de possível distorção do percentual PROEJA ao lado do resumo.
+12. WHEN `Limpar Filtros` é acionado THEN the system SHALL restaurar em cada página os valores iniciais atuais: Eficiência e Evasão sem FIC; Eficiência e Percentuais no eixo Campus; listas em Todos.
+13. IF não houver dados publicados ou o recorte estiver vazio THEN the system SHALL exibir a mensagem informativa correspondente, sem representar ausência como desempenho igual a zero; zero real e `dado incompleto` conservarão seus textos distintos.
+14. WHILE a largura estiver entre 320px e 1920px ou o tema for claro ou escuro, the system SHALL manter cartões e filtros sem cortes, tabela com rolagem apenas interna, foco visível e contraste de texto de pelo menos 4,5:1 (3:1 para números grandes).
+15. The system SHALL conservar os valores, o universo filtrado, o ano-base e as regras oficiais dos indicadores existentes para os mesmos dados de entrada, sem acrescentar tendências, rankings ou comparações não sustentadas pelos dados.
+
+**Independent Test**: Com a mesma versão publicada e fixtures de dados, abrir as três rotas e `/` em larguras de 390, 768, 1280 e 1600px, nos dois temas; comparar shell, estrutura, filtros e tabela, exercitar recortes e comparar os resultados numéricos com as funções de domínio.
 
 ---
 
@@ -455,12 +488,27 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | DS-83          | P2: Busca e paginação (AC 4, paginação) | Design | Verified |
 | DS-84          | P3: Cards (AC 1, botão de visualização) | Design | Verified |
 | DS-85          | P3: Cards (AC 2, br-card por campus) | Design | Verified |
+| DS-86          | P1: Demais páginas públicas (AC 1, shell) | Tasks | In Tasks |
+| DS-87          | P1: Demais páginas públicas (AC 2, contexto) | Tasks | In Tasks |
+| DS-88          | P1: Demais páginas públicas (AC 3, ordem de leitura) | Tasks | In Tasks |
+| DS-89          | P1: Demais páginas públicas (AC 4, cartões) | Tasks | In Tasks |
+| DS-90          | P1: Demais páginas públicas (AC 5, tabelas) | Tasks | In Tasks |
+| DS-91          | P1: Demais páginas públicas (AC 6, filtros) | Tasks | In Tasks |
+| DS-92          | P1: Demais páginas públicas (AC 7, eficiência) | Tasks | In Tasks |
+| DS-93          | P1: Demais páginas públicas (AC 8, evasão) | Tasks | In Tasks |
+| DS-94          | P1: Demais páginas públicas (AC 9, percentuais) | Tasks | In Tasks |
+| DS-95          | P1: Demais páginas públicas (AC 10, recorte legal) | Tasks | In Tasks |
+| DS-96          | P1: Demais páginas públicas (AC 11, aviso PROEJA) | Tasks | In Tasks |
+| DS-97          | P1: Demais páginas públicas (AC 12, limpar filtros) | Tasks | In Tasks |
+| DS-98          | P1: Demais páginas públicas (AC 13, estados sem dados) | Tasks | In Tasks |
+| DS-99          | P1: Demais páginas públicas (AC 14, responsividade e acessibilidade) | Tasks | In Tasks |
+| DS-100         | P1: Demais páginas públicas (AC 15, paridade) | Tasks | In Tasks |
 
 **ID format:** `[CATEGORY]-[NUMBER]` (e.g., `DS-01`)
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified
 
-**Coverage:** 85 total, 85 mapped to tasks, 0 unmapped ✅
+**Coverage:** 100 total, 100 mapped to tasks, 0 unmapped. DS-86 a DS-100 estão planejados, sem execução.
 
 ---
 
@@ -475,3 +523,5 @@ How we know the feature is successful:
 - [ ] Em `/admin/config`, nenhum campo de campus fica dentro de célula de tabela, e editar, incluir e excluir um campus seguem o fluxo lista, página de edição e modal.
 - [ ] `pytest` passa e `scripts/verificar_prontidao_cutover.py` sai com 0 (Constituição, Fluxo de Desenvolvimento).
 - [ ] `CUTOVER.md` registra o teste em celular real e em tela grande.
+- [ ] Eficiência, Evasão e Percentuais Legais seguem a hierarquia visual de Matrículas, com os mesmos estados de menu, tema, cartões, tabela e filtros.
+- [ ] Para os mesmos dados e filtros, todos os indicadores preexistentes mantêm os valores anteriores; a nova síntese de Evasão coincide com `taxa_evasao` do conjunto filtrado.

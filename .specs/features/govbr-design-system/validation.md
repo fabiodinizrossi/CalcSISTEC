@@ -28,7 +28,7 @@ O código e os testes do working tree real não foram tocados. Único arquivo cr
 - `git diff 42c5f43^..HEAD -- tests`: 16 arquivos, **3157 inserções, 0 remoções** (os 16 são novos frente à linha de base). Nenhum teste foi removido nem pulado.
 - Edições internas ao intervalo (commits `0b32445` e `0743980`), todas legítimas frente à spec:
   1. `tests/test_shell.py:187` e `tests/test_shell_parciais.py:211`: só renomeados (`core_min` para "o script do DS"); as asserções passam a exigir `core-init.min.js` uma vez, coerente com AD-004 e com DS-26 reescrito.
-  2. `tests/test_style_css.py:101` e `tests/test_js_fiacao.py:71` (DS-05): no commit `0743980` (AD-005), o teste do menu a 992px deixou de exigir "botão presente que recolhe" e passou a exigir a barra lateral fixa — `test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao` (`.br-menu{position:fixed;width:var(--menu-largura)}`, `.header-menu-trigger{display:none}`, `body{padding-left:var(--menu-largura)}`) e `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (clique e teclas não marcam `menu-recolhido`).
+  2. Evidência histórica: no commit `0743980`, DS-05 usava `position:fixed` e `padding-left`. A rodada de paridade Figma posterior (AC-1.1 a AC-1.4, abaixo) substituiu essa implementação por grid no `body`, menu estático na coluna lateral e cabeçalho/rodapé em largura total.
   3. `tests/test_shell_parciais.py:216-220`: a lista proibida trocou `"core-init"` por `"core-init.js"` (o script minificado agora é o correto). Continua proibindo `dist/components/`, `core-base`, a versão não minificada `core-init.js` e `core.js` (DS-28).
 
 ---
@@ -49,7 +49,7 @@ Siglas: `S`=`tests/test_shell.py`, `P`=`tests/test_shell_parciais.py`, `A`=`test
 | DS-02 | `@media` só em 576/992/1280/1600 | `C:27-33` `larguras <= PONTOS_DO_DS`; `C:22-24` sem `768px` nem `320px` | PASS |
 | DS-03 | sem rolagem horizontal de 320 a 1920px | Manual: `VV:13-32` (14 telas x 5 larguras, `scrollWidth <= clientWidth`); complementos automáticos `C:138-140` (`overflow-wrap: anywhere`, `pre` com `overflow-x: auto`) e `C:143-147` (`.br-button` quebra rótulo) | PASS (manual) |
 | DS-04 | < 992px: menu sobreposto, fechado por padrão, `aria-expanded` no botão | `JF:94` largura 576 `== {"inicial": "false", "recolhido": False}`; `JF:108` `aria-expanded` `"true"` ao abrir e `"false"` ao fechar; `P:80` `aria-expanded="false"` e `aria-controls="main-navigation"`; sobreposto no navegador: `VV:39` | PASS |
-| DS-05 | >= 992px: menu persistente, aberto por padrão, como **barra lateral fixa à esquerda, sem botão hambúrguer** | `C:96-98` `test_menu_fica_persistente_e_aberto_a_partir_de_992px` (`.br-menu .menu-container, .br-menu.active .menu-container{display:block}` em `@media (min-width: 992px)`); `C:101-106` `test_a_partir_de_992px_o_menu_vira_barra_lateral_fixa_sem_botao` (`.br-menu{position:fixed;width:var(--menu-largura)}`, `.header-menu-trigger{display:none}`, `body{padding-left:var(--menu-largura)}`); `JF:71-84` `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (a 1280px, clique/Enter/Espaço não marcam `menu-recolhido`); manual `VV:40` (Chrome a 992/1600px, AD-005) | PASS |
+| DS-05 | >= 992px: menu persistente, aberto por padrão, na coluna lateral esquerda, sem botão hambúrguer | Evidência final na rodada Figma: `grid-template-columns: var(--menu-largura) 1fr`, `.br-menu{position:static}` e AC-1.1 a AC-2.3; abaixo de 992px permanece sobreposto | PASS |
 | DS-06 | < 576px: KPIs, medidores e filtros em coluna única | `PP:120` `"col-12" in coluna.className`, `PP:186`, `PP:304`, `PP:35` (`{"col-12","col-md-6","col-xl-3"}`), `CP:166` (filtros: cada coluna com `col-12`) | PASS |
 | DS-07 | >= 1600px: conteúdo limitado a 1520px, centralizado | `C:77-80` `max-width: var(--grid-tv-maxwidth)` (= 1520px em `core-tokens.css:1201`) e `margin-inline: auto` no `@media (min-width: 1600px)`; manual `VV:37` (1520px medido nas 14 telas) | PASS |
 | DS-08 | tabela larga rola só dentro do contêiner | `AC:166` `<div class="br-table"><div class="responsive"><table`; `CP:63-67` `raiz.className == "br-table"`, `children.className == "responsive"`; `AP:159` (histórico) | PASS |
@@ -205,7 +205,7 @@ Rodei em `git worktree --detach` do HEAD (`0743980`), com os alvos em scratch, r
 | M31 | `app/assets/style.css` | `display: none` removido do `.header-menu-trigger` | `C:105` (mesmo teste) | MORTO |
 | M32 | `app/static/js/menu.js` | reintroduz `menu.classList.toggle("menu-recolhido")` no clique | `JF:81` `test_o_menu_nao_tem_recolhimento_persistente_em_nenhuma_largura` (e `JF:94` `test_abaixo_de_992px_o_menu_comeca_fechado_e_o_botao_nao_recolhe_nada`) | MORTO |
 
-**Resultado do sensor do delta DS-05**: 3/3 mortos, 0 sobreviveram. O teste da barra lateral prende `position: fixed`, `width: var(--menu-largura)`, `.header-menu-trigger{display:none}` e `body{padding-left:var(--menu-largura)}`; o teste de fiação prende a ausência do recolhimento persistente.
+**Resultado do sensor do delta DS-05 (histórico)**: 3/3 mortos. A rodada Figma posterior atualizou a asserção estrutural para grid no `body`, menu estático e botão oculto em telas largas; o teste de fiação continua prendendo a ausência do recolhimento persistente.
 
 ---
 
@@ -242,7 +242,7 @@ Os campos nomeados alvejam valor ou estado, não apenas a chamada: `AC:212` (`["
 
 | Item | Motivo | Efeito enquanto pendente | Quem resolve |
 | ---- | ------ | ------------------------ | ------------ |
-| **DS-42** (celular real, 320-430px, e tela de 1280px ou mais; 5 páginas públicas e `/admin/atualizar`) | Passo humano de Jaline (T57): roteiro pronto em `CUTOVER.md:34-49`; o item de design (`CUTOVER.md:19`) só é marcado com dispositivo, largura e data | `CUTOVER.md` continua com o item desmarcado; DS-42 não passa a "Verified" | Jaline |
+| **DS-42** (celular real, 320-430px, e tela de 1280px ou mais; 4 páginas públicas atuais, redirecionamento `/matriculas` e `/admin/atualizar`) | Passo humano de Jaline (T57): roteiro pronto em `CUTOVER.md`; o item de design só é marcado com dispositivo, largura e data | `CUTOVER.md` continua com o item desmarcado; DS-42 não passa a "Verified" | Jaline |
 
 ---
 

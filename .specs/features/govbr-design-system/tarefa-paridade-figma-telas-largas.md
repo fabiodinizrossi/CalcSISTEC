@@ -8,7 +8,7 @@
 
 > **O documento tem duas partes.**
 > **Parte A** (seções 1 a 7, Defeitos 1 a 13, AC-1.1 a AC-13.3): telas largas, **já implementada** nos commits `26ddeca`..`127da82`.
-> **Parte B** (a partir da seção "Parte B", Defeitos 14 a 20, AC-14.1 a AC-20.2): **adaptação a celular, pendente**. Aberta em 21/09/2026 a partir de uma captura em 390px, depois da Parte A. É o trabalho a fazer agora.
+> **Parte B** (a partir da seção "Parte B", Defeitos 14 a 20, AC-14.1 a AC-20.2): **adaptação a celular concluída** em 21/09/2026. A evidência por viewport e o gate de testes estão em `validation.md`, na seção “Rodada Parte B”.
 
 ---
 

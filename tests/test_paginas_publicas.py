@@ -52,25 +52,39 @@ def matriculas_com_dados(monkeypatch):
 
 
 def _atualizar(pagina_matriculas):
-    return pagina_matriculas.atualizar("com_fic", "campus", "__todos__", "__todos__", "__todos__")
+    return pagina_matriculas.atualizar("com_fic", ["campus"], "__todos__", "__todos__", "__todos__")
 
 
 def test_matriculas_mostra_os_kpis_em_card_figma_com_os_mesmos_numeros(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
     cartoes = com_classe(kpis, "kpi-figma")
     assert [textos(c) for c in cartoes] == [
-        "2 Cursos",
-        "3 Matrículas",
-        "3,00 Matrículas equivalentes",
-        "1 Matrículas concluídas",
-        "2 Ingressantes",
+        "Cursos 2",
+        "Matrículas 3",
+        "Ingressantes 2",
+        "Matrículas concluídas 1",
+        "Matrículas equivalentes 3,00",
     ]
 
 
-def test_matriculas_poe_cinco_kpis_em_linha(matriculas_com_dados):
+def test_matriculas_poe_cinco_kpis_em_linha_com_titulo_acima_e_destaque_em_todos(matriculas_com_dados):
     kpis, _ = _atualizar(matriculas_com_dados)
     assert len(kpis) == 5
-    assert all(c.className == "kpi-figma" for c in kpis)
+    assert all("kpi-figma" in c.className.split() for c in kpis)
+    assert [c.className for c in kpis] == ["kpi-figma kpi-figma--destaque"] * 5
+    destaque = kpis[1]
+    assert [type(filho).__name__ for filho in destaque.children] == ["Div", "Div"]
+    assert destaque.children[0].className == "rotulo"
+    assert destaque.children[1].className == "valor"
+
+
+def test_kpi_estado_textual_nao_herda_os_32px_dos_numeros():
+    pagina_matriculas = pagina("matriculas")
+    cartao = pagina_matriculas._kpi(
+        "Matrículas equivalentes", None, formato="#,0.00", empty_state="dado incompleto"
+    )
+    assert textos(cartao) == "Matrículas equivalentes dado incompleto"
+    assert cartao.children[1].className == "valor valor--texto"
 
 
 def test_matriculas_mostra_a_tabela_figma_com_total_por_campus(matriculas_com_dados):
@@ -82,6 +96,53 @@ def test_matriculas_mostra_a_tabela_figma_com_total_por_campus(matriculas_com_da
         ["Jaguari", "1", "0", "—", "1", "0"],
         ["Total", "3", "1", "—", "2", "0"],
     ]
+
+
+def test_matriculas_monta_hierarquia_na_ordem_em_que_os_campos_foram_marcados(matriculas_com_dados):
+    _, matriz = matriculas_com_dados.atualizar(
+        "com_fic", ["nome_curso", "campus"], "__todos__", "__todos__", "__todos__"
+    )
+    linhas = [tr for tr in componentes(matriz) if type(tr).__name__ == "Tr" and getattr(tr, "data-level", None) is not None]
+    assert [(getattr(tr, "data-level"), textos(tr)) for tr in linhas] == [
+        (0, "Curso A 2 1 — 1 0"),
+        (1, "Alegrete 2 1 — 1 0"),
+        (0, "Curso B 1 0 — 1 0"),
+        (1, "Jaguari 1 0 — 1 0"),
+    ]
+
+
+def test_matriculas_recalcula_totais_dos_pais_e_folhas(matriculas_com_dados):
+    base = _matriculas_de_teste().copy()
+    base.loc[2, "subtipo_curso"] = "Concomitante"
+    matriculas_com_dados.carregar_matriculas = lambda: base
+    _, matriz = matriculas_com_dados.atualizar(
+        "com_fic", ["campus", "tipo_curso"], "__todos__", "__todos__", "__todos__"
+    )
+    linhas = [tr for tr in componentes(matriz) if type(tr).__name__ == "Tr" and getattr(tr, "data-level", None) is not None]
+    assert [textos(tr) for tr in linhas] == [
+        "Alegrete 2 1 — 1 0",
+        "Integrado 2 1 — 1 0",
+        "Jaguari 1 0 — 1 0",
+        "Concomitante 1 0 — 1 0",
+    ]
+    assert "Total 3 1 — 2 0" in textos(matriz)
+
+
+def test_ordem_dinamica_remove_e_reinsere_campo_no_fim(matriculas_com_dados):
+    ordenar = matriculas_com_dados._ordenar_eixos
+    assert ordenar(["campus", "modalidade"], ["campus"]) == ["campus", "modalidade"]
+    assert ordenar(["modalidade"], ["campus", "modalidade"]) == ["modalidade"]
+    assert ordenar(["campus", "modalidade"], ["modalidade"]) == ["modalidade", "campus"]
+
+
+def test_matriculas_sem_dimensao_exibe_apenas_total_geral(matriculas_com_dados):
+    _, matriz = matriculas_com_dados.atualizar(
+        "com_fic", [], "__todos__", "__todos__", "__todos__"
+    )
+    linhas = [tr for tr in componentes(matriz) if type(tr).__name__ == "Tr" and getattr(tr, "data-level", None) is not None]
+    assert linhas == []
+    assert "Total geral" in textos(matriz)
+    assert "Total 3 1 — 2 0" in textos(matriz)
 
 
 def test_matriculas_nao_usa_classes_nem_componentes_de_tabela_ou_card_do_bootstrap(matriculas_com_dados):
@@ -101,6 +162,15 @@ def test_matriculas_tabela_vem_em_rolagem_tabela_acessivel(matriculas_com_dados)
     assert wrapper.tabIndex == "0"
     assert wrapper.role == "region"
     assert getattr(wrapper, "aria-label") == "Tabela de matrículas por campus"
+
+
+def test_matriculas_hierarquica_permite_ordenacao_por_cabecalho(matriculas_com_dados):
+    _, matriz = matriculas_com_dados.atualizar(
+        "com_fic", ["campus", "nome_curso"], "__todos__", "__todos__", "__todos__"
+    )
+    tabelas = [c for c in componentes(matriz) if type(c).__name__ == "Table"]
+    assert len(tabelas) == 1
+    assert getattr(tabelas[0], "data-sortable", None) != "false"
 
 
 def test_matriculas_sem_dados_mostra_br_message_info(monkeypatch):

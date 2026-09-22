@@ -76,8 +76,9 @@ Em `/admin/campi`, botão "Excluir campus …".
 ## Observações fora do escopo
 
 - **Query string quebra as páginas do Dash.** `/matriculas?x=1` não renderiza o conteúdo: o Dash chama `layout(x="1")` e os `layout()` das páginas não aceitam parâmetros. Vem do código anterior a esta feature; fica como pendência (aceitar `**_` nos cinco `layout()`).
-- **Fonte:** Rawline carregou local (`/ds/vendor/rawline/`). O Font Awesome 5 (T53) **não foi vendorizado**: falta autorização de Jaline para baixar da rede. Sem ele, os botões de ícone mostram só o rótulo acessível (`aria-label`) e o ícone fica em branco.
-- Colunas da matriz de Matrículas mostram `co_unidade` e `total` (nomes crus): igual ao comportamento anterior.
+- **Fontes e ícones:** Rawline e Font Awesome 5.15.4 carregam localmente em `/ds/vendor/`; T53 foi concluída e os assets são verificados por `tests/test_shell_assets.py`.
+- A página inicial é o dashboard de Matrículas. A matriz usa rótulos de apresentação, preserva as seis colunas em uma região rolável no celular e os filtros ocupam a largura do card em telas estreitas.
+- As tabelas carregadas pelo shell recebem ordenação progressiva por `ordenacao-tabelas.js`; cabeçalhos ordenáveis expõem foco, `aria-sort` e ativação por clique, Enter ou Espaço. Agrupadores e `data-no-sort` ficam de fora.
 
 ## `scripts/verificar_prontidao_cutover.py`
 

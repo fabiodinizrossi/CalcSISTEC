@@ -47,6 +47,16 @@ def test_atualizar_js_sai_de_assets_e_e_servido_em_ds(cliente):
     resposta.close()
 
 
+def test_agrupamento_de_matriculas_e_servido_e_referenciado_pelo_shell(cliente):
+    caminho = RAIZ_APP / "static" / "js" / "agrupamento-matriculas.js"
+    resposta = cliente.get("/ds/js/agrupamento-matriculas.js")
+    assert resposta.status_code == 200
+    assert resposta.data == caminho.read_bytes()
+    resposta.close()
+    scripts = (RAIZ_APP / "templates" / "shell" / "_scripts.html").read_text(encoding="utf-8")
+    assert 'src="/ds/js/agrupamento-matriculas.js"' in scripts
+
+
 def test_tela_de_atualizar_referencia_o_script_em_ds(monkeypatch):
     from app import app as app_module
 

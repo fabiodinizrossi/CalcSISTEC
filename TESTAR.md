@@ -123,7 +123,9 @@ python -m pytest -q
 
 Cobrem a coleta contra o Sistec simulado, a recusa de rodar com identificador
 inválido, o CRUD de campi (inclusive a troca do identificador preservando o resto),
-o assistente de instalação e o reset.
+o assistente de instalação e o reset. Também cobrem o shell responsivo, a página
+inicial de Matrículas e a ordenação compartilhada das tabelas (texto, números,
+percentuais, datas, células vazias, cabeçalhos com `rowspan`/`colspan` e teclado).
 
 ## Quando algo dá errado
 
@@ -170,5 +172,9 @@ o assistente de instalação e o reset.
 - Teste o menu com o teclado: **Enter** e **Espaço** abrem, **Esc** fecha; em telas de 992px ou mais ele fica
   sempre à vista.
 - Em **Excluir** (na lista de campi) abre um modal: **Esc** ou **Cancelar** não excluem nada.
+- Nas tabelas, clique em um cabeçalho ou use **Enter/Espaço** para alternar entre ordem
+  decrescente e crescente. Cabeçalhos de agrupamento e a coluna **Ações** não ordenam.
+- Em 390px, confira que o título público fica em no máximo duas linhas, os filtros ocupam
+  a largura do card e somente a região da tabela rola horizontalmente.
 - Os testes automáticos: `python -m pytest -q`. Os de JavaScript (`tests/test_js_*.py`) precisam do `node` no PATH
   e são pulados sem ele.

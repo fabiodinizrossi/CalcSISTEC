@@ -23,11 +23,9 @@
 
 - [x] Schema v2 (versionamento interna/publicada/anterior, `fatores`, `campi_sistec`, `estado_versoes`, `historico`) — T004-T012
 - [x] `/admin/upload` removido; `/admin/atualizar` é a nova porta de entrada de dados (D-14)
-- [x] Extensão MV3 `extensao-sistec/` (baixa com a sessão da PI, sem senha, sem Downloads) — T013, T045, T046, T061
-- [x] Rotas `/api/sistec/*` com token por execução (D-16) e bloqueio de HTTP fora de `localhost` (D-19)
-- [ ] **Processo único (P-09)**: o registro em memória de execuções (`app/sistec/execucoes.py`) só funciona com **um único worker/processo**. Configurar o servidor de produção (`gunicorn`/`waitress`/etc.) com `--workers 1` (ou equivalente) antes do cutover — múltiplos workers quebram silenciosamente a fila e o limite de uma execução por administrador (RN-11)
-- [ ] **`CALCSISTEC_HTTPS=1`** configurado no ambiente de produção, com certificado válido — D-19 recusa `/api/sistec/*` sem isso fora de `localhost`
-- [ ] Extensão instalada na máquina da Pesquisa Institucional (política institucional ou modo desenvolvedor, P-10)
+- [x] Coleta pela sessão do navegador comum, com vigilância da pasta de coleta e de Downloads; o modo Playwright/CDP foi removido porque o gov.br bloqueia navegador automatizado
+- [x] A extensão MV3 `extensao-sistec/` e as rotas `/api/sistec/*` permanecem apenas como legado; as telas atuais não dependem delas
+- [ ] **`CALCSISTEC_HTTPS=1`** configurado no ambiente de produção, com certificado válido — as rotas legadas `/api/sistec/*` recusam HTTP fora de `localhost`
 - [ ] Roteiro de `_reversa_forward/002-baixador-planilhas-sistec/onboarding.md` executado (Sistec simulado + 1 baixa real de pelo menos 1 campus)
 - [ ] W001 a W008 (`_reversa_forward/002-baixador-planilhas-sistec/regression-watch.md`) conferidas sem regressão nas telas novas e alteradas
 
@@ -38,9 +36,11 @@ Passo humano: só Jaline consegue fechar o item de design do checklist. O códig
 
 **Roteiro, em um celular real (largura de 320px a 430px)** e depois em uma tela de 1280px ou mais:
 
-1. Abrir as 5 páginas públicas (`/`, `/matriculas`, `/eficiencia`, `/evasao`, `/percentuais-legais`).
+1. Abrir as 4 páginas públicas atuais (`/`, `/eficiencia`, `/evasao`, `/percentuais-legais`) e confirmar que a rota legada `/matriculas` redireciona para `/`.
    Conferir: a página não rola para o lado (só as tabelas rolam dentro do próprio quadro), o menu abre pelo
    botão do cabeçalho, os cartões e filtros ficam em coluna única e nada fica cortado.
+   Em `/`, conferir também o dashboard de Matrículas: KPIs em grade, filtros na largura do card,
+   título em até duas linhas a 390px e tabela rolando dentro do quadro.
 2. Entrar em `/admin/login` e abrir `/admin/atualizar`. Conferir: os botões ficam empilhados e a tela cabe na largura.
 3. Trocar para o tema escuro pelo botão do cabeçalho, em uma página pública e em `/admin/atualizar`: todo texto
    continua legível e a escolha fica salva ao recarregar.

@@ -11,11 +11,30 @@ app/
   shell.py     # shell único (cabeçalho, menu, breadcrumb, rodapé): blueprint /ds/ e PainelDash
   admin_campi.py  # gestão de campi em /admin/campi (lista, edição, inclusão)
   templates/   # páginas administrativas (Jinja); shell/ tem os parciais e macros que o Dash também usa
-  static/      # gov.br DS (govbr-ds/), fonte Rawline (vendor/) e scripts (tema, confirmação), servidos em /ds/
+  static/      # gov.br DS, Rawline/Font Awesome e JS compartilhado (tema, menu, confirmação e ordenação), em /ds/
   assets/      # só style.css e logotipos: o Dash carrega tudo desta pasta, por isso o DS fica fora dela
   app.py       # app Dash + callbacks
 run.py         # entry point
 ```
+
+## Painel público
+
+A rota `/` é o dashboard de **Matrículas**. Ela apresenta cinco KPIs, a matriz
+por campus/curso/oferta/modalidade/ciclo, filtros de campus, tipo de curso,
+programa e FIC, além do botão para limpar os filtros. `/matriculas` é mantida
+como redirecionamento para a página inicial.
+
+O shell público é responsivo: abaixo de 992px o menu é sobreposto e aberto pelo
+botão do cabeçalho; a partir de 992px ele ocupa a coluna lateral de 240px. Em
+telas estreitas, o título do cabeçalho pode ocupar duas linhas, os filtros usam
+toda a largura do card, os KPIs reorganizam a grade e a tabela preserva todas as
+colunas em uma região com rolagem horizontal.
+
+As tabelas de dados são ordenáveis pelo cabeçalho, com clique ou teclado
+(`Enter`/`Espaço`). O script compartilhado
+`app/static/js/ordenacao-tabelas.js` reconhece texto, números no formato
+brasileiro, percentuais e datas; cabeçalhos agrupadores e os marcados com
+`data-no-sort` não recebem ordenação. Valores vazios permanecem no fim.
 
 Ver `_reversa_sdd/migration/` e `_reversa_sdd/reconstruction-plan.md` (no repositório principal) para as specs completas desta migração.
 

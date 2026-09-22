@@ -422,27 +422,46 @@ pre{
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-scale-half);
-  padding: var(--spacing-scale-2x);
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-3x);
   background: var(--background);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-}
-.kpi-figma .valor{
-  font-size: 24px;
-  font-weight: var(--font-weight-bold);
-  color: var(--interactive);
+  border-radius: var(--surface-rounder-md);
 }
 .kpi-figma .rotulo{
-  font-size: 12px;
-  color: var(--gray-60);
-  text-align: center;
+  font-size: var(--font-size-scale-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
+  text-align: left;
+  overflow-wrap: anywhere;
 }
-:root[data-tema="escuro"] .kpi-figma .valor,
-:root[data-tema="escuro"] .kpi-figma .rotulo{
-  color: var(--pure-0);
+.kpi-figma .valor{
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color);
+  overflow-wrap: anywhere;
+}
+.kpi-figma .valor--texto{
+  font-size: var(--font-size-scale-base);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+}
+.kpi-figma--destaque{
+  background: color-mix(in srgb, var(--color-primary-default) 8%, var(--background));
+  border-color: var(--color-primary-pastel-01);
+}
+.kpi-figma--destaque .valor{
+  color: var(--color-primary-default);
+}
+:root[data-tema="escuro"] .kpi-figma--destaque{
+  background: var(--background-alternative);
+  border-color: var(--interactive);
+}
+:root[data-tema="escuro"] .kpi-figma--destaque .valor{
+  color: var(--interactive);
 }
 
 .aviso-simulacao{
@@ -552,6 +571,36 @@ pre{
   background: var(--gray-2);
 }
 .tabela-landing td.campus{ text-align: left; }
+.tabela-hierarquica .matriz-rotulo{
+  align-items: center;
+  display: flex;
+  gap: var(--spacing-scale-base);
+  padding-left: calc(var(--nivel, 0) * var(--spacing-scale-3x));
+}
+.tabela-hierarquica tr[class^="matriz-nivel-"]:not(.matriz-nivel-0) td:first-child{
+  border-left: 3px solid color-mix(in srgb, var(--color-primary-default) 35%, transparent);
+}
+.matriz-expansor,
+.matriz-expansor-espaco{
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 24px;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+.matriz-expansor{
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--interactive);
+  cursor: pointer;
+  padding: 0;
+}
+.matriz-expansor:hover{ background: color-mix(in srgb, var(--interactive) 12%, transparent); }
+.matriz-expansor:focus-visible{ outline: 3px solid var(--focus-color); }
+.matriz-expansor[aria-expanded="false"] .fa-chevron-down{ transform: rotate(-90deg); }
+.matriz-expansor .fa-chevron-down{ transition: transform .15s ease; }
 .tabela-landing td.num{ text-align: right; }
 .tabela-landing td.vazio{ color: var(--gray-40); }
 .tabela-landing td.evasao{
@@ -563,6 +612,35 @@ pre{
   border-top: 2px solid var(--color-primary-default);
   background: color-mix(in srgb, var(--color-primary-default) 10%, var(--background));
   height: 36px;
+}
+
+/* Ordenacao compartilhada pelas tabelas Dash e administrativas. */
+table thead th.cabecalho-ordenavel{
+  cursor: pointer;
+  padding-right: 2rem;
+  position: relative;
+  user-select: none;
+}
+table thead th.cabecalho-ordenavel::after{
+  content: "\2195";
+  font-size: .85em;
+  opacity: .55;
+  position: absolute;
+  right: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+table thead th.cabecalho-ordenavel[aria-sort="descending"]::after{
+  content: "\2193";
+  opacity: 1;
+}
+table thead th.cabecalho-ordenavel[aria-sort="ascending"]::after{
+  content: "\2191";
+  opacity: 1;
+}
+table thead th.cabecalho-ordenavel:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: -3px;
 }
 .dica-rolagem{
   font-size: 12px;
