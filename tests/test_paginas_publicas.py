@@ -16,6 +16,13 @@ def pagina(nome):
 
 import pandas as pd
 
+from app.domain.percentuais_legais import (
+    matriculas_equivalentes,
+    percentual_proeja,
+    percentual_professores,
+    percentual_tecnico,
+)
+
 
 def _matriculas_de_teste():
     return pd.DataFrame(
@@ -342,7 +349,7 @@ def percentuais_com_dados(monkeypatch):
     return pagina_percentuais
 
 
-def test_percentuais_mostra_os_3_medidores_em_br_card_com_valor_meta_e_situacao_em_texto(percentuais_com_dados):
+def test_percentuais_mostra_os_cartoes_com_valor_meta_e_situacao_em_texto(percentuais_com_dados):
     from app.domain.percentuais_legais import (
         META_PROEJA,
         META_PROFESSORES,
@@ -358,22 +365,64 @@ def test_percentuais_mostra_os_3_medidores_em_br_card_com_valor_meta_e_situacao_
         ("Formação de Professores", percentual_professores(base), META_PROFESSORES),
         ("PROEJA", percentual_proeja(base), META_PROEJA),
     ]
-    medidores, _, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
-    cartoes = [c for coluna in medidores for c in com_classe(coluna, "br-card")]
-    assert len(cartoes) == 3
-    for cartao, (rotulo, valor, meta) in zip(cartoes, esperados):
-        situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
-        assert textos(cartao) == f"{rotulo} {valor:.1%} {situacao} Meta: {meta:.0%}"
-
-
-def test_percentuais_poe_os_medidores_em_colunas_que_comecam_em_col_12_sem_card_do_bootstrap(percentuais_com_dados):
-    medidores, kpi, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    cartoes, _, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    medidores = [c for c in com_classe(cartoes, "br-card")]
     assert len(medidores) == 3
-    for coluna in medidores:
-        assert "col-12" in coluna.className.split()
-    assert not (classes(medidores) | classes(kpi)) & {"gauge-card", "card", "card-body", "gauge-row"}
-    assert not [c for c in componentes(medidores) if type(c).__module__.startswith("dash_bootstrap_components")]
-    exigir_sem_componente_do_ds_que_precisa_de_js(medidores)
+    for cartao, (rotulo, valor, meta) in zip(medidores, esperados):
+        situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
+        assert textos(cartao) == f"{rotulo} {valor:.1%}".replace(".", ",") + f" {situacao} Meta: {meta:.0%}"
+
+
+def test_percentuais_destaca_so_tecnico_e_mantem_os_quatro_cartoes_sem_bootstrap(percentuais_com_dados):
+    cartoes, _, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    assert len(com_classe(cartoes, "kpi-figma")) == 4
+    assert [c.className for c in com_classe(cartoes, "kpi-figma")] == [
+        "br-card kpi-figma kpi-figma--destaque",
+        "br-card kpi-figma",
+        "br-card kpi-figma",
+        "kpi-figma",
+    ]
+    assert not classes(cartoes) & {"gauge-card", "card", "card-body", "gauge-row"}
+    assert not [c for c in componentes(cartoes) if type(c).__module__.startswith("dash_bootstrap_components")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(cartoes)
+
+
+def test_percentuais_tabela_por_eixo_usa_denominador_proprio_e_total_dos_cartoes(percentuais_com_dados):
+    base = _matriculas_de_teste().copy()
+    base.loc[:1, "subtipo_curso"] = "Técnico"
+    percentuais_com_dados.carregar_matriculas = lambda: base
+
+    cartoes, tabela, _ = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
+    linhas = [
+        [textos(td) for td in componentes(tr) if type(td).__name__ == "Td"]
+        for tr in componentes(tabela)
+        if type(tr).__name__ == "Tr"
+    ]
+    linhas = [linha for linha in linhas if linha]
+    esperados = []
+    for cidade, grupo in base.assign(quantidade_matriculas=1).groupby("cidade"):
+        esperados.append([
+            cidade,
+            f"{percentual_tecnico(grupo):.1%}".replace(".", ","),
+            f"{percentual_professores(grupo):.1%}".replace(".", ","),
+            f"{percentual_proeja(grupo):.1%}".replace(".", ","),
+            f"{matriculas_equivalentes(grupo).sum():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        ])
+    assert linhas == esperados + [["Total", "66,7%", "0,0%", "0,0%", "3,00"]]
+    assert "Recorte exploratório por Campus" in textos(tabela)
+    assert "Técnico 66,7%" in textos(cartoes)
+
+
+def test_percentuais_layout_ordena_contexto_cartoes_eixo_tabela_e_filtros(percentuais_com_dados, monkeypatch):
+    monkeypatch.setattr(percentuais_com_dados, "data_ultima_publicacao", lambda: "2026-09-22")
+    layout = percentuais_com_dados.layout()
+    assert layout.className == "painel-dashboard"
+    assert [getattr(filho, "className", None) for filho in layout.children] == [
+        "cabecalho-pagina", None, "filter-item", None, "card-filtros",
+    ]
+    assert layout.children[1].children.className == "kpis-figma"
+    assert "br-radio" in classes(layout.children[2])
+    assert "Atualizado em 22/09/2026" in textos(layout.children[0])
 
 
 def test_percentuais_com_programa_filtrado_mostra_o_aviso_proeja_em_br_message_warning(percentuais_com_dados):
@@ -385,6 +434,14 @@ def test_percentuais_com_programa_filtrado_mostra_o_aviso_proeja_em_br_message_w
 def test_percentuais_sem_filtro_de_programa_nao_mostra_o_aviso(percentuais_com_dados):
     _, _, aviso = percentuais_com_dados.atualizar("campus", "__todos__", "__todos__")
     assert not aviso
+
+
+def test_percentuais_recorte_vazio_nao_transforma_dado_incompleto_em_zero(percentuais_com_dados):
+    cartoes, tabela, _ = percentuais_com_dados.atualizar("campus", "Inexistente", "__todos__")
+    assert "Sem dados para os filtros selecionados." in textos(cartoes)
+    assert textos(tabela) == ""
+    assert "0,0%" not in textos(cartoes)
+    assert percentuais_com_dados.limpar_filtros(1) == ("__todos__", "__todos__", "campus")
 
 
 def test_percentuais_sem_dados_mostra_br_message_info(monkeypatch):

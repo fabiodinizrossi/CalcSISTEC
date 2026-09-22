@@ -1816,10 +1816,10 @@ T61 → T62 → T63 → T64 → T65
 
 **Done when**:
 
-- [ ] Técnico é o único cartão visualmente destacado; os três medidores mantêm valor, meta e situação textual; Matrículas equivalentes mantém duas casas decimais
-- [ ] Seleção de eixo muda só a tabela; linha Total e cartões usam o conjunto filtrado, e cada grupo usa seu próprio denominador; a legenda distingue recorte exploratório de cumprimento institucional
-- [ ] Programa filtrado mantém aviso PROEJA; base vazia e `dado incompleto` não viram desempenho zero; limpar restaura Campus/Todos
-- [ ] Testes em `tests/test_paginas_publicas.py` cobrem grupos de denominadores diferentes e comparações com as funções de domínio; gate full passa
+- [x] Técnico é o único cartão visualmente destacado; os três medidores mantêm valor, meta e situação textual; Matrículas equivalentes mantém duas casas decimais
+- [x] Seleção de eixo muda só a tabela; linha Total e cartões usam o conjunto filtrado, e cada grupo usa seu próprio denominador; a legenda distingue recorte exploratório de cumprimento institucional
+- [x] Programa filtrado mantém aviso PROEJA; base vazia e `dado incompleto` não viram desempenho zero; limpar restaura Campus/Todos
+- [x] Testes em `tests/test_paginas_publicas.py` cobrem grupos de denominadores diferentes e comparações com as funções de domínio; gate full passa (574 passed em grupos com `--basetemp .test-tmp-t63`)
 
 **Tests**: unit
 **Gate**: full
