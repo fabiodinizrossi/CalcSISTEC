@@ -3,10 +3,11 @@
 import io
 
 import pytest
+import pandas as pd
 from werkzeug.datastructures import FileStorage
 
 from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA
-from app.sistec.envio import EnvioInvalido, ler_pastas, nome_seguro
+from app.sistec.envio import EnvioInvalido, campi_ausentes, campi_nao_cadastrados, ler_pastas, nome_seguro
 
 
 def _arquivo(nome, colunas):
@@ -73,3 +74,37 @@ def test_ler_pastas_traduz_erro_de_leitura_sem_conteudo(monkeypatch):
     with pytest.raises(EnvioInvalido) as excinfo:
         ler_pastas([_ciclo("quebrado.csv")], [_matricula()])
     assert (excinfo.value.arquivo, excinfo.value.motivo) == ("quebrado.csv", "leitura_csv")
+
+
+def test_campi_ausentes_devolve_cadastrados_sem_ciclo_em_ordem_estavel():
+    ciclos = pd.DataFrame({"CO_UNIDADE": ["2", "4", "2"]})
+    campi = [{"co_unidade": "1"}, {"co_unidade": "2"}, {"co_unidade": "3"}]
+
+    assert campi_ausentes(ciclos, campi) == ["1", "3"]
+
+
+def test_campi_nao_cadastrados_devolve_codigos_do_ciclo_em_ordem_estavel():
+    ciclos = pd.DataFrame({"CO_UNIDADE": ["2", "4", "3", "4"]})
+    campi = [{"co_unidade": "2"}, {"co_unidade": "3"}]
+
+    assert campi_nao_cadastrados(ciclos, campi) == ["4"]
+
+
+def test_campi_ignoram_cadastro_sem_codigo_de_unidade():
+    ciclos = pd.DataFrame({"CO_UNIDADE": ["2"]})
+    campi = [{"co_unidade": ""}, {"co_unidade": None}, {"co_unidade": "2"}]
+
+    assert campi_ausentes(ciclos, campi) == []
+    assert campi_nao_cadastrados(ciclos, campi) == []
+
+
+def test_ciclos_vazios_deixam_todos_os_campi_cadastrados_ausentes():
+    campi = [{"co_unidade": "1"}, {"co_unidade": "2"}]
+
+    assert campi_ausentes(pd.DataFrame(columns=["CO_UNIDADE"]), campi) == ["1", "2"]
+
+
+def test_campus_com_todos_ciclos_excluidos_aparece_como_ausente():
+    ciclos = pd.DataFrame({"CO_UNIDADE": ["1"], "SITUACAO_CICLO": ["EXCLUÍDO"]})
+
+    assert campi_ausentes(ciclos, [{"co_unidade": "1"}]) == ["1"]
