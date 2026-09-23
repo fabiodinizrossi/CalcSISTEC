@@ -10,6 +10,7 @@ teste.
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 
@@ -384,22 +385,59 @@ def test_colisao_no_cadastro_automatico_nao_derruba_o_envio(sessao, banco_tempor
     assert "U9" not in cadastrados
 
 
-def test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo(sessao, banco_temporario, monkeypatch):
-    """Edge case AFE-03: no segundo envio a unidade já está em `campi_sistec`,
-    então `campi_nao_cadastrados` a exclui e nada é incluído de novo."""
+def test_unidade_cadastrada_pelo_envio_aparece_nas_paginas_de_cadastro(sessao, banco_temporario, monkeypatch):
+    """AFE-03 AC4: a unidade cadastrada pelo envio aparece em `/admin/campi` e
+    conta nos totais de Configurações — a tela, não só o banco.
+
+    As duas páginas chegam ao cadastro por caminhos próprios: `admin_config`
+    usa o `listar_campi` do `app.py`, e `/admin/campi` usa um `DB_PATH` próprio
+    (`app/admin_campi.py:25`, cópia do valor de `DEFAULT_DB_PATH` feita no
+    import). O teste aponta os dois para o banco temporário — sem isso as
+    chamadas leriam o banco do repositório e o teste não provaria nada."""
+    from app import admin_campi
     from app.data import campi as dados_campi
 
-    monkeypatch.setattr(
-        app_module,
-        "listar_campi",
-        lambda *a, **k: CAMPI + [{"id_perfil": "envio-U9", "nome_perfil": "Unidade U9", "co_unidade": "U9"}],
-    )
-    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
-    matriculas = [_matricula("C1", "M1", "U1")]
-    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    monkeypatch.setattr(admin_campi, "DB_PATH", banco_temporario)
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
 
-    assert resposta.get_json()["campi_cadastrados_automaticamente"] == []
-    assert dados_campi.listar_campi(banco_temporario) == []
+    ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C9", "M9", "U9")]
+    sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    pagina_campi = sessao.get("/admin/campi").get_data(as_text=True)
+    assert "Unidade U9 (cadastrada pelo envio de pastas)" in pagina_campi
+    assert re.search(r"<td>\s*U9\s*</td>", pagina_campi)
+
+    config = sessao.get("/admin/config").get_data(as_text=True)
+    assert "1 campi cadastrados, 1 ativos." in config
+    assert "1 campus com identificador inválido" in config
+
+
+def test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo(sessao, banco_temporario, monkeypatch):
+    """Edge case AFE-03: dois envios reais contra o mesmo banco. O primeiro
+    cadastra U9; no segundo ela já está em `campi_sistec`, então
+    `campi_nao_cadastrados` a exclui e nada é incluído de novo — nem duplicado."""
+    from app.data import campi as dados_campi
+
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+
+    def enviar():
+        # Cada POST recebe arquivos novos: o `FileStorage` do primeiro foi lido
+        # (e fechado) pelo `ler_pastas`.
+        ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]
+        matriculas = [_matricula("C9", "M9", "U9")]
+        resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+        return resposta.get_json()
+
+    primeiro = enviar()
+    assert primeiro["campi_cadastrados_automaticamente"] == ["U9"]
+
+    sessao.post(f"/admin/atualizar/execucoes/{primeiro['execucao_id']}/descartar")
+
+    segundo = enviar()
+    assert segundo["campi_cadastrados_automaticamente"] == []
+    assert [c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)] == ["U9"]
 
 
 def test_unidade_cadastrada_pelo_envio_sobrevive_a_uma_leitura_do_sistec(sessao, banco_temporario):
