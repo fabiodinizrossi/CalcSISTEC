@@ -124,5 +124,103 @@ def test_ler_planilha_recusa_coluna_obrigatoria_ausente():
 
 
 def test_ler_planilha_recusa_csv_que_nao_pode_ser_lido():
+    """Arquivo truncado/vazio continua sendo recusado como `leitura_csv`.
+
+    Antes desta feature o caso era `b"\\x81"` (um byte sozinho), que falhava por
+    `UnicodeDecodeError`. Com a decodificação tolerante esse byte vira `�` e o
+    arquivo deixa de ser ilegível por codificação — então a entrada aqui passa a
+    ser o que segue ilegível de fato: um arquivo sem nenhum conteúdo.
+    """
     with pytest.raises(ValueError, match="^leitura_csv$"):
-        ler_planilha(b"\x81", "ciclo")
+        ler_planilha(b"", "ciclo")
+
+
+# --- Decodificação tolerante a bytes fora do cp1252 (CEP-04, CEP-05) ---------
+#
+# O defeito original foi reproduzido com um export real do Sistec de um único
+# byte 0x81 (indefinido em cp1252) numa coluna descartada. O arquivo real
+# contém nome de mãe de estudantes e não entra no repositório: os casos abaixo
+# usam um CSV sintético de mesmo formato, com o byte inserido no lugar do
+# arquivo real.
+
+_BYTE_INVALIDO = b"\x81"
+
+_CABECALHO_MATRICULA = "CO_MATRICULA;CO_CICLO_MATRICULA;NO_STATUS_MATRICULA;MES_DE_OCORRENCIA;NO_MAE_ALUNO"
+
+
+def _matricula_sintetica(no_mae_aluno, status="MATRICULADO", cabecalho=_CABECALHO_MATRICULA):
+    """CSV do Sistec em bytes crus, com `no_mae_aluno` como bytes (aceita 0x81)."""
+    linha = b"10;1;" + status.encode("latin-1") + b";2024-01;" + no_mae_aluno
+    return cabecalho.encode("cp1252") + b"\n" + linha + b"\n"
+
+
+def test_ler_planilha_le_arquivo_com_byte_invalido_em_coluna_descartada():
+    """CEP-04: o byte 0x81 numa coluna fora da lista de permissão não impede a
+    leitura, e a coluna inteira continua descartada por `aplicar_permissao`."""
+    conteudo = _matricula_sintetica(b"MARIA DA SIL" + _BYTE_INVALIDO + b"VA")
+
+    resultado = ler_planilha(conteudo, "matricula")
+
+    assert list(resultado.columns) == list(COLUNAS_MATRICULA.values())
+    assert "NO_MAE_ALUNO" not in resultado.columns
+    assert resultado.iloc[0]["CO_MATRICULA"] == "10"
+    assert resultado.iloc[0]["STATUS_MATRICULA_SISTEC"] == "MATRICULADO"
+
+
+def test_ler_planilha_troca_o_byte_invalido_por_caractere_de_substituicao_em_coluna_mantida():
+    """CEP-04: byte inválido dentro de uma coluna mantida é lido com `�` no
+    lugar do byte, sem lançar exceção (risco aceito por decisão da spec)."""
+    conteudo = _matricula_sintetica(b"MARIA DA SILVA", status="MATRICULAD" + "\x81" + "O")
+
+    resultado = ler_planilha(conteudo, "matricula")
+
+    assert resultado.iloc[0]["STATUS_MATRICULA_SISTEC"] == "MATRICULAD�O"
+
+
+def test_ler_planilha_com_byte_invalido_iguala_o_resultado_do_arquivo_sem_o_byte():
+    """CEP-04 AC 2: o byte numa coluna descartada não muda nenhuma coluna usada."""
+    com_byte = _matricula_sintetica(b"MARIA DA SIL" + _BYTE_INVALIDO + b"VA")
+    sem_byte = _matricula_sintetica(b"MARIA DA SILVA")
+
+    assert ler_planilha(com_byte, "matricula").equals(ler_planilha(sem_byte, "matricula"))
+
+
+def test_ler_planilha_mantem_os_valores_de_arquivo_sem_byte_invalido():
+    """Não regressão: arquivo todo em cp1252 válido sai igual ao de antes."""
+    conteudo = _matricula_sintetica(b"MARIA DA SILVA")
+
+    resultado = ler_planilha(conteudo, "matricula")
+
+    esperado = pd.DataFrame(
+        [{"CO_MATRICULA": "10", "CODIGO_CICLO_MATRICULA": "1", "STATUS_MATRICULA_SISTEC": "MATRICULADO", "MES_OCORRENCIA_CORRIGIDO": "2024-01"}]
+    )
+    assert list(resultado.columns) == list(esperado.columns)
+    pd.testing.assert_frame_equal(resultado.reset_index(drop=True), esperado)
+
+
+def test_ler_planilha_recusa_coluna_obrigatoria_ausente_mesmo_com_byte_invalido():
+    """CEP-05: cabeçalho sem coluna obrigatória continua sendo `colunas_ausentes`,
+    mesmo com byte fora do cp1252 em outra coluna do arquivo."""
+    cabecalho = "CO_MATRICULA;CO_CICLO_MATRICULA;NO_STATUS_MATRICULA;NO_MAE_ALUNO"
+    conteudo = _matricula_sintetica(b"MARIA DA SIL" + _BYTE_INVALIDO + b"VA", cabecalho=cabecalho)
+
+    with pytest.raises(ValueError, match="^colunas_ausentes$"):
+        ler_planilha(conteudo, "matricula")
+
+
+def test_ler_planilha_recusa_arquivo_estruturalmente_quebrado_apos_decodificacao_tolerante():
+    """CEP-05 AC 3: arquivo que continua impasseável depois da decodificação
+    tolerante segue recusado como `leitura_csv`."""
+    conteudo = _CABECALHO_MATRICULA.encode("cp1252") + b'\n10;1;"MATRICULADO;2024-01\n'
+
+    with pytest.raises(ValueError, match="^leitura_csv$"):
+        ler_planilha(conteudo, "matricula")
+
+
+def test_ler_planilha_recusa_arquivo_com_delimitador_errado():
+    """CEP-05: delimitador errado continua recusado — o arquivo inteiro vira uma
+    única coluna, então as colunas obrigatórias não são encontradas."""
+    conteudo = _CABECALHO_MATRICULA.replace(";", ",").encode("cp1252") + b"\n10,1,MATRICULADO,2024-01,MARIA DA SILVA\n"
+
+    with pytest.raises(ValueError, match="^colunas_ausentes$"):
+        ler_planilha(conteudo, "matricula")

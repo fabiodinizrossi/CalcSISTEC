@@ -85,7 +85,9 @@ def ler_planilha(conteudo_bytes, tipo):
         raise ValueError(f"tipo de planilha desconhecido: {tipo!r}") from None
 
     try:
-        cabecalho = pd.read_csv(io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, nrows=0)
+        cabecalho = pd.read_csv(
+            io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", encoding_errors="replace", dtype=str, nrows=0
+        )
     except Exception as exc:
         raise ValueError("leitura_csv") from exc
 
@@ -94,7 +96,12 @@ def ler_planilha(conteudo_bytes, tipo):
 
     try:
         df_bruto = pd.read_csv(
-            io.BytesIO(conteudo_bytes), sep=";", encoding="cp1252", dtype=str, usecols=list(mapa)
+            io.BytesIO(conteudo_bytes),
+            sep=";",
+            encoding="cp1252",
+            encoding_errors="replace",
+            dtype=str,
+            usecols=list(mapa),
         )
     except Exception as exc:
         raise ValueError("leitura_csv") from exc

@@ -105,14 +105,16 @@ T6 → T7
 
 **Done when**:
 
-- [ ] Um CSV sintético com byte `0x81` numa coluna fora de `COLUNAS_CICLO`/`COLUNAS_MATRICULA` é lido com sucesso por `ler_planilha`, e a coluna com o byte não aparece no resultado (`aplicar_permissao` descarta)
-- [ ] Um CSV sintético com o mesmo byte dentro de uma coluna **mantida** (ex.: `NO_STATUS_MATRICULA`) é lido com sucesso, com o valor daquela célula contendo o caractere de substituição — sem lançar exceção (CEP-04 AC 1, Risco aceito por decisão da spec)
-- [ ] Um CSV com cabeçalho sem uma coluna obrigatória continua levantando `ValueError("colunas_ausentes")`, mesmo com bytes inválidos em outras colunas
-- [ ] Um CSV cuja estrutura real está quebrada (linha com número de campos diferente do cabeçalho) continua levantando `ValueError("leitura_csv")` (CEP-05 AC 3)
-- [ ] Um CSV sem nenhum byte inválido produz exatamente o mesmo `DataFrame` que antes da mudança (não regressão)
-- [ ] O arquivo real reproduzido nesta sessão (`sistec_Campus Santa Rosa_sistec.csv`) não faz parte do repositório nem dos testes (dado pessoal) — só o CSV sintético equivalente
-- [ ] Gate check passes: `python -m pytest tests/test_colunas.py tests/test_execucoes.py tests/test_envio.py -q`
-- [ ] Test count: contagem anterior + no mínimo 5 testes novos, um por item acima
+- [x] Um CSV sintético com byte `0x81` numa coluna fora de `COLUNAS_CICLO`/`COLUNAS_MATRICULA` é lido com sucesso por `ler_planilha`, e a coluna com o byte não aparece no resultado (`aplicar_permissao` descarta)
+- [x] Um CSV sintético com o mesmo byte dentro de uma coluna **mantida** (ex.: `NO_STATUS_MATRICULA`) é lido com sucesso, com o valor daquela célula contendo o caractere de substituição — sem lançar exceção (CEP-04 AC 1, Risco aceito por decisão da spec)
+- [x] Um CSV com cabeçalho sem uma coluna obrigatória continua levantando `ValueError("colunas_ausentes")`, mesmo com bytes inválidos em outras colunas
+- [x] Um CSV cuja estrutura real está quebrada continua levantando `ValueError("leitura_csv")` (CEP-05 AC 3) — **desvio**: o exemplo de "linha com número de campos diferente do cabeçalho" de tasks.md não quebra no pandas 2.3.0 (ele preenche/ignora os campos extras, antes e depois desta mudança, com ou sem `usecols`); o caso foi coberto com o defeito estrutural que o pandas realmente recusa (aspas desbalanceadas → `ParserError` → `leitura_csv`) e com o delimitador errado (`colunas_ausentes`)
+- [x] Um CSV sem nenhum byte inválido produz exatamente o mesmo `DataFrame` que antes da mudança (não regressão)
+- [x] O arquivo real reproduzido nesta sessão (`sistec_Campus Santa Rosa_sistec.csv`) não faz parte do repositório nem dos testes (dado pessoal) — só o CSV sintético equivalente
+- [x] Gate check passes: `python -m pytest tests/test_colunas.py tests/test_execucoes.py tests/test_envio.py -q`
+- [x] Test count: contagem anterior + no mínimo 5 testes novos, um por item acima (7 novos)
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: unit
 **Gate**: quick
