@@ -5,35 +5,111 @@
   <h1>Atualizar dados</h1>
 
   <p>
-    Clique em <strong>Atualizar do Sistec</strong>. O Sistec abre no seu navegador de sempre: faça o login gov.br
-    e clique em <strong>Já entrei no Sistec</strong>. O sistema baixa os ciclos e as matrículas de cada campus e
-    mostra a prévia aqui. Cada planilha é lida e apagada assim que chega.
-  </p>
-  <p>
-    A baixa usa o <strong>identificador de perfil</strong> de cada campus, cadastrado em
-    <a href="/admin/config#campi">Configurações → Campi do Sistec</a>. Se algum estiver faltando ou inválido, a
-    atualização avisa e não começa — sem ele o Sistec não troca de campus e as planilhas viriam vazias.
+    Escolha de onde vêm os dados: baixar direto do Sistec ou enviar as pastas com as planilhas que você já tem.
+    As duas terminam na mesma prévia: confira e clique em <strong>Salvar na versão interna</strong>.
   </p>
 
-  <div id="atualizar-acoes" class="d-flex flex-column flex-sm-row">
-    <button type="button" class="br-button primary mb-2 mb-sm-0 mr-sm-2" id="btn-atualizar-sistec">Atualizar do Sistec</button>
-    <button type="button" class="br-button secondary mb-2 mb-sm-0 mr-sm-2" id="btn-login-feito" hidden>Já entrei no Sistec</button>
-    <button type="button" class="br-button secondary mb-2 mb-sm-0" id="btn-cancelar" hidden data-confirm="Cancelar a atualização em andamento?">Cancelar</button>
+  <fieldset id="atualizar-origem" class="mt-3 mb-3">
+    <legend>De onde vêm os dados</legend>
+    <div class="d-flex flex-column flex-lg-row">
+      <div class="br-radio mr-lg-4 mb-2 mb-lg-0">
+        <input id="origem-sistec" type="radio" name="origem" value="sistec" checked>
+        <label for="origem-sistec">Atualizar do Sistec</label>
+      </div>
+      <div class="br-radio">
+        <input id="origem-envio" type="radio" name="origem" value="envio">
+        <label for="origem-envio">Enviar pastas</label>
+      </div>
+    </div>
+  </fieldset>
+
+  <div id="bloco-sistec">
+    <p>
+      Clique em <strong>Atualizar do Sistec</strong>. O Sistec abre no seu navegador de sempre: faça o login gov.br
+      e clique em <strong>Já entrei no Sistec</strong>. O sistema baixa os ciclos e as matrículas de cada campus e
+      mostra a prévia aqui. Cada planilha é lida e apagada assim que chega.
+    </p>
+    <p>
+      A baixa usa o <strong>identificador de perfil</strong> de cada campus, cadastrado em
+      <a href="/admin/config#campi">Configurações → Campi do Sistec</a>. Se algum estiver faltando ou inválido, a
+      atualização avisa e não começa — sem ele o Sistec não troca de campus e as planilhas viriam vazias.
+    </p>
+
+    <div id="atualizar-acoes" class="d-flex flex-column flex-sm-row">
+      <button type="button" class="br-button primary mb-2 mb-sm-0 mr-sm-2" id="btn-atualizar-sistec">Atualizar do Sistec</button>
+      <button type="button" class="br-button secondary mb-2 mb-sm-0 mr-sm-2" id="btn-login-feito" hidden>Já entrei no Sistec</button>
+      <button type="button" class="br-button secondary mb-2 mb-sm-0" id="btn-cancelar" hidden data-confirm="Cancelar a atualização em andamento?">Cancelar</button>
+    </div>
+
+    <p id="status-navegador" role="status" aria-live="polite"></p>
+
+    <div id="barra-area" hidden>
+      <label for="barra-progresso" id="barra-rotulo">Progresso</label>
+      <progress id="barra-progresso" value="0" max="1" style="width:100%;height:1.5rem"></progress>
+    </div>
+
+    <details id="passos-area" open>
+      <summary>O que está acontecendo</summary>
+      <ol id="passos-navegador" aria-live="polite"></ol>
+    </details>
+
+    <ul id="avisos-navegador" class="br-message danger" role="alert" hidden></ul>
   </div>
 
-  <p id="status-navegador" role="status" aria-live="polite"></p>
+  <div id="bloco-envio" hidden>
+    <p>
+      Selecione a pasta com os arquivos <code>.csv</code> exportados do Sistec: uma pasta com as planilhas de
+      <strong>ciclos</strong> e outra com as de <strong>matrículas</strong>. Só arquivos <code>.csv</code> são
+      lidos; qualquer outro é ignorado e listado no fim. As duas pastas são obrigatórias.
+    </p>
+    <p>
+      Campus que você não enviar tem os dados atuais <strong>preservados</strong>: nada dele é apagado. Antes de
+      salvar, o sistema mostra a lista dessas unidades e pede a sua confirmação.
+    </p>
 
-  <div id="barra-area" hidden>
-    <label for="barra-progresso" id="barra-rotulo">Progresso</label>
-    <progress id="barra-progresso" value="0" max="1" style="width:100%;height:1.5rem"></progress>
+    <div class="d-flex flex-column flex-lg-row">
+      <div class="br-upload mr-lg-3 mb-3 mb-lg-0">
+        <label for="envio-ciclos">Pasta de ciclos (.csv)</label>
+        <input type="file" id="envio-ciclos" name="ciclos" webkitdirectory multiple accept=".csv">
+        <span class="feedback">Selecione a pasta que contém as planilhas de ciclos.</span>
+      </div>
+      <div class="br-upload">
+        <label for="envio-matriculas">Pasta de matrículas (.csv)</label>
+        <input type="file" id="envio-matriculas" name="matriculas" webkitdirectory multiple accept=".csv">
+        <span class="feedback">Selecione a pasta que contém as planilhas de matrículas.</span>
+      </div>
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row mt-3">
+      <button type="button" class="br-button primary mb-2 mb-sm-0" id="btn-enviar-pastas">Enviar pastas</button>
+    </div>
+
+    <p id="status-envio" role="status" aria-live="polite"></p>
+
+    <div id="envio-arquivos-area" hidden>
+      <h2>Resultado por arquivo</h2>
+      <div class="br-table">
+        <div class="responsive">
+          <table>
+            <caption>Arquivos enviados</caption>
+            <thead><tr><th>#</th><th>Arquivo</th><th>Tipo</th><th>Situação</th><th>Linhas</th></tr></thead>
+            <tbody id="envio-arquivos"></tbody>
+          </table>
+        </div>
+      </div>
+      <p id="envio-ignorados" hidden></p>
+    </div>
+
+    <div id="envio-preservacao" class="br-message warning" role="alert" hidden>
+      <p id="envio-preservacao-texto"></p>
+      <div class="br-checkbox">
+        <input id="envio-confirmar-preservacao" type="checkbox">
+        <label for="envio-confirmar-preservacao">Confirmo que os dados atuais dessas unidades devem ser preservados</label>
+      </div>
+    </div>
+
+    <ul id="envio-avisos" class="br-message warning" role="alert" hidden></ul>
   </div>
-
-  <details id="passos-area" open>
-    <summary>O que está acontecendo</summary>
-    <ol id="passos-navegador" aria-live="polite"></ol>
-  </details>
-
-  <ul id="avisos-navegador" class="br-message danger" role="alert" hidden></ul>
 
   <div id="atualizar-progresso" hidden>
     <h2>Progresso</h2>

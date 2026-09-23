@@ -372,12 +372,14 @@ T10 → T11 → T12
 
 **Done when**:
 
-- [ ] A página traz a escolha entre "Atualizar do Sistec" e "Enviar pastas"
-- [ ] O bloco de envio tem um campo de pasta para ciclos e um para matrículas, ambos com seleção de diretório
-- [ ] Existe área para o resultado por arquivo e para a confirmação de preservação
-- [ ] A marcação segue o gov.br DS e o layout não quebra abaixo de 992px (AD-005)
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: contagem de T9 + no mínimo 4 testes novos
+- [x] A página traz a escolha entre "Atualizar do Sistec" e "Enviar pastas"
+- [x] O bloco de envio tem um campo de pasta para ciclos e um para matrículas, ambos com seleção de diretório
+- [x] Existe área para o resultado por arquivo e para a confirmação de preservação
+- [x] A marcação segue o gov.br DS e o layout não quebra abaixo de 992px (AD-005)
+- [x] Gate check passes: `python -m pytest tests/ -q` (650 passed)
+- [x] Test count: contagem de T9 (645) + 5 testes novos
+
+**Status**: Done — commit `PENDING`.
 
 **Tests**: integration
 **Gate**: full
