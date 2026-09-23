@@ -101,18 +101,28 @@ def test_o_bloco_de_envio_nao_usa_mais_a_classe_br_upload(html):
     assert "upload-input" not in bloco
 
 
-def test_resultados_do_envio_ficam_dentro_do_proprio_card(html):
-    """CAD-03: o card de envio preserva suas próprias áreas de resultado e
-    preservação — a reorganização em cards não espalha o conteúdo do card
-    para fora dele."""
-    inicio = html.index('id="bloco-envio"')
-    fim = html.index('id="atualizar-progresso"', inicio)
-    trecho_envio = html[inicio:fim]
+def test_resultados_do_envio_ocupam_a_largura_inteira_abaixo_dos_dois_cards(html):
+    """AFE-02 (supera CAD-03): o resultado por arquivo e os avisos do envio saem
+    da coluna do card e passam a ocupar a largura inteira da página, na mesma
+    faixa de Progresso e Prévia — fora do container flex dos dois cards."""
+    inicio_cards = html.index('<div class="d-flex flex-column flex-lg-row">')
+    inicio_resultado = html.index('id="envio-arquivos-area"')
+    inicio_progresso = html.index('id="atualizar-progresso"')
+    cards = html[inicio_cards:inicio_resultado]
+    largura_inteira = html[inicio_resultado:inicio_progresso]
 
-    assert 'id="envio-arquivos-area"' in trecho_envio
-    assert 'id="envio-avisos"' in trecho_envio
-    # Progresso/Prévia continuam fora dos dois cards (fora de escopo desta feature).
-    assert 'id="atualizar-previa"' not in trecho_envio
+    # Os dois cards seguem com o que é deles: texto, seletores de pasta, botão e status.
+    assert 'id="bloco-sistec"' in cards and 'id="bloco-envio"' in cards
+    assert 'id="envio-ciclos"' in cards and 'id="envio-matriculas"' in cards
+    assert 'id="btn-enviar-pastas"' in cards and 'id="status-envio"' in cards
+
+    # O resultado e os avisos ficam fora dos cards, na faixa de largura inteira.
+    assert 'id="envio-arquivos-area"' not in cards
+    assert 'id="envio-avisos"' not in cards
+    assert 'id="envio-arquivos-area"' in largura_inteira
+    assert 'id="envio-avisos"' in largura_inteira
+    # Progresso/Prévia continuam fora dos dois cards, depois do resultado.
+    assert 'id="atualizar-previa"' not in cards
 
 
 def test_area_de_resultados_tem_o_resultado_por_arquivo(html):
