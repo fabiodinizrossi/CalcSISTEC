@@ -93,6 +93,10 @@
   const elPreservacaoTexto = $("envio-preservacao-texto");
   const elConfirmarPreservacao = $("envio-confirmar-preservacao");
   const elEnvioAvisos = $("envio-avisos");
+  const elStatusCiclos = $("envio-ciclos-status");
+  const elStatusMatriculas = $("envio-matriculas-status");
+  const btnEscolherCiclos = $("btn-escolher-ciclos");
+  const btnEscolherMatriculas = $("btn-escolher-matriculas");
 
   let estadoAtual = null;
   let passosMostrados = 0;
@@ -357,6 +361,60 @@
   function arquivosDe(input) {
     return input.files ? Array.prototype.slice.call(input.files) : [];
   }
+
+  /* Widget próprio de escolha de pasta. O `.br-upload` do pacote escondia o
+     input sem dar nenhum controle visível, e o `initInstanceUpload()`
+     embutido ainda mostrava um "Carregando…" por arquivo antes de qualquer
+     envio. Aqui quem recebe o clique é um `button` nativo, e o status reflete
+     só a seleção: nenhum fetch, nenhum setTimeout, nenhuma classe de
+     carregamento. */
+
+  const STATUS_PASTA_OBRIGATORIA = {
+    ciclos: "Nenhuma pasta de ciclos escolhida — obrigatória.",
+    matriculas: "Nenhuma pasta de matrículas escolhida — obrigatória.",
+  };
+
+  const CAMPOS_PASTA = [
+    { rotulo: "ciclos", input: elInputCiclos, status: elStatusCiclos, botao: btnEscolherCiclos },
+    { rotulo: "matriculas", input: elInputMatriculas, status: elStatusMatriculas, botao: btnEscolherMatriculas },
+  ];
+
+  function contarSelecao(arquivos) {
+    const caminho = arquivos[0] && arquivos[0].webkitRelativePath ? arquivos[0].webkitRelativePath : "";
+    let csv = 0;
+    let outros = 0;
+    arquivos.forEach((arquivo) => {
+      if (/\.csv$/i.test(arquivo.name || "")) csv += 1;
+      else outros += 1;
+    });
+    return { nome: caminho ? caminho.split("/")[0] : null, csv: csv, outros: outros };
+  }
+
+  function renderizarSelecao(campo) {
+    const arquivos = arquivosDe(campo.input);
+    if (arquivos.length === 0) {
+      campo.status.textContent = STATUS_PASTA_OBRIGATORIA[campo.rotulo];
+      return;
+    }
+    const selecao = contarSelecao(arquivos);
+    const partes = [];
+    if (selecao.nome) partes.push(`Pasta ${selecao.nome}:`);
+    partes.push(`${selecao.csv} arquivo(s) .csv escolhido(s).`);
+    if (selecao.outros) {
+      partes.push(`${selecao.outros} arquivo(s) que não é/são .csv será/serão ignorado(s).`);
+    }
+    campo.status.textContent = partes.join(" ");
+  }
+
+  function selecaoDePasta(evento) {
+    const campo = CAMPOS_PASTA.filter((c) => c.input === evento.target)[0];
+    if (campo) renderizarSelecao(campo);
+  }
+
+  CAMPOS_PASTA.forEach((campo) => {
+    campo.botao.addEventListener("click", () => campo.input.click());
+    campo.input.addEventListener("change", selecaoDePasta);
+  });
 
   function atualizarBotaoSalvar() {
     btnSalvar.disabled = preservacaoPendente && !elConfirmarPreservacao.checked;

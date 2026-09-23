@@ -44,6 +44,10 @@ IDS = [
     "bloco-envio",
     "envio-ciclos",
     "envio-matriculas",
+    "envio-ciclos-status",
+    "envio-matriculas-status",
+    "btn-escolher-ciclos",
+    "btn-escolher-matriculas",
     "btn-enviar-pastas",
     "status-envio",
     "envio-arquivos-area",
@@ -424,3 +428,147 @@ return {
     assert resultado["corpos"] == ['{"confirmar_preservacao":false}']
     assert resultado["visivel"] is False
     assert resultado["bloqueado"] is False
+
+
+# --- Escolha de pasta: nome e contagem sem rede (CEP-01, CEP-02, CEP-03) -----
+
+
+def _arquivos_com_pasta(campo, pasta, nomes):
+    """Extra de `preparar` (T6): monta o `input.files` do campo com caminho de pasta."""
+    itens = ", ".join(f"arquivoFalso({json.dumps(nome)}, {json.dumps(pasta + '/' + nome)})" for nome in nomes)
+    return f'doc.porId["{campo}"].files = [{itens}];'
+
+
+def test_clicar_no_botao_de_escolher_pasta_aciona_o_input_correspondente():
+    verificar = (
+        ESPERAR
+        + """
+const antes = contexto.__t.chamadas.length;
+doc.porId["btn-escolher-ciclos"].click();
+doc.porId["btn-escolher-matriculas"].click();
+return {
+  cliquesCiclos: doc.porId["envio-ciclos"].cliques,
+  cliquesMatriculas: doc.porId["envio-matriculas"].cliques,
+  chamadasNovas: contexto.__t.chamadas.length - antes,
+};
+"""
+    )
+    assert rodar("atualizar.js", _preparar(), verificar) == {
+        "cliquesCiclos": 1,
+        "cliquesMatriculas": 1,
+        "chamadasNovas": 0,
+    }
+
+
+def test_escolher_pasta_mostra_o_nome_dela_e_a_contagem_de_csv():
+    # O texto inicial de cada status vem da marcação; aqui ele é reposto à mão
+    # para conferir que escolher uma pasta não mexe no status da outra.
+    preparar = _preparar() + _arquivos_com_pasta(
+        "envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv", "ciclo-U2.csv", "ciclo-U3.csv"]
+    ) + """
+doc.porId["envio-matriculas-status"].textContent = "Nenhuma pasta de matrículas escolhida — obrigatória.";
+"""
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+return {
+  ciclos: doc.porId["envio-ciclos-status"].textContent,
+  matriculas: doc.porId["envio-matriculas-status"].textContent,
+};
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "ciclos": "Pasta CICLOS-2024-1: 3 arquivo(s) .csv escolhido(s).",
+        "matriculas": "Nenhuma pasta de matrículas escolhida — obrigatória.",
+    }
+
+
+def test_escolher_pasta_conta_os_arquivos_que_nao_sao_csv_na_mesma_linha():
+    preparar = _preparar() + _arquivos_com_pasta(
+        "envio-matriculas", "MATRICULAS-2024-1", ["m1.csv", "m2.CSV", "LEIA-ME.txt", "extracao.pdf"]
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-escolher-matriculas"].click();
+doc.porId["envio-matriculas"].disparar("change");
+return doc.porId["envio-matriculas-status"].textContent;
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == (
+        "Pasta MATRICULAS-2024-1: 2 arquivo(s) .csv escolhido(s). 2 arquivo(s) que não é/são .csv será/serão ignorado(s)."
+    )
+
+
+def test_sem_caminho_de_pasta_o_status_mostra_so_a_contagem():
+    """Edge case da spec: navegador sem `webkitdirectory` informa arquivos sem
+    `webkitRelativePath`; o status mostra a contagem, sem nome e sem erro."""
+    preparar = _preparar(arquivos_ciclos=("ciclo-U1.csv", "ciclo-U2.csv"))
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+return doc.porId["envio-ciclos-status"].textContent;
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == "2 arquivo(s) .csv escolhido(s)."
+
+
+def test_reescolher_a_pasta_substitui_o_status_anterior():
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-ANTIGO", ["a.csv", "b.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+const primeira = doc.porId["envio-ciclos-status"].textContent;
+doc.porId["envio-ciclos"].files = [arquivoFalso("unico.csv", "CICLOS-NOVO/unico.csv")];
+doc.porId["envio-ciclos"].disparar("change");
+return { primeira, segunda: doc.porId["envio-ciclos-status"].textContent };
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "primeira": "Pasta CICLOS-ANTIGO: 2 arquivo(s) .csv escolhido(s).",
+        "segunda": "Pasta CICLOS-NOVO: 1 arquivo(s) .csv escolhido(s).",
+    }
+
+
+def test_escolher_pasta_nao_faz_rede_nem_anima_envio():
+    """CEP-03: seleção é seleção — nada de requisição nem de estado "enviando"
+    antes de clicar em Enviar pastas."""
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["a.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["b.csv"])
+    )
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = contexto.__t.chamadas.length;
+doc.porId["btn-escolher-ciclos"].click();
+doc.porId["envio-ciclos"].disparar("change");
+doc.porId["btn-escolher-matriculas"].click();
+doc.porId["envio-matriculas"].disparar("change");
+"""
+        + ESPERAR
+        + """
+return {
+  chamadasNovas: contexto.__t.chamadas.length - antes,
+  envio: para("/admin/atualizar/envio").length,
+  statusEnvio: doc.porId["status-envio"].textContent,
+  botaoBloqueado: doc.porId["btn-enviar-pastas"].disabled === true,
+  filaDeTimeout: fila.length,
+};
+"""
+    )
+    resultado = rodar("atualizar.js", preparar, verificar)
+    assert resultado["chamadasNovas"] == 0
+    assert resultado["envio"] == 0
+    assert resultado["statusEnvio"] == ""
+    assert resultado["botaoBloqueado"] is False
+    assert resultado["filaDeTimeout"] == 0

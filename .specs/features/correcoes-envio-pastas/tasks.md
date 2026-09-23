@@ -205,7 +205,7 @@ T6 → T7
 - [x] Gate check passes: `python -m pytest tests/test_style_css.py -q`
 - [x] Test count: contagem atual mantida (44 passados, mesma contagem; a regressão de `test_style_css.py` já cobre; sem teste novo necessário)
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `d4ca4dd`.
 
 **Tests**: none
 **Gate**: quick
@@ -229,14 +229,17 @@ T6 → T7
 
 **Done when**:
 
-- [ ] Clicar no botão de escolher pasta aciona `input.click()` do campo correspondente
-- [ ] Ao trocar `input.files` (evento `change`), o status mostra o nome da pasta (primeiro segmento de `webkitRelativePath` do primeiro arquivo) e a contagem de `.csv`
-- [ ] Seleção com arquivos que não são `.csv` mostra a contagem de "outros" na mesma linha de status
-- [ ] `webkitRelativePath` vazio (ou ausente) faz o status mostrar só a contagem, sem nome de pasta, sem lançar erro
-- [ ] Reescolher a pasta substitui o texto de status anterior, nunca acrescenta
-- [ ] Nenhum `fetch`, `setTimeout` ou classe de estado "carregando" é usado nesse fluxo (CEP-03)
-- [ ] Gate check passes: `python -m pytest tests/test_js_envio.py -q`
-- [ ] Test count: contagem anterior + no mínimo 6 testes novos, um por item acima
+- [x] Clicar no botão de escolher pasta aciona `input.click()` do campo correspondente
+- [x] Ao trocar `input.files` (evento `change`), o status mostra o nome da pasta (primeiro segmento de `webkitRelativePath` do primeiro arquivo) e a contagem de `.csv`
+- [x] Seleção com arquivos que não são `.csv` mostra a contagem de "outros" na mesma linha de status
+- [x] `webkitRelativePath` vazio (ou ausente) faz o status mostrar só a contagem, sem nome de pasta, sem lançar erro
+- [x] Reescolher a pasta substitui o texto de status anterior, nunca acrescenta
+- [x] Nenhum `fetch`, `setTimeout` ou classe de estado "carregando" é usado nesse fluxo (CEP-03)
+- [x] Gate check passes: `python -m pytest tests/test_js_envio.py -q`
+- [x] Test count: 11 anteriores + 6 novos = 17 passados (`tests/test_js_envio.py` + `tests/test_js_fiacao.py` = 31, contra 25 antes)
+- [x] **Nota**: os `id` novos do widget (`btn-escolher-ciclos`/`btn-escolher-matriculas`, `envio-ciclos-status`/`envio-matriculas-status`) entraram na lista `IDS` de `tests/test_js_envio.py`, senão o script real quebraria no DOM simulado — é custo de dublê, sem asserção nova ali.
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: unit
 **Gate**: quick
