@@ -315,13 +315,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `ContextoLeitura` expõe `execucao`, `conn` e `ano_base` (o mesmo ano-base gravado no candidato)
-- [ ] A validação acontece sob a trava da execução e antes de qualquer consulta; contexto inválido levanta `PreviaIndisponivel` e não devolve conexão
-- [ ] Toda leitura feita por um callback passa por esta função — não existe atalho que leia a fonte sem validar
-- [ ] Nenhum contexto devolve a conexão do banco publicado
-- [ ] Testes: cobrir contexto válido, sessão alheia, estado terminal e fonte já fechada
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] `ContextoLeitura` expõe `execucao`, `conn` e `ano_base` (o mesmo ano-base gravado no candidato)
+- [x] A validação acontece sob a trava da execução e antes de qualquer consulta; contexto inválido levanta `PreviaIndisponivel` e não devolve conexão
+- [x] Toda leitura feita por um callback passa por esta função — não existe atalho que leia a fonte sem validar
+- [x] Nenhum contexto devolve a conexão do banco publicado
+- [x] Testes: cobrir contexto válido, sessão alheia, estado terminal e fonte já fechada
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `ceb6c06`.
 
 **Tests**: unit
 **Gate**: quick

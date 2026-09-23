@@ -273,3 +273,58 @@ def test_descar_fora_de_previa_recusa(db_path):
     envio.estado = "salva"
     with pytest.raises(execucoes.ExecucaoInvalida):
         execucoes.descartar(envio)
+
+
+# ===================== T7: contexto de leitura da prévia =====================
+
+
+def test_abrir_leitura_previa_contexto_valido(db_path):
+    envio = _envio_em_previa()
+    candidato = _candidato(db_path)
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
+
+    contexto = execucoes.abrir_leitura_previa(envio.id, "sessao-A")
+    try:
+        assert contexto.execucao is envio
+        assert contexto.ano_base == 2026
+        # a conexão lê a fonte candidata (1 curso), não o banco publicado (vazio)
+        total = contexto.conn.execute("SELECT COUNT(*) FROM cursos").fetchone()[0]
+        assert total == 1
+    finally:
+        contexto.conn.close()
+    execucoes.liberar_previa(envio)
+
+
+def test_abrir_leitura_previa_sessao_alheia(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+
+    with pytest.raises(execucoes.PreviaIndisponivel):
+        execucoes.abrir_leitura_previa(envio.id, "sessao-B")
+
+    execucoes.liberar_previa(envio)
+
+
+def test_abrir_leitura_previa_estado_terminal(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+    envio.estado = "salva"
+
+    with pytest.raises(execucoes.PreviaIndisponivel):
+        execucoes.abrir_leitura_previa(envio.id, "sessao-A")
+
+    execucoes.liberar_previa(envio)
+
+
+def test_abrir_leitura_previa_fonte_fechada(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+    execucoes.liberar_previa(envio)  # fecha a fonte; estado continua `previa`
+
+    with pytest.raises(execucoes.PreviaIndisponivel):
+        execucoes.abrir_leitura_previa(envio.id, "sessao-A")
+
+
+def test_abrir_leitura_previa_execucao_inexistente():
+    with pytest.raises(execucoes.PreviaIndisponivel):
+        execucoes.abrir_leitura_previa("nao-existe", "sessao-A")

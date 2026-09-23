@@ -415,6 +415,39 @@ def liberar_previa(execucao):
         execucao.previa_fonte = None
 
 
+class ContextoLeitura:
+    """Contexto de leitura validado da prévia (PVP-04/PVP-07): execução
+    autorizada, conexão somente leitura da fonte candidata e o ano-base do
+    candidato. Único caminho para qualquer layout/callback ler a fonte."""
+
+    def __init__(self, execucao, conn, ano_base):
+        self.execucao = execucao
+        self.conn = conn
+        self.ano_base = ano_base
+
+
+def abrir_leitura_previa(execucao_id, sessao_id):
+    """PVP-04/PVP-07: valida o contexto pela regra de `obter_previa` e devolve
+    um `ContextoLeitura` com a conexão somente leitura da fonte candidata e o
+    ano-base do candidato. A validação de estado e a abertura da conexão
+    acontecem sob a trava da execução, antes de qualquer consulta; contexto
+    inválido levanta `PreviaIndisponivel` sem devolver conexão. Nunca devolve
+    a conexão do banco publicado."""
+    execucao = obter_previa(execucao_id, sessao_id)
+    with com_trava(execucao):
+        # re-valida sob a trava: Salvar/Descartar podem ter mudado o estado
+        # entre o `obter_previa` e a aquisição da trava.
+        if execucao.estado != "previa":
+            raise PreviaIndisponivel("prévia indisponível para esta sessão")
+        if execucao.previa_fonte is None:
+            raise PreviaIndisponivel("prévia indisponível: fonte fechada")
+
+        conn = execucao.previa_fonte.abrir_leitura()
+        ano_base = execucao.candidato["ano_base"] if execucao.candidato else None
+
+    return ContextoLeitura(execucao, conn, ano_base)
+
+
 def varrer(execucao, agora=None):
     """Thread de varredura (a cada 60 s): encerra pausa com mais de 4 h e
     falha (tempo esgotado) o par em andamento há mais de 900 s + 60 s sem
