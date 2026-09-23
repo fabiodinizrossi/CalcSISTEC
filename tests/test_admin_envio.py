@@ -356,6 +356,34 @@ def test_unidade_fora_do_cadastro_e_cadastrada_automaticamente(sessao, banco_tem
     assert dados_campi.id_suspeito(unidade["id_perfil"]) is True
 
 
+def test_colisao_no_cadastro_automatico_nao_derruba_o_envio(sessao, banco_temporario):
+    """AFE-03 AC3: se `incluir_campus` colidir numa unidade (aqui "U9", cujo
+    identificador `envio-U9` já pertence a outro campus), o envio não falha por
+    causa disso — aquela unidade fica de fora do cadastro e as demais do mesmo
+    envio entram normalmente."""
+    from app.data import campi as dados_campi
+
+    dados_campi.incluir_campus("envio-U9", "Campus de outro código", "U7", db_path=banco_temporario)
+    ciclos = [
+        _ciclo("C1", "U1", nome="ciclos-U1.csv"),
+        _ciclo("C9", "U9", nome="ciclos-U9.csv"),
+        _ciclo("C8", "U8", nome="ciclos-U8.csv"),
+    ]
+    matriculas = [_matricula("C1", "M1", "U1")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    assert corpo["campi_cadastrados_automaticamente"] == ["U8"]
+
+    cadastrados = {c["co_unidade"]: c for c in dados_campi.listar_campi(banco_temporario)}
+    assert cadastrados["U8"]["id_perfil"] == "envio-U8"
+    # A linha que já ocupava o identificador "envio-U9" segue intacta.
+    assert cadastrados["U7"]["id_perfil"] == "envio-U9"
+    assert "U9" not in cadastrados
+
+
 def test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo(sessao, banco_temporario, monkeypatch):
     """Edge case AFE-03: no segundo envio a unidade já está em `campi_sistec`,
     então `campi_nao_cadastrados` a exclui e nada é incluído de novo."""
