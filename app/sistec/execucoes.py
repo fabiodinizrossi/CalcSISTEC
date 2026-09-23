@@ -38,6 +38,10 @@ class ExecucaoInvalida(Exception):
     """Token inválido, execução inexistente, ou ação fora do estado atual."""
 
 
+class ConfirmacaoNecessaria(Exception):
+    """O envio preserva campi e exige confirmação explícita para salvar."""
+
+
 class Par:
     def __init__(self, n, tipo, id_perfil, nome_perfil, co_unidade=None):
         self.n = n
@@ -169,6 +173,11 @@ def registrar_leitura(execucao, leitura):
     _consolidar_ou_falhar(execucao)
 
 
+def definir_campi_preservados(execucao, codigos):
+    """Registra os campi ausentes cujas linhas internas devem ser mantidas."""
+    execucao.campi_falhos = set(codigos)
+
+
 def obter_por_token(execucao_id, token):
     for execucao in _REGISTRO.values():
         if execucao.id == execucao_id:
@@ -293,11 +302,13 @@ def _consolidar_ou_falhar(execucao):
         execucao.erro_consolidacao = str(exc)
 
 
-def salvar(execucao, db_path, ano_base):
+def salvar(execucao, db_path, ano_base, confirmado=False):
     """Estado `previa` -> Salvar (RF-08): grava a versão interna e marca
     `salva`."""
     if execucao.estado != "previa":
         raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
+    if execucao.origem == "envio" and execucao.campi_falhos and not confirmado:
+        raise ConfirmacaoNecessaria("confirmação necessária para preservar campi ausentes")
 
     from app.data.ingest import montar_versao_interna
 

@@ -12,6 +12,7 @@ import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.sistec import execucoes  # noqa: E402
+from app.sistec.consolidacao import consolidar  # noqa: E402
 
 
 class RelogioFalso:
@@ -319,6 +320,72 @@ def test_registrar_leitura_marca_falha_de_consolidacao_sem_previa():
 
     assert envio.estado == "falhou_consolidacao"
     assert envio.previa is None
+
+
+def test_definir_campi_preservados_grava_codigos_na_execucao():
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+
+    execucoes.definir_campi_preservados(envio, ["U2", "U1", "U2"])
+
+    assert envio.campi_falhos == {"U1", "U2"}
+
+
+def test_salvar_envio_com_campi_preservados_exige_confirmacao(tmp_path):
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+    execucoes.registrar_leitura(envio, _leitura_envio())
+    execucoes.definir_campi_preservados(envio, ["U2"])
+
+    with pytest.raises(execucoes.ConfirmacaoNecessaria):
+        execucoes.salvar(envio, str(tmp_path / "interna.db"), 2026)
+
+    assert envio.estado == "previa"
+
+
+def test_salvar_envio_confirmado_preserva_linhas_do_campus_ausente(tmp_path):
+    from app.data.ingest import montar_versao_interna
+    from app.data.schema import get_connection, init_db
+
+    db_path = str(tmp_path / "interna.db")
+    init_db(db_path)
+    anterior = consolidar([_leitura_envio()["ciclo"][0][1]], [_leitura_envio()["matricula"][0][1]])
+    montar_versao_interna(anterior, set(), db_path=db_path, ano_base=2026)
+
+    ciclo_novo = _leitura_envio()["ciclo"][0][1].assign(CO_UNIDADE="U2", CODIGO_CICLO_MATRICULA="C2", **{"CÓDIGO DO PORTFÓLIO": "P2"})
+    matricula_nova = _leitura_envio()["matricula"][0][1].assign(CO_MATRICULA="M2", CODIGO_CICLO_MATRICULA="C2")
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+    execucoes.registrar_leitura(envio, {"ciclo": [("ciclos.csv", ciclo_novo)], "matricula": [("matriculas.csv", matricula_nova)]})
+    execucoes.definir_campi_preservados(envio, ["U1"])
+
+    resultado = execucoes.salvar(envio, db_path, 2026, confirmado=True)
+
+    conn = get_connection(db_path)
+    try:
+        linhas = conn.execute("SELECT codigo_ciclo_matricula, co_unidade FROM interna_ciclos ORDER BY codigo_ciclo_matricula").fetchall()
+    finally:
+        conn.close()
+    assert resultado["campi_mantidos"] == ["U1"]
+    assert linhas == [("C1", "U1"), ("C2", "U2")]
+
+
+def test_salvar_envio_sem_campi_preservados_nao_exige_confirmacao(monkeypatch):
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+    envio.estado = "previa"
+    envio.previa = {"valor": "previa"}
+    monkeypatch.setattr("app.data.ingest.montar_versao_interna", lambda *args, **kwargs: {"salva": True})
+
+    assert execucoes.salvar(envio, "qualquer.db", 2026) == {"salva": True}
+    assert envio.estado == "salva"
+
+
+def test_salvar_baixa_mantem_comportamento_sem_confirmacao(monkeypatch):
+    baixa = execucoes.criar_execucao("pi@iffarroupilha.edu.br", _campi())
+    baixa.estado = "previa"
+    baixa.previa = {"valor": "previa"}
+    baixa.campi_falhos = {"U1"}
+    monkeypatch.setattr("app.data.ingest.montar_versao_interna", lambda *args, **kwargs: {"salva": True})
+
+    assert execucoes.salvar(baixa, "qualquer.db", 2026) == {"salva": True}
+    assert baixa.estado == "salva"
 
 
 # ===================== Captura de perfis (roadmap §5.1) =====================
