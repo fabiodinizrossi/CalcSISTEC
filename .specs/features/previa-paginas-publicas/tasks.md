@@ -888,14 +888,16 @@ T27 → T28
 
 **Done when**:
 
-- [ ] GET de prévia sem login redireciona para `/admin/login` sem entregar dados do envio
-- [ ] Segunda sessão do mesmo e-mail (outro `sessao_id`) recebe **Prévia indisponível** e nenhuma linha, indicador ou tabela do envio
-- [ ] `preview_id` forjado no `dcc.Store` não vira acesso: o callback recusa
-- [ ] Caminho público com contexto forjado continua devolvendo só a versão publicada
-- [ ] URL de prévia depois de Salvar ou Descartar mostra **Prévia indisponível**, e registro limpo (execução perdida) faz o mesmo, sem substituir por dados públicos
-- [ ] Nenhuma resposta da prévia tem coluna pessoal (nome, CPF, e-mail, data de nascimento)
-- [ ] Gate check passes: `python -m pytest tests/test_previa_acesso.py -q`
-- [ ] Test count: ≥ 8 testes novos
+- [x] GET de prévia sem login redireciona para `/admin/login` sem entregar dados do envio
+- [x] Segunda sessão do mesmo e-mail (outro `sessao_id`) recebe **Prévia indisponível** e nenhuma linha, indicador ou tabela do envio
+- [x] `preview_id` forjado no `dcc.Store` não vira acesso: o callback recusa
+- [x] Caminho público com contexto forjado continua devolvendo só a versão publicada
+- [x] URL de prévia depois de Salvar ou Descartar mostra **Prévia indisponível**, e registro limpo (execução perdida) faz o mesmo, sem substituir por dados públicos
+- [x] Nenhuma resposta da prévia tem coluna pessoal (nome, CPF, e-mail, data de nascimento)
+- [x] Gate check passes: `python -m pytest tests/test_previa_acesso.py -q`
+- [x] Test count: ≥ 8 testes novos
+
+**Status**: Done -- commit `f15d447`.
 
 **Tests**: integration
 **Gate**: full
