@@ -474,11 +474,21 @@ def admin_atualizar_cancelar(execucao_id):
 @server.route("/admin/atualizar/execucoes/<execucao_id>/salvar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_salvar(execucao_id):
+    """UPL-08: `{"confirmar_preservacao": true}` libera a gravação de um
+    envio que preserva campi ausentes; sem ele, o servidor recusa com 409 e
+    a lista dos campi preservados (o portão não é só do JS)."""
     execucao = _execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
+    corpo = flask.request.get_json(silent=True) or {}
     try:
-        resultado = execucoes.salvar(execucao, DEFAULT_DB_PATH, _ano_base_config())
+        resultado = execucoes.salvar(
+            execucao, DEFAULT_DB_PATH, _ano_base_config(), confirmado=bool(corpo.get("confirmar_preservacao"))
+        )
+    except execucoes.ConfirmacaoNecessaria:
+        return flask.jsonify(
+            {"erro": "confirmacao_necessaria", "campi_preservados": sorted(execucao.campi_falhos)}
+        ), 409
     except execucoes.ExecucaoInvalida as exc:
         return flask.jsonify({"erro": str(exc)}), 409
 
