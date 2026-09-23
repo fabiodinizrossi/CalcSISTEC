@@ -630,14 +630,16 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `criar_execucao_envio` recebe `sessao_id=sessao_id_atual()`
-- [ ] Depois de `definir_campi_preservados`, a rota prepara o candidato com `config.ano_base` e chama `abrir_previa`; a ordem preserva o cadastro automático de unidades e os avisos já existentes
-- [ ] Falha ao montar a fonte (memória insuficiente) devolve erro próprio na resposta, mantém a execução pendente e deixa **Descartar** disponível; nada é gravado na versão interna ou pública
-- [ ] O caminho de consolidação inválida continua sem oferecer prévia e mantém o erro visível
-- [ ] O `DataFrame` por arquivo e o consolidado pesado são liberados depois de montar a fonte, preservando o resumo e a amostra do polling
-- [ ] Testes: cobrir envio válido cria fonte, consolidação inválida não cria, e falha de memória simulada (`monkeypatch` que levanta `MemoryError`) devolve o erro sem gravar
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] `criar_execucao_envio` recebe `sessao_id=sessao_id_atual()`
+- [x] Depois de `definir_campi_preservados`, a rota prepara o candidato com `config.ano_base` e chama `abrir_previa`; a ordem preserva o cadastro automático de unidades e os avisos já existentes
+- [x] Falha ao montar a fonte (memória insuficiente) devolve erro próprio na resposta, mantém a execução pendente e deixa **Descartar** disponível; nada é gravado na versão interna ou pública
+- [x] O caminho de consolidação inválida continua sem oferecer prévia e mantém o erro visível
+- [x] O `DataFrame` por arquivo e o consolidado pesado são liberados depois de montar a fonte, preservando o resumo e a amostra do polling
+- [x] Testes: cobrir envio válido cria fonte, consolidação inválida não cria, e falha de memória simulada (`monkeypatch` que levanta `MemoryError`) devolve o erro sem gravar
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `128badf`.
 
 **Tests**: integration
 **Gate**: full

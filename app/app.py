@@ -4,7 +4,7 @@ import dash
 import flask
 from dash import html
 
-from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, esta_autenticado, requer_autenticacao
+from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, esta_autenticado, requer_autenticacao, sessao_id_atual
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
 from app.config import aplicar_configuracao_sessao
 from app.data.config_store import (
@@ -25,6 +25,8 @@ from app.data.campi import existe_campus_sem_unidade, listar_campi
 from app.data.historico import encerrar as historico_encerrar
 from app.data.historico import iniciar as historico_iniciar
 from app.data.historico import listar as historico_listar
+from app.data.consulta import ano_base_ativo
+from app.data.ingest import preparar_versao
 from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
@@ -407,6 +409,7 @@ def admin_atualizar_envio():
             [nome for nome, _ in leitura["ciclo"]],
             [nome for nome, _ in leitura["matricula"]],
             historico_id=historico_id,
+            sessao_id=sessao_id_atual(),
         )
     except execucoes.ExecucaoInvalida:
         historico_encerrar(historico_id, "cancelada")
@@ -448,6 +451,22 @@ def admin_atualizar_envio():
         "ciclos": len(execucao.previa["ciclos"]),
         "matriculas": len(execucao.previa["matriculas"]),
     }
+
+    # T17 (previa-paginas-publicas): prepara o candidato sem gravar e abre a
+    # fonte em memória da prévia. `abrir_previa` libera os DataFrames por
+    # arquivo e o consolidado pesado, conservando o resumo/amostra do polling.
+    try:
+        candidato = preparar_versao(
+            execucao.previa, preservados, db_path=DEFAULT_DB_PATH, ano_base=ano_base_ativo()
+        )
+        execucoes.abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH)
+    except MemoryError:
+        # Falha ao montar a fonte (memória insuficiente): nada é gravado, a
+        # execução continua pendente e Descartar permanece disponível.
+        resposta["previa"] = None
+        resposta["erro_previa"] = "sem_memoria"
+        return flask.jsonify(resposta)
+
     return flask.jsonify(resposta)
 
 
@@ -584,7 +603,16 @@ def admin_atualizar_estado():
     ]
 
     previa_resumo = None
-    if execucao.previa is not None:
+    if execucao.previa_resumo is not None:
+        # envio com a fonte da prévia aberta (T17): o consolidado pesado foi
+        # liberado, e o resumo/amostra ficam em `execucao.previa_resumo`.
+        previa_resumo = {
+            "ciclos": execucao.previa_resumo["ciclos"],
+            "matriculas": execucao.previa_resumo["matriculas"],
+            "campi_falhos": sorted(execucao.campi_falhos),
+            "amostra": execucao.previa_resumo["amostra"],
+        }
+    elif execucao.previa is not None:
         amostra = execucao.previa["ciclos"].head(20).astype(object)
         amostra = amostra.replace([float("inf"), float("-inf")], None).where(amostra.notna(), None)
         previa_resumo = {

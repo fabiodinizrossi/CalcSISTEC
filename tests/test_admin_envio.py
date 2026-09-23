@@ -474,3 +474,63 @@ def test_matriculas_de_ciclo_ausente_entram_na_contagem_de_orfas(sessao):
     corpo = resposta.get_json()
     assert corpo["matriculas_orfas"] == 1
     assert corpo["previa"]["matriculas"] == 2
+
+
+# ===================== previa-paginas-publicas, T17 =====================
+
+
+def test_envio_valido_abre_a_fonte_e_vincula_sessao(sessao, banco_temporario):
+    ciclos, matriculas = _envio_valido(("U1",))
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.previa_fonte is not None
+    assert execucao.sessao_dona is not None
+
+
+def test_envio_valido_libera_os_dataframes_e_conserva_resumo(sessao, banco_temporario):
+    ciclos, matriculas = _envio_valido(("U1",))
+    sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.previa is None  # consolidado pesado liberado
+    assert all(par.df is None for par in execucao.fila)  # DataFrames por arquivo liberados
+    assert execucao.previa_resumo is not None
+    assert execucao.previa_resumo["ciclos"] == 1
+    assert execucao.previa_resumo["matriculas"] == 1
+
+
+def test_consolidacao_invalida_nao_cria_fonte(sessao, banco_temporario):
+    matriculas = [_matricula("C1", "M1")]
+    ciclos = [
+        _ciclo("C1", "U1", nome="ciclos-a.csv"),
+        _ciclo("C1", "U1", nome="ciclos-b.csv", **{"NOME DO CURSO": "OUTRO CURSO"}),
+    ]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert corpo["estado"] == "falhou_consolidacao"
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.previa_fonte is None
+
+
+def test_falha_de_memoria_devolve_erro_sem_gravar(sessao, banco_temporario, monkeypatch):
+    def _sem_memoria(*a, **k):
+        raise MemoryError("sem memória")
+
+    monkeypatch.setattr(execucoes, "abrir_previa", _sem_memoria)
+    ciclos, matriculas = _envio_valido(("U1",))
+
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    corpo = resposta.get_json()
+
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    assert corpo["erro_previa"] == "sem_memoria"
+    assert corpo["previa"] is None
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.estado == "previa"
+    assert execucao.previa_fonte is None
