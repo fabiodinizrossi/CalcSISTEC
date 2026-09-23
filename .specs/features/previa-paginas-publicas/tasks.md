@@ -825,11 +825,13 @@ T27 → T28
 
 **Done when**:
 
-- [ ] A gravação do envio é dublada em `versoes.salvar_interna` e o teste continua afirmando o ano-base recebido, agora igual ao de `config.ano_base` do banco usado no teste
-- [ ] O teste de baixa direta continua cobrindo `_ano_base_config()`
-- [ ] Os testes do portão de confirmação e de ausência de PII no histórico seguem passando sem afrouxamento
-- [ ] Gate check passes: `python -m pytest tests/test_admin_envio_salvar.py -q`
-- [ ] Test count: mesmo número de testes do arquivo, com a expectativa corrigida (sem exclusão silenciosa)
+- [x] A gravação do envio é dublada em `versoes.salvar_interna` e o teste continua afirmando o ano-base recebido, agora igual ao de `config.ano_base` do banco usado no teste
+- [x] O teste de baixa direta continua cobrindo `_ano_base_config()`
+- [x] Os testes do portão de confirmação e de ausência de PII no histórico seguem passando sem afrouxamento
+- [x] Gate check passes: `python -m pytest tests/test_admin_envio_salvar.py -q`
+- [x] Test count: mesmo número de testes do arquivo, com a expectativa corrigida (sem exclusão silenciosa)
+
+**Status**: Done -- commit `02571c2`.
 
 **Tests**: integration
 **Gate**: quick

@@ -342,7 +342,7 @@ def test_salvar_envio_com_campi_preservados_exige_confirmacao(tmp_path):
 
 
 def test_salvar_envio_confirmado_preserva_linhas_do_campus_ausente(tmp_path):
-    from app.data.ingest import montar_versao_interna
+    from app.data.ingest import montar_versao_interna, preparar_versao
     from app.data.schema import get_connection, init_db
 
     db_path = str(tmp_path / "interna.db")
@@ -355,6 +355,10 @@ def test_salvar_envio_confirmado_preserva_linhas_do_campus_ausente(tmp_path):
     envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
     execucoes.registrar_leitura(envio, {"ciclo": [("ciclos.csv", ciclo_novo)], "matricula": [("matriculas.csv", matricula_nova)]})
     execucoes.definir_campi_preservados(envio, ["U1"])
+
+    # o salvar de um envio grava o candidato preparado (campi preservados + novos)
+    candidato = preparar_versao(envio.previa, ["U1"], db_path=db_path, ano_base=2026)
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
 
     resultado = execucoes.salvar(envio, db_path, 2026, confirmado=True)
 
@@ -370,8 +374,12 @@ def test_salvar_envio_confirmado_preserva_linhas_do_campus_ausente(tmp_path):
 def test_salvar_envio_sem_campi_preservados_nao_exige_confirmacao(monkeypatch):
     envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
     envio.estado = "previa"
-    envio.previa = {"valor": "previa"}
-    monkeypatch.setattr("app.data.ingest.montar_versao_interna", lambda *args, **kwargs: {"salva": True})
+    envio.candidato = {
+        "tabelas": {},
+        "resumo": {"salva": True},
+        "assinatura_origem": {"ano_base": 2026, "rev_interna": 0, "rev_publicada": None, "fatores": (), "campus": ()},
+    }
+    monkeypatch.setattr("app.data.versoes.salvar_interna", lambda *args, **kwargs: None)
 
     assert execucoes.salvar(envio, "qualquer.db", 2026) == {"salva": True}
     assert envio.estado == "salva"
