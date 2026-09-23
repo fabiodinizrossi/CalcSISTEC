@@ -43,7 +43,7 @@ def test_polling_de_envio_devolve_os_campos_da_tela(sessao):
     execucao = execucoes.criar_execucao_envio(ADMIN, ["ciclos-U1.csv"], ["matriculas-U1.csv"])
     execucao.estado = "previa"
     execucao.campi_falhos = {"U2", "U3"}
-    execucao.campi_nao_cadastrados = ["U9"]
+    execucao.campi_cadastrados_automaticamente = ["U9"]
     execucao.arquivos_ignorados = ["LEIA-ME.txt"]
     execucao.matriculas_orfas = 4
 
@@ -51,7 +51,7 @@ def test_polling_de_envio_devolve_os_campos_da_tela(sessao):
 
     assert corpo["origem"] == "envio"
     assert corpo["campi_preservados"] == ["U2", "U3"]
-    assert corpo["campi_nao_cadastrados"] == ["U9"]
+    assert corpo["campi_cadastrados_automaticamente"] == ["U9"]
     assert corpo["arquivos_ignorados"] == ["LEIA-ME.txt"]
     assert corpo["matriculas_orfas"] == 4
 
@@ -64,7 +64,7 @@ def test_polling_de_baixa_mantem_a_resposta_e_zera_os_campos_novos(sessao):
 
     assert corpo["origem"] == "baixa"
     assert corpo["campi_preservados"] == []
-    assert corpo["campi_nao_cadastrados"] == []
+    assert corpo["campi_cadastrados_automaticamente"] == []
     assert corpo["arquivos_ignorados"] == []
     assert corpo["matriculas_orfas"] == 0
     # A resposta anterior continua inteira.
@@ -81,7 +81,7 @@ def test_polling_sem_execucao_nao_quebra(sessao):
 def test_campos_novos_do_polling_nao_carregam_pii_nem_conteudo_de_celula(sessao):
     execucao = execucoes.criar_execucao_envio(ADMIN, ["ciclos-U1.csv"], ["matriculas-U1.csv"])
     execucao.estado = "previa"
-    execucao.campi_nao_cadastrados = ["U9"]
+    execucao.campi_cadastrados_automaticamente = ["U9"]
     execucao.arquivos_ignorados = ["LEIA-ME.txt"]
 
     bruto = sessao.get("/admin/atualizar/execucao").get_data(as_text=True)

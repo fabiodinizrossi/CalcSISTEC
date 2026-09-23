@@ -338,6 +338,32 @@ def _matriculas_orfas_envio(previa):
     return int((~matriculas[coluna].isin(chaves)).sum())
 
 
+def _cadastrar_unidades_do_envio(codigos):
+    """AFE-03: cadastra as unidades que vieram nos ciclos e ainda não estavam
+    na lista de campi. Se a unidade está no arquivo do Sistec, ela existe.
+
+    O CSV do envio não traz o identificador de perfil real, então ele é
+    prefixado com `envio-` — de propósito: `id_suspeito()` sinaliza esse campus
+    como "identificador inválido" em Configurações até alguém completar o
+    cadastro à mão, e a baixa direta do Sistec não roda com o id inventado.
+    `origem="manual"` (o default de `incluir_campus`) preserva a linha numa
+    futura recaptura de perfis. Devolve os códigos cadastrados agora; uma
+    colisão inesperada (`CampusInvalido`) pula só aquela unidade."""
+    cadastrados = []
+    for codigo in codigos:
+        try:
+            campi.incluir_campus(
+                id_perfil=f"envio-{codigo}",
+                nome_perfil=f"Unidade {codigo} (cadastrada pelo envio de pastas)",
+                co_unidade=codigo,
+                db_path=DEFAULT_DB_PATH,
+            )
+        except campi.CampusInvalido:
+            continue
+        cadastrados.append(codigo)
+    return cadastrados
+
+
 @server.route("/admin/atualizar/envio", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_envio():
@@ -376,7 +402,7 @@ def admin_atualizar_envio():
 
     execucoes.registrar_leitura(execucao, leitura)
     execucao.arquivos_ignorados = leitura["ignorados"]
-    execucao.campi_nao_cadastrados = []
+    execucao.campi_cadastrados_automaticamente = []
     execucao.matriculas_orfas = 0
 
     resposta = {
@@ -398,11 +424,13 @@ def admin_atualizar_envio():
     campi_cadastrados = listar_campi()
     preservados = envio.campi_ausentes(execucao.previa["ciclos"], campi_cadastrados)
     execucoes.definir_campi_preservados(execucao, preservados)
-    execucao.campi_nao_cadastrados = envio.campi_nao_cadastrados(execucao.previa["ciclos"], campi_cadastrados)
+    execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
+        envio.campi_nao_cadastrados(execucao.previa["ciclos"], campi_cadastrados)
+    )
     execucao.matriculas_orfas = _matriculas_orfas_envio(execucao.previa)
 
     resposta["campi_preservados"] = preservados
-    resposta["campi_nao_cadastrados"] = execucao.campi_nao_cadastrados
+    resposta["campi_cadastrados_automaticamente"] = execucao.campi_cadastrados_automaticamente
     resposta["matriculas_orfas"] = execucao.matriculas_orfas
     resposta["previa"] = {
         "ciclos": len(execucao.previa["ciclos"]),
@@ -527,9 +555,10 @@ def admin_atualizar_estado():
     já chegam sem PII, D-04, mas a amostra em si fica pequena por prudência).
 
     UPL-09: os campos do envio (`origem`, `campi_preservados`,
-    `campi_nao_cadastrados`, `arquivos_ignorados`, `matriculas_orfas`) são só
-    códigos institucionais, nomes de arquivo e contagens (RN-13); numa baixa
-    `origem` é `"baixa"` e as listas vêm vazias."""
+    `campi_cadastrados_automaticamente`, `arquivos_ignorados`,
+    `matriculas_orfas`) são só códigos institucionais, nomes de arquivo e
+    contagens (RN-13); numa baixa `origem` é `"baixa"` e as listas vêm
+    vazias."""
     execucao = _execucao_da_sessao()
     estado_navegador = navegador.status(_admin_email())
     if execucao is None:
@@ -565,7 +594,9 @@ def admin_atualizar_estado():
             "pares": pares,
             "previa": previa_resumo,
             "campi_preservados": sorted(execucao.campi_falhos) if execucao.origem == "envio" else [],
-            "campi_nao_cadastrados": list(getattr(execucao, "campi_nao_cadastrados", []) or []),
+            "campi_cadastrados_automaticamente": list(
+                getattr(execucao, "campi_cadastrados_automaticamente", []) or []
+            ),
             "arquivos_ignorados": list(getattr(execucao, "arquivos_ignorados", []) or []),
             "matriculas_orfas": getattr(execucao, "matriculas_orfas", 0) or 0,
         }

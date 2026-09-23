@@ -50,6 +50,7 @@ IDS = [
     "status-envio",
     "envio-arquivos-area",
     "envio-ignorados",
+    "envio-cadastrados",
 ]
 
 # Estado que o polling devolve por padrão: nenhuma execução aberta.
@@ -57,7 +58,11 @@ SEM_EXECUCAO = {"estado": None, "navegador": None}
 
 
 def _estado_previa(
-    origem="envio", campi_preservados=(), campi_nao_cadastrados=(), arquivos_ignorados=(), matriculas_orfas=0
+    origem="envio",
+    campi_preservados=(),
+    campi_cadastrados_automaticamente=(),
+    arquivos_ignorados=(),
+    matriculas_orfas=0,
 ):
     return {
         "estado": "previa",
@@ -69,7 +74,7 @@ def _estado_previa(
         "pares": [],
         "previa": {"ciclos": 1, "matriculas": 1, "campi_falhos": list(campi_preservados), "amostra": []},
         "campi_preservados": list(campi_preservados),
-        "campi_nao_cadastrados": list(campi_nao_cadastrados),
+        "campi_cadastrados_automaticamente": list(campi_cadastrados_automaticamente),
         "arquivos_ignorados": list(arquivos_ignorados),
         "matriculas_orfas": matriculas_orfas,
     }
@@ -272,7 +277,7 @@ def test_resultado_por_arquivo_mostra_nome_tipo_e_linhas():
                 {"n": 2, "tipo": "matricula", "nome": "matriculas-U1.csv", "status": "baixado", "linhas": 4},
             ],
             "campi_preservados": [],
-            "campi_nao_cadastrados": ["U9"],
+            "campi_cadastrados_automaticamente": ["U9"],
             "ignorados": ["LEIA-ME.txt"],
             "matriculas_orfas": 0,
             "erro_consolidacao": None,
@@ -291,6 +296,8 @@ return {
   linhas,
   area: doc.porId["envio-arquivos-area"].hidden,
   ignorados: doc.porId["envio-ignorados"].textContent,
+  cadastrados: doc.porId["envio-cadastrados"].textContent,
+  cadastradosVisivel: doc.porId["envio-cadastrados"].hidden === false,
   avisos: doc.porId["envio-avisos"].filhos.map((li) => li.textContent),
   texto: doc.porId["status-envio"].textContent,
 };
@@ -299,7 +306,7 @@ return {
     resultado = rodar(
         "atualizar.js",
         _preparar(
-            estado=_estado_previa(campi_nao_cadastrados=["U9"], arquivos_ignorados=["LEIA-ME.txt"]),
+            estado=_estado_previa(campi_cadastrados_automaticamente=["U9"], arquivos_ignorados=["LEIA-ME.txt"]),
             respostas=[resposta],
             arquivos_ciclos=("ciclos-U1.csv",),
             arquivos_matriculas=("matriculas-U1.csv",),
@@ -312,7 +319,11 @@ return {
         ["2", "matriculas-U1.csv", "Matrículas", "Lido", "4"],
     ]
     assert resultado["ignorados"] == "Ignorados (não são .csv): LEIA-ME.txt."
-    assert resultado["avisos"] == ["Unidades fora do cadastro de campi, não atualizadas: U9."]
+    # AFE-03: a unidade que só veio no envio virou cadastro, sem aviso de alerta.
+    assert resultado["cadastrados"] == "1 unidade(s) nova(s) cadastrada(s) automaticamente: U9."
+    assert resultado["cadastradosVisivel"] is True
+    assert resultado["avisos"] == []
+    assert "fora do cadastro" not in resultado["texto"]
     assert "2 arquivo(s) lido(s)" in resultado["texto"]
 
 

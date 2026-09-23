@@ -310,16 +310,85 @@ def test_rota_fecha_os_arquivos_recebidos_antes_de_responder(sessao, monkeypatch
     assert all(arquivo.stream.closed for arquivo in recebidos)
 
 
-def test_campus_ausente_do_envio_fica_preservado_e_nao_cadastrado_e_listado(sessao):
-    """UPL-07/UPL-09: U3 fica ausente (preservado); U9 não está cadastrado."""
+@pytest.fixture
+def banco_temporario(tmp_path, monkeypatch):
+    """Banco vazio para o cadastro automático (AFE-03), no lugar do do repositório."""
+    from app.data.schema import init_db
+
+    caminho = str(tmp_path / "envio.db")
+    init_db(caminho)
+    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
+    return caminho
+
+
+def test_campus_ausente_do_envio_fica_preservado(sessao, banco_temporario):
+    """UPL-07/UPL-09: U3 fica ausente do envio e preservado."""
     ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
     matriculas = [_matricula("C1", "M1", "U1")]
     resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
 
     corpo = resposta.get_json()
     assert corpo["campi_preservados"] == ["U2", "U3"]
-    assert corpo["campi_nao_cadastrados"] == ["U9"]
     assert execucoes.obter_do_admin(ADMIN).campi_falhos == {"U2", "U3"}
+
+
+def test_unidade_fora_do_cadastro_e_cadastrada_automaticamente(sessao, banco_temporario):
+    """AFE-03: U9 vem nos ciclos mas não está em `campi_sistec`; a rota cadastra
+    a unidade sozinha, em vez de só avisar que ela ficou de fora."""
+    from app.data import campi as dados_campi
+
+    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C1", "M1", "U1")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert corpo["campi_cadastrados_automaticamente"] == ["U9"]
+    assert "campi_nao_cadastrados" not in corpo
+
+    cadastrados = {c["co_unidade"]: c for c in dados_campi.listar_campi(banco_temporario)}
+    assert "U9" in cadastrados
+    unidade = cadastrados["U9"]
+    assert unidade["id_perfil"] == "envio-U9"
+    assert unidade["nome_perfil"] == "Unidade U9 (cadastrada pelo envio de pastas)"
+    assert unidade["origem"] == "manual"
+    # O CSV não traz o identificador de perfil real: o prefixo textual faz o
+    # aviso de identificador inválido aparecer em Configurações.
+    assert dados_campi.id_suspeito(unidade["id_perfil"]) is True
+
+
+def test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo(sessao, banco_temporario, monkeypatch):
+    """Edge case AFE-03: no segundo envio a unidade já está em `campi_sistec`,
+    então `campi_nao_cadastrados` a exclui e nada é incluído de novo."""
+    from app.data import campi as dados_campi
+
+    monkeypatch.setattr(
+        app_module,
+        "listar_campi",
+        lambda *a, **k: CAMPI + [{"id_perfil": "envio-U9", "nome_perfil": "Unidade U9", "co_unidade": "U9"}],
+    )
+    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C1", "M1", "U1")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    assert resposta.get_json()["campi_cadastrados_automaticamente"] == []
+    assert dados_campi.listar_campi(banco_temporario) == []
+
+
+def test_unidade_cadastrada_pelo_envio_sobrevive_a_uma_leitura_do_sistec(sessao, banco_temporario):
+    """AFE-03: `origem='manual'` — uma recaptura de perfis pelo Sistec não apaga
+    a unidade que o envio cadastrou."""
+    from app.data import campi as dados_campi
+
+    ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C9", "M9", "U9")]
+    sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    dados_campi.salvar_captura(
+        [{"id_perfil": "8278860", "nome_perfil": "Assessor A", "ordem": 0, "co_unidade": "U1"}],
+        banco_temporario,
+    )
+
+    assert "U9" in {c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)}
 
 
 def test_matriculas_de_ciclo_ausente_entram_na_contagem_de_orfas(sessao):

@@ -87,6 +87,7 @@
   const elEnvioArea = $("envio-arquivos-area");
   const elEnvioArquivos = $("envio-arquivos");
   const elEnvioIgnorados = $("envio-ignorados");
+  const elEnvioCadastrados = $("envio-cadastrados");
   const elEnvioAvisos = $("envio-avisos");
   const elStatusCiclos = $("envio-ciclos-status");
   const elStatusMatriculas = $("envio-matriculas-status");
@@ -240,7 +241,11 @@
       renderizarPares(corpo.pares);
       renderizarPrevia(corpo.previa, corpo.estado);
       if (corpo.origem === "envio") {
-        renderizarAvisosEnvio(corpo.arquivos_ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
+        renderizarAvisosEnvio(
+          corpo.arquivos_ignorados || [],
+          corpo.campi_cadastrados_automaticamente || [],
+          corpo.matriculas_orfas || 0
+        );
       }
     } catch (erro) {
       // Falha de rede pontual no polling não interrompe o ciclo — tenta de novo.
@@ -415,14 +420,18 @@
     });
   }
 
-  function renderizarAvisosEnvio(ignorados, naoCadastrados, orfas) {
+  function renderizarAvisosEnvio(ignorados, cadastrados, orfas) {
     elEnvioIgnorados.hidden = ignorados.length === 0;
     elEnvioIgnorados.textContent = ignorados.length ? `Ignorados (não são .csv): ${ignorados.join(", ")}.` : "";
 
+    // AFE-03: a unidade que só veio no envio é cadastrada pelo servidor — a
+    // linha conta o que entrou no cadastro, sem tom de alerta.
+    elEnvioCadastrados.hidden = cadastrados.length === 0;
+    elEnvioCadastrados.textContent = cadastrados.length
+      ? `${cadastrados.length} unidade(s) nova(s) cadastrada(s) automaticamente: ${cadastrados.join(", ")}.`
+      : "";
+
     const avisos = [];
-    if (naoCadastrados.length) {
-      avisos.push(`Unidades fora do cadastro de campi, não atualizadas: ${naoCadastrados.join(", ")}.`);
-    }
     if (orfas) avisos.push(`${orfas} matrícula(s) apontam para ciclos que não vieram no envio.`);
     elEnvioAvisos.innerHTML = "";
     avisos.forEach((aviso) => {
@@ -475,7 +484,11 @@
       }
       elStatusEnvio.textContent = `${(corpo.arquivos || []).length} arquivo(s) lido(s). Confira a prévia abaixo.`;
       renderizarArquivosEnvio(corpo.arquivos || []);
-      renderizarAvisosEnvio(corpo.ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
+      renderizarAvisosEnvio(
+        corpo.ignorados || [],
+        corpo.campi_cadastrados_automaticamente || [],
+        corpo.matriculas_orfas || 0
+      );
       await poll();
     } catch (erro) {
       elStatusEnvio.textContent = "Falha de rede: o envio não chegou ao servidor.";

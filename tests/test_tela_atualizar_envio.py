@@ -129,6 +129,9 @@ def test_area_de_resultados_tem_o_resultado_por_arquivo(html):
     area = re.search(r'<div id="envio-arquivos-area".*?</div>\s*</div>', html, re.S).group(0)
     assert re.search(r'<div class="br-table"><div class="responsive"><table>', area.replace("\n", "").replace("  ", ""))
     assert re.search(r'<tbody id="envio-arquivos"></tbody>', area)
+    # AFE-03: a linha do cadastro automático é um texto simples ao lado da dos
+    # ignorados — não um `br-message warning`.
+    assert re.search(r'<p id="envio-ignorados" hidden></p>\s*<p id="envio-cadastrados" hidden></p>', html)
     # A lista de avisos do envio continua existindo, escondida.
     assert re.search(r'<ul id="envio-avisos" class="br-message warning" role="alert" hidden></ul>', html)
 
