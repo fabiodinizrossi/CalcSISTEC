@@ -7,6 +7,7 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 import dash
 from dash import Input, Output, State, callback, dcc, html
 
+from app.auth import sessao_id_atual
 from app.components.filters import EIXOS, axis_selector, clear_filters_button, fic_toggle, ordenar_eixos, select_filter
 from app.components.mensagem import mensagem_ds
 from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
@@ -15,6 +16,7 @@ from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_p
 from app.domain.contrato import FiltrosAtivos
 from app.domain.matriculas import filtrar_fic, taxa_evasao
 from app.domain.shared import coluna_para_eixo
+from app.sistec.execucoes import PreviaIndisponivel, abrir_leitura_previa
 
 dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesquisa Institucional - SISTEC")
 
@@ -26,12 +28,21 @@ def _data_curta(valor):
     return "/".join(reversed(texto.split("-"))) if "-" in texto else texto
 
 
-def layout():
-    if not dataset_disponivel():
-        return mensagem_ds("info", "Ainda não há dados publicados.")
+def _carregar(preview_id):
+    """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
+    validada (PVP-04/PVP-07). Levanta `PreviaIndisponivel` em contexto inválido."""
+    if preview_id is None:
+        return carregar_matriculas(), ano_base_ativo() or 2026
 
-    df = carregar_matriculas()
-    filtros = html.Div(
+    contexto = abrir_leitura_previa(preview_id, sessao_id_atual())
+    try:
+        return carregar_matriculas(conn=contexto.conn), contexto.ano_base
+    finally:
+        contexto.conn.close()
+
+
+def _filtros(df):
+    return html.Div(
         [
             select_filter("evasao-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
             select_filter("evasao-filtro-tipo-curso", "Tipo de Curso", sorted(df["tipo_curso_pnp"].dropna().unique())),
@@ -40,17 +51,36 @@ def layout():
         ],
         className="card-filtros",
     )
-    return html.Div(
-        [
-            cabecalho_pagina("Taxa de Evasão Anual", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
-            dcc.Loading(html.Div(id="evasao-kpi", className="kpis-figma")),
-            axis_selector("evasao-eixo", default="campus"),
-            dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
-            dcc.Loading(html.Div(id="evasao-heatmap")),
-            filtros,
-        ],
-        className="painel-dashboard",
-    )
+
+
+def layout(preview_id=None):
+    """PVP-01/PVP-02/PVP-04: caminho público fica idêntico; com `preview_id`,
+    lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
+    que leva o identificador aos callbacks."""
+    if preview_id is not None:
+        try:
+            df, ano_base = _carregar(preview_id)
+        except PreviaIndisponivel:
+            return mensagem_ds("warning", "Prévia indisponível.")
+        atualizado = None
+    else:
+        if not dataset_disponivel():
+            return mensagem_ds("info", "Ainda não há dados publicados.")
+        df, ano_base = _carregar(None)
+        atualizado = _data_curta(data_ultima_publicacao())
+
+    filhos = [
+        cabecalho_pagina("Taxa de Evasão Anual", ano_base, atualizado),
+        dcc.Loading(html.Div(id="evasao-kpi", className="kpis-figma")),
+        axis_selector("evasao-eixo", default="campus"),
+        dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
+        dcc.Loading(html.Div(id="evasao-heatmap")),
+        _filtros(df),
+    ]
+    if preview_id is not None:
+        filhos.append(dcc.Store(id="evasao-preview", data=preview_id))
+
+    return html.Div(filhos, className="painel-dashboard")
 
 
 def _filtrar(df, campus, tipo_curso, incluir_fic):
@@ -100,11 +130,15 @@ def atualizar_ordem_eixos(marcados, ordem_anterior):
     Input("evasao-eixos-ordenados", "data"),
     Input("evasao-filtro-campus", "value"),
     Input("evasao-filtro-tipo-curso", "value"),
+    State("evasao-preview", "data"),
 )
-def atualizar(fic, eixos, campus, tipo_curso):
-    ano_base = ano_base_ativo() or 2026
+def atualizar(fic, eixos, campus, tipo_curso, preview_id=None):
+    try:
+        df, ano_base = _carregar(preview_id)
+    except PreviaIndisponivel:
+        return html.Div(), mensagem_ds("warning", "Prévia indisponível.")
     incluir_fic = fic == "com_fic"
-    df = _filtrar(carregar_matriculas(), campus, tipo_curso, incluir_fic)
+    df = _filtrar(df, campus, tipo_curso, incluir_fic)
     filtros = FiltrosAtivos(ano_base=ano_base, incluir_fic=incluir_fic)
 
     if df.empty:

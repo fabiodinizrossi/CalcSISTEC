@@ -503,12 +503,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Layout e callbacks públicos continuam idênticos
-- [ ] Com `preview_id`, os indicadores e a matriz saem da fonte candidata com o ano-base dela
-- [ ] Identificador forjado ou estado terminal devolve erro/vazio, nunca dados públicos
-- [ ] Testes: cobrir os dois caminhos e filtro sem linhas
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] Layout e callbacks públicos continuam idênticos
+- [x] Com `preview_id`, os indicadores e a matriz saem da fonte candidata com o ano-base dela
+- [x] Identificador forjado ou estado terminal devolve erro/vazio, nunca dados públicos
+- [x] Testes: cobrir os dois caminhos e filtro sem linhas
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `8366c17`.
 
 **Tests**: integration
 **Gate**: full
