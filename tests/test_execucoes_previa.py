@@ -393,3 +393,80 @@ def test_descar_libera_previa_mesmo_com_falha(db_path):
 
     assert envio.estado == "descartada"
     assert envio.previa_fonte is None
+
+
+# ===================== T21: salvar aproveita o candidato conferido =====================
+
+
+def test_salvar_envio_grava_o_candidato_e_encerra_a_previa(db_path):
+    from app.data.schema import get_connection
+
+    envio = _envio_em_previa()
+    candidato = _candidato(db_path)
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
+    assert envio.previa_fonte is not None
+
+    resultado = execucoes.salvar(envio, db_path, 2026)
+
+    assert envio.estado == "salva"
+    assert envio.previa_fonte is None  # fonte liberada no sucesso
+    assert resultado["matriculas"] == 1
+    conn = get_connection(db_path)
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0]
+    finally:
+        conn.close()
+    assert total == 1
+
+
+def test_salvar_envio_conflito_levanta_previa_desatualizada(db_path, monkeypatch):
+    from app.data import versoes as mod_versoes
+
+    envio = _envio_em_previa()
+    candidato = _candidato(db_path)
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
+
+    def _conflito(*a, **k):
+        raise mod_versoes.ConflitoDeConferencia("desatualizada")
+
+    monkeypatch.setattr(mod_versoes, "salvar_interna", _conflito)
+
+    with pytest.raises(execucoes.PreviaDesatualizada):
+        execucoes.salvar(envio, db_path, 2026)
+
+    assert envio.estado == "previa"  # continua pendente
+    assert envio.previa_fonte is not None  # fonte continua viva
+
+
+def test_salvar_envio_previa_incompleta_antes_de_gravar(db_path):
+    from app.data.schema import get_connection
+
+    envio = _envio_em_previa()
+    candidato = _candidato(db_path)
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
+    execucoes.registrar_falha_pagina(envio, "matriculas")
+
+    with pytest.raises(execucoes.PreviaIncompleta):
+        execucoes.salvar(envio, db_path, 2026)
+
+    assert envio.estado == "previa"
+    conn = get_connection(db_path)
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0]
+    finally:
+        conn.close()
+    assert total == 0
+
+
+def test_salvar_baixa_direta_nao_usa_salvar_interna(monkeypatch):
+    baixa = execucoes.criar_execucao("pi@iffarroupilha.edu.br", [{"id_perfil": "1", "nome_perfil": "Campus A"}])
+    baixa.estado = "previa"
+    baixa.previa = {"valor": "previa"}
+    monkeypatch.setattr("app.data.ingest.montar_versao_interna", lambda *a, **k: {"salva": True})
+    monkeypatch.setattr(
+        "app.data.versoes.salvar_interna",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("baixa não deve usar salvar_interna")),
+    )
+
+    assert execucoes.salvar(baixa, "qualquer.db", 2026) == {"salva": True}
+    assert baixa.estado == "salva"

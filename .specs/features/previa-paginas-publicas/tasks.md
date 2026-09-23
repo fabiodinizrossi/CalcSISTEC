@@ -760,14 +760,16 @@ T27 → T28
 
 **Done when**:
 
-- [ ] O envio grava exatamente `execucao.candidato.tabelas` com `assinatura_esperada=candidato.assinatura_origem` e `ano_base=candidato.ano_base`; a baixa direta continua por `montar_versao_interna`
-- [ ] `ConflitoDeConferencia` vira `PreviaDesatualizada` (exceção própria) e a execução continua em `previa`, com as ações disponíveis
-- [ ] `PreviaIncompleta` (T8) continua sendo levantada antes de qualquer gravação
-- [ ] No sucesso, o estado vira `salva` e a fonte é liberada; no conflito, a fonte continua viva para nova conferência
-- [ ] O dublê de gravação é possível por `monkeypatch.setattr(versoes, "salvar_interna", ...)` — importar `app.data.versoes` no topo do módulo
-- [ ] Testes: cobrir salvar de envio com sucesso, conflito (assinatura divergente) e baixa direta inalterada
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] O envio grava exatamente `execucao.candidato.tabelas` com `assinatura_esperada=candidato.assinatura_origem` e `ano_base=candidato.ano_base`; a baixa direta continua por `montar_versao_interna`
+- [x] `ConflitoDeConferencia` vira `PreviaDesatualizada` (exceção própria) e a execução continua em `previa`, com as ações disponíveis
+- [x] `PreviaIncompleta` (T8) continua sendo levantada antes de qualquer gravação
+- [x] No sucesso, o estado vira `salva` e a fonte é liberada; no conflito, a fonte continua viva para nova conferência
+- [x] O dublê de gravação é possível por `monkeypatch.setattr(versoes, "salvar_interna", ...)` — importar `app.data.versoes` no topo do módulo
+- [x] Testes: cobrir salvar de envio com sucesso, conflito (assinatura divergente) e baixa direta inalterada
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `b39a521`.
 
 **Tests**: unit
 **Gate**: quick

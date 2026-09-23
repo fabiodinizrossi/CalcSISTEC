@@ -17,6 +17,7 @@ import secrets
 import threading
 from datetime import datetime, timedelta
 
+from app.data import versoes
 from app.data.schema import DEFAULT_DB_PATH
 from app.sistec.urls import TEMPO_MAX_EXPORTACAO_S, par_para_extensao
 
@@ -57,6 +58,12 @@ class PreviaIncompleta(Exception):
     def __init__(self, paginas):
         self.paginas = list(paginas)
         super().__init__("páginas da prévia com falha: " + ", ".join(self.paginas))
+
+
+class PreviaDesatualizada(Exception):
+    """A conferência da prévia ficou desatualizada — a assinatura de origem
+    mudou entre a prévia e o Salvar (`previa-paginas-publicas`, PVP-10). A
+    execução continua em `previa` para uma nova conferência."""
 
 
 @contextlib.contextmanager
@@ -358,7 +365,12 @@ def _consolidar_ou_falhar(execucao):
 
 def salvar(execucao, db_path, ano_base, confirmado=False):
     """Estado `previa` -> Salvar (RF-08): grava a versão interna e marca
-    `salva`. Serializa com a leitura da fonte via `com_trava` (PVP-08)."""
+    `salva`. Serializa com a leitura da fonte via `com_trava` (PVP-08).
+
+    PVP-04/PVP-08/PVP-10: um envio grava as tabelas já preparadas do
+    candidato, com a assinatura de origem conferida na transação; divergência
+    vira `PreviaDesatualizada` e a execução continua em `previa` (fonte viva).
+    A baixa direta continua por `montar_versao_interna`, sem mudança."""
     with com_trava(execucao):
         if execucao.estado != "previa":
             raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
@@ -367,9 +379,21 @@ def salvar(execucao, db_path, ano_base, confirmado=False):
         if execucao.origem == "envio" and execucao.campi_falhos and not confirmado:
             raise ConfirmacaoNecessaria("confirmação necessária para preservar campi ausentes")
 
-        from app.data.ingest import montar_versao_interna
+        if execucao.origem == "envio":
+            candidato = execucao.candidato
+            try:
+                versoes.salvar_interna(
+                    candidato["tabelas"], db_path, assinatura_esperada=candidato["assinatura_origem"]
+                )
+            except versoes.ConflitoDeConferencia as exc:
+                raise PreviaDesatualizada(str(exc)) from exc
+            resultado = candidato["resumo"]
+            liberar_previa(execucao)
+        else:
+            from app.data.ingest import montar_versao_interna
 
-        resultado = montar_versao_interna(execucao.previa, execucao.campi_falhos, db_path=db_path, ano_base=ano_base)
+            resultado = montar_versao_interna(execucao.previa, execucao.campi_falhos, db_path=db_path, ano_base=ano_base)
+
         execucao.estado = "salva"
         return resultado
 
