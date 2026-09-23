@@ -121,6 +121,26 @@ campi é apenas avisada (não é atualizada nem preservada por essa regra), e ma
 apontando para ciclos que não vieram aparecem contadas como órfãs. A tela **Histórico**
 registra a atualização por envio com o tipo `envio`.
 
+### Conferir antes de salvar (envio de pastas)
+
+Depois de enviar as pastas, a tela mostra a faixa **Prévia não publicada** e quatro
+links para conferir as páginas públicas com os dados que o **Salvar na versão
+interna** gravaria: **Matrículas**, **Eficiência Acadêmica**, **Taxa de Evasão
+Anual** e **Percentuais Legais**. Os filtros, os indicadores e as tabelas são os
+mesmos do painel público, aplicados ao conjunto do envio (inclusive os campi
+preservados).
+
+Conferir **não grava nada**: nem a versão interna nem a publicada são alteradas
+enquanto você navega. A prévia é **privada** — só a sessão que fez o envio a
+abre — e dura enquanto o envio estiver pendente. **Salvar na versão interna** ou
+**Descartar** encerram a prévia; uma URL antiga de prévia passa a mostrar
+**Prévia indisponível**. Se a configuração (fatores, campi, ano-base) mudar entre
+a conferência e o Salvar, o sistema recusa com um aviso para descartar e reenviar
+as pastas — nada é gravado diferente do que você conferiu.
+
+A **baixa direta do Sistec** não tem essa prévia das quatro páginas: ela mostra a
+prévia resumida (contagens e amostra) e salva como antes.
+
 Antes da primeira atualização é preciso **cadastrar os campi** (`/admin/campi`, com
 vínculo em Configurações → Gerenciar campi, ou o assistente de instalação). O campo decisivo é o
 **identificador de perfil**: o `tipo` do Sistec, um número de 7 dígitos como

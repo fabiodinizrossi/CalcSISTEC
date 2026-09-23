@@ -953,11 +953,13 @@ T27 → T28
 
 **Done when**:
 
-- [ ] O README cita os quatro links de prévia e o aviso **Prévia não publicada**
-- [ ] Fica dito que conferir não grava a versão interna nem a publicada, e que Salvar/Descartar encerram a prévia
-- [ ] O texto não promete prévia para a baixa direta do Sistec
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: contagem da T26 mantida (sem exclusão silenciosa)
+- [x] O README cita os quatro links de prévia e o aviso **Prévia não publicada**
+- [x] Fica dito que conferir não grava a versão interna nem a publicada, e que Salvar/Descartar encerram a prévia
+- [x] O texto não promete prévia para a baixa direta do Sistec
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: contagem da T26 mantida (sem exclusão silenciosa)
+
+**Status**: Done -- commit `e7046d3`.
 
 **Tests**: none
 **Gate**: build
