@@ -81,7 +81,7 @@ T6 → T7
 - [x] Gate check passes: `python -m pytest tests/ -q`
 - [x] Test count: contagem atual mantida (mudança de config, sem teste próprio)
 
-**Status**: Done -- commit `<hash>` (registrado logo abaixo).
+**Status**: Done -- commit `7717641`.
 
 **Tests**: none
 **Gate**: build
