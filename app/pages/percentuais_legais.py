@@ -8,6 +8,7 @@ Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
 import dash
 from dash import Input, Output, State, callback, dcc, html
 
+from app.auth import sessao_id_atual
 from app.components.filters import EIXOS, axis_selector, clear_filters_button, ordenar_eixos, select_filter
 from app.components.mensagem import mensagem_ds
 from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
@@ -24,6 +25,7 @@ from app.domain.percentuais_legais import (
     percentual_tecnico,
 )
 from app.domain.shared import coluna_para_eixo
+from app.sistec.execucoes import PreviaIndisponivel, abrir_leitura_previa
 
 dash.register_page(__name__, path="/percentuais-legais", title="Percentuais Legais - Pesquisa Institucional - SISTEC")
 
@@ -54,31 +56,59 @@ def _formatar_equivalentes(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def layout():
-    if not dataset_disponivel():
-        return mensagem_ds("info", "Ainda não há dados publicados.")
+def _carregar(preview_id):
+    """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
+    validada (PVP-04/PVP-07). Levanta `PreviaIndisponivel` em contexto inválido."""
+    if preview_id is None:
+        return carregar_matriculas(), ano_base_ativo() or 2026
 
-    df = carregar_matriculas()
-    filtros = html.Div(
+    contexto = abrir_leitura_previa(preview_id, sessao_id_atual())
+    try:
+        return carregar_matriculas(conn=contexto.conn), contexto.ano_base
+    finally:
+        contexto.conn.close()
+
+
+def _filtros(df):
+    return html.Div(
         [
-                select_filter("percentuais-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
-                select_filter("percentuais-filtro-programa", "Programa Associado", sorted(df["tipo_programa_curso"].dropna().unique())),
-                html.Div(id="percentuais-aviso-proeja"),
-                clear_filters_button("percentuais-limpar"),
+            select_filter("percentuais-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+            select_filter("percentuais-filtro-programa", "Programa Associado", sorted(df["tipo_programa_curso"].dropna().unique())),
+            html.Div(id="percentuais-aviso-proeja"),
+            clear_filters_button("percentuais-limpar"),
         ],
         className="card-filtros",
     )
-    return html.Div(
-        [
-            cabecalho_pagina("Percentuais Legais", ano_base_ativo() or 2026, _data_curta(data_ultima_publicacao())),
-            dcc.Loading(html.Div(id="percentuais-cartoes", className="kpis-figma")),
-            axis_selector("percentuais-eixo", default="campus"),
-            dcc.Store(id="percentuais-eixos-ordenados", data=["campus"]),
-            dcc.Loading(html.Div(id="percentuais-tabela")),
-            filtros,
-        ],
-        className="painel-dashboard",
-    )
+
+
+def layout(preview_id=None):
+    """PVP-01/PVP-02/PVP-04: caminho público fica idêntico; com `preview_id`,
+    lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
+    que leva o identificador aos callbacks."""
+    if preview_id is not None:
+        try:
+            df, ano_base = _carregar(preview_id)
+        except PreviaIndisponivel:
+            return mensagem_ds("warning", "Prévia indisponível.")
+        atualizado = None
+    else:
+        if not dataset_disponivel():
+            return mensagem_ds("info", "Ainda não há dados publicados.")
+        df, ano_base = _carregar(None)
+        atualizado = _data_curta(data_ultima_publicacao())
+
+    filhos = [
+        cabecalho_pagina("Percentuais Legais", ano_base, atualizado),
+        dcc.Loading(html.Div(id="percentuais-cartoes", className="kpis-figma")),
+        axis_selector("percentuais-eixo", default="campus"),
+        dcc.Store(id="percentuais-eixos-ordenados", data=["campus"]),
+        dcc.Loading(html.Div(id="percentuais-tabela")),
+        _filtros(df),
+    ]
+    if preview_id is not None:
+        filhos.append(dcc.Store(id="percentuais-preview", data=preview_id))
+
+    return html.Div(filhos, className="painel-dashboard")
 
 
 def _base_percentuais(df):
@@ -105,10 +135,13 @@ def atualizar_ordem_eixos(marcados, ordem_anterior):
     Input("percentuais-eixos-ordenados", "data"),
     Input("percentuais-filtro-campus", "value"),
     Input("percentuais-filtro-programa", "value"),
+    State("percentuais-preview", "data"),
 )
-def atualizar(eixos, campus, programa):
-    ano_base = ano_base_ativo() or 2026
-    df = carregar_matriculas()
+def atualizar(eixos, campus, programa, preview_id=None):
+    try:
+        df, ano_base = _carregar(preview_id)
+    except PreviaIndisponivel:
+        return mensagem_ds("warning", "Prévia indisponível."), html.Div(), None
     df = df[df["ano_base"] == ano_base]
     if campus and campus != "__todos__":
         df = df[df["cidade"] == campus]
