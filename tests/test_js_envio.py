@@ -608,6 +608,30 @@ return {
     }
 
 
+def test_trocar_para_envio_sem_nada_escolhido_mostra_o_texto_de_obrigatoriedade():
+    """CEP-02: `escolherOrigem` chama `renderizarSelecao` para as duas pastas
+    mesmo sem nenhum arquivo escolhido — o texto tem que continuar sendo o de
+    obrigatoriedade, nunca "0 arquivo(s) .csv escolhido(s)."."""
+    preparar = _preparar() + """
+doc.porId["envio-ciclos-status"].textContent = "";
+doc.porId["envio-matriculas-status"].textContent = "";
+"""
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["origem-envio"].disparar("change");
+return {
+  ciclos: doc.porId["envio-ciclos-status"].textContent,
+  matriculas: doc.porId["envio-matriculas-status"].textContent,
+};
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "ciclos": "Nenhuma pasta de ciclos escolhida — obrigatória.",
+        "matriculas": "Nenhuma pasta de matrículas escolhida — obrigatória.",
+    }
+
+
 def test_ida_e_volta_entre_as_origens_nao_duplica_nem_perde_o_status():
     preparar = (
         _preparar()
