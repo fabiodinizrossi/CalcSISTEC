@@ -752,3 +752,35 @@ table thead th.cabecalho-ordenavel:focus-visible{
   font-weight: var(--font-weight-bold);
   min-height: 40px;
 }
+
+/* Escolha de pasta do envio (correcoes-envio-pastas). O widget e proprio — o
+   .br-upload do pacote esconde o input sem dar controle visivel —, entao a
+   superficie do campo e desenhada aqui, so com tokens do DS (AD-003). */
+.campo-pasta{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-2x);
+}
+.campo-pasta .br-button.secondary{
+  align-self: flex-start;
+  border-color: var(--interactive);
+  color: var(--interactive);
+}
+.campo-pasta .br-button.secondary:hover{
+  background: color-mix(in srgb, var(--interactive) 12%, transparent);
+}
+.campo-pasta .br-button:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
+}
+.campo-pasta-status{
+  color: var(--gray-60);
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+}
+:root[data-tema="escuro"] .campo-pasta-status{ color: var(--gray-20); }

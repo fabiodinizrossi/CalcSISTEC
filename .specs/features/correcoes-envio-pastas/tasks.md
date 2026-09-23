@@ -175,7 +175,7 @@ T6 → T7
 - [x] Test count: 5 anteriores + 6 novos = 11 passados (botão visível ×2, status anunciado ×2, input escondido, ausência de `br-upload`)
 - [x] **Desvio**: dois testes existentes foram ajustados porque a marcação que eles liam deixou de existir por decisão da spec — `test_bloco_de_envio_tem_uma_pasta_para_ciclos_e_uma_para_matriculas` (o `<label for="envio-...">` virou botão com `aria-describedby`; o teste agora cobra `hidden` no input) e `test_blocos_empilham_abaixo_de_992px_com_classes_do_ds` (o sentinela `class="br-upload` virou `id="btn-enviar-pastas"`). Nenhuma asserção foi afrouxada.
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `cd6f543`.
 
 **Tests**: integration
 **Gate**: quick
@@ -199,11 +199,13 @@ T6 → T7
 
 **Done when**:
 
-- [ ] `.campo-pasta`/`.campo-pasta-status` existem e são referenciadas pela marcação de T4
-- [ ] Nenhuma cor hexadecimal ou `rgb()/hsl()` literal nas regras novas (só `var(--token)`)
-- [ ] O botão tem um estado de foco visível via `var(--focus-color)`
-- [ ] Gate check passes: `python -m pytest tests/test_style_css.py -q`
-- [ ] Test count: contagem atual mantida (a regressão de `test_style_css.py` já cobre; sem teste novo necessário)
+- [x] `.campo-pasta`/`.campo-pasta-status` existem e são referenciadas pela marcação de T4
+- [x] Nenhuma cor hexadecimal ou `rgb()/hsl()` literal nas regras novas (só `var(--token)`)
+- [x] O botão tem um estado de foco visível via `var(--focus-color)`
+- [x] Gate check passes: `python -m pytest tests/test_style_css.py -q`
+- [x] Test count: contagem atual mantida (44 passados, mesma contagem; a regressão de `test_style_css.py` já cobre; sem teste novo necessário)
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: none
 **Gate**: quick
