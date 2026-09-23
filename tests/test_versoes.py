@@ -3,6 +3,7 @@ salvar interna, publicar, desfazer, aplicar no público — cada um em transaç�
 isolada (D-05, D-06, `data-delta.md` §3.3)."""
 
 import os
+import sqlite3
 import sys
 import tempfile
 
@@ -232,3 +233,120 @@ def test_aplicar_publico_nao_mexe_em_anterior(db_path):
         conn.close()
 
     assert rev_anterior is None
+
+
+# ===================== previa-paginas-publicas, T20 =====================
+
+
+def _assinatura(db_path):
+    from app.data.ingest import calcular_assinatura_origem
+
+    return calcular_assinatura_origem(db_path)
+
+
+def _rev_interna(db_path):
+    conn = get_connection(db_path)
+    try:
+        return conn.execute("SELECT rev_interna FROM estado_versoes WHERE id = 1").fetchone()[0]
+    finally:
+        conn.close()
+
+
+def test_salvar_interna_com_assinatura_igual_grava_e_incrementa(db_path):
+    versoes.salvar_interna(_conjunto_um_curso(), db_path, assinatura_esperada=_assinatura(db_path))
+
+    conn = get_connection(db_path)
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0]
+    finally:
+        conn.close()
+    assert total == 1
+    assert _rev_interna(db_path) == 1
+
+
+def test_salvar_interna_com_assinatura_divergente_levanta_conflito_sem_gravar(db_path):
+    assinatura_falsa = {"rev_interna": 999, "rev_publicada": None, "ano_base": 2026, "fatores": (), "campus": ()}
+
+    with pytest.raises(versoes.ConflitoDeConferencia):
+        versoes.salvar_interna(_conjunto_um_curso(), db_path, assinatura_esperada=assinatura_falsa)
+
+    conn = get_connection(db_path)
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0]
+    finally:
+        conn.close()
+    assert total == 0
+    assert _rev_interna(db_path) == 0
+
+
+def test_salvar_interna_conflito_quando_rev_interna_muda(db_path):
+    assinatura = _assinatura(db_path)
+    conn = get_connection(db_path)
+    try:
+        conn.execute("UPDATE estado_versoes SET rev_interna = rev_interna + 1 WHERE id = 1")
+        conn.commit()
+    finally:
+        conn.close()
+
+    with pytest.raises(versoes.ConflitoDeConferencia):
+        versoes.salvar_interna(_conjunto_um_curso(), db_path, assinatura_esperada=assinatura)
+
+    # o conflito não grava nada: a revisão fica no valor da alteração acima
+    assert _rev_interna(db_path) == 1
+
+
+def test_salvar_interna_rollback_integral_em_falha_no_meio(db_path):
+    conjunto = _conjunto_um_curso()
+    # matrícula aponta para ciclo inexistente: viola a FK no meio da gravação
+    conjunto["matriculas"] = pd.DataFrame(
+        [
+            {
+                "co_matricula": "M2",
+                "codigo_ciclo_matricula": "C-INEXISTENTE",
+                "status_corrigido": "EM_CURSO",
+                "mes_ocorrencia_corrigido": "2026-01-01",
+                "ano_base": 2026,
+            }
+        ]
+    )
+
+    with pytest.raises(sqlite3.IntegrityError):
+        versoes.salvar_interna(conjunto, db_path)
+
+    conn = get_connection(db_path)
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM interna_ciclos").fetchone()[0] == 0
+    finally:
+        conn.close()
+    assert _rev_interna(db_path) == 0
+
+
+def test_salvar_interna_nan_e_data_nula_vira_null(db_path):
+    conjunto = _conjunto_um_curso()
+    conjunto["ciclos"]["dt_data_inicio"] = None
+    conjunto["ciclos"]["dt_data_fim_previsto"] = pd.NaT
+
+    versoes.salvar_interna(conjunto, db_path)
+
+    conn = get_connection(db_path)
+    try:
+        inicio, fim = conn.execute(
+            "SELECT dt_data_inicio, dt_data_fim_previsto FROM interna_ciclos WHERE codigo_ciclo_matricula='C-P1'"
+        ).fetchone()
+    finally:
+        conn.close()
+    assert inicio is None and fim is None
+
+
+def test_salvar_interna_sem_assinatura_mantem_comportamento(db_path):
+    # baixa direta: assinatura_esperada=None (default) grava como antes
+    versoes.salvar_interna(_conjunto_um_curso(), db_path)
+
+    assert _rev_interna(db_path) == 1
+    conn = get_connection(db_path)
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM interna_cursos").fetchone()[0]
+    finally:
+        conn.close()
+    assert total == 1

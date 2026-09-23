@@ -726,15 +726,17 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Assinatura igual grava como hoje e incrementa `rev_interna` uma única vez
-- [ ] Assinatura diferente (revisões, ano-base, `interna_fatores` ou `campus` publicado) faz `rollback` e levanta uma exceção própria `ConflitoDeConferencia`, sem trocar nenhuma tabela
-- [ ] A comparação roda depois de `BEGIN IMMEDIATE` e antes do primeiro `DELETE`
-- [ ] Gravação por `executemany` em lotes limitados, com colunas explícitas e `None` para NaN/NaT; falha no meio de um lote faz rollback integral e deixa `rev_interna` inalterada
-- [ ] `assinatura_esperada=None` mantém o comportamento usado pela baixa direta
-- [ ] `publicar`/`desfazer`/`aplicar_publico` sem alteração de código nem de teste
-- [ ] Testes: `tests/test_versoes.py` cobre assinatura igual, assinatura divergente, rollback em falha intermediária (dublê que levanta no meio) e `NaN`/data nula gravados como `NULL`
-- [ ] Gate check passes: `python -m pytest tests/test_versoes.py tests/test_schema_v2.py -q`
-- [ ] Test count: ≥ 6 testes novos
+- [x] Assinatura igual grava como hoje e incrementa `rev_interna` uma única vez
+- [x] Assinatura diferente (revisões, ano-base, `interna_fatores` ou `campus` publicado) faz `rollback` e levanta uma exceção própria `ConflitoDeConferencia`, sem trocar nenhuma tabela
+- [x] A comparação roda depois de `BEGIN IMMEDIATE` e antes do primeiro `DELETE`
+- [x] Gravação por `executemany` em lotes limitados, com colunas explícitas e `None` para NaN/NaT; falha no meio de um lote faz rollback integral e deixa `rev_interna` inalterada
+- [x] `assinatura_esperada=None` mantém o comportamento usado pela baixa direta
+- [x] `publicar`/`desfazer`/`aplicar_publico` sem alteração de código nem de teste
+- [x] Testes: `tests/test_versoes.py` cobre assinatura igual, assinatura divergente, rollback em falha intermediária (dublê que levanta no meio) e `NaN`/data nula gravados como `NULL`
+- [x] Gate check passes: `python -m pytest tests/test_versoes.py tests/test_schema_v2.py -q`
+- [x] Test count: ≥ 6 testes novos
+
+**Status**: Done -- commit `9e3ae85`.
 
 **Tests**: unit
 **Gate**: quick

@@ -15,6 +15,8 @@ baixa, que cobre `cursos`, `ciclos`, `matriculas`, `matriculas_eficiencia` e
 
 import datetime
 
+import pandas as pd
+
 from app.data.schema import DEFAULT_DB_PATH, get_connection
 
 # FKs: interna_ciclos/ciclos -> cursos; interna_matriculas(_eficiencia)/matriculas(_eficiencia) -> ciclos.
@@ -24,25 +26,83 @@ _ORDEM_INSERT_BAIXA = ("cursos", "ciclos", "matriculas", "matriculas_eficiencia"
 _ORDEM_DELETE_PUBLICACAO = _ORDEM_DELETE_BAIXA + ("fatores",)
 _ORDEM_INSERT_PUBLICACAO = ("fatores",) + _ORDEM_INSERT_BAIXA
 
+# Colunas explícitas de cada tabela interna (mesma ordem do schema v2). A
+# gravação por `executemany` não infere colunas como `DataFrame.to_sql` fazia.
+_COLUNAS_INTERNA = {
+    "cursos": [
+        "codigo_portfolio", "nome_curso_ajustado", "tipo_curso_pnp", "subtipo_curso",
+        "modalidade_ensino", "eixo_tecnologico_ajustado", "fec", "fech",
+        "carga_horaria_total", "co_unidade", "tipo_oferta_curso",
+        "categoria_origem_curso", "fator_nao_encontrado",
+    ],
+    "ciclos": [
+        "codigo_ciclo_matricula", "codigo_portfolio", "co_unidade", "dt_data_inicio",
+        "dt_data_fim_previsto", "tipo_programa_curso", "status_ciclo",
+    ],
+    "matriculas": [
+        "co_matricula", "codigo_ciclo_matricula", "status_corrigido",
+        "mes_ocorrencia_corrigido", "ano_base",
+    ],
+    "matriculas_eficiencia": ["co_matricula", "codigo_ciclo_matricula", "status_corrigido2"],
+}
+
+# Inserção em lotes limitados para não estourar a memória do `executemany` num
+# envio próximo do teto de 500 MB.
+_TAMANHO_LOTE = 1000
+
+
+class ConflitoDeConferencia(Exception):
+    """A assinatura de origem do candidato divergiu do estado atual do banco
+    (revisões, ano-base, `interna_fatores` ou `campus` publicado) entre a
+    conferência da prévia e o Salvar (`previa-paginas-publicas`, PVP-10)."""
+
 
 def _now_iso():
     return datetime.datetime.now().isoformat(timespec="seconds")
 
 
-def salvar_interna(conjunto, db_path=DEFAULT_DB_PATH):
+def salvar_interna(conjunto, db_path=DEFAULT_DB_PATH, assinatura_esperada=None):
     """RN-20: grava `conjunto` (dict com DataFrames "cursos", "ciclos",
     "matriculas", "matriculas_eficiencia", já com `casar_fatores` aplicado
     pelo chamador) em `interna_*`, substituindo o conteúdo anterior, numa
-    única transação. Incrementa `estado_versoes.rev_interna`."""
+    única transação. Incrementa `estado_versoes.rev_interna`.
+
+    PVP-10 (`previa-paginas-publicas`): com `assinatura_esperada`, confere a
+    assinatura de origem dentro do `BEGIN IMMEDIATE`, antes do primeiro
+    `DELETE`; divergência faz rollback e levanta `ConflitoDeConferencia`, sem
+    trocar nenhuma tabela. `assinatura_esperada=None` mantém o caminho da
+    baixa direta. A gravação usa `sqlite3.executemany` em lotes (colunas
+    explícitas, NaN/NaT normalizados para None), revertível na transação."""
     conn = get_connection(db_path)
     try:
         conn.execute("BEGIN IMMEDIATE")
+
+        if assinatura_esperada is not None:
+            # Import tardio: `ingest` importa `versoes`, então a importação no
+            # topo seria circular. A leitura roda por outra conexão, mas o
+            # `BEGIN IMMEDIATE` já segura o lock de escrita — o estado lido é
+            # o mesmo que será gravado.
+            from app.data.ingest import calcular_assinatura_origem
+
+            if calcular_assinatura_origem(db_path) != assinatura_esperada:
+                raise ConflitoDeConferencia("a conferência da prévia está desatualizada")
+
         for tabela in _ORDEM_DELETE_BAIXA:
             conn.execute(f"DELETE FROM interna_{tabela}")
         for tabela in _ORDEM_INSERT_BAIXA:
             df = conjunto[tabela]
-            if not df.empty:
-                df.to_sql(f"interna_{tabela}", conn, if_exists="append", index=False)
+            if df.empty:
+                continue
+            colunas = _COLUNAS_INTERNA[tabela]
+            marcadores = ", ".join("?" * len(colunas))
+            sql = f"INSERT INTO interna_{tabela} ({', '.join(colunas)}) VALUES ({marcadores})"
+            linhas = [
+                tuple(None if pd.isna(valor) else valor for valor in linha)
+                for linha in df[colunas].itertuples(index=False, name=None)
+            ]
+            for inicio in range(0, len(linhas), _TAMANHO_LOTE):
+                conn.executemany(sql, linhas[inicio:inicio + _TAMANHO_LOTE])
+
         conn.execute(
             "UPDATE estado_versoes SET rev_interna = rev_interna + 1, interna_gravada_em = ? WHERE id = 1",
             (_now_iso(),),
