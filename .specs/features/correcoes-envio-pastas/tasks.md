@@ -269,7 +269,7 @@ T6 → T7
 - [x] Gate check passes: `python -m pytest tests/ -q`
 - [x] Test count: 17 anteriores + 2 novos = 19 em `tests/test_js_envio.py` (com `tests/test_js_fiacao.py`, 33); suíte completa 661 → 682 passados
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `83b768b`.
 
 **Tests**: unit
 **Gate**: full
