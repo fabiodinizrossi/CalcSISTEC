@@ -43,6 +43,10 @@ Correção: `app/templates/atualizar.html` — as três áreas do envio voltaram
 - `python .claude/skills/tlc-spec-driven/scripts/validate_spec.py cards-atualizar-dados` → 0 erros, 0 avisos.
 - Nenhum dado pessoal de estudante envolvido — feature é só reorganização de marcação/CSS/JS de uma tela administrativa, sem tocar leitura de planilha.
 
+## Nota posterior (2026-09-23)
+
+Este relatório fecha o estado da feature no commit `cc777b7`/`4eb8243` — não reescrito. A AC3 (`CAD-03`) foi superada por `AFE-02` em `.specs/features/ajustes-feedback-envio/spec.md`: o uso real mostrou o resultado por arquivo confinado à coluna do card, contrariando um pedido anterior da usuária por largura inteira. Ver a nota em `cards-atualizar-dados/spec.md` junto à AC3.
+
 ## Lições
 
 Verificação num sandbox sem acesso ao `PATH` do ambiente real não deve travar o relatório do verificador, mas também não deve ser tratada como "gate passou" — o Codex sinalizou a lacuna corretamente ("Gate obrigatório não concluído") em vez de assumir sucesso. O achado real (CAD-03) veio da leitura estrutural do diff, não do gate — reforça que a leitura de diff linha a linha continua sendo a primeira linha de defesa, mesmo quando o gate automatizado não roda no ambiente do verificador.

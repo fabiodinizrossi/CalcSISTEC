@@ -44,6 +44,7 @@ Depois do primeiro teste real da tela "Atualizar dados", a usuária pediu uma re
 1. WHEN the administradora opens `/admin/atualizar` THEN the system SHALL show two cards, always visible, without any prior origin-selection control.
 2. WHILE the viewport is at least 992px wide THE system SHALL lay the two cards side by side; WHILE narrower THE system SHALL stack them.
 3. Each card SHALL contain its own explanatory text and its own action controls (the Sistec card keeps `btn-atualizar-sistec`/`btn-login-feito`/`btn-cancelar`/status/progress-steps; the envio card keeps the two folder pickers, `btn-enviar-pastas`, and its result/preservation areas), unchanged in id and behavior from before this feature.
+   > **Superseded by `AFE-02`** (`.specs/features/ajustes-feedback-envio/spec.md`, 2026-09-23): a leitura real de tela mostrou o resultado por arquivo confinado à coluna do card, e a usuária já tinha pedido antes que ele ocupasse a largura inteira. O resultado/avisos do envio saíram do card; o resto desta AC (texto, ações, seletores de pasta) continua valendo.
 4. The system SHALL NOT render the `br-card` class from the vendored gov.br DS package (it is `position: absolute` in this bundle and unsuitable for page content).
 5. IF a submission or download is already in progress THEN the existing per-card visibility rules for buttons/status (e.g. `btn-cancelar` hidden until active) SHALL continue to work exactly as before — this feature only changes the outer container, not the inner logic.
 
