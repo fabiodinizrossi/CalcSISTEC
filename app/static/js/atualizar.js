@@ -9,10 +9,11 @@
  * A lista de campi e o identificador de perfil de cada um são cadastrados em
  * Configurações; a atualização se recusa a começar se algum estiver inválido.
  *
- * A segunda origem ("Enviar pastas") monta um multipart com as duas pastas
- * escolhidas e mostra o resultado por arquivo. Quando o envio não traz todos
- * os campi, os ausentes ficam preservados e Salvar só é chamado depois da
- * confirmação — o servidor recusa de qualquer forma (UPL-08).
+ * O segundo card ("Enviar pastas", sempre visível ao lado do card do Sistec,
+ * CAD-01) monta um multipart com as duas pastas escolhidas e mostra o
+ * resultado por arquivo. Quando o envio não traz todos os campi, os ausentes
+ * ficam preservados e Salvar só é chamado depois da confirmação — o servidor
+ * recusa de qualquer forma (UPL-08).
  *
  * Esta tela só dispara as ações e acompanha o estado por polling de
  * `GET /admin/atualizar/execucao` a cada 2 s — nunca recebe bytes de planilha.
@@ -78,10 +79,6 @@
   const btnPublicar = $("btn-publicar");
   const btnDesfazer = $("btn-desfazer");
 
-  const elOrigemSistec = $("origem-sistec");
-  const elOrigemEnvio = $("origem-envio");
-  const elBlocoSistec = $("bloco-sistec");
-  const elBlocoEnvio = $("bloco-envio");
   const elInputCiclos = $("envio-ciclos");
   const elInputMatriculas = $("envio-matriculas");
   const btnEnviar = $("btn-enviar-pastas");
@@ -420,18 +417,6 @@
     btnSalvar.disabled = preservacaoPendente && !elConfirmarPreservacao.checked;
   }
 
-  function escolherOrigem(valor) {
-    const envio = valor === "envio";
-    elBlocoEnvio.hidden = !envio;
-    elBlocoSistec.hidden = envio;
-    elStatusEnvio.textContent = "";
-    elStatus.textContent = "";
-    // Os arquivos escolhidos continuam no input; o status de cada pasta é
-    // redesenhado para não voltar ao texto de obrigatoriedade à toa.
-    CAMPOS_PASTA.forEach(renderizarSelecao);
-    atualizarBotaoSalvar();
-  }
-
   function mostrarPreservacao(campi) {
     preservacaoPendente = campi.length > 0;
     elPreservacao.hidden = !preservacaoPendente;
@@ -526,8 +511,6 @@
     }
   }
 
-  elOrigemSistec.addEventListener("change", () => escolherOrigem("sistec"));
-  elOrigemEnvio.addEventListener("change", () => escolherOrigem("envio"));
   elConfirmarPreservacao.addEventListener("change", atualizarBotaoSalvar);
   btnEnviar.addEventListener("click", enviarPastas);
 

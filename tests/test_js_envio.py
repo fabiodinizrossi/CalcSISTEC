@@ -38,8 +38,6 @@ IDS = [
     "btn-descartar",
     "btn-publicar",
     "btn-desfazer",
-    "origem-sistec",
-    "origem-envio",
     "bloco-sistec",
     "bloco-envio",
     "envio-ciclos",
@@ -106,8 +104,6 @@ doc.createElement = (tag) => {{
   e.appendChild = (f) => {{ e.filhos.push(f); return f; }};
   return e;
 }};
-doc.porId["bloco-envio"].hidden = true;
-doc.porId["origem-sistec"].checked = true;
 doc.porId["envio-confirmar-preservacao"].checked = false;
 doc.porId["envio-ciclos"].files = {json.dumps([{"name": nome} for nome in arquivos_ciclos])};
 doc.porId["envio-matriculas"].files = {json.dumps([{"name": nome} for nome in arquivos_matriculas])};
@@ -146,34 +142,12 @@ const para = (trecho) => contexto.__t.chamadas.filter((c) => c.url.indexOf(trech
 """
 
 
-def test_escolher_uma_origem_ativa_so_os_controles_dela():
-    verificar = (
-        ESPERAR
-        + """
-const sistec = doc.porId["bloco-sistec"];
-const envio = doc.porId["bloco-envio"];
-const ler = () => ({ sistec: Boolean(sistec.hidden), envio: Boolean(envio.hidden) });
-const inicial = ler();
-doc.porId["origem-envio"].disparar("change");
-const aposEnvio = ler();
-doc.porId["origem-sistec"].disparar("change");
-return { inicial, aposEnvio, aposSistec: ler() };
-"""
-    )
-    assert rodar("atualizar.js", _preparar(), verificar) == {
-        "inicial": {"sistec": False, "envio": True},
-        "aposEnvio": {"sistec": True, "envio": False},
-        "aposSistec": {"sistec": False, "envio": True},
-    }
-
-
 def test_enviar_sem_uma_das_pastas_avisa_e_nao_chama_o_servidor():
     verificar = (
         ESPERAR
         + CHAMADAS_PARA
         + """
 doc.porId["envio-ciclos"].files = [{ name: "ciclos-U1.csv" }];
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -191,7 +165,6 @@ def test_durante_o_envio_informa_quantos_arquivos_e_bloqueia_o_botao():
         ESPERAR
         + CHAMADAS_PARA
         + """
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -234,7 +207,6 @@ def test_400_mostra_o_arquivo_e_o_motivo_em_portugues():
     verificar = (
         ESPERAR
         + """
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -263,7 +235,6 @@ def test_409_tem_mensagem_propria(corpo, esperado):
     verificar = (
         ESPERAR
         + """
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -281,7 +252,6 @@ def test_413_tem_mensagem_propria():
     verificar = (
         ESPERAR
         + """
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -316,7 +286,6 @@ def test_resultado_por_arquivo_mostra_nome_tipo_e_linhas():
     verificar = (
         ESPERAR
         + """
-doc.porId["origem-envio"].disparar("change");
 doc.porId["btn-enviar-pastas"].disparar("click");
 """
         + ESPERAR
@@ -574,98 +543,7 @@ return {
     assert resultado["filaDeTimeout"] == 0
 
 
-def test_trocar_para_envio_redesenha_o_status_das_pastas_ja_escolhidas():
-    """CEP-02/T7: voltar para "Enviar pastas" não zera o que já foi escolhido —
-    os arquivos seguem no input e o status volta a descrevê-los."""
-    preparar = (
-        _preparar()
-        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv", "ciclo-U2.csv"])
-        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
-        + """
-doc.porId["envio-ciclos-status"].textContent = "";
-doc.porId["envio-matriculas-status"].textContent = "";
-"""
-    )
-    verificar = (
-        ESPERAR
-        + """
-doc.porId["origem-envio"].disparar("change");
-return {
-  blocos: { sistec: Boolean(doc.porId["bloco-sistec"].hidden), envio: Boolean(doc.porId["bloco-envio"].hidden) },
-  statusEnvio: doc.porId["status-envio"].textContent,
-  ciclos: doc.porId["envio-ciclos-status"].textContent,
-  matriculas: doc.porId["envio-matriculas-status"].textContent,
-  arquivosNoInput: doc.porId["envio-ciclos"].files.length,
-};
-"""
-    )
-    assert rodar("atualizar.js", preparar, verificar) == {
-        "blocos": {"sistec": True, "envio": False},
-        "statusEnvio": "",
-        "ciclos": "Pasta CICLOS-2024-1: 2 arquivo(s) .csv escolhido(s).",
-        "matriculas": "Pasta MATRICULAS-2024-1: 1 arquivo(s) .csv escolhido(s).",
-        "arquivosNoInput": 2,
-    }
-
-
-def test_trocar_para_envio_sem_nada_escolhido_mostra_o_texto_de_obrigatoriedade():
-    """CEP-02: `escolherOrigem` chama `renderizarSelecao` para as duas pastas
-    mesmo sem nenhum arquivo escolhido — o texto tem que continuar sendo o de
-    obrigatoriedade, nunca "0 arquivo(s) .csv escolhido(s)."."""
-    preparar = _preparar() + """
-doc.porId["envio-ciclos-status"].textContent = "";
-doc.porId["envio-matriculas-status"].textContent = "";
-"""
-    verificar = (
-        ESPERAR
-        + """
-doc.porId["origem-envio"].disparar("change");
-return {
-  ciclos: doc.porId["envio-ciclos-status"].textContent,
-  matriculas: doc.porId["envio-matriculas-status"].textContent,
-};
-"""
-    )
-    assert rodar("atualizar.js", preparar, verificar) == {
-        "ciclos": "Nenhuma pasta de ciclos escolhida — obrigatória.",
-        "matriculas": "Nenhuma pasta de matrículas escolhida — obrigatória.",
-    }
-
-
-def test_ida_e_volta_entre_as_origens_nao_duplica_nem_perde_o_status():
-    preparar = (
-        _preparar()
-        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv"])
-        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
-    )
-    verificar = (
-        ESPERAR
-        + """
-doc.porId["origem-envio"].disparar("change");
-const primeira = doc.porId["envio-ciclos-status"].textContent;
-doc.porId["origem-sistec"].disparar("change");
-const voltouParaSistec = {
-  sistec: Boolean(doc.porId["bloco-sistec"].hidden),
-  envio: Boolean(doc.porId["bloco-envio"].hidden),
-  statusCiclos: doc.porId["envio-ciclos-status"].textContent,
-};
-doc.porId["origem-envio"].disparar("change");
-const depois = {
-  ciclos: doc.porId["envio-ciclos-status"].textContent,
-  matriculas: doc.porId["envio-matriculas-status"].textContent,
-};
-return { primeira, voltouParaSistec, depois };
-"""
-    )
-    assert rodar("atualizar.js", preparar, verificar) == {
-        "primeira": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
-        "voltouParaSistec": {
-            "sistec": False,
-            "envio": True,
-            "statusCiclos": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
-        },
-        "depois": {
-            "ciclos": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
-            "matriculas": "Pasta MATRICULAS-2024-1: 1 arquivo(s) .csv escolhido(s).",
-        },
-    }
+## Os testes de troca de origem (escolherOrigem) saíram com o rádio removido
+## em cards-atualizar-dados (CAD-01): os dois cards ficam sempre visíveis, sem
+## nenhuma alternância a testar. O texto inicial de obrigatoriedade continua
+## coberto por test_tela_atualizar_envio.py (marcação estática, sem JS).

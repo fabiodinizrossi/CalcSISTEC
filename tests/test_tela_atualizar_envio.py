@@ -1,4 +1,4 @@
-"""Escolha de origem e bloco de envio na tela Atualizar dados (T10/UPL-01).
+"""Os dois cards (Sistec e envio) na tela Atualizar dados (T10/UPL-01, CAD-01).
 
 Integração com o `test_client`: o HTML é lido como a pessoa o recebe. A tela
 não é um formulário que envia arquivos sozinho — quem monta o multipart é
@@ -30,11 +30,16 @@ def html(cliente_autenticado):
     return resposta.get_data(as_text=True)
 
 
-def test_tela_oferece_as_duas_origens_em_br_radio(html):
-    radios = re.findall(r'<div class="br-radio[^"]*">\s*<input[^>]*id="(origem-[a-z]+)"[^>]*>\s*<label for="origem-[a-z]+">([^<]+)</label>', html)
-    assert radios == [("origem-sistec", "Atualizar do Sistec"), ("origem-envio", "Enviar pastas")]
-    assert re.search(r'<input[^>]*id="origem-sistec"[^>]*name="origem"[^>]*value="sistec"[^>]*checked', html)
-    assert re.search(r'<input[^>]*id="origem-envio"[^>]*name="origem"[^>]*value="envio"', html)
+def test_tela_oferece_os_dois_caminhos_sempre_visiveis_em_cards(html):
+    """CAD-01/CAD-04: sem rádio de origem — os dois cards convivem lado a lado,
+    e nenhum usa a classe `br-card` do pacote (`position:absolute`, feita para
+    menu flutuante/cookiebar, não para conteúdo de página)."""
+    assert "origem-sistec" not in html
+    assert "origem-envio" not in html
+    assert "atualizar-origem" not in html
+    assert re.search(r'<div id="bloco-sistec" class="card-atualizar[^"]*">\s*<h2>Atualizar do Sistec</h2>', html)
+    assert re.search(r'<div id="bloco-envio" class="card-atualizar">\s*<h2>Enviar pastas</h2>', html)
+    assert "br-card" not in html
 
 
 def test_bloco_de_envio_tem_uma_pasta_para_ciclos_e_uma_para_matriculas(html):
@@ -96,7 +101,22 @@ def test_o_bloco_de_envio_nao_usa_mais_a_classe_br_upload(html):
     assert "upload-input" not in bloco
 
 
-def test_bloco_de_envio_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(html):
+def test_resultados_do_envio_ficam_dentro_do_proprio_card(html):
+    """CAD-03: o card de envio preserva suas próprias áreas de resultado e
+    preservação — a reorganização em cards não espalha o conteúdo do card
+    para fora dele."""
+    inicio = html.index('id="bloco-envio"')
+    fim = html.index('id="atualizar-progresso"', inicio)
+    trecho_envio = html[inicio:fim]
+
+    assert 'id="envio-arquivos-area"' in trecho_envio
+    assert 'id="envio-preservacao"' in trecho_envio
+    assert 'id="envio-avisos"' in trecho_envio
+    # Progresso/Prévia continuam fora dos dois cards (fora de escopo desta feature).
+    assert 'id="atualizar-previa"' not in trecho_envio
+
+
+def test_area_de_resultados_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(html):
     area = re.search(r'<div id="envio-arquivos-area".*?</div>\s*</div>', html, re.S).group(0)
     assert re.search(r'<div class="br-table"><div class="responsive"><table>', area.replace("\n", "").replace("  ", ""))
     assert re.search(r'<tbody id="envio-arquivos"></tbody>', area)
@@ -107,14 +127,15 @@ def test_bloco_de_envio_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(h
     assert 'class="br-message warning"' in html
     # A caixa de confirmação é separada do botão de enviar e começa escondida.
     assert re.search(r'<div id="envio-preservacao"[^>]*hidden>', html)
-    assert re.search(r'<div id="bloco-envio" hidden>', html)
 
 
-def test_blocos_empilham_abaixo_de_992px_com_classes_do_ds(html):
-    for bloco in ("atualizar-origem", "bloco-envio"):
-        inicio = html.index(f'id="{bloco}"')
-        trecho = html[inicio : html.index('id="btn-enviar-pastas"', inicio)]
-        assert 'class="d-flex flex-column flex-lg-row"' in trecho, bloco
+def test_os_dois_cards_empilham_abaixo_de_992px_com_classes_do_ds(html):
+    """CAD-02: os dois cards ficam num único container flex — lado a lado a
+    partir de 992px, empilhados abaixo disso."""
+    inicio = html.index('class="d-flex flex-column flex-lg-row"')
+    trecho = html[inicio : html.index('id="btn-enviar-pastas"', inicio)]
+    assert 'id="bloco-sistec"' in trecho
+    assert 'id="bloco-envio"' in trecho
     assert "@media" not in html
     # O empilhamento abaixo de 576px da baixa continua como estava.
     acoes = re.search(r'<div[^>]*id="atualizar-acoes"[^>]*>', html).group(0)
@@ -134,5 +155,6 @@ def test_bloco_de_envio_nao_mexe_nos_ids_e_data_confirm_da_baixa(html):
         tag = re.search(rf'<button\b[^>]*id="{botao}"[^>]*>', html).group(0)
         if pergunta is not None:
             assert f'data-confirm="{pergunta}"' in tag
-    # A baixa continua visível por padrão; o envio é que começa escondido.
-    assert re.search(r'<div id="bloco-sistec">', html)
+    # Os dois cards ficam sempre visíveis (CAD-01): nenhum começa escondido.
+    assert re.search(r'<div id="bloco-sistec" class="card-atualizar[^"]*">', html)
+    assert re.search(r'<div id="bloco-envio" class="card-atualizar">', html)

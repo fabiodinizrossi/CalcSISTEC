@@ -784,3 +784,18 @@ table thead th.cabecalho-ordenavel:focus-visible{
   margin: 0;
 }
 :root[data-tema="escuro"] .campo-pasta-status{ color: var(--gray-20); }
+
+/* Cards de origem em "Atualizar dados" (cards-atualizar-dados). A classe
+   .br-card do pacote e position:absolute (feita para menu flutuante/
+   cookiebar, ver .br-cookiebar .br-card no core.min.css) e quebraria o
+   layout de pagina; a superficie aqui usa so os tokens de card do DS
+   (AD-003), no mesmo padrao ja usado por .card-filtros. */
+.card-atualizar{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+  box-shadow: var(--surface-shadow-sm);
+  flex: 1 1 0;
+  padding: var(--card-padding, var(--spacing-scale-2x));
+}
+.card-atualizar > h2:first-child{ margin-top: 0; }
