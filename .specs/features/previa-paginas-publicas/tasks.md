@@ -472,12 +472,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Layout e callbacks públicos continuam idênticos (testes atuais passam sem alteração)
-- [ ] Com `preview_id`, KPIs e matriz saem da fonte candidata com o ano-base dela, sem carimbo de publicação
-- [ ] Identificador forjado ou estado terminal devolve erro/vazio, nunca dados públicos
-- [ ] Testes: cobrir os dois caminhos e a prévia sem publicação inicial
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] Layout e callbacks públicos continuam idênticos (testes atuais passam sem alteração)
+- [x] Com `preview_id`, KPIs e matriz saem da fonte candidata com o ano-base dela, sem carimbo de publicação
+- [x] Identificador forjado ou estado terminal devolve erro/vazio, nunca dados públicos
+- [x] Testes: cobrir os dois caminhos e a prévia sem publicação inicial
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `db92c34`.
 
 **Tests**: integration
 **Gate**: full
