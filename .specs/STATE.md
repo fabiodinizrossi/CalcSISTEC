@@ -44,13 +44,14 @@
 
 ## Handoff
 
-Estado revisado em 2026-09-22. As verificações usam `uv`, `pytest`, `node` e `git`.
+Estado revisado em 2026-09-22. As verificações usam `pytest` e `git`.
 
-- **Feature**: `.specs/features/correcoes-painel-publico`
-- **Phase / Task**: concluída e validada.
-- **Completed**: reset completo dos filtros coberto no commit `07a8c22`; grid do shell corrigido em `4cf9487`; Percentuais Legais restringidos ao ano-base ativo em `0f6149a`; validação em `af820d4`.
-- **Verificação final**: 34 testes de páginas públicas e 44 de CSS passaram. O sensor alterou `== ano_base` para `!= ano_base` em worktree isolado e o teste falhou, confirmando a detecção. `pytest` na raiz é inválido porque coleta diretórios arquivados em `APAGAR/` sem permissão.
+- **Feature**: `.specs/features/atualizacao-por-upload`
+- **Phase / Task**: concluída e validada (T1–T12, todas as 4 fases).
+- **Completed**: envio de pastas de ciclos/matrículas como segunda origem da mesma `Execucao` (`app/sistec/envio.py`), reusando a máquina de estados, prévia, Salvar/Descartar e publicação já existentes da baixa pelo Sistec. Rotas em `app/app.py` (`/admin/atualizar/envio`), tela em `app/templates/atualizar.html` + `app/static/js/atualizar.js`. Commits `a44a55c`..`1237cc0` (12 tarefas) + `9268f7d`/`ea76753` (versionamento do spec/design/tasks) + `2a211ef` inclui migração idempotente de schema para o tipo `envio` em `historico`.
+- **Verificação final**: `.specs/features/atualizacao-por-upload/validation.md` — PASS. 661 testes passaram; sensor de discriminação com 3 mutações comportamentais em worktree isolado (portão de confirmação UPL-08, cálculo de campi ausentes UPL-07, checagem de colunas obrigatórias UPL-10), as 3 mortas pelos testes existentes. `pytest` na raiz continua inválido (coleta `APAGAR/`/`.test-tmp*/` sem permissão); usar `pytest tests/`.
+- **Execução**: T1–T5 e T6–T12 implementadas por DeepSeek via `handoff-ds` (dois RUN_IDs), revisadas e commitadas por mim uma tarefa por vez (diff lido, gate rodado, commit feito). Foi preciso corrigir a integração local do `handoff-cli` no Windows: chave de API mal-formatada em `~/.handoff/config.yaml` e ausência do utilitário Unix `script` (o wrapper de PTY que o backend `type: claude` espera) — resolvido com um `script.exe` nativo compilado via `csc.exe` em `~/.local/bin/script.exe` (repassa o comando direto, sem PTY real; suficiente porque `claude --output-format stream-json` não depende de terminal). Sem esse shim, todo backend `type: claude` do handoff-cli falha nesta máquina.
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada foi enviado ao remoto.
-- **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`), porque o Dash chama `layout(x="1")` e os cinco `layout()` não aceitam parâmetros (anterior a esta feature). Falta também token CSRF nos POST administrativos (registrado em `CUTOVER.md`).
-- **Working tree**: diretórios locais não rastreados `.agents/`, `.test-tmp*/` e `.verifier-scratch-t9/`; não os incluir sem conferir a origem.
+- **Pendência fora do escopo**: as páginas do Dash não renderizam com query string (`/matriculas?x=1`); falta token CSRF nos POST administrativos (registrado em `CUTOVER.md`, pré-existente). `scripts/verificar_prontidao_cutover.py` segue em NO-GO nesta máquina só por `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH`/`CALCSISTEC_HTTPS` não configurados (ambiente local, não código).
+- **Working tree**: diretórios locais não rastreados `.agents/`, `.test-tmp*/` e `.verifier-scratch-t9/` (este último de uma feature anterior); não os incluir sem conferir a origem. `~/.local/bin/script.exe` é uma correção de ambiente da máquina, fora do repositório.
 - **Branch**: migracao-dash-gov-br.
