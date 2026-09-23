@@ -143,7 +143,7 @@ T6 → T7
 - [x] Gate check passes: `python -m pytest tests/test_js_envio.py tests/test_js_fiacao.py -q`
 - [x] Test count: contagem atual mantida (25 passados, mesma contagem; extensão de infraestrutura, sem asserção nova nesta tarefa — a asserção chega em T6)
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `47139b7`.
 
 **Tests**: none
 **Gate**: quick
@@ -167,12 +167,15 @@ T6 → T7
 
 **Done when**:
 
-- [ ] Os dois `input[type=file]` mantêm `id="envio-ciclos"`/`id="envio-matriculas"`, `name` iguais, `webkitdirectory multiple accept=".csv"`, e ganham o atributo `hidden`
-- [ ] Cada pasta tem um `button` visível (`btn-escolher-ciclos`/`btn-escolher-matriculas`) com `aria-describedby` apontando para o parágrafo de status correspondente
-- [ ] Cada pasta tem um parágrafo de status (`envio-ciclos-status`/`envio-matriculas-status`) com `role="status" aria-live="polite"`, texto inicial dizendo que a pasta é obrigatória
-- [ ] A marcação não usa mais a classe `br-upload`
-- [ ] Gate check passes: `python -m pytest tests/test_tela_atualizar_envio.py -q`
-- [ ] Test count: contagem anterior + no mínimo 4 testes novos (um por elemento novo: input escondido, botão, status, ausência de `br-upload`)
+- [x] Os dois `input[type=file]` mantêm `id="envio-ciclos"`/`id="envio-matriculas"`, `name` iguais, `webkitdirectory multiple accept=".csv"`, e ganham o atributo `hidden`
+- [x] Cada pasta tem um `button` visível (`btn-escolher-ciclos`/`btn-escolher-matriculas`) com `aria-describedby` apontando para o parágrafo de status correspondente
+- [x] Cada pasta tem um parágrafo de status (`envio-ciclos-status`/`envio-matriculas-status`) com `role="status" aria-live="polite"`, texto inicial dizendo que a pasta é obrigatória
+- [x] A marcação não usa mais a classe `br-upload`
+- [x] Gate check passes: `python -m pytest tests/test_tela_atualizar_envio.py -q`
+- [x] Test count: 5 anteriores + 6 novos = 11 passados (botão visível ×2, status anunciado ×2, input escondido, ausência de `br-upload`)
+- [x] **Desvio**: dois testes existentes foram ajustados porque a marcação que eles liam deixou de existir por decisão da spec — `test_bloco_de_envio_tem_uma_pasta_para_ciclos_e_uma_para_matriculas` (o `<label for="envio-...">` virou botão com `aria-describedby`; o teste agora cobra `hidden` no input) e `test_blocos_empilham_abaixo_de_992px_com_classes_do_ds` (o sentinela `class="br-upload` virou `id="btn-enviar-pastas"`). Nenhuma asserção foi afrouxada.
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: integration
 **Gate**: quick

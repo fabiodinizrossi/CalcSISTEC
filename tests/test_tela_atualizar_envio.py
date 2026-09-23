@@ -38,15 +38,62 @@ def test_tela_oferece_as_duas_origens_em_br_radio(html):
 
 
 def test_bloco_de_envio_tem_uma_pasta_para_ciclos_e_uma_para_matriculas(html):
-    for campo_id, rotulo in (("envio-ciclos", "Pasta de ciclos (.csv)"), ("envio-matriculas", "Pasta de matrículas (.csv)")):
+    for campo_id in ("envio-ciclos", "envio-matriculas"):
         tag = re.search(rf'<input\b[^>]*id="{campo_id}"[^>]*>', html).group(0)
         assert "webkitdirectory" in tag
         assert "multiple" in tag
         assert 'accept=".csv"' in tag
-        assert f'<label for="{campo_id}">{rotulo}</label>' in html
+        assert " hidden>" in tag
     # Os dois campos têm nome de formulário igual ao que a rota lê.
     assert re.search(r'<input\b[^>]*id="envio-ciclos"[^>]*name="ciclos"', html)
     assert re.search(r'<input\b[^>]*id="envio-matriculas"[^>]*name="matriculas"', html)
+
+
+@pytest.mark.parametrize(
+    ("campo_id", "rotulo"),
+    [("ciclos", "Escolher pasta de ciclos"), ("matriculas", "Escolher pasta de matrículas")],
+)
+def test_cada_pasta_tem_um_botao_visivel_que_aponta_para_o_status(html, campo_id, rotulo):
+    """CEP-01: quem recebe o clique é um `button` nativo, não um `input` escondido
+    pelo componente do DS."""
+    botao = re.search(rf'<button\b[^>]*id="btn-escolher-{campo_id}"[^>]*>{rotulo}</button>', html)
+    assert botao, f"botão de escolher a pasta de {campo_id} ausente"
+    tag = botao.group(0)
+    assert 'class="br-button secondary"' in tag
+    assert 'type="button"' in tag
+    assert f'aria-describedby="envio-{campo_id}-status"' in tag
+    assert " hidden" not in tag
+
+
+@pytest.mark.parametrize(("campo_id", "palavra"), [("ciclos", "ciclos"), ("matriculas", "matrículas")])
+def test_cada_pasta_tem_um_status_anunciado_comecando_pela_obrigatoriedade(html, campo_id, palavra):
+    """CEP-02: o status de cada pasta é um parágrafo anunciado, com o texto de
+    obrigatoriedade enquanto nada foi escolhido."""
+    status = re.search(
+        rf'<p class="campo-pasta-status" id="envio-{campo_id}-status" role="status" aria-live="polite">([^<]+)</p>',
+        html,
+    )
+    assert status, f"status da pasta de {campo_id} ausente"
+    assert status.group(1) == f"Nenhuma pasta de {palavra} escolhida — obrigatória."
+
+
+def test_o_input_escondido_de_cada_pasta_fica_atras_do_botao(html):
+    """CEP-01: o `input` de arquivo é o mesmo de antes, só escondido; o controle
+    que a pessoa vê e clica é o botão."""
+    for campo_id in ("ciclos", "matriculas"):
+        input_tag = re.search(rf'<input\b[^>]*id="envio-{campo_id}"[^>]*>', html).group(0)
+        assert " hidden>" in input_tag
+        botao_tag = re.search(rf'<button\b[^>]*id="btn-escolher-{campo_id}"[^>]*>', html).group(0)
+        assert "hidden" not in botao_tag
+
+
+def test_o_bloco_de_envio_nao_usa_mais_a_classe_br_upload(html):
+    """CEP-01: o componente `.br-upload` do pacote (que esconde o `input`) sai
+    do caminho; a marcação passa a ser própria."""
+    inicio = html.index('id="bloco-envio"')
+    bloco = html[inicio : html.index('id="atualizar-progresso"', inicio)]
+    assert "br-upload" not in bloco
+    assert "upload-input" not in bloco
 
 
 def test_bloco_de_envio_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(html):
@@ -66,7 +113,7 @@ def test_bloco_de_envio_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(h
 def test_blocos_empilham_abaixo_de_992px_com_classes_do_ds(html):
     for bloco in ("atualizar-origem", "bloco-envio"):
         inicio = html.index(f'id="{bloco}"')
-        trecho = html[inicio : html.index('class="br-upload', inicio)]
+        trecho = html[inicio : html.index('id="btn-enviar-pastas"', inicio)]
         assert 'class="d-flex flex-column flex-lg-row"' in trecho, bloco
     assert "@media" not in html
     # O empilhamento abaixo de 576px da baixa continua como estava.

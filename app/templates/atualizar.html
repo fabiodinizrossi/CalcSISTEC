@@ -68,15 +68,17 @@
     </p>
 
     <div class="d-flex flex-column flex-lg-row">
-      <div class="br-upload mr-lg-3 mb-3 mb-lg-0">
-        <label for="envio-ciclos">Pasta de ciclos (.csv)</label>
-        <input type="file" id="envio-ciclos" name="ciclos" webkitdirectory multiple accept=".csv">
-        <span class="feedback">Selecione a pasta que contém as planilhas de ciclos.</span>
+      <div class="campo-pasta mr-lg-3 mb-3 mb-lg-0">
+        <input type="file" id="envio-ciclos" name="ciclos" webkitdirectory multiple accept=".csv" hidden>
+        <button type="button" class="br-button secondary" id="btn-escolher-ciclos"
+                aria-describedby="envio-ciclos-status">Escolher pasta de ciclos</button>
+        <p class="campo-pasta-status" id="envio-ciclos-status" role="status" aria-live="polite">Nenhuma pasta de ciclos escolhida — obrigatória.</p>
       </div>
-      <div class="br-upload">
-        <label for="envio-matriculas">Pasta de matrículas (.csv)</label>
-        <input type="file" id="envio-matriculas" name="matriculas" webkitdirectory multiple accept=".csv">
-        <span class="feedback">Selecione a pasta que contém as planilhas de matrículas.</span>
+      <div class="campo-pasta">
+        <input type="file" id="envio-matriculas" name="matriculas" webkitdirectory multiple accept=".csv" hidden>
+        <button type="button" class="br-button secondary" id="btn-escolher-matriculas"
+                aria-describedby="envio-matriculas-status">Escolher pasta de matrículas</button>
+        <p class="campo-pasta-status" id="envio-matriculas-status" role="status" aria-live="polite">Nenhuma pasta de matrículas escolhida — obrigatória.</p>
       </div>
     </div>
 
