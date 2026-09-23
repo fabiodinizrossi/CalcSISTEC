@@ -247,6 +247,15 @@ def test_previa_pendente_recusa_um_segundo_envio(sessao):
     assert resposta.status_code == 409
     assert resposta.get_json() == {"erro": "previa_pendente"}
 
+    execucao_id = primeira.get_json()["execucao_id"]
+    descarte = sessao.post(f"/admin/atualizar/execucoes/{execucao_id}/descartar")
+    assert descarte.status_code == 204
+
+    ciclos, matriculas = _envio_valido(("U1",))
+    novo_envio = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    assert novo_envio.status_code == 200
+    assert novo_envio.get_json()["estado"] == "previa"
+
 
 def test_baixa_em_andamento_recusa_o_envio(sessao, monkeypatch):
     monkeypatch.setattr(app_module.navegador, "status", lambda email: {"ativa": True})

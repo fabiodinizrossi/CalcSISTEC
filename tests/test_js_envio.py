@@ -249,6 +249,45 @@ doc.porId["btn-enviar-pastas"].disparar("click");
     assert esperado in texto
 
 
+def test_previa_pendente_sem_resumo_ainda_permite_descartar():
+    estado = _estado_previa()
+    estado["previa"] = None
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = {
+  previaVisivel: doc.porId["atualizar-previa"].hidden === false,
+  descartarVisivel: doc.porId["btn-descartar"].hidden !== true,
+  mensagem: doc.porId["previa-resumo"].textContent,
+};
+contexto.confirmarAcao = async () => true;
+doc.porId["btn-descartar"].disparar("click");
+"""
+        + ESPERAR
+        + """
+return { antes, chamadas: para("/descartar").map((c) => c.url) };
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(estado=estado), verificar)
+    assert resultado["antes"]["previaVisivel"] is True
+    assert resultado["antes"]["descartarVisivel"] is True
+    assert "Descarte" in resultado["antes"]["mensagem"]
+    assert resultado["chamadas"] == ["/admin/atualizar/execucoes/abc/descartar"]
+
+
+def test_previa_pendente_com_amostra_vazia_mostra_salvar_e_descartar():
+    verificar = ESPERAR + """
+return {
+  previaVisivel: doc.porId["atualizar-previa"].hidden === false,
+  salvarVisivel: doc.porId["btn-salvar"].hidden === false,
+  descartarVisivel: doc.porId["btn-descartar"].hidden !== true,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado == {"previaVisivel": True, "salvarVisivel": True, "descartarVisivel": True}
+
+
 def test_413_tem_mensagem_propria():
     verificar = (
         ESPERAR

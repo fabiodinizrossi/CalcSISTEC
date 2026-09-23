@@ -5,9 +5,11 @@ A rota é a mesma da baixa: os campos novos são só códigos institucionais,
 nomes de arquivo e contagens — nunca dado pessoal nem conteúdo de célula.
 """
 
+import json
 import os
 import sys
 
+import pandas as pd
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -76,6 +78,30 @@ def test_polling_sem_execucao_nao_quebra(sessao):
     corpo = sessao.get("/admin/atualizar/execucao").get_json()
     assert corpo["estado"] is None
     assert corpo["navegador"] is None
+
+
+def test_previa_com_valores_ausentes_mantem_json_legivel_pelo_navegador(sessao):
+    execucao = execucoes.criar_execucao_envio(ADMIN, ["ciclos-U1.csv"], ["matriculas-U1.csv"])
+    execucao.estado = "previa"
+    execucao.previa = {
+        "ciclos": pd.DataFrame([{"curso": "TÉCNICO", "vazio": float("nan"), "infinito": float("inf"), "nulo": pd.NA}]),
+        "matriculas": pd.DataFrame([{"codigo": "M1"}]),
+    }
+
+    resposta = sessao.get("/admin/atualizar/execucao")
+    corpo = json.loads(
+        resposta.get_data(as_text=True),
+        parse_constant=lambda valor: (_ for _ in ()).throw(ValueError(f"JSON inválido: {valor}")),
+    )
+
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    assert corpo["execucao_id"] == execucao.id
+    assert corpo["previa"]["ciclos"] == 1
+    assert corpo["previa"]["matriculas"] == 1
+    assert corpo["previa"]["amostra"] == [
+        {"curso": "TÉCNICO", "vazio": None, "infinito": None, "nulo": None}
+    ]
 
 
 def test_campos_novos_do_polling_nao_carregam_pii_nem_conteudo_de_celula(sessao):

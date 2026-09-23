@@ -573,11 +573,13 @@ def admin_atualizar_estado():
 
     previa_resumo = None
     if execucao.previa is not None:
+        amostra = execucao.previa["ciclos"].head(20).astype(object)
+        amostra = amostra.replace([float("inf"), float("-inf")], None).where(amostra.notna(), None)
         previa_resumo = {
             "ciclos": len(execucao.previa["ciclos"]),
             "matriculas": len(execucao.previa["matriculas"]),
             "campi_falhos": sorted(execucao.campi_falhos),
-            "amostra": execucao.previa["ciclos"].head(20).to_dict(orient="records"),
+            "amostra": amostra.to_dict(orient="records"),
         }
 
     return flask.jsonify(

@@ -179,11 +179,18 @@
   }
 
   function renderizarPrevia(previa, estado) {
-    if (!previa || estado !== "previa") {
+    if (estado !== "previa") {
       elPrevia.hidden = true;
       return;
     }
     elPrevia.hidden = false;
+    btnSalvar.hidden = !previa;
+    if (!previa) {
+      elPreviaResumo.textContent = "Não foi possível carregar o resumo da prévia. Descarte esta prévia para iniciar outra atualização.";
+      elPreviaCabecalho.innerHTML = "";
+      elPreviaLinhas.innerHTML = "";
+      return;
+    }
     elPreviaResumo.textContent =
       `${previa.ciclos} ciclo(s) e ${previa.matriculas} matrícula(s) consolidados.` +
       (previa.campi_falhos.length
