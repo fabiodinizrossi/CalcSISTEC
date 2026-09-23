@@ -44,6 +44,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: app/static/js/ordenacao-tabelas.js:184 (M3) (app/static/js)
 - last seen: 2026-09-22T17:51:19Z
 
+### L-006 - Antes de travar AC sobre comportamento de parser de CSV (pandas), reproduza com usecols/dtype reais: pandas 2.3.0 tolera campo a mais/a menos silenciosamente mesmo sem encoding_errors, não levanta ParserError como um 'modo estrito' genérico sugeriria.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `app/sistec/colunas.py` · harmful: 0
+- features: correcoes-envio-pastas
+- evidence: CEP-05 (app/sistec/colunas.py)
+- last seen: 2026-09-23T02:57:51Z
+
+### L-007 - Ao testar um redesenho de status disparado por evento de troca de contexto (ex.: escolherOrigem chamando renderizarSelecao para todos os campos), inclua o caso do campo ainda vazio — é fácil só testar o caminho 'já tem seleção'.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `app/static/js/atualizar.js` · harmful: 0
+- features: correcoes-envio-pastas
+- evidence: app/static/js/atualizar.js:395 (if arquivos.length === 0) (app/static/js/atualizar.js)
+- last seen: 2026-09-23T02:57:51Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
