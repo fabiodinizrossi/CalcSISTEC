@@ -441,7 +441,7 @@ T10 → T11 → T12
 - [x] Gate check passes: `python -m pytest tests/ -q` (661 passed) e `python scripts/verificar_prontidao_cutover.py` (roda; segue em NO-GO por duas condições de ambiente, não de código: `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH` e `CALCSISTEC_HTTPS=1` ausentes)
 - [x] Test count: contagem de T11 mantida (661), sem exclusão silenciosa
 
-**Status**: Done — commit `PENDING`.
+**Status**: Done — commit `1237cc0`.
 
 **Tests**: none
 **Gate**: build
