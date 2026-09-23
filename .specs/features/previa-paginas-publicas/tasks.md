@@ -156,14 +156,16 @@ T27 → T28
 
 **Done when**:
 
-- [ ] O banco da fonte recebe as quatro tabelas do candidato, o `campus` publicado, a tabela `config` com o `ano_base` do candidato e `estado_versoes` com `publicada_em` vazio
-- [ ] A conexão âncora usa `sqlite3.connect(..., uri=True)` e permanece aberta enquanto a fonte existir (o banco nomeado em memória morre ao fechar a última conexão)
-- [ ] `abrir_leitura()` devolve conexão nova com `PRAGMA query_only=ON` e `PRAGMA temp_store=MEMORY`; escrita por essa conexão falha
-- [ ] `fechar()` é idempotente e não cria arquivo nenhum em disco
-- [ ] Nenhuma coluna pessoal entra na fonte (as tabelas vêm do candidato, já sem PII)
-- [ ] Testes: `tests/test_previa_fonte.py` cobre as quatro tabelas com contagens corretas, leitura somente, `fechar()` repetido e ausência de arquivo temporário
-- [ ] Gate check passes: `python -m pytest tests/test_previa_fonte.py -q`
-- [ ] Test count: ≥ 6 testes novos
+- [x] O banco da fonte recebe as quatro tabelas do candidato, o `campus` publicado, a tabela `config` com o `ano_base` do candidato e `estado_versoes` com `publicada_em` vazio
+- [x] A conexão âncora usa `sqlite3.connect(..., uri=True)` e permanece aberta enquanto a fonte existir (o banco nomeado em memória morre ao fechar a última conexão)
+- [x] `abrir_leitura()` devolve conexão nova com `PRAGMA query_only=ON` e `PRAGMA temp_store=MEMORY`; escrita por essa conexão falha
+- [x] `fechar()` é idempotente e não cria arquivo nenhum em disco
+- [x] Nenhuma coluna pessoal entra na fonte (as tabelas vêm do candidato, já sem PII)
+- [x] Testes: `tests/test_previa_fonte.py` cobre as quatro tabelas com contagens corretas, leitura somente, `fechar()` repetido e ausência de arquivo temporário
+- [x] Gate check passes: `python -m pytest tests/test_previa_fonte.py -q`
+- [x] Test count: ≥ 6 testes novos
+
+**Status**: Done -- commit `3c7484a`.
 
 **Tests**: unit
 **Gate**: quick
