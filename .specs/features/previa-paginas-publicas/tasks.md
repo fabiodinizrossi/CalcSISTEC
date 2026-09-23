@@ -252,12 +252,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `Execucao` cria a trava na construção; `Execucao.lock` é reutilizável e não substituída por `criar_execucao_envio`
-- [ ] Existe um context manager (`com_trava(execucao)`) usado pela validação + leitura e pelas transições `salvar`/`salvar_candidato`/`descartar`
-- [ ] Nenhum caminho toma a trava do registro `_LOCK` e a trava da execução ao mesmo tempo em ordem invertida (evitar deadlock)
-- [ ] Testes: cobrir leitura concorrente com Descartar (thread de leitura termina antes do fechamento) e ausência de deadlock entre registro e execução
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 3 testes novos
+- [x] `Execucao` cria a trava na construção; `Execucao.lock` é reutilizável e não substituída por `criar_execucao_envio`
+- [x] Existe um context manager (`com_trava(execucao)`) usado pela validação + leitura e pelas transições `salvar`/`salvar_candidato`/`descartar`
+- [x] Nenhum caminho toma a trava do registro `_LOCK` e a trava da execução ao mesmo tempo em ordem invertida (evitar deadlock)
+- [x] Testes: cobrir leitura concorrente com Descartar (thread de leitura termina antes do fechamento) e ausência de deadlock entre registro e execução
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 3 testes novos
+
+**Status**: Done -- commit `606b374`.
 
 **Tests**: unit
 **Gate**: quick

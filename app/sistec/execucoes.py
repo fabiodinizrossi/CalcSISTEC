@@ -12,6 +12,7 @@ O relógio é injetável (`relogio`, um `callable` sem argumento devolvendo
 `datetime`) para os testes de tempo (T023) não dependerem de `sleep` real.
 """
 
+import contextlib
 import secrets
 import threading
 from datetime import datetime, timedelta
@@ -46,6 +47,16 @@ class PreviaIndisponivel(Exception):
     """Prévia não disponível para o contexto: execução inexistente, sessão
     alheia, origem diferente de `envio` ou estado diferente de `previa`
     (`previa-paginas-publicas`, PVP-07). Distinta de `ExecucaoInvalida`."""
+
+
+@contextlib.contextmanager
+def com_trava(execucao):
+    """Trava por execução (PVP-08): serializa a leitura da fonte candidata e
+    as transições de estado, para Salvar/Descartar não fecharem a fonte no
+    meio de um callback. Nunca toma `_LOCK` (trava do registro) por dentro —
+    a ordem é sempre execução -> registro, evitando deadlock."""
+    with execucao.lock:
+        yield
 
 
 
@@ -90,6 +101,7 @@ class Execucao:
         self.previa = None
         self.campi_falhos = set()
         self.sessao_dona = sessao_dona
+        self.lock = threading.Lock()
 
     def par_por_n(self, n):
         for par in self.fila:
@@ -332,23 +344,25 @@ def _consolidar_ou_falhar(execucao):
 
 def salvar(execucao, db_path, ano_base, confirmado=False):
     """Estado `previa` -> Salvar (RF-08): grava a versão interna e marca
-    `salva`."""
-    if execucao.estado != "previa":
-        raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
-    if execucao.origem == "envio" and execucao.campi_falhos and not confirmado:
-        raise ConfirmacaoNecessaria("confirmação necessária para preservar campi ausentes")
+    `salva`. Serializa com a leitura da fonte via `com_trava` (PVP-08)."""
+    with com_trava(execucao):
+        if execucao.estado != "previa":
+            raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
+        if execucao.origem == "envio" and execucao.campi_falhos and not confirmado:
+            raise ConfirmacaoNecessaria("confirmação necessária para preservar campi ausentes")
 
-    from app.data.ingest import montar_versao_interna
+        from app.data.ingest import montar_versao_interna
 
-    resultado = montar_versao_interna(execucao.previa, execucao.campi_falhos, db_path=db_path, ano_base=ano_base)
-    execucao.estado = "salva"
-    return resultado
+        resultado = montar_versao_interna(execucao.previa, execucao.campi_falhos, db_path=db_path, ano_base=ano_base)
+        execucao.estado = "salva"
+        return resultado
 
 
 def descartar(execucao):
-    if execucao.estado != "previa":
-        raise ExecucaoInvalida(f"não é possível descartar a partir do estado '{execucao.estado}'")
-    execucao.estado = "descartada"
+    with com_trava(execucao):
+        if execucao.estado != "previa":
+            raise ExecucaoInvalida(f"não é possível descartar a partir do estado '{execucao.estado}'")
+        execucao.estado = "descartada"
 
 
 def varrer(execucao, agora=None):

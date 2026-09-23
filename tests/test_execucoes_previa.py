@@ -8,6 +8,8 @@ são serializadas por trava; e falhas de página bloqueiam o Salvar.
 
 import os
 import sys
+import threading
+import time
 from datetime import datetime
 
 import pandas as pd
@@ -122,3 +124,64 @@ def test_obter_previa_registro_limpo_devolve_indisponivel():
     # registro vazio (reinício do processo): execução pendente deixou de existir
     with pytest.raises(execucoes.PreviaIndisponivel):
         execucoes.obter_previa("qualquer-id", "sessao-A")
+
+
+# ===================== T5: trava por execução =====================
+
+
+def test_execucao_cria_trava_na_construcao_e_nao_substitui():
+    envio = execucoes.criar_execucao_envio(
+        "pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"], sessao_id="sessao-A"
+    )
+    assert isinstance(envio.lock, type(threading.Lock()))
+    # a mesma instância persiste durante a vida da execução (não é recriada)
+    assert envio.lock is envio.lock
+
+
+def test_com_trava_serializa_leitura_contra_descar():
+    envio = _envio_em_previa()
+    leitor_entrou = threading.Event()
+    liberar = threading.Event()
+    ordem = []
+
+    def leitor():
+        with execucoes.com_trava(envio):
+            ordem.append("leitor-entra")
+            leitor_entrou.set()
+            liberar.wait(timeout=5)
+            ordem.append("leitor-sai")
+
+    resultado = {"descartou": False}
+
+    def descartar():
+        execucoes.descartar(envio)
+        resultado["descartou"] = True
+        ordem.append("descartou")
+
+    t_leitor = threading.Thread(target=leitor)
+    t_leitor.start()
+    assert leitor_entrou.wait(timeout=5)
+
+    t_descar = threading.Thread(target=descartar)
+    t_descar.start()
+    time.sleep(0.05)  # deixa o descartar tentar e bloquear na trava
+    assert resultado["descartou"] is False  # ainda esperando o leitor liberar
+
+    liberar.set()
+    t_leitor.join(timeout=5)
+    t_descar.join(timeout=5)
+
+    assert ordem == ["leitor-entra", "leitor-sai", "descartou"]
+    assert envio.estado == "descartada"
+
+
+def test_sem_deadlock_entre_registro_e_execucao():
+    envio = _envio_em_previa()
+    # Segurando a trava da execução, uma operação de registro (que toma
+    # `_LOCK`) conclui — a ordem execução -> registro não trava.
+    with execucoes.com_trava(envio):
+        nova = execucoes.criar_execucao(
+            "outro@iffarroupilha.edu.br", [{"id_perfil": "1", "nome_perfil": "Campus A"}]
+        )
+        assert nova is not None
+    assert envio.estado == "previa"
