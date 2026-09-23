@@ -26,6 +26,8 @@ IDS = [
     "progresso-resumo",
     "progresso-pares",
     "atualizar-previa",
+    "previa-nao-publicada",
+    "previa-paginas",
     "previa-resumo",
     "previa-cabecalho",
     "previa-linhas",
@@ -85,6 +87,10 @@ def _preparar(estado=None, respostas=(), pendente=False, arquivos_ciclos=(), arq
     return f"""
 const ids = {json.dumps(IDS)};
 ids.forEach((id) => {{ registrar(criarElemento(id), id); }});
+// Links da prévia, encontrados pelo script via `document.querySelector`.
+["matriculas", "eficiencia", "evasao", "percentuais-legais"].forEach((slug) => {{
+  registrar(criarElemento("previa-link-" + slug), "previa-link-" + slug, 'a[data-pagina="' + slug + '"]');
+}});
 const comFilhos = (id) => {{
   const e = registrar(criarElemento(id), id);
   e.filhos = [];
@@ -574,3 +580,70 @@ return {
 ## em cards-atualizar-dados (CAD-01): os dois cards ficam sempre visíveis, sem
 ## nenhuma alternância a testar. O texto inicial de obrigatoriedade continua
 ## coberto por test_tela_atualizar_envio.py (marcação estática, sem JS).
+
+
+# --- Links da prévia (previa-paginas-publicas, T19) ----------------------------
+
+
+def test_links_da_previa_tem_href_montado_pelo_polling():
+    verificar = ESPERAR + """
+const hrefs = {};
+["matriculas", "eficiencia", "evasao", "percentuais-legais"].forEach((slug) => {
+  hrefs[slug] = doc.querySelector('a[data-pagina="' + slug + '"]').href;
+});
+return {
+  hrefs,
+  faixaVisivel: doc.porId["previa-nao-publicada"].hidden === false,
+  paginasVisivel: doc.porId["previa-paginas"].hidden === false,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado["hrefs"] == {
+        "matriculas": "/admin/previa/abc/matriculas",
+        "eficiencia": "/admin/previa/abc/eficiencia",
+        "evasao": "/admin/previa/abc/evasao",
+        "percentuais-legais": "/admin/previa/abc/percentuais-legais",
+    }
+    assert resultado["faixaVisivel"] is True
+    assert resultado["paginasVisivel"] is True
+
+
+def test_bloco_da_previa_oculto_fora_do_estado_previa():
+    estado = _estado_previa()
+    estado["estado"] = "baixando"
+    verificar = ESPERAR + """
+return {
+  faixa: doc.porId["previa-nao-publicada"].hidden,
+  paginas: doc.porId["previa-paginas"].hidden,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=estado), verificar)
+    assert resultado == {"faixa": True, "paginas": True}
+
+
+def test_bloco_da_previa_oculto_na_origem_baixa():
+    verificar = ESPERAR + """
+return {
+  faixa: doc.porId["previa-nao-publicada"].hidden,
+  paginas: doc.porId["previa-paginas"].hidden,
+  areaPrevia: doc.porId["atualizar-previa"].hidden,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(origem="baixa")), verificar)
+    assert resultado["faixa"] is True
+    assert resultado["paginas"] is True
+    # a área de prévia da baixa continua visível (resumo/amostra), sem os links
+    assert resultado["areaPrevia"] is False
+
+
+def test_links_da_previa_nao_fazem_nova_chamada_de_rede():
+    verificar = ESPERAR + CHAMADAS_PARA + """
+return {
+  chamadasPrevia: para("/admin/previa").length,
+  chamadasTotais: contexto.__t.chamadas.length,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado["chamadasPrevia"] == 0
+    # só o polling de `/admin/atualizar/execucao` roda (nenhuma busca extra)
+    assert resultado["chamadasTotais"] == 1

@@ -695,12 +695,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Os quatro `href` seguem o formato `/admin/previa/<execucao_id>/<slug>`, com o `execucao_id` recebido do polling
-- [ ] O bloco fica oculto fora do estado `previa` e no envio de origem `baixa`
-- [ ] Nenhum dado da prévia é buscado pelo script além do que o polling já devolve
-- [ ] Testes: `tests/test_js_envio.py` cobre href montado, bloco oculto fora de `previa` e ausência de nova chamada de rede
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 3 testes novos
+- [x] Os quatro `href` seguem o formato `/admin/previa/<execucao_id>/<slug>`, com o `execucao_id` recebido do polling
+- [x] O bloco fica oculto fora do estado `previa` e no envio de origem `baixa`
+- [x] Nenhum dado da prévia é buscado pelo script além do que o polling já devolve
+- [x] Testes: `tests/test_js_envio.py` cobre href montado, bloco oculto fora de `previa` e ausência de nova chamada de rede
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 3 testes novos
+
+**Status**: Done -- commit `6280a4c`.
 
 **Tests**: unit
 **Gate**: full

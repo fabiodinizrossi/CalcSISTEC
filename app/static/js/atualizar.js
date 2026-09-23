@@ -66,6 +66,8 @@
   const elProgressoResumo = $("progresso-resumo");
   const elProgressoPares = $("progresso-pares");
   const elPrevia = $("atualizar-previa");
+  const elPreviaNaoPublicada = $("previa-nao-publicada");
+  const elPreviaPaginas = $("previa-paginas");
   const elPreviaResumo = $("previa-resumo");
   const elPreviaCabecalho = $("previa-cabecalho");
   const elPreviaLinhas = $("previa-linhas");
@@ -217,6 +219,23 @@
     });
   }
 
+  const PAGINAS_PREVIA = ["matriculas", "eficiencia", "evasao", "percentuais-legais"];
+
+  function renderizarPreviaNaoPublicada(execucao_id, estado, origem) {
+    // PVP-01/PVP-02: os links da prévia só fazem sentido para um envio em
+    // `previa` (a baixa direta não abre a fonte). Fora disso, a faixa e os
+    // links ficam ocultos. Nenhuma chamada de rede nova: o `execucao_id` vem
+    // do polling que já roda.
+    const ativa = estado === "previa" && origem === "envio";
+    elPreviaNaoPublicada.hidden = !ativa;
+    elPreviaPaginas.hidden = !ativa;
+    if (!ativa) return;
+    PAGINAS_PREVIA.forEach((slug) => {
+      const link = document.querySelector('a[data-pagina="' + slug + '"]');
+      if (link) link.href = "/admin/previa/" + execucao_id + "/" + slug;
+    });
+  }
+
   function atualizarBotoes(corpo) {
     const navegador = corpo.navegador;
     const navegadorAtivo = Boolean(navegador && navegador.ativa);
@@ -238,6 +257,7 @@
       if (!corpo.estado) {
         elProgresso.hidden = true;
         renderizarPrevia(null, null);
+        renderizarPreviaNaoPublicada(null, null, null);
         return;
       }
       elProgresso.hidden = false;
@@ -247,6 +267,7 @@
         (corpo.erro_consolidacao ? ` — ${corpo.erro_consolidacao}` : "");
       renderizarPares(corpo.pares);
       renderizarPrevia(corpo.previa, corpo.estado);
+      renderizarPreviaNaoPublicada(corpo.execucao_id, corpo.estado, corpo.origem);
       if (corpo.origem === "envio") {
         renderizarAvisosEnvio(
           corpo.arquivos_ignorados || [],
