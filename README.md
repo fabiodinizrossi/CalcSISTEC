@@ -91,11 +91,35 @@ pip install -r requirements.txt
 A cada atualização:
 
 1. `python run.py` e entre em `http://localhost:8050/admin/login`.
-2. Em **Atualizar dados**, clique em **Atualizar do Sistec**. O Sistec abre no
-   seu navegador.
+2. Em **Atualizar dados**, escolha a origem. Em **Atualizar do Sistec**, o Sistec
+   abre no seu navegador.
 3. Faça o login gov.br e clique em **Já entrei no Sistec**.
 4. O CalcSISTEC troca de campus e baixa ciclos e matrículas de cada um.
 5. Confira a prévia, clique em **Salvar na versão interna** e depois em **Publicar**.
+
+### As duas formas de atualizar
+
+A tela **Atualizar dados** tem duas origens, e as duas terminam na mesma prévia e na
+mesma publicação:
+
+- **Atualizar do Sistec** — baixa tudo pelo navegador de quem está logado, como acima.
+- **Enviar pastas** — usa planilhas que você já tem em disco. Escolha **uma pasta com
+  os arquivos de ciclos e outra com os de matrículas**, pelo campo de seleção de
+  diretório. Os dois campos são obrigatórios: faltando um, a tela avisa e nada é
+  enviado.
+
+No envio, cada pasta deve conter arquivos `.csv` exportados do Sistec (mesmo separador
+`;` e mesma codificação `cp1252` das planilhas da baixa). O nome do arquivo é livre, e
+**arquivo que não seja `.csv` é ignorado** e listado no resultado. A tela mostra o que
+foi lido de cada arquivo, linha por linha, e nada é gravado antes de você clicar em
+**Salvar na versão interna**. Um envio que passa de 500 MB é recusado: envie em partes.
+
+**Campus que não veio no envio tem os dados atuais preservados** — o envio não apaga
+unidade ausente. Antes de salvar, a tela lista essas unidades e pede uma confirmação
+explícita; sem ela, o servidor recusa a gravação. Unidade que não está no cadastro de
+campi é apenas avisada (não é atualizada nem preservada por essa regra), e matrículas
+apontando para ciclos que não vieram aparecem contadas como órfãs. A tela **Histórico**
+registra a atualização por envio com o tipo `envio`.
 
 Antes da primeira atualização é preciso **cadastrar os campi** (`/admin/campi`, com
 vínculo em Configurações → Gerenciar campi, ou o assistente de instalação). O campo decisivo é o

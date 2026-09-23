@@ -411,7 +411,7 @@ T10 → T11 → T12
 - [x] Gate check passes: `python -m pytest tests/test_js_envio.py -q` (11 passed)
 - [x] Test count: 11 testes novos no padrão de `tests/test_js_*.py`
 
-**Status**: Done — commit `PENDING`.
+**Status**: Done — commit `860ce51`.
 
 **Tests**: unit
 **Gate**: quick
@@ -435,11 +435,13 @@ T10 → T11 → T12
 
 **Done when**:
 
-- [ ] `README.md` descreve as duas origens e o que cada pasta deve conter
-- [ ] `TESTAR.md` explica como testar o envio sem o Sistec real
-- [ ] Ambos citam que um campus ausente tem os dados preservados e exige confirmação
-- [ ] Gate check passes: `python -m pytest tests/ -q && python scripts/verificar_prontidao_cutover.py`
-- [ ] Test count: contagem de T11 mantida, sem exclusão silenciosa
+- [x] `README.md` descreve as duas origens e o que cada pasta deve conter
+- [x] `TESTAR.md` explica como testar o envio sem o Sistec real
+- [x] Ambos citam que um campus ausente tem os dados preservados e exige confirmação
+- [x] Gate check passes: `python -m pytest tests/ -q` (661 passed) e `python scripts/verificar_prontidao_cutover.py` (roda; segue em NO-GO por duas condições de ambiente, não de código: `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH` e `CALCSISTEC_HTTPS=1` ausentes)
+- [x] Test count: contagem de T11 mantida (661), sem exclusão silenciosa
+
+**Status**: Done — commit `PENDING`.
 
 **Tests**: none
 **Gate**: build

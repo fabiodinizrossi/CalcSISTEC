@@ -79,6 +79,38 @@ identificadores.
 Se algum campus estiver com identificador inválido, a atualização **para antes de
 começar** e diz quais corrigir — em vez de baixar 22 planilhas vazias.
 
+## Testar o envio de pastas sem o Sistec real
+
+O envio não precisa de login nem de navegador: ele lê arquivos que já estão no disco.
+Para montar as pastas, use as planilhas de uma baixa anterior (a pasta onde o navegador
+salvou os `.csv`) ou rode `python scripts/sistec_simulado.py` e faça uma baixa contra ele
+— as planilhas caem na pasta de downloads configurada.
+
+1. Separe dois diretórios, por exemplo `ciclos/` e `matriculas/`, e ponha em cada um os
+   `.csv` correspondentes. O nome do arquivo é livre; só a extensão `.csv` importa.
+2. Em **Atualizar dados**, marque **Enviar pastas**.
+3. Selecione a pasta de ciclos em um campo e a de matrículas no outro. Deixe um deles
+   vazio e clique em **Enviar pastas**: a tela avisa que as duas são obrigatórias e não
+   chama o servidor.
+4. Com as duas preenchidas, o resultado aparece linha por linha (arquivo, tipo, situação,
+   linhas). Ponha um `.txt` numa das pastas para ver o arquivo ser ignorado e listado.
+5. Confira a prévia e clique em **Salvar na versão interna**.
+
+Casos que valem conferir:
+
+- **Arquivo quebrado**: um `.csv` sem as colunas do Sistec faz o envio inteiro parar, e a
+  mensagem nomeia o arquivo e o motivo. Nada é gravado. Se a mensagem falar de colunas
+  ausentes em todos os arquivos, provavelmente as pastas estão invertidas.
+- **Campus ausente**: tire os arquivos de um campus da pasta e envie de novo. A tela lista
+  essa unidade como preservada e **Salvar fica bloqueado até você marcar a confirmação**;
+  os dados anteriores daquele campus continuam na versão interna.
+- **Unidade fora do cadastro**: um `.csv` de unidade que não está em `/admin/campi` gera
+  aviso e não é aplicada.
+- **Prévia pendente**: com uma prévia aberta, um segundo envio é recusado com a mensagem
+  de prévia pendente — salve ou descarte antes.
+- **Histórico**: a atualização aparece na tela **Histórico** com o tipo `envio`, e o
+  desfecho de cada envio fica registrado.
+
 ### O que olhar enquanto roda
 
 - Os **identificadores** em `/admin/campi`: números de 7 dígitos.
