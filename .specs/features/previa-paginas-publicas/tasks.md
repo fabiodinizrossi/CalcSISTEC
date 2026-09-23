@@ -793,13 +793,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Envio passa `ano_base` de `config` (via `ano_base_ativo`); baixa direta continua com `_ano_base_config()`
-- [ ] `PreviaDesatualizada` responde `409` com erro próprio e texto orientando descartar e reenviar as pastas; nada é gravado
-- [ ] `PreviaIncompleta` responde `409` com a lista de páginas com falha
-- [ ] `404` para execução inexistente e o portão `confirmacao_necessaria` continuam como estão
-- [ ] Testes: cobrir os três `409`, o `404` e o caminho feliz do envio
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 5 testes novos
+- [x] Envio passa `ano_base` de `config` (via `ano_base_ativo`); baixa direta continua com `_ano_base_config()`
+- [x] `PreviaDesatualizada` responde `409` com erro próprio e texto orientando descartar e reenviar as pastas; nada é gravado
+- [x] `PreviaIncompleta` responde `409` com a lista de páginas com falha
+- [x] `404` para execução inexistente e o portão `confirmacao_necessaria` continuam como estão
+- [x] Testes: cobrir os três `409`, o `404` e o caminho feliz do envio
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 5 testes novos
+
+**Status**: Done -- commit `e6a4774`.
 
 **Tests**: integration
 **Gate**: full

@@ -535,19 +535,33 @@ def admin_atualizar_cancelar(execucao_id):
 def admin_atualizar_salvar(execucao_id):
     """UPL-08: `{"confirmar_preservacao": true}` libera a gravação de um
     envio que preserva campi ausentes; sem ele, o servidor recusa com 409 e
-    a lista dos campi preservados (o portão não é só do JS)."""
+    a lista dos campi preservados (o portão não é só do JS).
+
+    PVP-04/PVP-09/PVP-10: o envio usa o ano-base de `config` (o mesmo que as
+    páginas consultam); a baixa direta segue com `_ano_base_config()` do
+    ambiente. Conferência desatualizada e página com falha devolvem 409."""
     execucao = _execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     corpo = flask.request.get_json(silent=True) or {}
+    ano_base = ano_base_ativo() if execucao.origem == "envio" else _ano_base_config()
     try:
         resultado = execucoes.salvar(
-            execucao, DEFAULT_DB_PATH, _ano_base_config(), confirmado=bool(corpo.get("confirmar_preservacao"))
+            execucao, DEFAULT_DB_PATH, ano_base, confirmado=bool(corpo.get("confirmar_preservacao"))
         )
     except execucoes.ConfirmacaoNecessaria:
         return flask.jsonify(
             {"erro": "confirmacao_necessaria", "campi_preservados": sorted(execucao.campi_falhos)}
         ), 409
+    except execucoes.PreviaDesatualizada:
+        return flask.jsonify(
+            {
+                "erro": "previa_desatualizada",
+                "mensagem": "A conferência da prévia está desatualizada. Descartar a prévia e reenviar as pastas.",
+            }
+        ), 409
+    except execucoes.PreviaIncompleta as exc:
+        return flask.jsonify({"erro": "previa_incompleta", "paginas": exc.paginas}), 409
     except execucoes.ExecucaoInvalida as exc:
         return flask.jsonify({"erro": str(exc)}), 409
 
