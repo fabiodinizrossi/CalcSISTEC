@@ -37,13 +37,22 @@ def _ler_pasta(arquivos, tipo, nome_pasta):
 
 
 def ler_pastas(arquivos_ciclo, arquivos_matricula):
-    """Lê os dois conjuntos de arquivos ou recusa o primeiro CSV inválido."""
+    """Lê os dois conjuntos de arquivos ou recusa o primeiro CSV inválido.
+
+    UPL-06: encerra cada `FileStorage` no fim (inclusive nos arquivos
+    ignorados e no caminho de recusa) — é o que apaga o buffer temporário que
+    o parser criou para um envio grande, sem esperar o coletor de lixo.
+    """
     arquivos_ciclo = list(arquivos_ciclo)
     arquivos_matricula = list(arquivos_matricula)
-    ignorados = [nome_seguro(a.filename) for a in arquivos_ciclo + arquivos_matricula if not nome_seguro(a.filename).lower().endswith(".csv")]
-    ciclo = _ler_pasta(arquivos_ciclo, "ciclo", "ciclos")
-    matricula = _ler_pasta(arquivos_matricula, "matricula", "matrículas")
-    return {"ciclo": ciclo, "matricula": matricula, "ignorados": ignorados}
+    try:
+        ignorados = [nome_seguro(a.filename) for a in arquivos_ciclo + arquivos_matricula if not nome_seguro(a.filename).lower().endswith(".csv")]
+        ciclo = _ler_pasta(arquivos_ciclo, "ciclo", "ciclos")
+        matricula = _ler_pasta(arquivos_matricula, "matricula", "matrículas")
+        return {"ciclo": ciclo, "matricula": matricula, "ignorados": ignorados}
+    finally:
+        for arquivo in arquivos_ciclo + arquivos_matricula:
+            arquivo.close()
 
 
 def _codigos_ciclo(df_ciclos):

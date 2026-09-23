@@ -30,7 +30,7 @@ from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
 from app.admin_campi import campi_bp
 from app.shell import PainelDash, init_shell
-from app.sistec import execucoes, navegador
+from app.sistec import envio, execucoes, navegador
 
 app = PainelDash(
     __name__,
@@ -316,6 +316,99 @@ def admin_atualizar_sistec_cancelar():
     if execucao.historico_id:
         historico_encerrar(execucao.historico_id, "cancelada", pausas=execucao.pausas)
     return "", 204
+
+
+def _resumo_arquivos_envio(execucao):
+    """Desfecho por arquivo enviado: só nome, tipo, linhas e status (RN-13)."""
+    return [
+        {"n": par.n, "tipo": par.tipo, "nome": par.nome_perfil, "status": par.status, "linhas": par.linhas}
+        for par in execucao.fila
+    ]
+
+
+def _matriculas_orfas_envio(previa):
+    """Matrículas cujo `codigo_ciclo_matricula` não existe nos ciclos
+    consolidados (Edge Case): a junção interna as descarta, e a contagem
+    torna a perda visível na prévia."""
+    matriculas = previa["matriculas"]
+    coluna = "CODIGO_CICLO_MATRICULA"
+    if matriculas.empty or coluna not in matriculas.columns:
+        return 0
+    chaves = set(previa["ciclos"][coluna]) if coluna in previa["ciclos"].columns else set()
+    return int((~matriculas[coluna].isin(chaves)).sum())
+
+
+@server.route("/admin/atualizar/envio", methods=["POST"])
+@requer_autenticacao
+def admin_atualizar_envio():
+    """UPL-02/UPL-05/UPL-06/UPL-12 (D-14 + envio de pastas): lê as pastas
+    enviadas, consolida na mesma execução da baixa e devolve o desfecho por
+    arquivo. Processamento síncrono: os bytes só existem enquanto a
+    requisição vive (o buffer temporário do parser é descartado no fim)."""
+    estado_navegador = navegador.status(_admin_email())
+    if estado_navegador and estado_navegador["ativa"]:
+        return flask.jsonify({"erro": "execucao_em_andamento"}), 409
+    execucao_atual = _execucao_da_sessao()
+    if execucao_atual is not None and execucao_atual.estado not in execucoes.ESTADOS_TERMINAIS:
+        erro = "previa_pendente" if execucao_atual.estado == "previa" else "execucao_em_andamento"
+        return flask.jsonify({"erro": erro}), 409
+
+    try:
+        leitura = envio.ler_pastas(
+            flask.request.files.getlist("ciclos"), flask.request.files.getlist("matriculas")
+        )
+    except envio.EnvioInvalido as exc:
+        # UPL-10/UPL-12: nada foi criado nem gravado; a resposta nomeia o
+        # arquivo e o motivo, nunca o conteúdo da célula.
+        return flask.jsonify({"erro": "envio_invalido", "arquivo": exc.arquivo, "motivo": exc.motivo}), 400
+
+    historico_id = historico_iniciar("envio", _admin_email())
+    try:
+        execucao = execucoes.criar_execucao_envio(
+            _admin_email(),
+            [nome for nome, _ in leitura["ciclo"]],
+            [nome for nome, _ in leitura["matricula"]],
+            historico_id=historico_id,
+        )
+    except execucoes.ExecucaoInvalida:
+        historico_encerrar(historico_id, "cancelada")
+        return flask.jsonify({"erro": "execucao_em_andamento"}), 409
+
+    execucoes.registrar_leitura(execucao, leitura)
+    execucao.arquivos_ignorados = leitura["ignorados"]
+    execucao.campi_nao_cadastrados = []
+    execucao.matriculas_orfas = 0
+
+    resposta = {
+        "estado": execucao.estado,
+        "execucao_id": execucao.id,
+        "arquivos": _resumo_arquivos_envio(execucao),
+        "ignorados": leitura["ignorados"],
+        "previa": None,
+    }
+
+    if execucao.estado == "falhou_consolidacao":
+        # UPL-11: erro do conjunto, sem arquivo culpado. Nada gravado.
+        historico_encerrar(
+            historico_id, "falhou_consolidacao", detalhe={"erro": execucao.erro_consolidacao}
+        )
+        resposta["erro_consolidacao"] = execucao.erro_consolidacao
+        return flask.jsonify(resposta)
+
+    campi_cadastrados = listar_campi()
+    preservados = envio.campi_ausentes(execucao.previa["ciclos"], campi_cadastrados)
+    execucoes.definir_campi_preservados(execucao, preservados)
+    execucao.campi_nao_cadastrados = envio.campi_nao_cadastrados(execucao.previa["ciclos"], campi_cadastrados)
+    execucao.matriculas_orfas = _matriculas_orfas_envio(execucao.previa)
+
+    resposta["campi_preservados"] = preservados
+    resposta["campi_nao_cadastrados"] = execucao.campi_nao_cadastrados
+    resposta["matriculas_orfas"] = execucao.matriculas_orfas
+    resposta["previa"] = {
+        "ciclos": len(execucao.previa["ciclos"]),
+        "matriculas": len(execucao.previa["matriculas"]),
+    }
+    return flask.jsonify(resposta)
 
 
 @server.route("/admin/atualizar/execucoes", methods=["POST"])
