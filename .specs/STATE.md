@@ -44,13 +44,15 @@
 
 ## Handoff
 
-Estado revisado em 2026-09-23 (rodada 3, última, da feature `previa-paginas-publicas`).
+Estado revisado em 2026-09-23.
 
-- **Feature**: `.specs/features/previa-paginas-publicas` (Large) — **concluída** (T1–T28, `tasks.md` marcado `Done`).
-- **Phase / Task**: Fases 6, 7 e 8 concluídas (T20–T28). Nenhuma tarefa restante.
-- **Completed (rodada 3)**: T20 `f5b1704` (`salvar_interna` confere assinatura + `executemany`), T21 `79aa3d2` (`salvar` grava o candidato e encerra a prévia), T22 `751e494` (rota responde 409 de conferência), T23 `b99984e` (teste do ano-base), T24 `09162c5` (suíte de paridade), T25 `731369b` (suíte de acesso), T26 `97edb2a` (suíte de estado), T27 `ef06902` (README), T28 `3715bed` (TESTAR).
-- **Gate final**: `pytest tests/ -q` → 825 passed, 2 failed **pré-existentes e fora do escopo** (`test_eficiencia_layout_...` e `test_percentuais_layout_...`, sistec.db local vazio). Nenhuma falha nova.
-- **Verificação**: `validation.md` NÃO escrito — a verificação final (Verifier, author ≠ verifier) é sessão separada, fora do escopo desta rodada.
+- **Feature**: `.specs/features/previa-paginas-publicas` (Large) — **concluída e validada** (T1–T28, `tasks.md` `Done`, `validate_state.py` → 0 erros).
+- **Execução**: 3 lotes via `handoff-ds` (DeepSeek `--pro`, mesma thread `0923-ds-08`): T1–T8 (`56f5e4f`..`8ad885c`), T9–T19 (`ce75f44`..`b78bd6d`), T20–T28 (`f5b1704`..`3715bed`) + `3fd6153` (fechamento). 140 testes novos.
+- **Verificação**: `validation.md` — **PASS** (`7937d3e`), Verifier em sessão DeepSeek separada (`0923-ds-12`, author ≠ verifier). 16/17 partes de AC + 4/4 edge cases com evidência; sensor expandido 9 mutações, 8 mortas. Medição com dados sintéticos (1.500 ciclos, 35.889 matrículas): preparar+abrir 0,45 s / 21,6 MiB; leitura de página 0,65 s / 35,4 MiB.
+- **Gaps não bloqueantes (candidatos a follow-up)**: (1) link "Voltar para Atualizar dados" de `app/pages/previa.py` sem teste de texto/href; (2) "tabelas inalteradas" (P1.1 AC4) afirmado só por `rev_interna`/`rev_publicada`, não por conteúdo — não-escrita garantida estruturalmente por `query_only=ON`; (3) mutante sobrevivente em `fonte.fechar()` (efeito só de memória).
+- **Lição de processo**: T21 `79aa3d2` e T22 `751e494` quebram 4 testes existentes isoladamente (o gate *quick* da tarefa não cobria esses arquivos); corrigidos em T23 `b99984e` sem afrouxar asserção. Em tarefas que mudam contrato de função já usada, o gate deve incluir os testes dos chamadores.
+- **Gate final**: `pytest tests/ -q` → 825 passed, 2 failed **pré-existentes** (`test_eficiencia_layout_...`, `test_percentuais_layout_...`; reproduzidas no `08cf826`, `sistec.db` local vazio). Nenhuma falha nova.
+- **Pendente humano**: conferência visual da faixa **Prévia não publicada** em ≥992px e em tela pequena; teste real com envio de pastas no navegador.
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada enviado ao remoto.
 - **Working tree**: só `?? .agents/` e `?? nonascii.txt` (pré-existentes, não rastreados). `app/data/sistec.db` (ignorado) vazio de publicadas.
 - **Branch**: migracao-dash-gov-br.
