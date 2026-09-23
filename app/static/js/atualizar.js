@@ -12,8 +12,9 @@
  * O segundo card ("Enviar pastas", sempre visível ao lado do card do Sistec,
  * CAD-01) monta um multipart com as duas pastas escolhidas e mostra o
  * resultado por arquivo. Quando o envio não traz todos os campi, os ausentes
- * ficam preservados e Salvar só é chamado depois da confirmação — o servidor
- * recusa de qualquer forma (UPL-08).
+ * ficam preservados (o card avisa antes de qualquer envio) e Salvar grava
+ * direto: o cliente sempre manda `confirmar_preservacao: true`, então o portão
+ * do servidor (UPL-08) fica satisfeito já na primeira chamada — AFE-01.
  *
  * Esta tela só dispara as ações e acompanha o estado por polling de
  * `GET /admin/atualizar/execucao` a cada 2 s — nunca recebe bytes de planilha.
@@ -86,9 +87,6 @@
   const elEnvioArea = $("envio-arquivos-area");
   const elEnvioArquivos = $("envio-arquivos");
   const elEnvioIgnorados = $("envio-ignorados");
-  const elPreservacao = $("envio-preservacao");
-  const elPreservacaoTexto = $("envio-preservacao-texto");
-  const elConfirmarPreservacao = $("envio-confirmar-preservacao");
   const elEnvioAvisos = $("envio-avisos");
   const elStatusCiclos = $("envio-ciclos-status");
   const elStatusMatriculas = $("envio-matriculas-status");
@@ -97,7 +95,6 @@
 
   let estadoAtual = null;
   let passosMostrados = 0;
-  let preservacaoPendente = false;
 
   function postar(caminho, corpo) {
     return fetch(caminho, {
@@ -244,7 +241,6 @@
       renderizarPrevia(corpo.previa, corpo.estado);
       if (corpo.origem === "envio") {
         renderizarAvisosEnvio(corpo.arquivos_ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
-        if (corpo.estado === "previa") mostrarPreservacao(corpo.campi_preservados || []);
       }
     } catch (erro) {
       // Falha de rede pontual no polling não interrompe o ciclo — tenta de novo.
@@ -285,23 +281,16 @@
 
   btnSalvar.addEventListener("click", async () => {
     if (!estadoAtual || !estadoAtual.execucao_id) return;
-    if (preservacaoPendente && !elConfirmarPreservacao.checked) {
-      elStatusSalvar.textContent = "Confirme a preservação das unidades listadas antes de salvar.";
-      return;
-    }
     btnSalvar.disabled = true;
     elStatusSalvar.textContent = "Salvando…";
     try {
+      // AFE-01: a preservação dos campi ausentes já está dita no card, antes
+      // de qualquer envio — Salvar não pede mais um clique de confirmação e
+      // sempre satisfaz o portão do servidor de primeira (UPL-08).
       const resposta = await postar(`/admin/atualizar/execucoes/${estadoAtual.execucao_id}/salvar`, {
-        confirmar_preservacao: preservacaoPendente && elConfirmarPreservacao.checked,
+        confirmar_preservacao: true,
       });
       if (resposta.status === 409) {
-        const corpo = await resposta.json();
-        if (corpo.erro === "confirmacao_necessaria") {
-          mostrarPreservacao(corpo.campi_preservados || []);
-          elStatusSalvar.textContent = "Confirme a preservação das unidades listadas antes de salvar.";
-          return;
-        }
         elStatusSalvar.textContent = "Não foi possível salvar.";
         return;
       }
@@ -310,13 +299,12 @@
         elStatusSalvar.textContent =
           `Salvo na versão interna: ${resumo.ciclos} ciclo(s) e ${resumo.matriculas} matrícula(s). ` +
           "Clique em Publicar para levar ao painel público.";
-        mostrarPreservacao([]);
       } else {
         elStatusSalvar.textContent = "Não foi possível salvar.";
       }
       await poll();
     } finally {
-      atualizarBotaoSalvar();
+      btnSalvar.disabled = false;
     }
   });
 
@@ -345,8 +333,8 @@
      Segunda origem da mesma execução: em vez de baixar do Sistec, a pessoa
      aponta duas pastas com os `.csv` já exportados. Quem monta o multipart é
      esta tela — o servidor só lê, consolida e devolve o resumo por arquivo.
-     Quando o envio não traz todos os campi, os ausentes ficam preservados e
-     Salvar fica bloqueado até a confirmação explícita. */
+     Quando o envio não traz todos os campi, os ausentes ficam preservados —
+     sem nenhuma confirmação a pedir na tela (AFE-01). */
 
   const ROTULO_STATUS_ENVIO = { pendente: "Na fila", baixado: "Lido", falhou: "Falhou", cancelado: "Cancelado" };
   const ROTULO_MOTIVO_ENVIO = {
@@ -412,20 +400,6 @@
     campo.botao.addEventListener("click", () => campo.input.click());
     campo.input.addEventListener("change", selecaoDePasta);
   });
-
-  function atualizarBotaoSalvar() {
-    btnSalvar.disabled = preservacaoPendente && !elConfirmarPreservacao.checked;
-  }
-
-  function mostrarPreservacao(campi) {
-    preservacaoPendente = campi.length > 0;
-    elPreservacao.hidden = !preservacaoPendente;
-    elPreservacaoTexto.textContent = preservacaoPendente
-      ? `Estas unidades não vieram no envio e os dados atuais delas serão preservados: ${campi.join(", ")}.`
-      : "";
-    if (!preservacaoPendente) elConfirmarPreservacao.checked = false;
-    atualizarBotaoSalvar();
-  }
 
   function renderizarArquivosEnvio(arquivos) {
     elEnvioArea.hidden = arquivos.length === 0;
@@ -502,7 +476,6 @@
       elStatusEnvio.textContent = `${(corpo.arquivos || []).length} arquivo(s) lido(s). Confira a prévia abaixo.`;
       renderizarArquivosEnvio(corpo.arquivos || []);
       renderizarAvisosEnvio(corpo.ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
-      mostrarPreservacao(corpo.campi_preservados || []);
       await poll();
     } catch (erro) {
       elStatusEnvio.textContent = "Falha de rede: o envio não chegou ao servidor.";
@@ -511,7 +484,6 @@
     }
   }
 
-  elConfirmarPreservacao.addEventListener("change", atualizarBotaoSalvar);
   btnEnviar.addEventListener("click", enviarPastas);
 
   setInterval(poll, INTERVALO_POLL_MS);

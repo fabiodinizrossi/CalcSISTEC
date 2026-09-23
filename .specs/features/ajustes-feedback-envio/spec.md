@@ -6,7 +6,7 @@ No primeiro uso real da tela "Enviar pastas" (depois de `cards-atualizar-dados`)
 
 ## Goals
 
-- [ ] A caixa amarela de confirmação de preservação de campus ausente sai da tela; salvar deixa de exigir esse clique.
+- [x] A caixa amarela de confirmação de preservação de campus ausente sai da tela; salvar deixa de exigir esse clique.
 - [ ] O resultado por arquivo do envio (e os avisos que vêm com ele) aparece abaixo dos dois cards, com a largura inteira da página — não confinado à coluna do card "Enviar pastas".
 - [ ] Unidade presente no CSV de ciclos mas ausente do cadastro de campi é cadastrada automaticamente (`app/data/campi.incluir_campus`), em vez de só listada como "fora do cadastro".
 
@@ -100,7 +100,7 @@ No primeiro uso real da tela "Enviar pastas" (depois de `cards-atualizar-dados`)
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| AFE-01 | P1: Salvar sem o clique extra de confirmação | Design | Pending |
+| AFE-01 | P1: Salvar sem o clique extra de confirmação | Design | Passed |
 | AFE-02 | P1: Resultado por arquivo com a largura inteira da página | Design | Pending |
 | AFE-03 | P1: Cadastro automático de unidade presente no envio | Design | Pending |
 

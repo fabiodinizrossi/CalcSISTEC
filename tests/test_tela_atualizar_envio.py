@@ -110,23 +110,32 @@ def test_resultados_do_envio_ficam_dentro_do_proprio_card(html):
     trecho_envio = html[inicio:fim]
 
     assert 'id="envio-arquivos-area"' in trecho_envio
-    assert 'id="envio-preservacao"' in trecho_envio
     assert 'id="envio-avisos"' in trecho_envio
     # Progresso/Prévia continuam fora dos dois cards (fora de escopo desta feature).
     assert 'id="atualizar-previa"' not in trecho_envio
 
 
-def test_area_de_resultados_tem_resultado_por_arquivo_e_confirmacao_de_preservacao(html):
+def test_area_de_resultados_tem_o_resultado_por_arquivo(html):
     area = re.search(r'<div id="envio-arquivos-area".*?</div>\s*</div>', html, re.S).group(0)
     assert re.search(r'<div class="br-table"><div class="responsive"><table>', area.replace("\n", "").replace("  ", ""))
     assert re.search(r'<tbody id="envio-arquivos"></tbody>', area)
+    # A lista de avisos do envio continua existindo, escondida.
+    assert re.search(r'<ul id="envio-avisos" class="br-message warning" role="alert" hidden></ul>', html)
 
-    preservacao = re.search(r'<div id="envio-preservacao"[^>]*>.*?</div>\s*</div>', html, re.S).group(0)
-    assert re.search(r'<input id="envio-confirmar-preservacao" type="checkbox">', preservacao)
-    assert re.search(r'<label for="envio-confirmar-preservacao">[^<]+</label>', preservacao)
-    assert 'class="br-message warning"' in html
-    # A caixa de confirmação é separada do botão de enviar e começa escondida.
-    assert re.search(r'<div id="envio-preservacao"[^>]*hidden>', html)
+
+def test_card_de_envio_nao_pede_confirmacao_de_preservacao(html):
+    """AFE-01: nenhuma caixa amarela de confirmação na tela; o parágrafo do card
+    segue dizendo que os campi ausentes são preservados, mas não promete nenhuma
+    confirmação antes de salvar."""
+    for id_removido in ("envio-preservacao", "envio-preservacao-texto", "envio-confirmar-preservacao"):
+        assert id_removido not in html
+
+    paragrafo = re.search(
+        r'Campus que você não enviar tem os dados atuais <strong>preservados</strong>[^<]*</p>', html
+    )
+    assert paragrafo, "o card continua avisando que os campi ausentes ficam preservados"
+    assert "nada dele é apagado" in paragrafo.group(0)
+    assert "confirmação" not in paragrafo.group(0)
 
 
 def test_os_dois_cards_empilham_abaixo_de_992px_com_classes_do_ds(html):

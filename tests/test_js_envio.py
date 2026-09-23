@@ -1,6 +1,6 @@
-"""`atualizar.js`, segunda origem (T11/UPL-01, UPL-08): escolha de origem,
-envio multipart das duas pastas, resultado por arquivo e a confirmação de
-preservação que antecede o Salvar.
+"""`atualizar.js`, segunda origem (T11/UPL-01, UPL-08): envio multipart das
+duas pastas, resultado por arquivo e o Salvar direto de um envio que preserva
+campi ausentes (AFE-01).
 
 Os casos rodam o script de verdade em `node` sobre o DOM simulado de
 `dom_falso.py`; `fetch`, `FormData` e `setInterval` são dublês registrados em
@@ -50,9 +50,6 @@ IDS = [
     "status-envio",
     "envio-arquivos-area",
     "envio-ignorados",
-    "envio-preservacao",
-    "envio-preservacao-texto",
-    "envio-confirmar-preservacao",
 ]
 
 # Estado que o polling devolve por padrão: nenhuma execução aberta.
@@ -104,7 +101,6 @@ doc.createElement = (tag) => {{
   e.appendChild = (f) => {{ e.filhos.push(f); return f; }};
   return e;
 }};
-doc.porId["envio-confirmar-preservacao"].checked = false;
 doc.porId["envio-ciclos"].files = {json.dumps([{"name": nome} for nome in arquivos_ciclos])};
 doc.porId["envio-matriculas"].files = {json.dumps([{"name": nome} for nome in arquivos_matriculas])};
 contexto.setInterval = () => 0;
@@ -320,13 +316,47 @@ return {
     assert "2 arquivo(s) lido(s)" in resultado["texto"]
 
 
-def test_com_campi_preservados_o_salvar_nao_e_chamado_sem_a_confirmacao():
+def test_envio_com_campi_preservados_salva_de_primeira_sem_clique_extra():
+    """AFE-01: com unidades preservadas o clique em Salvar vai ao servidor de
+    imediato — nada de caixa amarela nem de checkbox — e o corpo já leva
+    `confirmar_preservacao: true`, satisfazendo o portão do servidor (UPL-08,
+    que continua existindo do lado de lá)."""
     verificar = (
         ESPERAR
         + CHAMADAS_PARA
         + """
-const preservacao = doc.porId["envio-preservacao"];
-const antes = { visivel: preservacao.hidden === false, texto: doc.porId["envio-preservacao-texto"].textContent, bloqueado: doc.porId["btn-salvar"].disabled === true };
+const antes = { bloqueado: doc.porId["btn-salvar"].disabled === true, preservacao: !!doc.porId["envio-preservacao"] };
+doc.porId["btn-salvar"].disparar("click");
+"""
+        + ESPERAR
+        + """
+const enviada = para("/salvar")[0];
+return {
+  antes,
+  chamadas: para("/salvar").length,
+  corpos: para("/salvar").map((c) => c.opcoes.body),
+  cabecalhos: enviada.opcoes.headers,
+  status: doc.porId["status-salvar"].textContent,
+};
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(campi_preservados=["U2", "U3"])), verificar)
+    assert resultado["antes"]["bloqueado"] is False
+    assert resultado["antes"]["preservacao"] is False
+    assert resultado["chamadas"] == 1
+    assert resultado["corpos"] == ['{"confirmar_preservacao":true}']
+    assert resultado["cabecalhos"]["Content-Type"] == "application/json"
+    assert "Salvo na versão interna" in resultado["status"]
+
+
+def test_numa_baixa_o_salvar_tambem_manda_a_confirmacao():
+    """AFE-01: o corpo do Salvar não depende de a origem ser envio — a baixa
+    manda o mesmo campo, e nada pede confirmação na tela."""
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = { bloqueado: doc.porId["btn-salvar"].disabled === true };
 doc.porId["btn-salvar"].disparar("click");
 """
         + ESPERAR
@@ -334,69 +364,16 @@ doc.porId["btn-salvar"].disparar("click");
 return {
   antes,
   chamadas: para("/salvar").length,
-  status: doc.porId["status-salvar"].textContent,
-  checkbox: doc.porId["envio-confirmar-preservacao"].checked,
-};
-"""
-    )
-    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(campi_preservados=["U2", "U3"])), verificar)
-    assert resultado["antes"]["visivel"] is True
-    assert resultado["antes"]["texto"] == (
-        "Estas unidades não vieram no envio e os dados atuais delas serão preservados: U2, U3."
-    )
-    assert resultado["antes"]["bloqueado"] is True
-    assert resultado["chamadas"] == 0
-    assert resultado["checkbox"] is False
-    assert "Confirme a preservação" in resultado["status"]
-
-
-def test_com_a_confirmacao_marcada_o_salvar_leva_o_campo_ao_servidor():
-    verificar = (
-        ESPERAR
-        + CHAMADAS_PARA
-        + """
-const checkbox = doc.porId["envio-confirmar-preservacao"];
-checkbox.checked = true;
-checkbox.disparar("change");
-const liberado = doc.porId["btn-salvar"].disabled === true;
-doc.porId["btn-salvar"].disparar("click");
-"""
-        + ESPERAR
-        + """
-const enviada = para("/salvar")[0];
-return { liberado, corpos: para("/salvar").map((c) => c.opcoes.body), cabecalhos: enviada.opcoes.headers };
-"""
-    )
-    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(campi_preservados=["U2"])), verificar)
-    assert resultado["liberado"] is False
-    assert resultado["corpos"] == ['{"confirmar_preservacao":true}']
-    assert resultado["cabecalhos"]["Content-Type"] == "application/json"
-
-
-def test_numa_baixa_o_bloco_de_envio_fica_fora_do_caminho():
-    """UPL-08: sem `campi_preservados` do envio, Salvar continua direto."""
-    verificar = (
-        ESPERAR
-        + CHAMADAS_PARA
-        + """
-doc.porId["btn-salvar"].disparar("click");
-"""
-        + ESPERAR
-        + """
-const preservacao = doc.porId["envio-preservacao"];
-return {
-  chamadas: para("/salvar").length,
   corpos: para("/salvar").map((c) => c.opcoes.body),
-  visivel: preservacao.hidden === false,
-  bloqueado: doc.porId["btn-salvar"].disabled === true,
+  status: doc.porId["status-salvar"].textContent,
 };
 """
     )
     resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(origem="baixa")), verificar)
+    assert resultado["antes"]["bloqueado"] is False
     assert resultado["chamadas"] == 1
-    assert resultado["corpos"] == ['{"confirmar_preservacao":false}']
-    assert resultado["visivel"] is False
-    assert resultado["bloqueado"] is False
+    assert resultado["corpos"] == ['{"confirmar_preservacao":true}']
+    assert "Salvo na versão interna" in resultado["status"]
 
 
 # --- Escolha de pasta: nome e contagem sem rede (CEP-01, CEP-02, CEP-03) -----
