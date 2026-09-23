@@ -855,14 +855,16 @@ T27 → T28
 
 **Done when**:
 
-- [ ] As quatro páginas são comparadas (KPIs, linhas de tabela e filtros) entre prévia e versão publicada, sem diferença
-- [ ] O caso de campus preservado entra: dados de `interna_*` do campus ausente aparecem na prévia iguais aos da versão interna após Salvar
-- [ ] O caso sem publicação inicial renderiza as quatro páginas sem a mensagem "Ainda não há dados publicados."
-- [ ] `RISK-002` coberto: vazio, `NaN` e data nula não divergem entre prévia e publicação
-- [ ] O ano-base usado na prévia é o de `config` — o teste afirma o valor, não só a igualdade entre lados
-- [ ] Nada de `.test-*`/`pytest_cache` deixado no repositório (`AGENTS.md`)
-- [ ] Gate check passes: `python -m pytest tests/test_previa_paridade.py -q`
-- [ ] Test count: ≥ 8 testes novos
+- [x] As quatro páginas são comparadas (KPIs, linhas de tabela e filtros) entre prévia e versão publicada, sem diferença
+- [x] O caso de campus preservado entra: dados de `interna_*` do campus ausente aparecem na prévia iguais aos da versão interna após Salvar
+- [x] O caso sem publicação inicial renderiza as quatro páginas sem a mensagem "Ainda não há dados publicados."
+- [x] `RISK-002` coberto: vazio, `NaN` e data nula não divergem entre prévia e publicação
+- [x] O ano-base usado na prévia é o de `config` — o teste afirma o valor, não só a igualdade entre lados
+- [x] Nada de `.test-*`/`pytest_cache` deixado no repositório (`AGENTS.md`)
+- [x] Gate check passes: `python -m pytest tests/test_previa_paridade.py -q`
+- [x] Test count: ≥ 8 testes novos
+
+**Status**: Done -- commit `177d3cd`.
 
 **Tests**: integration
 **Gate**: full
