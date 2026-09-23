@@ -440,13 +440,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `layout(preview_id=None)` sem `preview_id` produz exatamente a página pública atual (testes existentes de `tests/test_paginas_publicas.py` seguem passando)
-- [ ] Com `preview_id`, o layout e os callbacks leem pela conexão da fonte e usam o ano-base dela; o rótulo "Atualizado em" é omitido e a mensagem "Ainda não há dados publicados." não aparece
-- [ ] O `preview_id` chega aos callbacks por `State` (um `dcc.Store` por página), nunca por URL nem por dado vindo do cliente sem validação
-- [ ] `PreviaIndisponivel` no callback devolve estado vazio/erro e nunca dados públicos; filtro sem linhas mantém "Sem dados para o eixo selecionado."
-- [ ] Testes: cobrir layout público, layout de prévia, callback com prévia válida, callback com identificador forjado e filtro vazio nos dois caminhos
-- [ ] Gate check passes: `python -m pytest tests/test_paginas_publicas.py tests/test_previa_callback_matriculas.py -q`
-- [ ] Test count: ≥ 6 testes novos
+- [x] `layout(preview_id=None)` sem `preview_id` produz exatamente a página pública atual (testes existentes de `tests/test_paginas_publicas.py` seguem passando)
+- [x] Com `preview_id`, o layout e os callbacks leem pela conexão da fonte e usam o ano-base dela; o rótulo "Atualizado em" é omitido e a mensagem "Ainda não há dados publicados." não aparece
+- [x] O `preview_id` chega aos callbacks por `State` (um `dcc.Store` por página), nunca por URL nem por dado vindo do cliente sem validação
+- [x] `PreviaIndisponivel` no callback devolve estado vazio/erro e nunca dados públicos; filtro sem linhas mantém "Sem dados para o eixo selecionado."
+- [x] Testes: cobrir layout público, layout de prévia, callback com prévia válida, callback com identificador forjado e filtro vazio nos dois caminhos
+- [x] Gate check passes: `python -m pytest tests/test_paginas_publicas.py tests/test_previa_callback_matriculas.py -q`
+- [x] Test count: ≥ 6 testes novos
+
+**Status**: Done -- commit `2d51803`.
 
 **Tests**: integration
 **Gate**: full
