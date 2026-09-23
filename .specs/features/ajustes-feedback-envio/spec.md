@@ -118,8 +118,8 @@ No primeiro uso real da tela "Enviar pastas" (depois de `cards-atualizar-dados`)
 
 ## Success Criteria
 
-- [ ] Nenhuma caixa amarela de confirmação de preservação aparece em nenhum fluxo de envio; Salvar nunca pede esse clique.
-- [ ] O resultado por arquivo do envio (tabela + avisos) ocupa a largura inteira da página, abaixo dos dois cards.
-- [ ] Unidade presente nos ciclos enviados mas fora do cadastro é cadastrada automaticamente; nenhuma mensagem de "fora do cadastro"/"não atualizada" aparece.
-- [ ] `cards-atualizar-dados/spec.md` (AC3/CAD-03) recebe uma nota de superação apontando para esta feature (AFE-02), sem reescrever o relato histórico de `validation.md` daquela feature.
-- [ ] `pytest tests/ -q` verde, incluindo os testes de `tests/test_tela_atualizar_envio.py`, `tests/test_js_envio.py` e `tests/test_admin_envio*.py` ajustados para o novo comportamento.
+- [x] Nenhuma caixa amarela de confirmação de preservação aparece em nenhum fluxo de envio; Salvar nunca pede esse clique.
+- [x] O resultado por arquivo do envio (tabela + avisos) ocupa a largura inteira da página, abaixo dos dois cards.
+- [x] Unidade presente nos ciclos enviados mas fora do cadastro é cadastrada automaticamente; nenhuma mensagem de "fora do cadastro"/"não atualizada" aparece.
+- [x] `cards-atualizar-dados/spec.md` (AC3/CAD-03) recebe uma nota de superação apontando para esta feature (AFE-02), sem reescrever o relato histórico de `validation.md` daquela feature.
+- [x] `pytest tests/ -q` verde, incluindo os testes de `tests/test_tela_atualizar_envio.py`, `tests/test_js_envio.py` e `tests/test_admin_envio*.py` ajustados para o novo comportamento.
