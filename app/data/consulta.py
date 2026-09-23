@@ -16,7 +16,12 @@ import pandas as pd
 from app.data.schema import DEFAULT_DB_PATH, get_connection
 
 
-def dataset_disponivel(db_path=DEFAULT_DB_PATH):
+def dataset_disponivel(db_path=DEFAULT_DB_PATH, conn=None):
+    """`conn` explícita (fonte da prévia, PVP-04) faz a leitura sem abrir nem
+    fechar conexão própria nem tocar `DEFAULT_DB_PATH`; sem ela, o caminho é o
+    banco publicado, como antes."""
+    if conn is not None:
+        return conn.execute("SELECT COUNT(*) FROM matriculas").fetchone()[0] > 0
     conn = get_connection(db_path)
     try:
         n = conn.execute("SELECT COUNT(*) FROM matriculas").fetchone()[0]
@@ -38,9 +43,13 @@ def data_ultimo_upload_valido(db_path=DEFAULT_DB_PATH):
         conn.close()
 
 
-def data_ultima_publicacao(db_path=DEFAULT_DB_PATH):
+def data_ultima_publicacao(db_path=DEFAULT_DB_PATH, conn=None):
     """Timestamp da última publicação (`estado_versoes.publicada_em`), usado
-    pela página inicial no rótulo "Atualizado em"."""
+    pela página inicial no rótulo "Atualizado em". Com `conn` explícita (fonte
+    da prévia), `publicada_em` fica vazio e o carimbo é omitido (PVP-05)."""
+    if conn is not None:
+        row = conn.execute("SELECT publicada_em FROM estado_versoes WHERE id = 1").fetchone()
+        return row[0] if row else None
     conn = get_connection(db_path)
     try:
         row = conn.execute("SELECT publicada_em FROM estado_versoes WHERE id = 1").fetchone()
@@ -49,8 +58,12 @@ def data_ultima_publicacao(db_path=DEFAULT_DB_PATH):
         conn.close()
 
 
-def ano_base_ativo(db_path=DEFAULT_DB_PATH):
-    """BR-MIGRAR-016: ano-base como único ponto de configuração."""
+def ano_base_ativo(db_path=DEFAULT_DB_PATH, conn=None):
+    """BR-MIGRAR-016: ano-base como único ponto de configuração. Com `conn`
+    explícita, lê `config` da fonte da prévia (o ano-base do candidato)."""
+    if conn is not None:
+        row = conn.execute("SELECT valor FROM config WHERE chave='ano_base'").fetchone()
+        return int(row[0]) if row else None
     conn = get_connection(db_path)
     try:
         row = conn.execute("SELECT valor FROM config WHERE chave='ano_base'").fetchone()

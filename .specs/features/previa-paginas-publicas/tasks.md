@@ -379,12 +379,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] As três funções aceitam `conn=None` como último parâmetro (os chamadores atuais, que não passam argumentos, continuam válidos)
-- [ ] Com `conn` explícita, a função não abre nem fecha conexão própria e não toca `DEFAULT_DB_PATH`
-- [ ] Sem `conn`, o comportamento e o fechamento de conexão permanecem os atuais
-- [ ] Testes: `tests/test_consulta.py` cobre cada função com e sem conexão explícita, inclusive `ano_base` lido de `config`
-- [ ] Gate check passes: `python -m pytest tests/test_consulta.py -q`
-- [ ] Test count: ≥ 5 testes novos
+- [x] As três funções aceitam `conn=None` como último parâmetro (os chamadores atuais, que não passam argumentos, continuam válidos)
+- [x] Com `conn` explícita, a função não abre nem fecha conexão própria e não toca `DEFAULT_DB_PATH`
+- [x] Sem `conn`, o comportamento e o fechamento de conexão permanecem os atuais
+- [x] Testes: `tests/test_consulta.py` cobre cada função com e sem conexão explícita, inclusive `ano_base` lido de `config`
+- [x] Gate check passes: `python -m pytest tests/test_consulta.py -q`
+- [x] Test count: ≥ 5 testes novos
+
+**Status**: Done -- commit `dbf2e1c`.
 
 **Tests**: unit
 **Gate**: quick
