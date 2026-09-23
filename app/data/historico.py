@@ -16,6 +16,7 @@ from app.data.schema import DEFAULT_DB_PATH, get_connection
 TIPOS_VALIDOS = {
     "captura",
     "baixa",
+    "envio",
     "publicacao",
     "desfazer_publicacao",
     "configuracao_aplicada_publico",

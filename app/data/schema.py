@@ -152,7 +152,7 @@ SCHEMA_HISTORICO_SQL = """
 CREATE TABLE IF NOT EXISTS historico (
     id                    INTEGER PRIMARY KEY AUTOINCREMENT,
     tipo                  TEXT NOT NULL CHECK (tipo IN (
-                              'captura','baixa','publicacao','desfazer_publicacao',
+                              'captura','baixa','envio','publicacao','desfazer_publicacao',
                               'configuracao_aplicada_publico','fatores_arquivo','fatores_restaurar_padrao')),
     admin_email           TEXT NOT NULL,
     inicio                TIMESTAMP NOT NULL,
@@ -286,6 +286,30 @@ def _garantir_colunas_campi_sistec(conn):
         conn.execute("ALTER TABLE campi_sistec ADD COLUMN origem TEXT NOT NULL DEFAULT 'sistec'")
 
 
+_COLUNAS_HISTORICO = (
+    "id", "tipo", "admin_email", "inicio", "fim", "desfecho",
+    "sucessos", "falhas", "pausas", "linhas_consolidadas", "campi_mantidos", "detalhe",
+)
+
+
+def _garantir_tipo_envio_historico(conn):
+    """Bancos v2 criados antes da atualização por envio têm o `CHECK` de
+    `historico.tipo` sem 'envio' (`CREATE TABLE IF NOT EXISTS` não altera a
+    restrição existente). Reconstrói a tabela preservando as linhas."""
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'historico'"
+    ).fetchone()
+    if row is None or "'envio'" in row[0]:
+        return
+
+    colunas = ", ".join(_COLUNAS_HISTORICO)
+    conn.execute("DROP INDEX IF EXISTS idx_historico_inicio")
+    conn.execute("ALTER TABLE historico RENAME TO historico_sem_envio")
+    conn.executescript(SCHEMA_HISTORICO_SQL)
+    conn.execute(f"INSERT INTO historico ({colunas}) SELECT {colunas} FROM historico_sem_envio")
+    conn.execute("DROP TABLE historico_sem_envio")
+
+
 def init_db(db_path=DEFAULT_DB_PATH):
     conn = get_connection(db_path)
     try:
@@ -312,6 +336,7 @@ def init_db(db_path=DEFAULT_DB_PATH):
         conn.executescript(SCHEMA_ESTADO_VERSOES_SQL)
         conn.execute("INSERT OR IGNORE INTO estado_versoes (id, rev_interna) VALUES (1, 0)")
         conn.executescript(SCHEMA_HISTORICO_SQL)
+        _garantir_tipo_envio_historico(conn)
 
         if _config_get(conn, "fatores_carga_inicial_em") is None:
             _carregar_fatores_padrao(conn)
