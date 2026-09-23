@@ -983,11 +983,13 @@ T27 → T28
 
 **Done when**:
 
-- [ ] O TESTAR descreve como abrir as quatro páginas da prévia depois de enviar as pastas
-- [ ] Explica as duas recusas do Salvar: conferência desatualizada e página com falha (descartar e reenviar)
-- [ ] Cita que uma URL antiga de prévia deixa de funcionar após Salvar ou Descartar
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: contagem da T26 mantida (sem exclusão silenciosa)
+- [x] O TESTAR descreve como abrir as quatro páginas da prévia depois de enviar as pastas
+- [x] Explica as duas recusas do Salvar: conferência desatualizada e página com falha (descartar e reenviar)
+- [x] Cita que uma URL antiga de prévia deixa de funcionar após Salvar ou Descartar
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: contagem da T26 mantida (sem exclusão silenciosa)
+
+**Status**: Done -- commit `16f5e03`.
 
 **Tests**: none
 **Gate**: build

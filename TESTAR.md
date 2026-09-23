@@ -111,6 +111,27 @@ Casos que valem conferir:
 - **Histórico**: a atualização aparece na tela **Histórico** com o tipo `envio`, e o
   desfecho de cada envio fica registrado.
 
+### Conferir a prévia das quatro páginas
+
+Depois de enviar as pastas, a área **Prévia** mostra a faixa **Prévia não publicada**
+e quatro links: **Matrículas**, **Eficiência Acadêmica**, **Taxa de Evasão Anual** e
+**Percentuais Legais**. Abra cada um e confira filtros, indicadores e tabelas — são os
+mesmos do painel público, com os dados do envio. **Voltar para Atualizar dados** fecha a
+conferência sem salvar nada.
+
+O que conferir no Salvar:
+
+- **Conferência desatualizada**: se fatores, campi ou ano-base mudarem entre a prévia e
+  o **Salvar na versão interna**, o servidor recusa com aviso para **Descartar** e
+  reenviar as pastas — nada é gravado diferente do que foi conferido.
+- **Página com falha**: se uma página da prévia não renderizar, o **Salvar** recusa com
+  o nome da página. Recarregue a página ou **Descartar** para liberar.
+
+Uma URL antiga de prévia (`/admin/previa/<execucao_id>/<pagina>`) deixa de funcionar
+depois de **Salvar** ou **Descartar**: passa a mostrar **Prévia indisponível**. A prévia
+é privada da sessão que fez o envio — outra sessão, mesmo com o mesmo e-mail, vê
+**Prévia indisponível**.
+
 ### O que olhar enquanto roda
 
 - Os **identificadores** em `/admin/campi`: números de 7 dígitos.
