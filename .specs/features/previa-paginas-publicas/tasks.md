@@ -663,13 +663,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Existe um contêiner com identificador próprio e quatro links (Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual, Percentuais Legais), cada um com `data-pagina` para o script preencher o `href`
-- [ ] A faixa de aviso diz que os dados são uma prévia não publicada e que nada foi salvo
-- [ ] Salvar e Descartar continuam na mesma área, com os identificadores atuais
-- [ ] A marcação usa o shell e os tokens do gov.br DS, sem cor hexadecimal literal (`AD-003`)
-- [ ] Testes: `tests/test_tela_atualizar_envio.py` afirma a marcação e os identificadores lidos como HTML
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 3 testes novos
+- [x] Existe um contêiner com identificador próprio e quatro links (Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual, Percentuais Legais), cada um com `data-pagina` para o script preencher o `href`
+- [x] A faixa de aviso diz que os dados são uma prévia não publicada e que nada foi salvo
+- [x] Salvar e Descartar continuam na mesma área, com os identificadores atuais
+- [x] A marcação usa o shell e os tokens do gov.br DS, sem cor hexadecimal literal (`AD-003`)
+- [x] Testes: `tests/test_tela_atualizar_envio.py` afirma a marcação e os identificadores lidos como HTML
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 3 testes novos
+
+**Status**: Done -- commit `49208a5`.
 
 **Tests**: unit
 **Gate**: full

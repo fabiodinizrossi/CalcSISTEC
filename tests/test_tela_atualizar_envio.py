@@ -180,3 +180,40 @@ def test_bloco_de_envio_nao_mexe_nos_ids_e_data_confirm_da_baixa(html):
     # Os dois cards ficam sempre visíveis (CAD-01): nenhum começa escondido.
     assert re.search(r'<div id="bloco-sistec" class="card-atualizar[^"]*">', html)
     assert re.search(r'<div id="bloco-envio" class="card-atualizar">', html)
+
+
+# ===================== previa-paginas-publicas, T18 =====================
+
+
+def test_previa_mostra_a_faixa_nao_publicada(html):
+    """PVP-02: a faixa identifica os dados como prévia não publicada."""
+    assert re.search(r'<div id="previa-nao-publicada" class="br-message warning" role="status">', html)
+    assert "Prévia não publicada" in html
+    assert "nada foi salvo" in html
+
+
+def test_previa_tem_quatro_links_de_pagina_com_data_pagina(html):
+    """PVP-01: quatro links, cada um com `data-pagina` para o script preencher
+    o `href` com o `execucao_id` do polling."""
+    paginas = re.findall(r'data-pagina="([^"]+)"', html)
+    assert paginas == ["matriculas", "eficiencia", "evasao", "percentuais-legais"]
+    for pagina in paginas:
+        assert re.search(rf'<a\b[^>]*class="br-button secondary"[^>]*data-pagina="{pagina}"', html)
+
+
+def test_salvar_e_descartar_continuam_na_area_da_previa(html):
+    inicio = html.index('id="atualizar-previa"')
+    fim = html.index('id="status-salvar"', inicio)
+    area = html[inicio:fim]
+    assert 'id="btn-salvar"' in area
+    assert "Salvar na versão interna" in area
+    assert 'id="btn-descartar"' in area
+    assert 'data-confirm="Descartar esta prévia?"' in area
+
+
+def test_previa_nao_usa_cor_hexadecimal_literal(html):
+    """AD-003: nenhuma cor hexadecimal literal na área da prévia."""
+    inicio = html.index('id="atualizar-previa"')
+    fim = html.index('id="status-salvar"', inicio)
+    area = html[inicio:fim]
+    assert not re.search(r"#[0-9a-fA-F]{3,6}\b", area)
