@@ -524,7 +524,12 @@ def admin_atualizar_descartar(execucao_id):
 def admin_atualizar_estado():
     """Estado JSON para o polling de `atualizar.js` (RF-08, a cada 2 s).
     Nunca devolve linhas além de uma amostra sem dados pessoais (as colunas
-    já chegam sem PII, D-04, mas a amostra em si fica pequena por prudência)."""
+    já chegam sem PII, D-04, mas a amostra em si fica pequena por prudência).
+
+    UPL-09: os campos do envio (`origem`, `campi_preservados`,
+    `campi_nao_cadastrados`, `arquivos_ignorados`, `matriculas_orfas`) são só
+    códigos institucionais, nomes de arquivo e contagens (RN-13); numa baixa
+    `origem` é `"baixa"` e as listas vêm vazias."""
     execucao = _execucao_da_sessao()
     estado_navegador = navegador.status(_admin_email())
     if execucao is None:
@@ -550,6 +555,7 @@ def admin_atualizar_estado():
         {
             "estado": execucao.estado,
             "execucao_id": execucao.id,
+            "origem": execucao.origem,
             "navegador": estado_navegador,
             # T071: `erro_consolidacao` (ConsolidacaoInvalida) só cita
             # códigos institucionais (portfólio, ciclo, unidade) — nunca
@@ -558,6 +564,10 @@ def admin_atualizar_estado():
             "progresso": {"total": total, "concluidos": concluidos},
             "pares": pares,
             "previa": previa_resumo,
+            "campi_preservados": sorted(execucao.campi_falhos) if execucao.origem == "envio" else [],
+            "campi_nao_cadastrados": list(getattr(execucao, "campi_nao_cadastrados", []) or []),
+            "arquivos_ignorados": list(getattr(execucao, "arquivos_ignorados", []) or []),
+            "matriculas_orfas": getattr(execucao, "matriculas_orfas", 0) or 0,
         }
     )
 
