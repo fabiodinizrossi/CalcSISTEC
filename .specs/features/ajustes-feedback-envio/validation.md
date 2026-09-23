@@ -1,12 +1,27 @@
-# Ajustes de Feedback do Envio — Validation
+# Ajustes de Feedback do Envio — Validation (rodada 2)
 
 **Spec**: `.specs/features/ajustes-feedback-envio/spec.md`
-**Verdict**: **FAIL**
-**Diff range**: `f54572d..9212d3c` — 4 commits da feature (`6e8f12c` AFE-01, `55828c9` AFE-02, `1be1957` AFE-03, `9212d3c` docs); `938d5bb` (housekeeping `.gitignore`/`AGENTS.md`) fica fora do escopo
-**Author**: DeepSeek (sessão separada, sem contexto desta)
-**Verifier**: Claude (Sonnet 5) — não escreveu nenhum arquivo do diff; cobertura rederivada do zero, evidência-ou-zero (author ≠ verifier)
+**Verdict**: **PASS**
+**Result**: PASS (12/12 ACs com evidência, 5/5 mutações mortas, 685 passed)
+**Rodada anterior**: FAIL, commit `05c3f40` (5 gaps ranqueados, 1 mutante sobrevivente). A rodada de correção (`2e5ab82`, `14bfc97`, `db74bea`) fechou os 5 — tabela de fechamento abaixo. Este relatório substitui o anterior; o histórico fica no `git log` desta feature.
+**Diff desta rodada**: `05c3f40..db74bea` (3 commits, só `tests/test_admin_envio.py` e `spec.md` — nenhum arquivo de aplicação mudou)
+**Diff total da feature**: `f54572d..db74bea` (`6e8f12c`, `55828c9`, `1be1957`, `9212d3c`, `05c3f40`, `2e5ab82`, `14bfc97`, `db74bea`); `938d5bb` (housekeeping) fora do escopo
+**Author**: DeepSeek (implementação + rodada de correção)
+**Verifier**: Claude (Sonnet 5), sessão nova, sem memória da rodada 1 — cobertura rederivada do zero, evidência-ou-zero (author ≠ verifier, incluindo contra a correção)
 
-**Arquivos tocados pelo diff** (conferido com `git diff --stat`, não presumido): `app/app.py`, `app/static/js/atualizar.js`, `app/templates/atualizar.html`, `tests/test_admin_envio.py`, `tests/test_admin_envio_polling.py`, `tests/test_js_envio.py`, `tests/test_tela_atualizar_envio.py`, o próprio `spec.md`. **`app/data/campi.py` NÃO foi tocado** — correto, a premissa da feature é reusar o `origem='manual'` que já existe lá.
+---
+
+## Fechamento dos 5 gaps da rodada 1
+
+| # | Gap (rodada 1) | Fechado? | Evidência |
+| - | -------------- | -------- | --------- |
+| 1 | **[Major]** AFE-03 AC3 sem teste: guarda de `CampusInvalido` sobrevivia à suíte | ✅ | `tests/test_admin_envio.py:360-385` — pré-cadastra `envio-U9` (`:367`), envia U9 **e** U8, e afirma por valor: `assert resposta.status_code == 200` (`:377`), `assert corpo["estado"] == "previa"` (`:378`), `assert corpo["campi_cadastrados_automaticamente"] == ["U8"]` (`:379`), `assert cadastrados["U8"]["id_perfil"] == "envio-U8"` (`:382`), `assert cadastrados["U7"]["id_perfil"] == "envio-U9"` (`:384`, linha colidida intacta), `assert "U9" not in cadastrados` (`:385`). Mutante 5 do sensor (guarda removida) **agora morre**: `assert 500 == 200` |
+| 2 | **[Major]** AFE-02 AC2 verificada só por proxy, sem dizer isso | ✅ | `spec.md:67` — nota "Como esta AC é garantida — e como ela é verificada" declara a garantia **estrutural** (nenhum container de coluna envolve o bloco; o teste é o recorte estrutural; largura renderizada é conferência visual, fora do alcance do `test_client`). Confirmei a substância contra `app/assets/style.css`: as ocorrências de `max-width` no arquivo são `.container-fluid` em `@media (min-width:1600px)` (`:68-71`), `.br-menu .menu-panel{max-width:none}` (`:121-123`), `pre` (`:298-299`) e `.br-button` (`:302-303`) — nenhuma limita o bloco de resultado. **Nenhum teste de viewport/CSS computado foi inventado**: o diff desta rodada toca só `tests/test_admin_envio.py` e `spec.md`, e `tests/test_tela_atualizar_envio.py:104-125` segue sendo o recorte estrutural de antes |
+| 3 | **[Minor]** AFE-03 AC4 sem asserção no render das páginas | ✅ | `tests/test_admin_envio.py:388-414` — aponta `admin_campi.DB_PATH` e o `listar_campi` do `app.py` para o banco temporário (`:400-401`), faz o envio de U9 (`:406`) e bate nas duas páginas: `assert "Unidade U9 (cadastrada pelo envio de pastas)" in pagina_campi` (`:409`), `assert re.search(r"<td>\s*U9\s*</td>", pagina_campi)` (`:410`), `assert "1 campi cadastrados, 1 ativos." in config` (`:413`), `assert "1 campus com identificador inválido" in config` (`:414`). As strings de Configurações vêm de `app/templates/configuracoes.html:69` e `:71` |
+| 4 | **[Minor]** Assumption citava `origem="manual"`, parâmetro que `incluir_campus` não tem | ✅ | `spec.md:30` agora diz `incluir_campus(id_perfil=..., nome_perfil=..., co_unidade=..., db_path=...)` e explica que **não tem parâmetro `origem`** — grava `'manual'` no próprio INSERT (`app/data/campi.py:209`). Confere com a assinatura real (`app/data/campi.py:199`) e com a chamada (`app/app.py:355-360`) |
+| 5 | **[Minor]** Edge case de recadastro testado por `monkeypatch` de retorno fixo | ✅ | `tests/test_admin_envio.py:417-440` — dois POSTs reais contra o mesmo banco temporário, com `descartar` entre eles (`:436`) para liberar a prévia pendente; `assert primeiro["campi_cadastrados_automaticamente"] == ["U9"]` (`:434`), `assert segundo["campi_cadastrados_automaticamente"] == []` (`:439`), `assert [c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)] == ["U9"]` (`:440`, sem duplicata). O `listar_campi` continua monkeypatched (`:423`), mas agora delegando ao banco real — não é mais uma lista fixa |
+
+**Nenhum gap novo de cobertura.** Uma imprecisão documental menor foi encontrada na nota nova da AC2 e está registrada abaixo, sem bloquear.
 
 ---
 
@@ -16,63 +31,65 @@
 
 | AC | Resultado definido pela spec | Evidência (`file:line` + asserção) | Resultado |
 | --- | --- | --- | --- |
-| AC1: nenhuma caixa amarela/checkbox na tela | `#envio-preservacao`, `#envio-preservacao-texto` e `#envio-confirmar-preservacao` não existem na marcação | `tests/test_tela_atualizar_envio.py:143-144` — `assert id_removido not in html` para os 3 ids; `tests/test_js_envio.py:356` — `assert resultado["antes"]["preservacao"] is False` (`!!doc.porId["envio-preservacao"]` no DOM real servido ao `node`) | ✅ PASS |
-| AC2: Salvar grava de primeira, sem clique extra | 1 requisição a `/salvar`, corpo `{"confirmar_preservacao": true}`, status de sucesso | `tests/test_js_envio.py:330-359` — `assert resultado["chamadas"] == 1` (`:357`), `assert resultado["corpos"] == ['{"confirmar_preservacao":true}']` (`:358`), `assert "Salvo na versão interna" in resultado["status"]` (`:359`); `assert resultado["antes"]["bloqueado"] is False` (`:355`, botão nunca desabilitado) | ✅ PASS |
-| AC3: parágrafo do card mantém "preservados", sem prometer confirmação | texto com "nada dele é apagado" e sem "confirmação" | `tests/test_tela_atualizar_envio.py:146-151` — regex sobre o parágrafo real + `assert "nada dele é apagado" in paragrafo.group(0)` e `assert "confirmação" not in paragrafo.group(0)`; marcação em `app/templates/atualizar.html:54-56` | ✅ PASS |
-| AC4: portão do servidor intacto (`ConfirmacaoNecessaria`, `POST .../salvar`), satisfeito na 1ª chamada | sem o campo → 409 `{"erro": "confirmacao_necessaria", ...}`; com `true` → 200 e grava | `tests/test_admin_envio_salvar.py:77-85` — `assert resposta.status_code == 409` + `assert resposta.get_json() == {"erro": "confirmacao_necessaria", "campi_preservados": ["U2"]}` + `assert GRAVACOES == []`; `:88-99` — `assert resposta.status_code == 200` e `assert execucao.estado == "salva"`. Código do servidor **fora do diff**: `app/app.py:504-518` e `app/sistec/execucoes.py:311` só foram tocados antes do range (`993e331`) | ✅ PASS |
+| AC1: nenhuma caixa amarela/checkbox na tela | os 3 ids não existem na marcação | `tests/test_tela_atualizar_envio.py:143-144` — `assert id_removido not in html` para `envio-preservacao`, `envio-preservacao-texto`, `envio-confirmar-preservacao`; `tests/test_js_envio.py:356` — `assert resultado["antes"]["preservacao"] is False` (checado no DOM real servido ao `node`) | ✅ PASS |
+| AC2: Salvar grava de primeira, sem clique extra | 1 requisição, corpo `{"confirmar_preservacao": true}`, status de sucesso | `tests/test_js_envio.py:330-360` — `assert resultado["antes"]["bloqueado"] is False` (`:355`), `assert resultado["chamadas"] == 1` (`:357`), `assert resultado["corpos"] == ['{"confirmar_preservacao":true}']` (`:358`), `assert resultado["cabecalhos"]["Content-Type"] == "application/json"` (`:359`), `assert "Salvo na versão interna" in resultado["status"]` (`:360`); mesmo campo na baixa (`:384-387`) | ✅ PASS |
+| AC3: parágrafo mantém "preservados", sem prometer confirmação | texto com "nada dele é apagado" e sem "confirmação" | `tests/test_tela_atualizar_envio.py:146-151` — regex sobre o HTML real + `assert "nada dele é apagado" in paragrafo.group(0)` (`:150`) e `assert "confirmação" not in paragrafo.group(0)` (`:151`); marcação em `app/templates/atualizar.html:54-56` | ✅ PASS |
+| AC4: portão do servidor intacto e satisfeito na 1ª chamada | sem o campo → 409 `confirmacao_necessaria`; com `true` → 200 e grava | `tests/test_admin_envio_salvar.py:82-84` — `assert resposta.status_code == 409`, `assert resposta.get_json() == {"erro": "confirmacao_necessaria", "campi_preservados": ["U2"]}`, `assert GRAVACOES == []`; `:95-96` — `assert resposta.status_code == 200` + `assert GRAVACOES == [...]`. Servidor fora do diff da feature: `app/app.py:504-518`, `app/sistec/execucoes.py:311`, último toque em `993e331` | ✅ PASS |
 
 ### P1.2 — Resultado por arquivo em largura inteira (AFE-02)
 
 | AC | Resultado definido pela spec | Evidência (`file:line` + asserção) | Resultado |
 | --- | --- | --- | --- |
-| AC1: tabela por arquivo, linha de ignorados e avisos fora da coluna do card | `#envio-arquivos-area` e `#envio-avisos` são irmãos do container flex dos dois cards, não filhos de `#bloco-envio` | `tests/test_tela_atualizar_envio.py:104-125` — recorta `cards = html[inicio_cards:inicio_resultado]` e `largura_inteira = html[inicio_resultado:inicio_progresso]`; `assert 'id="envio-arquivos-area"' not in cards` (`:120`), `assert 'id="envio-avisos"' not in cards` (`:121`), `assert 'id="envio-arquivos-area"' in largura_inteira` (`:122`). Marcação: `app/templates/atualizar.html:79` fecha o flex de `:12` antes de `:81` | ✅ PASS |
-| AC2: em viewport ≥ 992px o bloco continua ocupando a largura inteira abaixo dos dois cards | bloco fora do `flex-lg-row`, portanto sem restrição de coluna em nenhum breakpoint | `tests/test_tela_atualizar_envio.py:108-123` — **proxy estrutural**, não verificação de renderização: a asserção prova a causa (bloco fora do container `d-flex flex-column flex-lg-row`), não a largura medida | ⚠️ Spec-precision gap |
-| AC3: os dois cards mantêm texto, botões e seletores de pasta | `#bloco-sistec`/`#bloco-envio` seguem com `#envio-ciclos`, `#envio-matriculas`, `#btn-enviar-pastas`, `#status-envio` | `tests/test_tela_atualizar_envio.py:114-117` — `assert 'id="envio-ciclos"' in cards and 'id="envio-matriculas"' in cards`, `assert 'id="btn-enviar-pastas"' in cards and 'id="status-envio"' in cards`; testes de CEP-01/CEP-02 (`:61-92`) seguem verdes na mesma marcação | ✅ PASS |
+| AC1: tabela, ignorados e avisos fora da coluna do card | bloco irmão do container dos dois cards, não filho de `#bloco-envio` | `tests/test_tela_atualizar_envio.py:104-125` — `assert 'id="envio-arquivos-area"' not in cards` (`:120`), `assert 'id="envio-avisos"' not in cards` (`:121`), `assert 'id="envio-arquivos-area"' in largura_inteira` (`:122`), `assert 'id="envio-avisos"' in largura_inteira` (`:123`); marcação: `app/templates/atualizar.html:79` fecha o flex aberto em `:12`, e `:81`/`:96` ficam fora | ✅ PASS |
+| AC2: em ≥992px o bloco segue em largura inteira abaixo dos dois cards | garantia estrutural (declarada), verificada pelo recorte do DOM | `spec.md:67` (nota) + `tests/test_tela_atualizar_envio.py:108-123`. Confirmei por leitura do CSS que nenhuma regra de `app/assets/style.css` limita a largura do bloco (ver Gap 2 acima) — a verificação por pixel é conferência visual, como a spec agora diz | ✅ PASS |
+| AC3: os dois cards mantêm texto, botões e seletores | `#bloco-sistec`/`#bloco-envio` seguem com os controles | `tests/test_tela_atualizar_envio.py:114-117` — `assert 'id="envio-ciclos"' in cards and 'id="envio-matriculas"' in cards`, `assert 'id="btn-enviar-pastas"' in cards and 'id="status-envio"' in cards`; testes de CEP-01/CEP-02 (`:61-92`) verdes na mesma marcação | ✅ PASS |
 
 ### P1.3 — Cadastro automático da unidade do envio (AFE-03)
 
 | AC | Resultado definido pela spec | Evidência (`file:line` + asserção) | Resultado |
 | --- | --- | --- | --- |
-| AC1: `co_unidade` ausente de `campi_sistec` vira linha nova via `incluir_campus`, antes de responder | linha em `campi_sistec`; resposta com `campi_cadastrados_automaticamente == ["U9"]` | `tests/test_admin_envio.py:335-356` — `assert corpo["campi_cadastrados_automaticamente"] == ["U9"]` (`:345`), `assert "U9" in cadastrados` (`:349`), `assert unidade["id_perfil"] == "envio-U9"` (`:351`), `assert unidade["nome_perfil"] == "Unidade U9 (cadastrada pelo envio de pastas)"` (`:352`), `assert unidade["origem"] == "manual"` (`:353`). Código: `app/app.py:426-430` (chamada antes de montar `resposta[...]` em `:433`) | ✅ PASS |
-| AC2: resposta sem mensagem "fora do cadastro"/"não atualizada" | campo `campi_nao_cadastrados` inexistente na resposta; nenhum aviso com esse texto | `tests/test_admin_envio.py:346` — `assert "campi_nao_cadastrados" not in corpo`; `tests/test_js_envio.py:325-326` — `assert resultado["avisos"] == []` e `assert "fora do cadastro" not in resultado["texto"]`; linha neutra afirmada por valor em `:323` — `assert resultado["cadastrados"] == "1 unidade(s) nova(s) cadastrada(s) automaticamente: U9."` | ✅ PASS |
-| AC3: se `incluir_campus` falhar (`CampusInvalido`), o envio segue para o resto | requisição não falha; só a unidade problemática fica de fora | **nenhum `file:line`** — não existe teste que force a colisão. `tests/test_admin_envio.py` não menciona `CampusInvalido` (grep em `tests/` só encontra ocorrências em `test_campi*.py` e `test_downloads.py`, todas da feature de campi). Mutante 5 do sensor confirma: removi o `try/except` de `app/app.py:353-364` e **os 57 testes das áreas afetadas continuaram passando** | ❌ GAP |
-| AC4: unidade aparece em `/admin/campi` e conta nos totais de Configurações | linha servida por `listar_campi` | `tests/test_admin_envio.py:348-349` — `assert "U9" in cadastrados` sobre `dados_campi.listar_campi(banco_temporario)`. Fonte compartilhada conferida: `app/admin_campi.py:82` (`listar_campi(DB_PATH)`) e `app/templates/configuracoes.html:69` (`{{ campi|length }}`) usam a mesma função. **Nenhuma asserção no render das duas páginas**, e `admin_campi.DB_PATH` é constante própria — não exercitada pelo `monkeypatch` de `app_module.DEFAULT_DB_PATH` | ⚠️ Parcial (dado sim, tela não) |
-| AC5: sobrevive a uma recaptura de perfis (`atualizar_lista`/`salvar_captura` não apaga `origem == "manual"`) | linha continua após `salvar_captura` | `tests/test_admin_envio.py:377-391` — cadastro pelo envio e depois `dados_campi.salvar_captura([{"id_perfil": "8278860", ...}], banco_temporario)`; `assert "U9" in {c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)}` (`:391`). Mecanismo: `app/data/campi.py:199-221` (`incluir_campus` grava `'manual'` no SQL de `:209`) e `app/data/campi.py:112-116` (só entra em `removidos` quem tem `origem != "manual"`). Mutantes 2 e 3 do sensor morrem exatamente aqui | ✅ PASS |
+| AC1: `co_unidade` ausente vira linha nova via `incluir_campus`, antes de responder | linha em `campi_sistec` + `campi_cadastrados_automaticamente == ["U9"]` | `tests/test_admin_envio.py:336-357` — `assert corpo["campi_cadastrados_automaticamente"] == ["U9"]` (`:346`), `assert "U9" in cadastrados` (`:349`), `assert unidade["id_perfil"] == "envio-U9"` (`:351`), `assert unidade["nome_perfil"] == "Unidade U9 (cadastrada pelo envio de pastas)"` (`:352`), `assert unidade["origem"] == "manual"` (`:353`), `assert dados_campi.id_suspeito(unidade["id_perfil"]) is True` (`:357`). Código: `app/app.py:426-428` roda antes da resposta montada em `:432-433` | ✅ PASS |
+| AC2: sem mensagem "fora do cadastro"/"não atualizada" | campo ausente na resposta, nenhum aviso com esse texto | `tests/test_admin_envio.py:346` — `assert "campi_nao_cadastrados" not in corpo`; `tests/test_js_envio.py:323` — `assert resultado["cadastrados"] == "1 unidade(s) nova(s) cadastrada(s) automaticamente: U9."` (linha neutra por valor), `:325` — `assert resultado["avisos"] == []`, `:326` — `assert "fora do cadastro" not in resultado["texto"]` | ✅ PASS |
+| AC3: se `incluir_campus` falhar, o envio segue | requisição não falha; só a unidade colidida fica de fora | `tests/test_admin_envio.py:360-385` (ver Gap 1 acima). Mutante 5 do sensor morre aqui — era o gap da rodada 1 | ✅ PASS |
+| AC4: unidade aparece em `/admin/campi` e conta nos totais de Configurações | nome na lista renderizada, contadores refletindo a linha nova | `tests/test_admin_envio.py:388-414` (ver Gap 3 acima); páginas: `app/admin_campi.py:82`, `app/templates/configuracoes.html:69,71` | ✅ PASS |
+| AC5: sobrevive a uma recaptura de perfis | linha continua depois de `salvar_captura` | `tests/test_admin_envio.py:443-457` — `assert "U9" in {c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)}` (`:457`) depois de `dados_campi.salvar_captura([...], banco_temporario)` (`:452-455`). Mecanismo: `app/data/campi.py:199-221` (INSERT grava `'manual'` em `:209`) e `app/data/campi.py:112-116` (só entra em `removidos` quem tem `origem != "manual"`) | ✅ PASS |
 
-**Status**: ❌ Gaps presentes — 1 AC sem evidência (AFE-03 AC3), 2 coberturas parciais/spec-precision (AFE-02 AC2, AFE-03 AC4).
+**Status**: ✅ 12 de 12 ACs com evidência `file:line` e valor afirmado batendo com o resultado definido na spec. Nenhum spec-precision gap bloqueante; 1 imprecisão documental menor em `spec.md:67` (abaixo).
 
 ---
 
 ## Discrimination sensor
 
-Worktree isolado (`git worktree add ../calsistec-sensor 9212d3c`; descartado com `git worktree remove --force`). Nenhuma mutação na árvore real. Nota de ambiente: o worktree nasce sem `.env` e sem `app/data/sistec.db` (ambos ignorados pelo Git), e sem eles a suíte afetada dá 18 falsas falhas (302 para `/admin/login` em `_exigir_instalacao`, `app/app.py:222-237`); com os dois arquivos copiados, a baseline do worktree ficou **57 passed** nos 5 arquivos da área, igual à árvore real.
+Worktree isolado (`git worktree add ../calsistec-sensor2 db74bea`; `git worktree remove --force` ao fim). `.env` e `app/data/sistec.db` (ambos ignorados pelo Git) copiados para o worktree — sem eles a suíte dá falsas falhas em 302 para `/admin/login` (`_exigir_instalacao`, `app/app.py:222-237`). Baseline do worktree nos 5 arquivos da área: **59 passed**. Cinco mutações comportamentais, uma por vez:
 
 | # | Mutação | Local | Resultado |
 | - | ------- | ----- | --------- |
 | 1 | `confirmar_preservacao: true` → `false` no corpo do Salvar (AFE-01) | `app/static/js/atualizar.js:296` | **Morto** — 2 falhas: `test_envio_com_campi_preservados_salva_de_primeira_sem_clique_extra`, `test_numa_baixa_o_salvar_tambem_manda_a_confirmacao` |
-| 2 | Remove o efeito obrigatório: `campi.incluir_campus(...)` → `pass` (AFE-03 AC1) | `app/app.py:354-360` | **Morto** — 2 falhas: `test_unidade_fora_do_cadastro_e_cadastrada_automaticamente`, `test_unidade_cadastrada_pelo_envio_sobrevive_a_uma_leitura_do_sistec` |
-| 3 | `origem` gravado deixa de ser `'manual'`: `'manual'` → `'envio'` no INSERT | `app/data/campi.py:209` | **Morto** — 5 falhas, incluindo `test_unidade_fora_do_cadastro_e_cadastrada_automaticamente` (`assert 'envio' == 'manual'`) e a de sobrevivência à recaptura |
-| 4 | Reintroduz a caixa amarela na marcação (`<div id="envio-preservacao" class="br-message warning" hidden>`) | `app/templates/atualizar.html` antes de `#status-envio` | **Morto** — 1 falha: `test_card_de_envio_nao_pede_confirmacao_de_preservacao` |
-| 5 | Remove a guarda de `CampusInvalido` (chamada nua, sem `try/except`) — AFE-03 AC3 | `app/app.py:354-362` | **Sobreviveu** — 57 passed, 0 falhas. Confirma o GAP do AC3: a suíte não distingue a guarda presente da ausente |
+| 2 | Remove o efeito obrigatório: `campi.incluir_campus(...)` → `pass` (AFE-03 AC1) | `app/app.py:354-360` | **Morto** — 5 falhas, incluindo `assert ['U9', 'U8'] == ['U8']` no teste de colisão e a ausência do nome na página `/admin/campi` |
+| 3 | `origem` gravado deixa de ser `'manual'`: `'manual'` → `'envio'` no INSERT (AFE-03 AC5) | `app/data/campi.py:209` | **Morto** — 5 falhas (2 em `test_admin_envio.py`, 3 em `test_campi*.py`), incluindo `test_unidade_cadastrada_pelo_envio_sobrevive_a_uma_leitura_do_sistec` |
+| 4 | Reintroduz a caixa amarela (`<div id="envio-preservacao" class="br-message warning" hidden>`) | `app/templates/atualizar.html` antes de `#status-envio` | **Morto** — 1 falha: `test_card_de_envio_nao_pede_confirmacao_de_preservacao` (`tests/test_tela_atualizar_envio.py:144`) |
+| 5 | Remove a guarda de `CampusInvalido` (chamada nua, sem `try/except`) — AFE-03 AC3 | `app/app.py:354-362` | **Morto** — 1 falha: `test_colisao_no_cadastro_automatico_nao_derruba_o_envio` (`assert 500 == 200`). **Sobrevivia na rodada 1**; o teste novo fecha o gap |
 
-4 de 5 mutações mortas. **Resultado do sensor: ❌ FAIL pelo mutante 5 sobrevivente.**
+**Sensor depth**: lightweight (5 mutações, uma por AC de risco).
+**Resultado**: 5/5 mortas — **PASS ✅** (rodada 1: 4/5).
 
-Isolamento conferido: `git status --porcelain` da árvore real antes e depois do sensor = `?? .agents/` + `?? nonascii.txt`, idêntico; `HEAD` segue `9212d3c`.
+Isolamento conferido: `git status --porcelain` da árvore real antes e depois do sensor = `?? .agents/` + `?? .specs/features/previa-paginas-publicas/` + `?? nonascii.txt`, idêntico; `HEAD` segue `db74bea`. Nenhum `git stash` usado.
 
 ---
 
 ## Edge cases da spec
 
-- [x] Mesmo `co_unidade` em dois envios não recadastra — `tests/test_admin_envio.py:359-374` (`assert resultado... == []` e `assert dados_campi.listar_campi(banco_temporario) == []`). Ressalva: o segundo envio é simulado por `monkeypatch` de `listar_campi` (`:364-368`) em vez de um segundo POST real sobre o banco temporário — cobre o ramo, não o ciclo completo.
-- [x] Envio sem preservados e sem não cadastrados não renderiza nada — comportamento inalterado coberto por `tests/test_admin_envio.py:135-150` (CAMPI = U1..U3, envio de U1..U3) e `tests/test_admin_envio_polling.py:67` (`assert corpo["campi_cadastrados_automaticamente"] == []`).
-- [x] `falhou_consolidacao` não roda resultado/avisos/cadastro — `app/app.py:417-423` retorna antes do bloco de cadastro; `tests/test_admin_envio.py:201-216` (`assert corpo["estado"] == "falhou_consolidacao"`, `assert HISTORICO[0]["desfecho"] == "falhou_consolidacao"`).
+- [x] Mesmo `co_unidade` em dois envios não recadastra — `tests/test_admin_envio.py:417-440`, dois POSTs reais e `assert ... == []` no segundo (`:439`), sem duplicata no banco (`:440`).
+- [x] Envio sem preservados e sem não cadastrados não renderiza nada — `tests/test_admin_envio.py:136-150` (CAMPI = U1..U3, envio de U1..U3) e `tests/test_admin_envio_polling.py:67` (`assert corpo["campi_cadastrados_automaticamente"] == []`).
+- [x] `falhou_consolidacao` não roda resultado/avisos/cadastro — `app/app.py:417-423` retorna antes do bloco de cadastro; `tests/test_admin_envio.py:202-218` (`assert corpo["estado"] == "falhou_consolidacao"`, `assert HISTORICO[0]["desfecho"] == "falhou_consolidacao"`, nada gravado).
 
 ---
 
 ## Gate final
 
-- `python -m pytest tests/ -q` (a partir da raiz) → **683 passed**, 2 warnings (`FutureWarning` pré-existente em `app/data/fatores.py:198-199`, fora do escopo), 0 failed, 0 skipped.
-- Baseline pré-feature (`f54572d`, worktree isolado, `--collect-only`) → **680 tests collected**. Delta **+3** (7 removidos, 10 adicionados). As 5 remoções são a caixa de confirmação e seus testes de comportamento superado (3 em `test_js_envio.py`, 2 em `test_tela_atualizar_envio.py`), justificadas pelo Assumption de AFE-01 — nenhuma asserção foi enfraquecida sem substituição; as novas asserções são mais específicas que as antigas (valor do corpo JSON, `origem`, `id_perfil`, sobrevivência à recaptura).
+- `python -m pytest tests/ -q` (a partir da raiz) → **685 passed**, 2 warnings (`FutureWarning` pré-existente em `app/data/fatores.py:198-199`, fora do escopo), 0 failed, 0 skipped.
+- Baseline pré-feature (`f54572d`): **680 collected**. Rodada 1: 683 passed. Delta desta rodada: **+2** (`test_colisao_no_cadastro_automatico_nao_derruba_o_envio`, `test_unidade_cadastrada_pelo_envio_aparece_nas_paginas_de_cadastro`; `test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo` foi reescrito no lugar, sem mudar a contagem).
+- Testes removidos na feature (5, nas rodadas anteriores): todos da caixa de confirmação superada por AFE-01, com asserções substitutas mais específicas — nenhuma asserção enfraquecida, nenhum teste deletado nesta rodada.
 
 ---
 
@@ -80,41 +97,32 @@ Isolamento conferido: `git status --porcelain` da árvore real antes e depois do
 
 | Princípio | Status |
 | --- | --- |
-| Código mínimo, sem abstração de uso único | ✅ (`_cadastrar_unidades_do_envio` tem um chamador só e função única) |
-| Mudanças cirúrgicas, sem "melhorar" código alheio | ✅ (nenhum refactor fora dos 3 pedidos; `campi.py` intocado) |
-| Sem scope creep | ✅ (o servidor de confirmação continua existindo, como decidido) |
-| Segue os padrões do repositório | ✅ (comentários em PT explicando o porquê, nomes dos campos no padrão do projeto) |
-| Spec-anchored outcome check | ❌ 1 AC sem asserção (AFE-03 AC3) |
-| Toda AC com evidência `file:line` | ❌ 11 de 12 (AFE-02 AC2 e AFE-03 AC4 são proxies) |
-| Nenhum teste órfão | ✅ (os testes novos mapeiam para AFE-01/02/03 ou para o edge case de recadastro) |
-| Diretrizes documentadas seguidas | ✅ `AGENTS.md` (sem teste que dependa do Sistec real; dublês para banco/histórico) |
+| Código mínimo, sem abstração de uso único | ✅ (nenhum arquivo de aplicação tocado nesta rodada) |
+| Mudanças cirúrgicas, sem "melhorar" código alheio | ✅ (correção só em testes + texto de spec) |
+| Sem scope creep | ✅ |
+| Segue os padrões do repositório | ✅ (dublês de banco/histórico, comentários explicando o porquê da fixture) |
+| Spec-anchored outcome check | ✅ 12/12 ACs com valor afirmado |
+| Toda AC com evidência `file:line` | ✅ 12/12 |
+| Nenhum teste órfão | ✅ (os 3 testes novos mapeiam para AFE-03 AC1/AC3/AC4 e para o edge case) |
+| Diretrizes documentadas seguidas | ✅ `AGENTS.md` (nada toca o Sistec real; PII fora dos testes) |
 
----
-
-## Gaps ranqueados
-
-1. **[Major] AFE-03 AC3 sem nenhuma cobertura.** `app/app.py:361` engole `CampusInvalido` para não derrubar o envio, mas nenhum teste força a colisão. Mutante 5 (guarda removida) sobreviveu a 57 testes. Correção sugerida: teste que pré-cadastre um campus com `id_perfil="envio-U9"` e `co_unidade` diferente (ou `co_unidade` já ocupado por outra linha) e afirme que o POST de envio responde 200/`previa`, que o restante das unidades é processado e que `campi_cadastrados_automaticamente` exclui `"U9"`.
-2. **[Major] AFE-02 AC2 verificado só por proxy estrutural.** `tests/test_tela_atualizar_envio.py:108-123` prova que o bloco está fora do container flex, não que ele ocupa a largura inteira em ≥ 992px. Não há CSS/@media em `app/static/css` nem teste de viewport. Correção sugerida: anotar na spec que a garantia é estrutural (container do DS é full-width) e que a confirmação visual fica na UAT, ou cobrir com teste de largura.
-3. **[Minor] AFE-03 AC4 sem asserção no render de `/admin/campi` e de Configurações.** A evidência é `listar_campi` direto no banco temporário (`tests/test_admin_envio.py:348`), e `app/admin_campi.py:82` lê `DB_PATH` próprio — uma divergência entre `DEFAULT_DB_PATH` e `DB_PATH` não seria pega. Correção sugerida: um GET em `/admin/campi` no mesmo teste, afirmando `U9` na lista e no contador de Configurações.
-4. **[Minor] Divergência spec × implementação no `origem`.** O Assumption de AFE-03 (`spec.md:30`) diz que a chamada passa `origem="manual"`; `campi.incluir_campus` não tem esse parâmetro (`app/data/campi.py:199`) e grava `'manual'` no próprio SQL (`:209`), então `app/app.py:355-360` passa só `id_perfil`/`nome_perfil`/`co_unidade`/`db_path`. O comportamento exigido pelo AC5 está correto e comprovado (mutante 3 morto); o texto da spec é que descreve uma chamada que não existe. Ajustar a redação do Assumption.
-5. **[Minor] Edge case "mesmo `co_unidade` em dois envios" cobre o ramo, não o ciclo.** `tests/test_admin_envio.py:359-374` injeta a unidade já cadastrada via `monkeypatch` de `listar_campi`, em vez de um segundo POST real contra o banco temporário.
-
----
-
-## Inconsistência documental (não bloqueia o código, bloqueia o fechamento)
-
-`spec.md:125` — o último item de **Success Criteria** (`pytest tests/ -q` verde) já está marcado `[x]` desde `9212d3c`, junto com os outros quatro. Como esta verificação é FAIL, o checklist está à frente da evidência; ele não foi alterado aqui (o Verifier não corrige nem marca Success Criteria em FAIL).
+**Imprecisão documental menor (não bloqueia)**: `spec.md:67` lista `.br-message .content` entre as regras com `max-width` de `app/assets/style.css`, mas essa regra (`:294-297`) só tem `min-width: 0` e `overflow-wrap: anywhere`; as quatro ocorrências reais de `max-width` são `.container-fluid` (`:70`), `.br-menu .menu-panel` (`:123`), `pre` (`:299`) e `.br-button` (`:303`). A conclusão da nota (nenhuma regra limita o bloco de resultado) continua verdadeira — é erro de enumeração, não de garantia. Corrigir quando a spec for tocada de novo; não vale uma rodada própria.
 
 ---
 
 ## Lições
 
-Dois sinais reais nesta rodada: (a) um `try/except` de resiliência entrou sem teste que force a exceção — o mutante 5 sobreviveu intacto, porque o caminho de erro foi escrito mas nunca exercitado; (b) o Assumption da spec descreve uma assinatura de chamada (`origem="manual"`) que a função real não tem, e a divergência passou pelas três rodadas de implementação sem ser notada porque o valor final batia. Registrando como lição de projeto: AC sobre caminho de erro (colisão, exceção, timeout) precisa de um teste que **provoque** o erro, não de um `try/except` visível na leitura; e assinatura de chamada citada em spec deve ser conferida contra o `def` real antes de virar Assumption.
+A rodada 1 deixou um mutante sobrevivente (`try/except CampusInvalido` sem teste que force a exceção) e dois critérios cobertos por proxy sem dizer que eram proxy. A correção fechou os três sem tocar em código de aplicação: o caminho de erro ganhou um teste que **provoca** a colisão de verdade (id `envio-U9` já ocupado, não um dublê), a AC de largura passou a declarar que a garantia é estrutural, e a página renderizada passou a ser afirmada em vez do banco. Duas lições de projeto ficam registradas: (1) `try/except` de resiliência é comportamento — sem teste que levante a exceção, ele não existe para a suíte; (2) quando a verificação de uma AC depende de coisa que o harness não alcança (layout renderizado), a spec deve dizer isso explicitamente e apontar a conferência visual, em vez de aceitar um teste de fachada.
 
 ---
 
-## Veredito
+## Summary
 
-**FAIL.** O comportamento entregue bate com o que a spec pede nos três requisitos — o gate fecha em 683 passed e 4 das 5 mutações morrem, incluindo as duas que provariam a preservação dos campi e o cadastro automático. O que reprova é cobertura: o AC de resiliência do cadastro automático (AFE-03 AC3) não tem teste nenhum, e um mutante que apaga a guarda sobrevive a toda a suíte. Dois critérios (AFE-02 AC2, AFE-03 AC4) estão cobertos por proxy, não pelo resultado que a spec descreve.
+**Overall**: ✅ Ready
 
-**Next step**: um teste que force `CampusInvalido` no cadastro automático (gap 1) e, se quiser fechar os proxies, uma asserção no render de `/admin/campi` (gap 3); a re-verificação roda depois disso.
+**Spec-anchored check**: 12/12 ACs com o valor afirmado batendo com o resultado definido na spec (1 imprecisão documental menor em `spec.md:67`)
+**Sensor**: 5/5 mutações mortas (a que sobrevivia na rodada 1 agora morre)
+**Gate**: 685 passed, 0 failed
+**Gaps da rodada 1**: 5 de 5 fechados · **Gaps restantes**: nenhum bloqueante
+
+**Next steps**: nenhuma correção pendente. A conferência visual da largura em ≥992px segue como passo humano (declarado em `spec.md:67`), fora do alcance do `test_client`.
