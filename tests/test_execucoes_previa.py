@@ -328,3 +328,68 @@ def test_abrir_leitura_previa_fonte_fechada(db_path):
 def test_abrir_leitura_previa_execucao_inexistente():
     with pytest.raises(execucoes.PreviaIndisponivel):
         execucoes.abrir_leitura_previa("nao-existe", "sessao-A")
+
+
+# ===================== T8: falha de página e bloqueio do Salvar =====================
+
+
+def test_falhas_paginas_comeca_vazio():
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+    assert envio.falhas_paginas == set()
+    assert execucoes.paginas_com_falha(envio) == []
+
+
+def test_registrar_e_limpar_falha_pagina():
+    envio = execucoes.criar_execucao_envio("pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+    execucoes.registrar_falha_pagina(envio, "eficiencia")
+    assert execucoes.paginas_com_falha(envio) == ["eficiencia"]
+
+    # renderização bem-sucedida da mesma página limpa a falha anterior
+    execucoes.limpar_falha_pagina(envio, "eficiencia")
+    assert execucoes.paginas_com_falha(envio) == []
+
+
+def test_salvar_bloqueado_por_uma_falha():
+    envio = _envio_em_previa()
+    execucoes.registrar_falha_pagina(envio, "matriculas")
+
+    with pytest.raises(execucoes.PreviaIncompleta) as exc:
+        execucoes.salvar(envio, "qualquer.db", 2026)
+
+    assert exc.value.paginas == ["matriculas"]
+    assert envio.estado == "previa"
+
+
+def test_salvar_bloqueado_por_duas_falhas():
+    envio = _envio_em_previa()
+    execucoes.registrar_falha_pagina(envio, "matriculas")
+    execucoes.registrar_falha_pagina(envio, "evasao")
+
+    with pytest.raises(execucoes.PreviaIncompleta) as exc:
+        execucoes.salvar(envio, "qualquer.db", 2026)
+
+    assert exc.value.paginas == ["evasao", "matriculas"]  # ordem estável
+
+
+def test_salvar_baixa_nao_afetado_por_falha(monkeypatch):
+    baixa = execucoes.criar_execucao(
+        "pi@iffarroupilha.edu.br", [{"id_perfil": "1", "nome_perfil": "Campus A"}]
+    )
+    baixa.estado = "previa"
+    baixa.previa = {"valor": "previa"}
+    execucoes.registrar_falha_pagina(baixa, "matriculas")
+    monkeypatch.setattr("app.data.ingest.montar_versao_interna", lambda *a, **k: {"salva": True})
+
+    assert execucoes.salvar(baixa, "qualquer.db", 2026) == {"salva": True}
+    assert baixa.estado == "salva"
+
+
+def test_descar_libera_previa_mesmo_com_falha(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+    execucoes.registrar_falha_pagina(envio, "matriculas")
+
+    execucoes.descartar(envio)
+
+    assert envio.estado == "descartada"
+    assert envio.previa_fonte is None

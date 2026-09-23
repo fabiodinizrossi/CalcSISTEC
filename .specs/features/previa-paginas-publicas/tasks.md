@@ -347,13 +347,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `falhas_paginas` é um conjunto por execução, começando vazio
-- [ ] Uma renderização bem-sucedida da mesma página limpa a falha anterior
-- [ ] `salvar_candidato`/`salvar` de um envio levanta `PreviaIncompleta` (exceção própria, com a lista de páginas) enquanto houver falha; a baixa direta não é afetada
-- [ ] Descartar continua liberando a prévia mesmo com falha registrada
-- [ ] Testes: cobrir registrar, limpar ao renderizar de novo, bloqueio do Salvar com uma e com duas páginas falhas
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 4 testes novos
+- [x] `falhas_paginas` é um conjunto por execução, começando vazio
+- [x] Uma renderização bem-sucedida da mesma página limpa a falha anterior
+- [x] `salvar_candidato`/`salvar` de um envio levanta `PreviaIncompleta` (exceção própria, com a lista de páginas) enquanto houver falha; a baixa direta não é afetada
+- [x] Descartar continua liberando a prévia mesmo com falha registrada
+- [x] Testes: cobrir registrar, limpar ao renderizar de novo, bloqueio do Salvar com uma e com duas páginas falhas
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 4 testes novos
+
+**Status**: Done -- commit `47f2adb`.
 
 **Tests**: unit
 **Gate**: quick

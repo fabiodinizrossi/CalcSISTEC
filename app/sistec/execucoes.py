@@ -50,6 +50,15 @@ class PreviaIndisponivel(Exception):
     (`previa-paginas-publicas`, PVP-07). Distinta de `ExecucaoInvalida`."""
 
 
+class PreviaIncompleta(Exception):
+    """Páginas da prévia com falha de cálculo/renderização impedem o Salvar
+    (`previa-paginas-publicas`, PVP-09)."""
+
+    def __init__(self, paginas):
+        self.paginas = list(paginas)
+        super().__init__("páginas da prévia com falha: " + ", ".join(self.paginas))
+
+
 @contextlib.contextmanager
 def com_trava(execucao):
     """Trava por execução (PVP-08): serializa a leitura da fonte candidata e
@@ -106,6 +115,7 @@ class Execucao:
         self.previa_fonte = None
         self.candidato = None
         self.previa_resumo = None
+        self.falhas_paginas = set()
 
     def par_por_n(self, n):
         for par in self.fila:
@@ -352,6 +362,8 @@ def salvar(execucao, db_path, ano_base, confirmado=False):
     with com_trava(execucao):
         if execucao.estado != "previa":
             raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
+        if execucao.origem == "envio" and execucao.falhas_paginas:
+            raise PreviaIncompleta(sorted(execucao.falhas_paginas))
         if execucao.origem == "envio" and execucao.campi_falhos and not confirmado:
             raise ConfirmacaoNecessaria("confirmação necessária para preservar campi ausentes")
 
@@ -446,6 +458,22 @@ def abrir_leitura_previa(execucao_id, sessao_id):
         ano_base = execucao.candidato["ano_base"] if execucao.candidato else None
 
     return ContextoLeitura(execucao, conn, ano_base)
+
+
+def registrar_falha_pagina(execucao, pagina):
+    """Marca `pagina` (slug da página pública) como falha ao calcular ou
+    renderizar na prévia (PVP-09)."""
+    execucao.falhas_paginas.add(pagina)
+
+
+def limpar_falha_pagina(execucao, pagina):
+    """Uma renderização bem-sucedida da mesma página limpa a falha anterior."""
+    execucao.falhas_paginas.discard(pagina)
+
+
+def paginas_com_falha(execucao):
+    """Páginas da prévia com falha registrada, em ordem estável."""
+    return sorted(execucao.falhas_paginas)
 
 
 def varrer(execucao, agora=None):
