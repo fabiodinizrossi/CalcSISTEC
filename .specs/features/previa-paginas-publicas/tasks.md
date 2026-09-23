@@ -596,15 +596,17 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `dash.register_page(__name__, path="/admin/previa/<execucao_id>/<pagina>")` e `layout(execucao_id=None, pagina=None)` recebem as variáveis de caminho do Dash Pages
-- [ ] Slug desconhecido, execução perdida, sessão alheia ou estado terminal mostram **Prévia indisponível** com voltar para **Atualizar dados**; nunca a mensagem pública de ausência de dados nem dados publicados
-- [ ] A faixa **Prévia não publicada** identifica os dados como não publicados e traz as quatro páginas de prévia mais o retorno a **Atualizar dados**
-- [ ] Os avisos de campi preservados, unidades cadastradas pelo envio, matrículas órfãs e arquivos ignorados aparecem quando existirem
-- [ ] Os controles **Salvar na versão interna** e **Descartar** continuam disponíveis no fluxo administrativo (nenhuma ação nova aqui)
-- [ ] Uma falha ao calcular ou renderizar a página registra `registrar_falha_pagina` (T8) e mostra o nome da página com erro acionável
-- [ ] Testes: cobrir as quatro páginas, slug inválido, contexto inválido, avisos e falha de renderização
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 8 testes novos
+- [x] `dash.register_page(__name__, path="/admin/previa/<execucao_id>/<pagina>")` e `layout(execucao_id=None, pagina=None)` recebem as variáveis de caminho do Dash Pages
+- [x] Slug desconhecido, execução perdida, sessão alheia ou estado terminal mostram **Prévia indisponível** com voltar para **Atualizar dados**; nunca a mensagem pública de ausência de dados nem dados publicados
+- [x] A faixa **Prévia não publicada** identifica os dados como não publicados e traz as quatro páginas de prévia mais o retorno a **Atualizar dados**
+- [x] Os avisos de campi preservados, unidades cadastradas pelo envio, matrículas órfãs e arquivos ignorados aparecem quando existirem
+- [x] Os controles **Salvar na versão interna** e **Descartar** continuam disponíveis no fluxo administrativo (nenhuma ação nova aqui)
+- [x] Uma falha ao calcular ou renderizar a página registra `registrar_falha_pagina` (T8) e mostra o nome da página com erro acionável
+- [x] Testes: cobrir as quatro páginas, slug inválido, contexto inválido, avisos e falha de renderização
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 8 testes novos
+
+**Status**: Done -- commit `b093644`.
 
 **Tests**: integration
 **Gate**: full
