@@ -565,12 +565,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `before_request` redireciona `/admin/previa/<execucao_id>/<pagina>` sem sessão para `/admin/login`, sem corpo com dados da prévia
-- [ ] Rotas públicas e as demais rotas administrativas mantêm o comportamento atual
-- [ ] O guarda não substitui a validação de posse da T4/T7 — os dois valem, em camadas diferentes
-- [ ] Testes: cobrir GET sem sessão (redireciona) e com sessão (não interfere)
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: ≥ 2 testes novos
+- [x] `before_request` redireciona `/admin/previa/<execucao_id>/<pagina>` sem sessão para `/admin/login`, sem corpo com dados da prévia
+- [x] Rotas públicas e as demais rotas administrativas mantêm o comportamento atual
+- [x] O guarda não substitui a validação de posse da T4/T7 — os dois valem, em camadas diferentes
+- [x] Testes: cobrir GET sem sessão (redireciona) e com sessão (não interfere)
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: ≥ 2 testes novos
+
+**Status**: Done -- commit `60deab1`.
 
 **Tests**: integration
 **Gate**: full

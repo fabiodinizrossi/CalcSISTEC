@@ -4,7 +4,7 @@ import dash
 import flask
 from dash import html
 
-from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, requer_autenticacao
+from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, esta_autenticado, requer_autenticacao
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
 from app.config import aplicar_configuracao_sessao
 from app.data.config_store import (
@@ -235,6 +235,18 @@ def _exigir_instalacao():
     if not flask.session.get("admin_autenticado"):
         return None
     return flask.redirect("/admin/instalacao")
+
+
+@server.before_request
+def _exigir_sessao_previa():
+    """PVP-07 (`previa-paginas-publicas`, T15): barra no servidor qualquer
+    requisição a `/admin/previa/...` sem sessão autenticada, redirecionando
+    para `/admin/login` antes de o Dash montar o layout. Camada a mais — não
+    substitui a validação de posse de `obter_previa`/`abrir_leitura_previa`
+    (T4/T7), que continuam valendo nos callbacks."""
+    if flask.request.path.startswith("/admin/previa/") and not esta_autenticado():
+        return flask.redirect("/admin/login")
+    return None
 
 
 def _admin_email():
