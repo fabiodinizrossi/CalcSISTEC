@@ -572,3 +572,76 @@ return {
     assert resultado["statusEnvio"] == ""
     assert resultado["botaoBloqueado"] is False
     assert resultado["filaDeTimeout"] == 0
+
+
+def test_trocar_para_envio_redesenha_o_status_das_pastas_ja_escolhidas():
+    """CEP-02/T7: voltar para "Enviar pastas" não zera o que já foi escolhido —
+    os arquivos seguem no input e o status volta a descrevê-los."""
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv", "ciclo-U2.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
+        + """
+doc.porId["envio-ciclos-status"].textContent = "";
+doc.porId["envio-matriculas-status"].textContent = "";
+"""
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["origem-envio"].disparar("change");
+return {
+  blocos: { sistec: Boolean(doc.porId["bloco-sistec"].hidden), envio: Boolean(doc.porId["bloco-envio"].hidden) },
+  statusEnvio: doc.porId["status-envio"].textContent,
+  ciclos: doc.porId["envio-ciclos-status"].textContent,
+  matriculas: doc.porId["envio-matriculas-status"].textContent,
+  arquivosNoInput: doc.porId["envio-ciclos"].files.length,
+};
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "blocos": {"sistec": True, "envio": False},
+        "statusEnvio": "",
+        "ciclos": "Pasta CICLOS-2024-1: 2 arquivo(s) .csv escolhido(s).",
+        "matriculas": "Pasta MATRICULAS-2024-1: 1 arquivo(s) .csv escolhido(s).",
+        "arquivosNoInput": 2,
+    }
+
+
+def test_ida_e_volta_entre_as_origens_nao_duplica_nem_perde_o_status():
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["origem-envio"].disparar("change");
+const primeira = doc.porId["envio-ciclos-status"].textContent;
+doc.porId["origem-sistec"].disparar("change");
+const voltouParaSistec = {
+  sistec: Boolean(doc.porId["bloco-sistec"].hidden),
+  envio: Boolean(doc.porId["bloco-envio"].hidden),
+  statusCiclos: doc.porId["envio-ciclos-status"].textContent,
+};
+doc.porId["origem-envio"].disparar("change");
+const depois = {
+  ciclos: doc.porId["envio-ciclos-status"].textContent,
+  matriculas: doc.porId["envio-matriculas-status"].textContent,
+};
+return { primeira, voltouParaSistec, depois };
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "primeira": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
+        "voltouParaSistec": {
+            "sistec": False,
+            "envio": True,
+            "statusCiclos": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
+        },
+        "depois": {
+            "ciclos": "Pasta CICLOS-2024-1: 1 arquivo(s) .csv escolhido(s).",
+            "matriculas": "Pasta MATRICULAS-2024-1: 1 arquivo(s) .csv escolhido(s).",
+        },
+    }

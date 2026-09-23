@@ -426,6 +426,9 @@
     elBlocoSistec.hidden = envio;
     elStatusEnvio.textContent = "";
     elStatus.textContent = "";
+    // Os arquivos escolhidos continuam no input; o status de cada pasta é
+    // redesenhado para não voltar ao texto de obrigatoriedade à toa.
+    CAMPOS_PASTA.forEach(renderizarSelecao);
     atualizarBotaoSalvar();
   }
 

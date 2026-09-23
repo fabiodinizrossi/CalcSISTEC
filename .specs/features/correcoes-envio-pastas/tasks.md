@@ -263,11 +263,13 @@ T6 → T7
 
 **Done when**:
 
-- [ ] Trocar para "Enviar pastas" com um `input` já tendo arquivos escolhidos redesenha o status correto (nome + contagem), sem exigir escolher de novo
-- [ ] Trocar de volta para "Atualizar do Sistec" e depois para "Enviar pastas" não duplica nem perde o texto de status
-- [ ] O comportamento existente de `escolherOrigem` (mostrar/esconder os blocos, limpar `elStatusEnvio`) continua igual
-- [ ] Gate check passes: `python -m pytest tests/ -q`
-- [ ] Test count: contagem anterior + no mínimo 2 testes novos
+- [x] Trocar para "Enviar pastas" com um `input` já tendo arquivos escolhidos redesenha o status correto (nome + contagem), sem exigir escolher de novo
+- [x] Trocar de volta para "Atualizar do Sistec" e depois para "Enviar pastas" não duplica nem perde o texto de status
+- [x] O comportamento existente de `escolherOrigem` (mostrar/esconder os blocos, limpar `elStatusEnvio`) continua igual
+- [x] Gate check passes: `python -m pytest tests/ -q`
+- [x] Test count: 17 anteriores + 2 novos = 19 em `tests/test_js_envio.py` (com `tests/test_js_fiacao.py`, 33); suíte completa 661 → 682 passados
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: unit
 **Gate**: full
