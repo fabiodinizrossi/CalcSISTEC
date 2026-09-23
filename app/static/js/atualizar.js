@@ -9,6 +9,11 @@
  * A lista de campi e o identificador de perfil de cada um são cadastrados em
  * Configurações; a atualização se recusa a começar se algum estiver inválido.
  *
+ * A segunda origem ("Enviar pastas") monta um multipart com as duas pastas
+ * escolhidas e mostra o resultado por arquivo. Quando o envio não traz todos
+ * os campi, os ausentes ficam preservados e Salvar só é chamado depois da
+ * confirmação — o servidor recusa de qualquer forma (UPL-08).
+ *
  * Esta tela só dispara as ações e acompanha o estado por polling de
  * `GET /admin/atualizar/execucao` a cada 2 s — nunca recebe bytes de planilha.
  * Quem usa é leigo: o passo a passo e a barra de progresso existem para nada
@@ -73,11 +78,32 @@
   const btnPublicar = $("btn-publicar");
   const btnDesfazer = $("btn-desfazer");
 
+  const elOrigemSistec = $("origem-sistec");
+  const elOrigemEnvio = $("origem-envio");
+  const elBlocoSistec = $("bloco-sistec");
+  const elBlocoEnvio = $("bloco-envio");
+  const elInputCiclos = $("envio-ciclos");
+  const elInputMatriculas = $("envio-matriculas");
+  const btnEnviar = $("btn-enviar-pastas");
+  const elStatusEnvio = $("status-envio");
+  const elEnvioArea = $("envio-arquivos-area");
+  const elEnvioArquivos = $("envio-arquivos");
+  const elEnvioIgnorados = $("envio-ignorados");
+  const elPreservacao = $("envio-preservacao");
+  const elPreservacaoTexto = $("envio-preservacao-texto");
+  const elConfirmarPreservacao = $("envio-confirmar-preservacao");
+  const elEnvioAvisos = $("envio-avisos");
+
   let estadoAtual = null;
   let passosMostrados = 0;
+  let preservacaoPendente = false;
 
-  function postar(caminho) {
-    return fetch(caminho, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  function postar(caminho, corpo) {
+    return fetch(caminho, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo || {}),
+    });
   }
 
   function celula(linha, texto) {
@@ -215,6 +241,10 @@
         (corpo.erro_consolidacao ? ` — ${corpo.erro_consolidacao}` : "");
       renderizarPares(corpo.pares);
       renderizarPrevia(corpo.previa, corpo.estado);
+      if (corpo.origem === "envio") {
+        renderizarAvisosEnvio(corpo.arquivos_ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
+        if (corpo.estado === "previa") mostrarPreservacao(corpo.campi_preservados || []);
+      }
     } catch (erro) {
       // Falha de rede pontual no polling não interrompe o ciclo — tenta de novo.
     }
@@ -254,21 +284,38 @@
 
   btnSalvar.addEventListener("click", async () => {
     if (!estadoAtual || !estadoAtual.execucao_id) return;
+    if (preservacaoPendente && !elConfirmarPreservacao.checked) {
+      elStatusSalvar.textContent = "Confirme a preservação das unidades listadas antes de salvar.";
+      return;
+    }
     btnSalvar.disabled = true;
     elStatusSalvar.textContent = "Salvando…";
     try {
-      const resposta = await postar(`/admin/atualizar/execucoes/${estadoAtual.execucao_id}/salvar`);
+      const resposta = await postar(`/admin/atualizar/execucoes/${estadoAtual.execucao_id}/salvar`, {
+        confirmar_preservacao: preservacaoPendente && elConfirmarPreservacao.checked,
+      });
+      if (resposta.status === 409) {
+        const corpo = await resposta.json();
+        if (corpo.erro === "confirmacao_necessaria") {
+          mostrarPreservacao(corpo.campi_preservados || []);
+          elStatusSalvar.textContent = "Confirme a preservação das unidades listadas antes de salvar.";
+          return;
+        }
+        elStatusSalvar.textContent = "Não foi possível salvar.";
+        return;
+      }
       if (resposta.ok) {
         const resumo = await resposta.json();
         elStatusSalvar.textContent =
           `Salvo na versão interna: ${resumo.ciclos} ciclo(s) e ${resumo.matriculas} matrícula(s). ` +
           "Clique em Publicar para levar ao painel público.";
+        mostrarPreservacao([]);
       } else {
         elStatusSalvar.textContent = "Não foi possível salvar.";
       }
       await poll();
     } finally {
-      btnSalvar.disabled = false;
+      atualizarBotaoSalvar();
     }
   });
 
@@ -291,6 +338,137 @@
     const resposta = await postar("/admin/atualizar/desfazer");
     elStatusPublicacao.textContent = resposta.ok ? "Publicação desfeita." : "Não havia o que desfazer.";
   });
+
+  /* ------------------------------------------------ envio de pastas (UPL-01, UPL-08)
+
+     Segunda origem da mesma execução: em vez de baixar do Sistec, a pessoa
+     aponta duas pastas com os `.csv` já exportados. Quem monta o multipart é
+     esta tela — o servidor só lê, consolida e devolve o resumo por arquivo.
+     Quando o envio não traz todos os campi, os ausentes ficam preservados e
+     Salvar fica bloqueado até a confirmação explícita. */
+
+  const ROTULO_STATUS_ENVIO = { pendente: "Na fila", baixado: "Lido", falhou: "Falhou", cancelado: "Cancelado" };
+  const ROTULO_MOTIVO_ENVIO = {
+    pasta_vazia: "a pasta não tem nenhum arquivo .csv",
+    colunas_ausentes: "o arquivo não tem as colunas esperadas — confira se as pastas não estão invertidas",
+    leitura_csv: "não foi possível ler o arquivo como planilha do Sistec",
+  };
+
+  function arquivosDe(input) {
+    return input.files ? Array.prototype.slice.call(input.files) : [];
+  }
+
+  function atualizarBotaoSalvar() {
+    btnSalvar.disabled = preservacaoPendente && !elConfirmarPreservacao.checked;
+  }
+
+  function escolherOrigem(valor) {
+    const envio = valor === "envio";
+    elBlocoEnvio.hidden = !envio;
+    elBlocoSistec.hidden = envio;
+    elStatusEnvio.textContent = "";
+    elStatus.textContent = "";
+    atualizarBotaoSalvar();
+  }
+
+  function mostrarPreservacao(campi) {
+    preservacaoPendente = campi.length > 0;
+    elPreservacao.hidden = !preservacaoPendente;
+    elPreservacaoTexto.textContent = preservacaoPendente
+      ? `Estas unidades não vieram no envio e os dados atuais delas serão preservados: ${campi.join(", ")}.`
+      : "";
+    if (!preservacaoPendente) elConfirmarPreservacao.checked = false;
+    atualizarBotaoSalvar();
+  }
+
+  function renderizarArquivosEnvio(arquivos) {
+    elEnvioArea.hidden = arquivos.length === 0;
+    elEnvioArquivos.innerHTML = "";
+    arquivos.forEach((arquivo) => {
+      const linha = document.createElement("tr");
+      celula(linha, arquivo.n);
+      celula(linha, arquivo.nome);
+      celula(linha, ROTULO_TIPO[arquivo.tipo] || arquivo.tipo);
+      celula(linha, ROTULO_STATUS_ENVIO[arquivo.status] || arquivo.status);
+      celula(linha, arquivo.linhas);
+      elEnvioArquivos.appendChild(linha);
+    });
+  }
+
+  function renderizarAvisosEnvio(ignorados, naoCadastrados, orfas) {
+    elEnvioIgnorados.hidden = ignorados.length === 0;
+    elEnvioIgnorados.textContent = ignorados.length ? `Ignorados (não são .csv): ${ignorados.join(", ")}.` : "";
+
+    const avisos = [];
+    if (naoCadastrados.length) {
+      avisos.push(`Unidades fora do cadastro de campi, não atualizadas: ${naoCadastrados.join(", ")}.`);
+    }
+    if (orfas) avisos.push(`${orfas} matrícula(s) apontam para ciclos que não vieram no envio.`);
+    elEnvioAvisos.innerHTML = "";
+    avisos.forEach((aviso) => {
+      const li = document.createElement("li");
+      li.textContent = aviso;
+      elEnvioAvisos.appendChild(li);
+    });
+    elEnvioAvisos.hidden = avisos.length === 0;
+  }
+
+  async function enviarPastas() {
+    const ciclos = arquivosDe(elInputCiclos);
+    const matriculas = arquivosDe(elInputMatriculas);
+    elStatusEnvio.textContent = "";
+    if (ciclos.length === 0 || matriculas.length === 0) {
+      elStatusEnvio.textContent = "As duas pastas são obrigatórias: escolha a pasta de ciclos e a de matrículas.";
+      return;
+    }
+
+    const dados = new FormData();
+    ciclos.forEach((arquivo) => dados.append("ciclos", arquivo));
+    matriculas.forEach((arquivo) => dados.append("matriculas", arquivo));
+
+    btnEnviar.disabled = true;
+    elStatusEnvio.textContent =
+      `Enviando ${ciclos.length + matriculas.length} arquivo(s): ` +
+      `${ciclos.length} de ciclos e ${matriculas.length} de matrículas…`;
+    try {
+      const resposta = await fetch("/admin/atualizar/envio", { method: "POST", body: dados });
+      if (resposta.status === 413) {
+        elStatusEnvio.textContent = "O envio passa de 500 MB. Envie as pastas em partes menores.";
+        return;
+      }
+      const corpo = await resposta.json();
+      if (resposta.status === 400) {
+        const motivo = ROTULO_MOTIVO_ENVIO[corpo.motivo] || corpo.motivo;
+        elStatusEnvio.textContent = `Não foi possível ler ${corpo.arquivo}: ${motivo}. Nada foi gravado.`;
+        return;
+      }
+      if (resposta.status === 409) {
+        elStatusEnvio.textContent =
+          corpo.erro === "previa_pendente"
+            ? "Há uma prévia pendente: salve ou descarte antes de um novo envio."
+            : "Já existe uma atualização em andamento. Use Cancelar se ela estiver presa.";
+        return;
+      }
+      if (corpo.estado === "falhou_consolidacao") {
+        elStatusEnvio.textContent = `O envio não pôde ser consolidado: ${corpo.erro_consolidacao}. Nada foi gravado.`;
+        return;
+      }
+      elStatusEnvio.textContent = `${(corpo.arquivos || []).length} arquivo(s) lido(s). Confira a prévia abaixo.`;
+      renderizarArquivosEnvio(corpo.arquivos || []);
+      renderizarAvisosEnvio(corpo.ignorados || [], corpo.campi_nao_cadastrados || [], corpo.matriculas_orfas || 0);
+      mostrarPreservacao(corpo.campi_preservados || []);
+      await poll();
+    } catch (erro) {
+      elStatusEnvio.textContent = "Falha de rede: o envio não chegou ao servidor.";
+    } finally {
+      btnEnviar.disabled = false;
+    }
+  }
+
+  elOrigemSistec.addEventListener("change", () => escolherOrigem("sistec"));
+  elOrigemEnvio.addEventListener("change", () => escolherOrigem("envio"));
+  elConfirmarPreservacao.addEventListener("change", atualizarBotaoSalvar);
+  btnEnviar.addEventListener("click", enviarPastas);
 
   setInterval(poll, INTERVALO_POLL_MS);
   poll();

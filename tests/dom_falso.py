@@ -106,6 +106,10 @@ def rodar(script, preparar, verificar, largura=1280):
             "largura": largura,
         }
     )
-    resultado = subprocess.run(["node", "-e", HARNESS], input=entrada, capture_output=True, text=True, timeout=60)
+    # `node` escreve UTF-8; sem isto o Windows decodifica em cp1252 e as
+    # mensagens em português voltam com mojibake.
+    resultado = subprocess.run(
+        ["node", "-e", HARNESS], input=entrada, capture_output=True, text=True, encoding="utf-8", timeout=60
+    )
     assert resultado.returncode == 0, resultado.stderr
     return json.loads(resultado.stdout)

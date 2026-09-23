@@ -379,7 +379,7 @@ T10 → T11 → T12
 - [x] Gate check passes: `python -m pytest tests/ -q` (650 passed)
 - [x] Test count: contagem de T9 (645) + 5 testes novos
 
-**Status**: Done — commit `PENDING`.
+**Status**: Done — commit `566d348`.
 
 **Tests**: integration
 **Gate**: full
@@ -403,13 +403,15 @@ T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Escolher uma origem ativa só os controles dela
-- [ ] Enviar sem uma das pastas avisa que as duas são obrigatórias, sem chamar o servidor
-- [ ] Durante o envio a tela informa quantos arquivos foram enviados e bloqueia o botão
-- [ ] Resposta `400` mostra o arquivo e o motivo em português; `409` e `413` têm mensagem própria
-- [ ] Havendo campi preservados, Salvar só é chamado depois da confirmação
-- [ ] Gate check passes: `python -m pytest tests/test_js_envio.py -q`
-- [ ] Test count: no mínimo 5 testes novos no padrão de `tests/test_js_*.py`
+- [x] Escolher uma origem ativa só os controles dela
+- [x] Enviar sem uma das pastas avisa que as duas são obrigatórias, sem chamar o servidor
+- [x] Durante o envio a tela informa quantos arquivos foram enviados e bloqueia o botão
+- [x] Resposta `400` mostra o arquivo e o motivo em português; `409` e `413` têm mensagem própria
+- [x] Havendo campi preservados, Salvar só é chamado depois da confirmação
+- [x] Gate check passes: `python -m pytest tests/test_js_envio.py -q` (11 passed)
+- [x] Test count: 11 testes novos no padrão de `tests/test_js_*.py`
+
+**Status**: Done — commit `PENDING`.
 
 **Tests**: unit
 **Gate**: quick
