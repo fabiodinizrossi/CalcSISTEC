@@ -6,9 +6,9 @@ Após ler as pastas de CSVs, a tela administrativa mostra contagens e uma amostr
 
 ## Goals
 
-- [ ] Após a consolidação válida dos CSVs, permitir a conferência das quatro páginas públicas completas e interativas antes de salvar a versão interna.
-- [ ] Garantir que a prévia represente o conjunto efetivo que seria salvo, inclusive os campi preservados, sem alterar a versão interna ou a publicada durante a conferência.
-- [ ] Manter o acesso à prévia restrito à sessão administrativa dona da atualização.
+- [x] Após a consolidação válida dos CSVs, permitir a conferência das quatro páginas públicas completas e interativas antes de salvar a versão interna.
+- [x] Garantir que a prévia represente o conjunto efetivo que seria salvo, inclusive os campi preservados, sem alterar a versão interna ou a publicada durante a conferência.
+- [x] Manter o acesso à prévia restrito à sessão administrativa dona da atualização.
 
 ## Out of Scope
 
@@ -96,16 +96,16 @@ Após ler as pastas de CSVs, a tela administrativa mostra contagens e uma amostr
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| PVP-01 | P1: Abrir as páginas após ler os CSVs | Design | Pending |
-| PVP-02 | P1: Abrir as páginas após ler os CSVs | Design | Pending |
-| PVP-03 | P1: Abrir as páginas após ler os CSVs | Design | Pending |
-| PVP-04 | P1: Conferir o resultado que seria publicado | Design | Pending |
-| PVP-05 | P1: Conferir o resultado que seria publicado | Design | Pending |
-| PVP-06 | P1: Conferir o resultado que seria publicado | Design | Pending |
-| PVP-07 | P1: Restringir e encerrar a conferência | Design | Pending |
-| PVP-08 | P1: Restringir e encerrar a conferência | Design | Pending |
-| PVP-09 | P1: Restringir e encerrar a conferência | Design | Pending |
-| PVP-10 | P1: Restringir e encerrar a conferência | Design | Pending |
+| PVP-01 | P1: Abrir as páginas após ler os CSVs | Design | Verified |
+| PVP-02 | P1: Abrir as páginas após ler os CSVs | Design | Verified |
+| PVP-03 | P1: Abrir as páginas após ler os CSVs | Design | Verified |
+| PVP-04 | P1: Conferir o resultado que seria publicado | Design | Verified |
+| PVP-05 | P1: Conferir o resultado que seria publicado | Design | Verified |
+| PVP-06 | P1: Conferir o resultado que seria publicado | Design | Verified |
+| PVP-07 | P1: Restringir e encerrar a conferência | Design | Verified |
+| PVP-08 | P1: Restringir e encerrar a conferência | Design | Verified |
+| PVP-09 | P1: Restringir e encerrar a conferência | Design | Verified |
+| PVP-10 | P1: Restringir e encerrar a conferência | Design | Verified |
 
 **Detalhamento:** PVP-01 = acesso às quatro páginas (P1.1 AC 1); PVP-02 = identificação, retorno e ações (P1.1 AC 2–3); PVP-03 = leitura sem escrita (P1.1 AC 4); PVP-04 = paridade de dados e cálculos (P1.2 AC 1–3); PVP-05 = avisos e estado sem publicação (P1.2 AC 4–6); PVP-06 = estados vazios (Edge Case 1); PVP-07 = autenticação e posse da execução (P1.3 AC 1–2); PVP-08 = encerramento e recarga da prévia (P1.3 AC 3 e Edge Cases 3–4); PVP-09 = falha de CSV e de página (P1.3 AC 4 e Edge Case 2); PVP-10 = invalidação, isolamento público e privacidade (P1.3 AC 5–7).
 
@@ -139,8 +139,8 @@ Após ler as pastas de CSVs, a tela administrativa mostra contagens e uma amostr
 
 ## Success Criteria
 
-- [ ] Os quatro caminhos de prévia carregam antes de Salvar e permitem usar os filtros, eixos e tabelas existentes.
-- [ ] Para os mesmos dados e filtros, os resultados da prévia são iguais aos das quatro páginas após Salvar e Publicar em banco de teste.
-- [ ] Abrir, recarregar e descartar a prévia não altera revisões nem tabelas internas ou públicas.
-- [ ] Nenhuma requisição sem autorização acessa dados da prévia; URLs antigas deixam de funcionar após Salvar/Descartar.
-- [ ] `pytest tests/` passa, inclusive os casos de campus preservado, ausência de publicação e falha de renderização.
+- [x] Os quatro caminhos de prévia carregam antes de Salvar e permitem usar os filtros, eixos e tabelas existentes.
+- [x] Para os mesmos dados e filtros, os resultados da prévia são iguais aos das quatro páginas após Salvar e Publicar em banco de teste.
+- [x] Abrir, recarregar e descartar a prévia não altera revisões nem tabelas internas ou públicas.
+- [x] Nenhuma requisição sem autorização acessa dados da prévia; URLs antigas deixam de funcionar após Salvar/Descartar.
+- [x] `pytest tests/` passa, inclusive os casos de campus preservado, ausência de publicação e falha de renderização.
