@@ -220,13 +220,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `PreviaIndisponivel` é uma exceção própria do módulo, distinta de `ExecucaoInvalida`
-- [ ] `obter_previa` recusa: execução inexistente, `sessao_dona` diferente (inclusive outra sessão do mesmo e-mail), `origem != "envio"`, estado terminal ou estado diferente de `previa`
-- [ ] A recusa nunca devolve nem abre a fonte candidata nem cai no banco publicado
-- [ ] Registro limpo (reinício do processo) devolve `PreviaIndisponivel`
-- [ ] Testes: `tests/test_execucoes_previa.py` cobre cada motivo de recusa e o caminho autorizado
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 6 testes novos
+- [x] `PreviaIndisponivel` é uma exceção própria do módulo, distinta de `ExecucaoInvalida`
+- [x] `obter_previa` recusa: execução inexistente, `sessao_dona` diferente (inclusive outra sessão do mesmo e-mail), `origem != "envio"`, estado terminal ou estado diferente de `previa`
+- [x] A recusa nunca devolve nem abre a fonte candidata nem cai no banco publicado
+- [x] Registro limpo (reinício do processo) devolve `PreviaIndisponivel`
+- [x] Testes: `tests/test_execucoes_previa.py` cobre cada motivo de recusa e o caminho autorizado
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 6 testes novos
+
+**Status**: Done -- commit `287d5cb`.
 
 **Tests**: unit
 **Gate**: quick

@@ -42,6 +42,13 @@ class ConfirmacaoNecessaria(Exception):
     """O envio preserva campi e exige confirmação explícita para salvar."""
 
 
+class PreviaIndisponivel(Exception):
+    """Prévia não disponível para o contexto: execução inexistente, sessão
+    alheia, origem diferente de `envio` ou estado diferente de `previa`
+    (`previa-paginas-publicas`, PVP-07). Distinta de `ExecucaoInvalida`."""
+
+
+
 class Par:
     def __init__(self, n, tipo, id_perfil, nome_perfil, co_unidade=None):
         self.n = n
@@ -58,7 +65,7 @@ class Par:
 
 
 class Execucao:
-    def __init__(self, execucao_id, admin_email, campi, qtd_perfis, historico_id, relogio, origem="baixa"):
+    def __init__(self, execucao_id, admin_email, campi, qtd_perfis, historico_id, relogio, origem="baixa", sessao_dona=None):
         self.id = execucao_id
         self.admin_email = admin_email
         self.token = secrets.token_urlsafe(32)
@@ -82,6 +89,7 @@ class Execucao:
 
         self.previa = None
         self.campi_falhos = set()
+        self.sessao_dona = sessao_dona
 
     def par_por_n(self, n):
         for par in self.fila:
@@ -145,15 +153,16 @@ def criar_execucao(admin_email, campi, historico_id=None, relogio=None):
         return execucao
 
 
-def criar_execucao_envio(admin_email, nomes_ciclo, nomes_matricula, historico_id=None, relogio=None):
-    """Cria uma execução cuja fila é composta pelos arquivos enviados."""
+def criar_execucao_envio(admin_email, nomes_ciclo, nomes_matricula, historico_id=None, relogio=None, sessao_id=None):
+    """Cria uma execução cuja fila é composta pelos arquivos enviados. Vincula
+    a execução à `sessao_id` que a iniciou (PVP-07, `previa-paginas-publicas`)."""
     relogio = relogio or _relogio_padrao
     with _LOCK:
         atual = _REGISTRO.get(admin_email)
         if atual is not None and atual.estado not in ESTADOS_TERMINAIS:
             raise ExecucaoInvalida("já existe uma execução em andamento para este administrador")
 
-        execucao = Execucao(secrets.token_urlsafe(16), admin_email, [], 0, historico_id, relogio, origem="envio")
+        execucao = Execucao(secrets.token_urlsafe(16), admin_email, [], 0, historico_id, relogio, origem="envio", sessao_dona=sessao_id)
         execucao.estado = "consolidando"
         nomes = [("ciclo", nome) for nome in nomes_ciclo] + [("matricula", nome) for nome in nomes_matricula]
         execucao.fila = [Par(n, tipo, None, nome) for n, (tipo, nome) in enumerate(nomes, start=1)]
@@ -189,6 +198,25 @@ def obter_por_token(execucao_id, token):
 
 def obter_do_admin(admin_email):
     return _REGISTRO.get(admin_email)
+
+
+def obter_previa(execucao_id, sessao_id):
+    """PVP-07 (`previa-paginas-publicas`): devolve a execução de envio em
+    estado `previa` apenas para a sessão dona. Qualquer outra combinação —
+    execução inexistente, sessão alheia (inclusive outra sessão do mesmo
+    e-mail), origem diferente de `envio` ou estado diferente de `previa` —
+    levanta `PreviaIndisponivel`. A recusa nunca devolve nem abre a fonte
+    candidata nem recai no banco publicado."""
+    for execucao in _REGISTRO.values():
+        if execucao.id == execucao_id:
+            if (
+                execucao.origem != "envio"
+                or execucao.estado != "previa"
+                or not secrets.compare_digest(execucao.sessao_dona or "", sessao_id or "")
+            ):
+                raise PreviaIndisponivel("prévia indisponível para esta sessão")
+            return execucao
+    raise PreviaIndisponivel("prévia indisponível: execução não encontrada")
 
 
 def iniciar_baixa(execucao):
