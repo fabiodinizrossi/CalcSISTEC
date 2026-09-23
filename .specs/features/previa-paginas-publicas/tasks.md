@@ -410,11 +410,13 @@ T27 → T28
 
 **Done when**:
 
-- [ ] As duas funções aceitam `conn=None` e, sem argumento, mantêm o comportamento atual
-- [ ] Com `conn` explícita, devolvem as mesmas colunas e os mesmos `parse_dates` do caminho público
-- [ ] Testes: `tests/test_consulta.py` compara o resultado das duas funções na fonte da prévia com o do banco publicado para os mesmos dados
-- [ ] Gate check passes: `python -m pytest tests/test_consulta.py -q`
-- [ ] Test count: ≥ 3 testes novos
+- [x] As duas funções aceitam `conn=None` e, sem argumento, mantêm o comportamento atual
+- [x] Com `conn` explícita, devolvem as mesmas colunas e os mesmos `parse_dates` do caminho público
+- [x] Testes: `tests/test_consulta.py` compara o resultado das duas funções na fonte da prévia com o do banco publicado para os mesmos dados
+- [x] Gate check passes: `python -m pytest tests/test_consulta.py -q`
+- [x] Test count: ≥ 3 testes novos
+
+**Status**: Done -- commit `b9372d7`.
 
 **Tests**: unit
 **Gate**: quick

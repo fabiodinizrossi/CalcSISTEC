@@ -72,10 +72,31 @@ def ano_base_ativo(db_path=DEFAULT_DB_PATH, conn=None):
         conn.close()
 
 
-def carregar_matriculas(db_path=DEFAULT_DB_PATH):
+def carregar_matriculas(db_path=DEFAULT_DB_PATH, conn=None):
     """Base consolidada de `matriculas` (grão de BR-MIGRAR-001, já aplicado
     na ingestão) com curso/ciclo/campus já juntados — pronta para
-    `app/domain/matriculas.py` e `app/domain/percentuais_legais.py`."""
+    `app/domain/matriculas.py` e `app/domain/percentuais_legais.py`.
+
+    Com `conn` explícita (fonte da prévia, PVP-04), roda o mesmo SQL e os
+    mesmos `parse_dates` contra ela, sem abrir nem fechar conexão própria."""
+    if conn is not None:
+        return pd.read_sql_query(
+            """
+            SELECT m.co_matricula, m.status_corrigido, m.ano_base,
+                   c.codigo_ciclo_matricula, c.tipo_programa_curso, c.dt_data_inicio,
+                   cu.codigo_portfolio, cu.nome_curso_ajustado, cu.tipo_curso_pnp,
+                   cu.subtipo_curso, cu.modalidade_ensino, cu.eixo_tecnologico_ajustado,
+                   cu.carga_horaria_total, cu.fec, cu.fech, cu.co_unidade,
+                   cu.tipo_oferta_curso, cu.categoria_origem_curso,
+                   camp.cidade
+            FROM matriculas m
+            JOIN ciclos c ON c.codigo_ciclo_matricula = m.codigo_ciclo_matricula
+            JOIN cursos cu ON cu.codigo_portfolio = c.codigo_portfolio
+            JOIN campus camp ON camp.co_unidade = cu.co_unidade
+            """,
+            conn,
+            parse_dates=["dt_data_inicio"],
+        )
     conn = get_connection(db_path)
     try:
         return pd.read_sql_query(
@@ -99,10 +120,27 @@ def carregar_matriculas(db_path=DEFAULT_DB_PATH):
         conn.close()
 
 
-def carregar_eficiencia(db_path=DEFAULT_DB_PATH):
+def carregar_eficiencia(db_path=DEFAULT_DB_PATH, conn=None):
     """Base consolidada de `matriculas_eficiencia` (grão de BR-MIGRAR-002)
     com `dt_data_fim_previsto` do ciclo já junto — pronta para
-    `app/domain/eficiencia.py`."""
+    `app/domain/eficiencia.py`. Com `conn` explícita, roda o mesmo SQL contra
+    a fonte da prévia (PVP-04)."""
+    if conn is not None:
+        return pd.read_sql_query(
+            """
+            SELECT e.co_matricula, e.status_corrigido2,
+                   c.codigo_ciclo_matricula, c.dt_data_fim_previsto,
+                   cu.co_unidade, cu.modalidade_ensino, cu.subtipo_curso,
+                   cu.nome_curso_ajustado, cu.tipo_oferta_curso,
+                   cu.categoria_origem_curso, camp.cidade
+            FROM matriculas_eficiencia e
+            JOIN ciclos c ON c.codigo_ciclo_matricula = e.codigo_ciclo_matricula
+            JOIN cursos cu ON cu.codigo_portfolio = c.codigo_portfolio
+            JOIN campus camp ON camp.co_unidade = cu.co_unidade
+            """,
+            conn,
+            parse_dates=["dt_data_fim_previsto"],
+        )
     conn = get_connection(db_path)
     try:
         return pd.read_sql_query(
