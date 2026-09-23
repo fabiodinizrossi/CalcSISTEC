@@ -283,13 +283,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `abrir_previa` lê `campus` do banco publicado e monta a fonte do candidato; chamadas repetidas para a mesma execução não criam uma segunda fonte
-- [ ] `liberar_previa` fecha a fonte, limpa `previa_fonte` e é idempotente
-- [ ] `descartar` libera a fonte antes de marcar `descartada` e continua recusando fora do estado `previa`
-- [ ] Depois de abrir a fonte, o envio libera os `DataFrame` por arquivo (`par.df = None`) e o dicionário consolidado pesado, conservando o resumo e a amostra usados pelo polling
-- [ ] Testes: cobrir fonte viva após abrir, memória liberada após descartar, descartar repetido e `campi_falhos`/resumo preservados
-- [ ] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
-- [ ] Test count: ≥ 5 testes novos
+- [x] `abrir_previa` lê `campus` do banco publicado e monta a fonte do candidato; chamadas repetidas para a mesma execução não criam uma segunda fonte
+- [x] `liberar_previa` fecha a fonte, limpa `previa_fonte` e é idempotente
+- [x] `descartar` libera a fonte antes de marcar `descartada` e continua recusando fora do estado `previa`
+- [x] Depois de abrir a fonte, o envio libera os `DataFrame` por arquivo (`par.df = None`) e o dicionário consolidado pesado, conservando o resumo e a amostra usados pelo polling
+- [x] Testes: cobrir fonte viva após abrir, memória liberada após descartar, descartar repetido e `campi_falhos`/resumo preservados
+- [x] Gate check passes: `python -m pytest tests/test_execucoes_previa.py -q`
+- [x] Test count: ≥ 5 testes novos
+
+**Status**: Done -- commit `8eb0b8b`.
 
 **Tests**: unit
 **Gate**: quick

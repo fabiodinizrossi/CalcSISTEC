@@ -17,6 +17,7 @@ import secrets
 import threading
 from datetime import datetime, timedelta
 
+from app.data.schema import DEFAULT_DB_PATH
 from app.sistec.urls import TEMPO_MAX_EXPORTACAO_S, par_para_extensao
 
 TEMPO_MAX_PAUSA_S = 4 * 60 * 60
@@ -102,6 +103,9 @@ class Execucao:
         self.campi_falhos = set()
         self.sessao_dona = sessao_dona
         self.lock = threading.Lock()
+        self.previa_fonte = None
+        self.candidato = None
+        self.previa_resumo = None
 
     def par_por_n(self, n):
         for par in self.fila:
@@ -362,7 +366,53 @@ def descartar(execucao):
     with com_trava(execucao):
         if execucao.estado != "previa":
             raise ExecucaoInvalida(f"não é possível descartar a partir do estado '{execucao.estado}'")
+        liberar_previa(execucao)
         execucao.estado = "descartada"
+
+
+def _resumo_amostra(previa):
+    """Resumo/amostra leves do consolidado para o polling, sem reter os
+    DataFrames completos. Espelha `admin_atualizar_estado` (amostra de 20
+    linhas de ciclos, sem NaN/inf)."""
+    if previa is None:
+        return None
+    amostra = previa["ciclos"].head(20).astype(object)
+    amostra = amostra.replace([float("inf"), float("-inf")], None).where(amostra.notna(), None)
+    return {
+        "ciclos": len(previa["ciclos"]),
+        "matriculas": len(previa["matriculas"]),
+        "amostra": amostra.to_dict(orient="records"),
+    }
+
+
+def abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH):
+    """Abre a fonte candidata da prévia na execução (PVP-03/PVP-08). Lê o
+    `campus` publicado e guarda a fonte e o `candidato` na execução.
+    Idempotente: chamadas repetidas não criam uma segunda fonte. Depois de
+    abrir, libera os DataFrames por arquivo e o consolidado pesado,
+    conservando o resumo/amostra do polling."""
+    if execucao.previa_fonte is not None:
+        return execucao.previa_fonte
+
+    from app.data.previa import abrir_fonte_previa
+
+    execucao.previa_fonte = abrir_fonte_previa(candidato, None, db_path)
+    execucao.candidato = candidato
+
+    execucao.previa_resumo = _resumo_amostra(execucao.previa)
+    execucao.previa = None
+    for par in execucao.fila:
+        par.df = None
+
+    return execucao.previa_fonte
+
+
+def liberar_previa(execucao):
+    """Fecha a fonte candidata e limpa a referência (idempotente)."""
+    fonte = execucao.previa_fonte
+    if fonte is not None:
+        fonte.fechar()
+        execucao.previa_fonte = None
 
 
 def varrer(execucao, agora=None):

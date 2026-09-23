@@ -185,3 +185,91 @@ def test_sem_deadlock_entre_registro_e_execucao():
         )
         assert nova is not None
     assert envio.estado == "previa"
+
+
+# ===================== T6: abrir e liberar a fonte da prévia =====================
+
+
+@pytest.fixture
+def db_path(tmp_path):
+    from app.data.schema import init_db
+
+    caminho = str(tmp_path / "previa.db")
+    init_db(caminho)
+    return caminho
+
+
+def _candidato(db_path):
+    from app.data.ingest import preparar_versao
+    from app.sistec.consolidacao import consolidar
+
+    leitura = _leitura_envio()
+    conjunto = consolidar([leitura["ciclo"][0][1]], [leitura["matricula"][0][1]])
+    return preparar_versao(conjunto, (), db_path=db_path, ano_base=2026)
+
+
+def test_abrir_previa_cria_fonte_e_nao_duplica(db_path):
+    envio = _envio_em_previa()
+    candidato = _candidato(db_path)
+
+    fonte = execucoes.abrir_previa(envio, candidato, db_path=db_path)
+    assert fonte is not None
+    assert envio.previa_fonte is fonte
+    assert envio.candidato is candidato
+
+    fonte_2 = execucoes.abrir_previa(envio, candidato, db_path=db_path)
+    assert fonte_2 is fonte  # chamadas repetidas não criam segunda fonte
+
+    execucoes.liberar_previa(envio)
+
+
+def test_abrir_previa_libera_dataframes_e_conserva_resumo(db_path):
+    envio = _envio_em_previa()
+    assert all(p.df is not None for p in envio.fila)
+    assert envio.previa is not None
+
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+
+    assert all(p.df is None for p in envio.fila)
+    assert envio.previa is None
+    assert envio.previa_resumo["ciclos"] == 1
+    assert envio.previa_resumo["matriculas"] == 1
+    execucoes.liberar_previa(envio)
+
+
+def test_abrir_previa_preserva_campi_falhos(db_path):
+    envio = _envio_em_previa()
+    execucoes.definir_campi_preservados(envio, ["U1", "U2"])
+
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+
+    assert envio.campi_falhos == {"U1", "U2"}
+    execucoes.liberar_previa(envio)
+
+
+def test_liberar_previa_fecha_fonte_e_e_idempotente(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+
+    execucoes.liberar_previa(envio)
+    assert envio.previa_fonte is None
+
+    execucoes.liberar_previa(envio)  # idempotente: não lança
+
+
+def test_descar_libera_fonte_antes_de_marcar_descartada(db_path):
+    envio = _envio_em_previa()
+    execucoes.abrir_previa(envio, _candidato(db_path), db_path=db_path)
+    assert envio.previa_fonte is not None
+
+    execucoes.descartar(envio)
+
+    assert envio.estado == "descartada"
+    assert envio.previa_fonte is None
+
+
+def test_descar_fora_de_previa_recusa(db_path):
+    envio = _envio_em_previa()
+    envio.estado = "salva"
+    with pytest.raises(execucoes.ExecucaoInvalida):
+        execucoes.descartar(envio)
