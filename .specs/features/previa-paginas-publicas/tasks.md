@@ -921,13 +921,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] Abrir, recarregar e navegar pelas quatro páginas deixa `rev_interna`, `rev_publicada`, `interna_*` e as tabelas públicas iguais ao estado anterior
-- [ ] Alterar `interna_fatores`, `campus` publicado, ano-base ou `rev_interna` depois da prévia faz Salvar devolver `409` e não grava nada; Descartar continua funcionando
-- [ ] Página com falha registrada bloqueia Salvar com `409` e o Descartar libera a prévia
-- [ ] Filtro sem linhas não bloqueia Salvar
-- [ ] Descartar libera a fonte candidata (memória) e não altera nenhuma revisão
-- [ ] Gate check passes: `python -m pytest tests/test_previa_estado.py -q`
-- [ ] Test count: ≥ 7 testes novos
+- [x] Abrir, recarregar e navegar pelas quatro páginas deixa `rev_interna`, `rev_publicada`, `interna_*` e as tabelas públicas iguais ao estado anterior
+- [x] Alterar `interna_fatores`, `campus` publicado, ano-base ou `rev_interna` depois da prévia faz Salvar devolver `409` e não grava nada; Descartar continua funcionando
+- [x] Página com falha registrada bloqueia Salvar com `409` e o Descartar libera a prévia
+- [x] Filtro sem linhas não bloqueia Salvar
+- [x] Descartar libera a fonte candidata (memória) e não altera nenhuma revisão
+- [x] Gate check passes: `python -m pytest tests/test_previa_estado.py -q`
+- [x] Test count: ≥ 7 testes novos
+
+**Status**: Done -- commit `ba6ea27`.
 
 **Tests**: integration
 **Gate**: full
