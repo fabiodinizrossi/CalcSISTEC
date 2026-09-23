@@ -239,7 +239,7 @@ T6 → T7
 - [x] Test count: 11 anteriores + 6 novos = 17 passados (`tests/test_js_envio.py` + `tests/test_js_fiacao.py` = 31, contra 25 antes)
 - [x] **Nota**: os `id` novos do widget (`btn-escolher-ciclos`/`btn-escolher-matriculas`, `envio-ciclos-status`/`envio-matriculas-status`) entraram na lista `IDS` de `tests/test_js_envio.py`, senão o script real quebraria no DOM simulado — é custo de dublê, sem asserção nova ali.
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `70964cf`.
 
 **Tests**: unit
 **Gate**: quick
