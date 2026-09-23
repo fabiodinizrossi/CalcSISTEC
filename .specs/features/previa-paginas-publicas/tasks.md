@@ -189,12 +189,14 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `autenticar_sessao` grava `flask.session["sessao_id"] = secrets.token_urlsafe(16)` a cada login bem-sucedido
-- [ ] `sessao_id_atual()` devolve o identificador da sessão atual e cria um quando ausente, sem nunca devolver vazio
-- [ ] `encerrar_sessao` remove o `sessao_id` junto com `admin_autenticado` e `admin_usuario`
-- [ ] Testes: cobrir login grava, logout remove, sessão nova não reaproveita o identificador anterior
-- [ ] Gate check passes: `python -m pytest tests/test_admin_paginas.py tests/test_admin_envio.py -q`
-- [ ] Test count: ≥ 3 testes novos
+- [x] `autenticar_sessao` grava `flask.session["sessao_id"] = secrets.token_urlsafe(16)` a cada login bem-sucedido
+- [x] `sessao_id_atual()` devolve o identificador da sessão atual e cria um quando ausente, sem nunca devolver vazio
+- [x] `encerrar_sessao` remove o `sessao_id` junto com `admin_autenticado` e `admin_usuario`
+- [x] Testes: cobrir login grava, logout remove, sessão nova não reaproveita o identificador anterior
+- [x] Gate check passes: `python -m pytest tests/test_admin_paginas.py tests/test_admin_envio.py -q`
+- [x] Test count: ≥ 3 testes novos
+
+**Status**: Done -- commit `20c1e00`.
 
 **Tests**: unit
 **Gate**: quick

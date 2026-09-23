@@ -18,6 +18,7 @@ Credenciais vêm de variáveis de ambiente (`ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`
 
 import os
 import re
+import secrets
 from functools import wraps
 
 import flask
@@ -60,10 +61,14 @@ def verificar_credenciais(usuario, senha):
 
 def autenticar_sessao(usuario, senha):
     """Autentica e, se válido, marca a sessão Flask como autenticada.
-    Retorna True/False — nunca lança exceção para uma tentativa inválida."""
+    Retorna True/False — nunca lança exceção para uma tentativa inválida.
+
+    Grava um `sessao_id` opaco a cada login (PVP-07, `previa-paginas-publicas`):
+    vincula a execução de envio à sessão que a iniciou."""
     if verificar_credenciais(usuario, senha):
         flask.session[SESSION_KEY] = True
         flask.session["admin_usuario"] = usuario
+        flask.session["sessao_id"] = secrets.token_urlsafe(16)
         return True
     return False
 
@@ -72,9 +77,21 @@ def esta_autenticado():
     return bool(flask.session.get(SESSION_KEY))
 
 
+def sessao_id_atual():
+    """Identificador opaco da sessão administrativa atual, para vincular a
+    execução de envio à sessão dona (PVP-07). Cria um quando ausente; nunca
+    devolve vazio."""
+    sessao_id = flask.session.get("sessao_id")
+    if not sessao_id:
+        sessao_id = secrets.token_urlsafe(16)
+        flask.session["sessao_id"] = sessao_id
+    return sessao_id
+
+
 def encerrar_sessao():
     flask.session.pop(SESSION_KEY, None)
     flask.session.pop("admin_usuario", None)
+    flask.session.pop("sessao_id", None)
 
 
 def requer_autenticacao(view_func):

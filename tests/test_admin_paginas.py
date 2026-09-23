@@ -2,6 +2,7 @@
 
 import re
 
+import flask
 import pytest
 
 from app import app as app_module
@@ -339,3 +340,39 @@ def test_importar_perfis_continua_importando_uma_linha_valida(cliente_autenticad
     )
     campi_gravados = _campi_do_banco(banco_temporario)
     assert [c["id_perfil"] for c in campi_gravados] == ["8278860"]
+
+
+# ===================== Sessão administrativa (`previa-paginas-publicas`, T3) =====================
+
+
+def test_login_grava_sessao_id(monkeypatch):
+    from app import auth
+
+    monkeypatch.setattr(auth, "verificar_credenciais", lambda u, s: True)
+    with app_module.server.test_request_context():
+        assert auth.autenticar_sessao("pi@ife.edu.br", "12345678") is True
+        assert flask.session["sessao_id"]
+
+
+def test_logout_remove_sessao_id():
+    from app import auth
+
+    with app_module.server.test_request_context():
+        flask.session["sessao_id"] = "opaco"
+        flask.session["admin_autenticado"] = True
+        flask.session["admin_usuario"] = "pi@ife.edu.br"
+        auth.encerrar_sessao()
+        assert "sessao_id" not in flask.session
+        assert "admin_autenticado" not in flask.session
+        assert "admin_usuario" not in flask.session
+
+
+def test_sessao_id_atual_cria_e_nao_reaproveita_entre_sessoes():
+    from app import auth
+
+    with app_module.server.test_request_context():
+        id_a = auth.sessao_id_atual()
+    with app_module.server.test_request_context():
+        id_b = auth.sessao_id_atual()
+    assert id_a and id_b
+    assert id_a != id_b
