@@ -114,7 +114,7 @@ T6 → T7
 - [x] Gate check passes: `python -m pytest tests/test_colunas.py tests/test_execucoes.py tests/test_envio.py -q`
 - [x] Test count: contagem anterior + no mínimo 5 testes novos, um por item acima (7 novos)
 
-**Status**: Done -- commit `<hash>`.
+**Status**: Done -- commit `026f26b`.
 
 **Tests**: unit
 **Gate**: quick
@@ -138,10 +138,12 @@ T6 → T7
 
 **Done when**:
 
-- [ ] `elemento.click()` existe e dispara os ouvintes registrados via `addEventListener("click", ...)`, no mesmo padrão de `disparar`
-- [ ] Um `input.files` simulado aceita objetos com `name` e `webkitRelativePath` opcionais, sem quebrar os testes existentes que só passam `name`
-- [ ] Gate check passes: `python -m pytest tests/test_js_envio.py tests/test_js_fiacao.py -q`
-- [ ] Test count: contagem atual mantida (extensão de infraestrutura, sem asserção nova nesta tarefa — a asserção chega em T6)
+- [x] `elemento.click()` existe e dispara os ouvintes registrados via `addEventListener("click", ...)`, no mesmo padrão de `disparar`
+- [x] Um `input.files` simulado aceita objetos com `name` e `webkitRelativePath` opcionais, sem quebrar os testes existentes que só passam `name` (helper `arquivoFalso(nome, caminho)` no harness: `caminho` ausente ou `null` omite `webkitRelativePath`)
+- [x] Gate check passes: `python -m pytest tests/test_js_envio.py tests/test_js_fiacao.py -q`
+- [x] Test count: contagem atual mantida (25 passados, mesma contagem; extensão de infraestrutura, sem asserção nova nesta tarefa — a asserção chega em T6)
+
+**Status**: Done -- commit `<hash>`.
 
 **Tests**: none
 **Gate**: quick

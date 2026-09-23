@@ -20,7 +20,7 @@ function criarElemento(id) {
   const ouvintes = {};
   const classes = new Set();
   const e = {
-    id: id || "", pai: null, atributos: {}, dataset: {}, textContent: "", filhosPorSeletor: {}, seletores: [], observadores: [],
+    id: id || "", pai: null, atributos: {}, dataset: {}, textContent: "", cliques: 0, filhosPorSeletor: {}, seletores: [], observadores: [],
     addEventListener(tipo, f) { (ouvintes[tipo] = ouvintes[tipo] || []).push(f); },
     removeEventListener(tipo, f) { ouvintes[tipo] = (ouvintes[tipo] || []).filter((x) => x !== f); },
     disparar(tipo, extra) {
@@ -28,6 +28,7 @@ function criarElemento(id) {
       (ouvintes[tipo] || []).slice().forEach((f) => f(ev));
       return ev;
     },
+    click() { e.cliques += 1; return e.disparar("click"); },
     setAttribute(k, v) { e.atributos[k] = String(v); },
     getAttribute(k) { return k in e.atributos ? e.atributos[k] : null; },
     focus() { doc.activeElement = e; },
@@ -84,6 +85,11 @@ const contexto = vm.createContext(ambiente);
 const ferramentas = {
   criarElemento, doc, janela, consultas, submetidos,
   registrar(el, id, seletor) { if (id) { el.id = id; doc.porId[id] = el; } if (seletor) { doc.porSeletor[seletor] = el; } return el; },
+  arquivoFalso(nome, caminho) {
+    const arquivo = { name: nome };
+    if (caminho !== undefined && caminho !== null) { arquivo.webkitRelativePath = caminho; }
+    return arquivo;
+  },
   executarFila() { while (fila.length) { fila.shift()(); } },
 };
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
