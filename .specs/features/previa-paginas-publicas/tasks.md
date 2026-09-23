@@ -124,13 +124,15 @@ T27 → T28
 
 **Done when**:
 
-- [ ] `preparar_versao` devolve as quatro tabelas (`cursos`, `ciclos`, `matriculas`, `matriculas_eficiencia`) já com os campi preservados concatenados e os fatores casados, sem abrir conexão de escrita
-- [ ] `ano_base=None` lê `config.ano_base` do banco (`consulta.ano_base_ativo`); com valor explícito, usa o valor recebido
-- [ ] `calcular_assinatura_origem` devolve `rev_interna`, `rev_publicada`, `ano_base` e um resumo determinístico de `interna_fatores` e do `campus` publicado, estável entre chamadas
-- [ ] `montar_versao_interna` mantém assinatura e retorno atuais e continua gravando por `salvar_interna`
-- [ ] Testes: `tests/test_previa_candidato.py` cobre tabelas iguais às gravadas para os mesmos CSVs, campus preservado, `RISK-002` (vazio, NaN, data nula) e determinismo da assinatura
-- [ ] Gate check passes: `python -m pytest tests/test_previa_candidato.py -q` e `python -m pytest tests/test_parity_dominio.py -q`
-- [ ] Test count: ≥ 6 testes novos; nenhum teste existente removido
+- [x] `preparar_versao` devolve as quatro tabelas (`cursos`, `ciclos`, `matriculas`, `matriculas_eficiencia`) já com os campi preservados concatenados e os fatores casados, sem abrir conexão de escrita
+- [x] `ano_base=None` lê `config.ano_base` do banco (`consulta.ano_base_ativo`); com valor explícito, usa o valor recebido
+- [x] `calcular_assinatura_origem` devolve `rev_interna`, `rev_publicada`, `ano_base` e um resumo determinístico de `interna_fatores` e do `campus` publicado, estável entre chamadas
+- [x] `montar_versao_interna` mantém assinatura e retorno atuais e continua gravando por `salvar_interna`
+- [x] Testes: `tests/test_previa_candidato.py` cobre tabelas iguais às gravadas para os mesmos CSVs, campus preservado, `RISK-002` (vazio, NaN, data nula) e determinismo da assinatura
+- [x] Gate check passes: `python -m pytest tests/test_previa_candidato.py -q` e `python -m pytest tests/test_parity_dominio.py -q`
+- [x] Test count: ≥ 6 testes novos; nenhum teste existente removido
+
+**Status**: Done -- commit `72607a8`.
 
 **Tests**: unit
 **Gate**: quick

@@ -20,6 +20,7 @@ from app.data.ajustes_curso import (
     aplicar_preposicoes_minusculas,
     reclassificar_eixo_tecnologico,
 )
+from app.data.consulta import ano_base_ativo
 from app.data.fatores import casar_fatores
 from app.data.schema import DEFAULT_DB_PATH, get_connection
 from app.data.transform import t03_normalizar_curso, t04_chave_curso_unica
@@ -172,15 +173,48 @@ def _ler_mantidos(conn, campi_falhos):
     return {"cursos": cursos, "ciclos": ciclos, "matriculas": matriculas, "matriculas_eficiencia": matriculas_eficiencia}
 
 
-def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=2026):
-    """RN-20/RN-22 (`data-delta.md` §6): monta a versão interna a partir do
-    `conjunto` consolidado (`app/sistec/consolidacao.consolidar`) e dos
-    `campi_falhos` (códigos de unidade com algum par que falhou nesta
-    execução — os dados desses campi na interna atual são preservados, e as
-    linhas novas desses campi no `conjunto` são descartadas, P-06).
+def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
+    """PVP-10 (`previa-paginas-publicas`, T1): assinatura de origem do
+    candidato — as dependências que precisam continuar iguais entre a
+    conferência e o Salvar. Devolve `rev_interna`, `rev_publicada`,
+    `ano_base` e um resumo determinístico (tuplas ordenadas) de
+    `interna_fatores` e do `campus` publicado. Estável entre chamadas com o
+    mesmo banco."""
+    conn = get_connection(db_path)
+    try:
+        rev_interna, rev_publicada = conn.execute(
+            "SELECT rev_interna, rev_publicada FROM estado_versoes WHERE id = 1"
+        ).fetchone()
+        fatores = conn.execute(
+            "SELECT tipo_curso, nome_curso, fec, fech, chave_tipo, chave_nome "
+            "FROM interna_fatores ORDER BY chave_tipo, chave_nome"
+        ).fetchall()
+        campus = conn.execute(
+            "SELECT co_unidade, cidade, nome_unidade FROM campus ORDER BY co_unidade"
+        ).fetchall()
+    finally:
+        conn.close()
 
-    Grava via `app/data/versoes.salvar_interna` (transação única). Retorna um
-    resumo de contagens para a prévia (RN-18: cursos sem fator)."""
+    return {
+        "rev_interna": rev_interna,
+        "rev_publicada": rev_publicada,
+        "ano_base": ano_base_ativo(db_path),
+        "fatores": tuple(fatores),
+        "campus": tuple(campus),
+    }
+
+
+def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=None):
+    """PVP-03/PVP-04 (`previa-paginas-publicas`, T1): prepara, sem gravar, as
+    quatro tabelas que `salvar_interna` receberia para o `conjunto` — com os
+    campi preservados concatenados e os fatores casados (RN-22, D-07).
+
+    Devolve `{"tabelas", "resumo", "ano_base", "assinatura_origem"}`. Nenhuma
+    conexão de escrita é aberta. `ano_base=None` lê `config.ano_base`
+    (`consulta.ano_base_ativo`); um valor explícito prevalece."""
+    if ano_base is None:
+        ano_base = ano_base_ativo(db_path)
+
     campi_falhos = set(campi_falhos or ())
     df_ciclo = conjunto["ciclos"]
     df_matricula = conjunto["matriculas"]
@@ -229,17 +263,13 @@ def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_b
         [mantidos["matriculas_eficiencia"], eficiencia_novos], ignore_index=True
     ).drop_duplicates(subset="co_matricula", keep="first")
 
-    salvar_interna(
-        {
-            "cursos": cursos_final[_COLUNAS_CURSOS_SCHEMA],
-            "ciclos": ciclos_final[_COLUNAS_CICLOS_SCHEMA],
-            "matriculas": matriculas_final[_COLUNAS_MATRICULAS_SCHEMA],
-            "matriculas_eficiencia": eficiencia_final[_COLUNAS_EFICIENCIA_SCHEMA],
-        },
-        db_path,
-    )
-
-    return {
+    tabelas = {
+        "cursos": cursos_final[_COLUNAS_CURSOS_SCHEMA],
+        "ciclos": ciclos_final[_COLUNAS_CICLOS_SCHEMA],
+        "matriculas": matriculas_final[_COLUNAS_MATRICULAS_SCHEMA],
+        "matriculas_eficiencia": eficiencia_final[_COLUNAS_EFICIENCIA_SCHEMA],
+    }
+    resumo = {
         "cursos": len(cursos_final),
         "ciclos": len(ciclos_final),
         "matriculas": len(matriculas_final),
@@ -248,3 +278,25 @@ def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_b
         "cursos_fator_nao_encontrado": int(cursos_final["fator_nao_encontrado"].sum()),
         "campi_mantidos": sorted(campi_falhos),
     }
+    return {
+        "tabelas": tabelas,
+        "resumo": resumo,
+        "ano_base": ano_base,
+        "assinatura_origem": calcular_assinatura_origem(db_path),
+    }
+
+
+def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=2026):
+    """RN-20/RN-22 (`data-delta.md` §6): monta a versão interna a partir do
+    `conjunto` consolidado (`app/sistec/consolidacao.consolidar`) e dos
+    `campi_falhos` (códigos de unidade com algum par que falhou nesta
+    execução — os dados desses campi na interna atual são preservados, e as
+    linhas novas desses campi no `conjunto` são descartadas, P-06).
+
+    Grava via `app/data/versoes.salvar_interna` (transação única), reusando a
+    preparação de `preparar_versao` (que calcula a assinatura de origem por
+    `calcular_assinatura_origem`). Retorna o resumo de contagens para a
+    prévia (RN-18: cursos sem fator)."""
+    candidato = preparar_versao(conjunto, campi_falhos, db_path=db_path, ano_base=ano_base)
+    salvar_interna(candidato["tabelas"], db_path)
+    return candidato["resumo"]
