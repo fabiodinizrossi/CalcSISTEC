@@ -20,6 +20,8 @@ teste antes da Tarefa 05 (BC-01), que conecta este pipeline ao upload real:
 
 import pandas as pd
 
+from app.domain.shared import parsear_mes_ocorrencia
+
 # Domínio fechado de StatusMatricula (T-02). PNP "terminativo" é qualquer
 # status != EM_CURSO e != nulo.
 #
@@ -160,18 +162,28 @@ def t07_grao_matricula_atendida(
     col_status="status_corrigido",
     col_mes_ocorrencia="mes_ocorrencia_corrigido",
 ):
-    """T-07: inclui a matrícula se iniciou no ano-base OU status=EM_CURSO OU mês de
-    ocorrência >= início do ano-base — incluindo o caso de `dt_data_inicio` nula
-    (BR-HUMANA-010: o campo pertence ao ciclo, não à matrícula; nulo não exclui)."""
+    """T-07 (BR-MIGRAR-001, MAT-01): inclui a matrícula se o ciclo iniciou no
+    ano-base, OU se o status é EM_CURSO, OU se o mês de ocorrência é do
+    ano-base — independente de quando o ciclo começou.
+
+    `mes_ocorrencia_corrigido` (vindo de `MES_DE_OCORRENCIA`) chega do Sistec
+    como texto em português ("JUNHO 2026"), que `pd.to_datetime` não reconhece;
+    por isso a coluna passa por `shared.parsear_mes_ocorrencia`, e o teste é de
+    ano exato (`== ano_base`), não "a partir do ano-base".
+
+    `dt_data_inicio` é ISO ("2010-02-22 00:00:00") e continua com
+    `pd.to_datetime` direto. `dt_data_inicio` nula não exclui por si só
+    (BR-HUMANA-010: o campo pertence ao ciclo, não à matrícula) — a matrícula
+    ainda pode entrar por EM_CURSO ou pelo mês de ocorrência.
+    """
     dt_inicio = pd.to_datetime(df[col_dt_inicio], errors="coerce")
-    mes_ocorrencia = pd.to_datetime(df[col_mes_ocorrencia], errors="coerce")
-    inicio_ano_base = pd.Timestamp(year=ano_base, month=1, day=1)
+    mes_ocorrencia = parsear_mes_ocorrencia(df[col_mes_ocorrencia])
 
     iniciou_no_ano_base = dt_inicio.dt.year == ano_base
     em_curso = df[col_status] == "EM_CURSO"
-    ocorreu_apos_inicio = mes_ocorrencia >= inicio_ano_base
+    ocorreu_no_ano_base = mes_ocorrencia.dt.year == ano_base
 
-    incluir = iniciou_no_ano_base | em_curso | ocorreu_apos_inicio | dt_inicio.isna() & em_curso
+    incluir = iniciou_no_ano_base | em_curso | ocorreu_no_ano_base
     return df.loc[incluir].copy()
 
 
