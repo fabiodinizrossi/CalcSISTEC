@@ -597,10 +597,10 @@ T18 → T19 → T20 → T21 → T22
 
 **Done when**:
 
-- [ ] Com a 8051 livre, o teste roda (não é pulado) e passa; numa cópia isolada, tirar do `-Parar` o encerramento da 8051 faz o teste falhar (mata M13)
-- [ ] A porta 8050 continua escutando, com o mesmo PID, antes e depois do teste
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Com a 8051 livre, o teste roda (não é pulado) e passa; numa cópia isolada, tirar do `-Parar` o encerramento da 8051 faz o teste falhar (mata M13)
+- [x] A porta 8050 continua escutando, com o mesmo PID, antes e depois do teste
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 986 + 1, 0 failed
 
 **Tests**: integration
 **Gate**: full

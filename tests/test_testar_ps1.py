@@ -148,12 +148,34 @@ def apagar(caminho):
         pass
 
 
-def derrubar(porta):
+def derrubar(porta, simulado=False):
     """`-Parar` na porta dada; nunca falha o teste por si."""
+    argumentos = ["-Parar", "-Porta", str(porta)]
+    if simulado:
+        argumentos.append("-Simulado")
     try:
-        rodar_script("-Parar", "-Porta", str(porta), timeout=60)
+        rodar_script(*argumentos, timeout=60)
     except (subprocess.SubprocessError, OSError):
         pass
+
+
+def pid_na_porta(porta):
+    """PID de quem escuta na porta, ou `None`. Só leitura: nunca encerra nada."""
+    saida = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "(Get-NetTCPConnection -LocalPort "
+            f"{porta} -State Listen -ErrorAction SilentlyContinue"
+            " | Select-Object -First 1).OwningProcess",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    valor = saida.stdout.strip()
+    return int(valor) if valor.isdigit() else None
 
 
 def apagar_logs(porta):
@@ -244,6 +266,39 @@ def test_timeout_encerra_o_app_e_sai_1():
     finally:
         sonda.close()
         derrubar(porta)
+        apagar_logs(porta)
+
+
+@pytest.mark.skipif(
+    escutando(8051),
+    reason="a porta 8051 já está no ar (pode ser ambiente manual): não derrubar",
+)
+def test_destacado_com_simulado_sobe_e_parar_derruba_os_dois():
+    """AMB-01 AC6: com `-Simulado` o Sistec de mentira sobe na 8051 e
+    `-Parar -Simulado` encerra os dois.
+
+    Pula quando a 8051 já está ocupada: ali pode haver ambiente manual da
+    usuária, e derrubá-lo não é deste teste.
+    """
+    porta = porta_livre()
+    pid_8050_antes = pid_na_porta(8050)
+    try:
+        subida = rodar_script("-Destacado", "-SemNavegador", "-Simulado", "-Porta", str(porta))
+
+        assert subida.returncode == 0, subida.stdout + subida.stderr
+        assert escutando(porta), "o app não ficou escutando"
+        assert escutando(8051), "o Sistec simulado não subiu na 8051"
+
+        parada = rodar_script("-Parar", "-Simulado", "-Porta", str(porta))
+
+        assert parada.returncode == 0, parada.stdout + parada.stderr
+        assert not escutando(porta), "a porta do app continuou escutando depois de -Parar"
+        assert not escutando(8051), "o simulado continuou na 8051 depois de -Parar -Simulado"
+
+        if pid_8050_antes is not None:
+            assert pid_na_porta(8050) == pid_8050_antes, "o teste mexeu na porta 8050"
+    finally:
+        derrubar(porta, simulado=True)
         apagar_logs(porta)
 
 
