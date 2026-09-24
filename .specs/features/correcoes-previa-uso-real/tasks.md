@@ -245,11 +245,11 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Para cada uma das quatro páginas (`matriculas`, `eficiencia`, `evasao`, `percentuais_legais`): o teste monta `layout()` (público) e `layout(preview_id="qualquer-string")` (prévia — sem precisar de banco real, já que o teste só olha a árvore de componentes, não dados; se `layout(preview_id=...)` exigir banco/sessão para não estourar, use os mesmos dublês/fixtures de `tests/test_previa_pagina.py`).
-- [ ] Para cada layout, coleta o conjunto de `id`s presentes (via `componentes(layout)` de `arvore_dash.py`, ou equivalente).
-- [ ] Para cada página, coleta do `dash.callback_map` (ou de `app._callback_list`/estrutura equivalente da versão de Dash instalada — confira em `requirements.txt`/`pip show dash`) todo `id` citado como `Input` ou `State` de um callback cujo módulo é o da página (filtre por prefixo do `id` ou pelo módulo de origem do callback, o que for mais simples de obter de forma confiável).
-- [ ] O teste falha (assert explícito, com a lista de IDs faltando na mensagem) se algum `id` de `Input`/`State` não estiver no conjunto de IDs do layout público OU do layout de prévia.
-- [ ] Rodar o teste ANTES de T2-T5 (ou num commit de verificação isolado) confirmando que ele pega a falha original (o `Store` de preview ausente no layout público) — isso prova que o teste é um teste de regressão de verdade, não um que passaria mesmo sem a correção. Depois de T2-T5 aplicadas, o teste passa.
+- [x] Para cada uma das quatro páginas (`matriculas`, `eficiencia`, `evasao`, `percentuais_legais`): o teste monta `layout()` (público) e `layout(preview_id="qualquer-string")` (prévia — sem precisar de banco real, já que o teste só olha a árvore de componentes, não dados; se `layout(preview_id=...)` exigir banco/sessão para não estourar, use os mesmos dublês/fixtures de `tests/test_previa_pagina.py`).
+- [x] Para cada layout, coleta o conjunto de `id`s presentes (via `componentes(layout)` de `arvore_dash.py`, ou equivalente).
+- [x] Para cada página, coleta do `dash.callback_map` (ou de `app._callback_list`/estrutura equivalente da versão de Dash instalada — confira em `requirements.txt`/`pip show dash`) todo `id` citado como `Input` ou `State` de um callback cujo módulo é o da página (filtre por prefixo do `id` ou pelo módulo de origem do callback, o que for mais simples de obter de forma confiável).
+- [x] O teste falha (assert explícito, com a lista de IDs faltando na mensagem) se algum `id` de `Input`/`State` não estiver no conjunto de IDs do layout público OU do layout de prévia.
+- [x] Rodar o teste ANTES de T2-T5 (ou num commit de verificação isolado) confirmando que ele pega a falha original (o `Store` de preview ausente no layout público) — isso prova que o teste é um teste de regressão de verdade, não um que passaria mesmo sem a correção. Depois de T2-T5 aplicadas, o teste passa.
 
 **Tests**: integration
 **Gate**: full
