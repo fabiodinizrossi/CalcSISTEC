@@ -83,6 +83,7 @@ def carregar_matriculas(db_path=DEFAULT_DB_PATH, conn=None):
         return pd.read_sql_query(
             """
             SELECT m.co_matricula, m.status_corrigido, m.ano_base,
+                   m.mes_ocorrencia_corrigido,
                    c.codigo_ciclo_matricula, c.tipo_programa_curso, c.dt_data_inicio,
                    cu.codigo_portfolio, cu.nome_curso_ajustado, cu.tipo_curso_pnp,
                    cu.subtipo_curso, cu.modalidade_ensino, cu.eixo_tecnologico_ajustado,
@@ -102,6 +103,7 @@ def carregar_matriculas(db_path=DEFAULT_DB_PATH, conn=None):
         return pd.read_sql_query(
             """
             SELECT m.co_matricula, m.status_corrigido, m.ano_base,
+                   m.mes_ocorrencia_corrigido,
                    c.codigo_ciclo_matricula, c.tipo_programa_curso, c.dt_data_inicio,
                    cu.codigo_portfolio, cu.nome_curso_ajustado, cu.tipo_curso_pnp,
                    cu.subtipo_curso, cu.modalidade_ensino, cu.eixo_tecnologico_ajustado,

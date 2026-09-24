@@ -27,11 +27,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from app.data import versoes  # noqa: E402
 from app.data.ingest import montar_versao_interna  # noqa: E402
 from app.data.schema import get_connection, init_db  # noqa: E402
-from app.data.transform import t02_corrigir_status  # noqa: E402
+from app.data.transform import t02_corrigir_status, t07_grao_matricula_atendida  # noqa: E402
 from app.sistec.consolidacao import ConsolidacaoInvalida, consolidar  # noqa: E402
 from app.domain.contrato import FiltrosAtivos  # noqa: E402
 from app.domain.eficiencia import calcular_iea, classificar_matriculas_eficiencia, eh_concluido  # noqa: E402
-from app.domain.matriculas import contar_por_status, filtrar_fic, taxa_evasao  # noqa: E402
+from app.domain.matriculas import contar_ingressantes, contar_por_status, filtrar_fic, taxa_evasao  # noqa: E402
 from app.domain.percentuais_legais import (  # noqa: E402
     cor_medidor,
     matriculas_equivalentes,
@@ -197,6 +197,87 @@ def test_pt002_taxa_evasao_com_denominador_zero_nao_gera_erro():
     """Cenário: taxa de evasão com denominador zero não gera erro."""
     df = pd.DataFrame({"status_corrigido": [], "ano_base": [], "co_unidade": [], "codigo_portfolio": []})
     assert taxa_evasao(df, FiltrosAtivos(ano_base=2026)) == 0.0
+
+
+# ============ MAT-02: Ingressantes (aproximação por ciclo/mês) ============
+
+
+def _df_ingressantes(*linhas):
+    """`dt_data_inicio` do ciclo, `status_corrigido` e `mes_ocorrencia_corrigido`
+    (texto em português, como o Sistec exporta)."""
+    return pd.DataFrame(
+        [
+            {
+                "co_matricula": f"M{i}",
+                "dt_data_inicio": dt_inicio,
+                "status_corrigido": status,
+                "mes_ocorrencia_corrigido": mes_ocorrencia,
+                "ano_base": 2026,
+                "co_unidade": co_unidade,
+                "codigo_portfolio": "P1",
+            }
+            for i, (dt_inicio, status, mes_ocorrencia, co_unidade) in enumerate(linhas, start=1)
+        ]
+    )
+
+
+def test_mat02_conta_ciclo_iniciado_no_ano_base_mesmo_com_status_concluida():
+    """MAT-02 AC1: a via do ciclo vale para qualquer status."""
+    df = _df_ingressantes(("2026-02-01", "CONCLUÍDA", "DEZEMBRO 2025", "U1"))
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 1
+
+
+def test_mat02_conta_em_curso_com_mes_de_ocorrencia_no_ano_base_e_ciclo_antigo():
+    """MAT-02 AC2: a segunda via, que só existe com o parse do mês em português."""
+    df = _df_ingressantes(("2024-03-10", "EM_CURSO", "JUNHO 2026", "U1"))
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 1
+
+
+def test_mat02_nao_conta_em_curso_com_ciclo_e_mes_de_outro_ano():
+    """MAT-02 AC3: `EM_CURSO` sozinho não é critério de ingresso."""
+    df = _df_ingressantes(("2024-03-10", "EM_CURSO", "DEZEMBRO 2025", "U1"))
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 0
+
+
+def test_mat02_nao_conta_abandono_com_mes_no_ano_base():
+    """A via `em_curso + mês` exige `EM_CURSO`. A mesma matrícula conta como
+    atendida em `t07` (matrícula atendida ≠ ingresso) — as duas contagens são
+    regras diferentes, e este teste fixa que a de ingresso não a inclui."""
+    df = _df_ingressantes(("2024-03-10", "ABANDONO", "JUNHO 2026", "U1"))
+
+    assert t07_grao_matricula_atendida(df, 2026).shape[0] == 1
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 0
+
+
+def test_mat02_respeita_os_filtros_de_campus():
+    """MAT-02 AC4: reusa `_aplicar_filtros` das demais contagens da página."""
+    df = _df_ingressantes(("2026-02-01", "CONCLUÍDA", "JUNHO 2026", "U9"))
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026, campus="U1")) == 0
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026, campus="U9")) == 1
+
+
+def test_mat02_dataframe_vazio_devolve_zero():
+    """Edge case de `spec.md`."""
+    df = pd.DataFrame(
+        columns=["dt_data_inicio", "status_corrigido", "mes_ocorrencia_corrigido", "ano_base", "co_unidade", "codigo_portfolio"]
+    )
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 0
+
+
+def test_mat02_mes_de_ocorrencia_invalido_nao_quebra_a_contagem():
+    """`RISK-002`: mês fora do padrão não levanta exceção nem infla a contagem."""
+    df = _df_ingressantes(
+        ("2024-03-10", "EM_CURSO", "LIXO", "U1"),
+        ("2024-03-10", "EM_CURSO", None, "U1"),
+        ("2024-03-10", "EM_CURSO", "JUNHO 2026", "U1"),
+    )
+
+    assert contar_ingressantes(df, FiltrosAtivos(ano_base=2026)) == 1
 
 
 # ===================== PT-003: Matrícula equivalente =====================

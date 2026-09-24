@@ -171,6 +171,7 @@ def test_callback_publico_filtro_vazio(monkeypatch):
                 "co_matricula": "M1",
                 "status_corrigido": "EM_CURSO",
                 "ano_base": 2026,
+                "mes_ocorrencia_corrigido": "JUNHO 2026",
                 "codigo_ciclo_matricula": "C1",
                 "tipo_programa_curso": "REGULAR",
                 "dt_data_inicio": "2026-01-01",

@@ -30,6 +30,7 @@ def _matriculas_de_teste():
             "co_matricula": [1, 2, 3],
             "status_corrigido": ["CONCLUÍDA", "EM_CURSO", "EM_CURSO"],
             "ano_base": [2026, 2026, 2026],
+            "mes_ocorrencia_corrigido": ["FEVEREIRO 2026"] * 3,
             "codigo_ciclo_matricula": [10, 10, 11],
             "tipo_programa_curso": ["Regular"] * 3,
             "dt_data_inicio": pd.to_datetime(["2026-02-01"] * 3),
@@ -83,7 +84,7 @@ def test_matriculas_mostra_os_kpis_em_card_figma_com_os_mesmos_numeros(matricula
     assert [textos(c) for c in cartoes] == [
         "Cursos 2",
         "Matrículas 3",
-        "Ingressantes 2",
+        "Ingressantes 3",
         "Matrículas concluídas 1",
         "Matrículas equivalentes 3,00",
     ]

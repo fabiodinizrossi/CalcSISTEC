@@ -15,7 +15,7 @@ from app.components.kpi import formatar_valor
 from app.components.mensagem import mensagem_ds
 from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_publicacao, dataset_disponivel
 from app.domain.contrato import FiltrosAtivos
-from app.domain.matriculas import contar_cursos_ativos, contar_evadidos, contar_matriculas, contar_por_status, filtrar_fic
+from app.domain.matriculas import contar_cursos_ativos, contar_evadidos, contar_ingressantes, contar_matriculas, contar_por_status, filtrar_fic
 from app.domain.shared import coluna_para_eixo, eh_evadido, matricula_equivalente
 from app.sistec.execucoes import PreviaIndisponivel, abrir_leitura_previa
 
@@ -352,7 +352,7 @@ def atualizar(fic, eixos, campus, tipo_curso, programa, preview_id=None):
     df_ano_base = df[df["ano_base"] == ano_base]
     total = contar_matriculas(df, filtros)
     concluidas = contar_por_status(df, filtros, STATUS_CONCLUIDA)
-    ingressantes = contar_por_status(df, filtros, STATUS_EM_CURSO)
+    ingressantes = contar_ingressantes(df, filtros)
     cursos_ativos = contar_cursos_ativos(df, filtros)
 
     if df_ano_base.empty:

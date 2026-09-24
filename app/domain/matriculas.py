@@ -16,8 +16,10 @@ escopo por depender de uma coluna (`categoria_origem_curso`) que só foi
 criada na Tarefa 11.
 """
 
+import pandas as pd
+
 from app.domain.contrato import FiltrosAtivos
-from app.domain.shared import eh_evadido
+from app.domain.shared import eh_evadido, parsear_mes_ocorrencia
 
 # BR-MIGRAR-021: conjunto FIC = exatamente Formação Inicial + Formação
 # Continuada, SEM Mulheres Mil — usa `categoria_origem_curso` (preservada
@@ -55,6 +57,22 @@ def contar_matriculas(df, filtros: FiltrosAtivos):
     """Total de matrículas atendidas (grão de BR-MIGRAR-001, já aplicado na
     ingestão) dentro dos filtros ativos."""
     return int(len(_aplicar_filtros(df, filtros)))
+
+
+def contar_ingressantes(df, filtros: FiltrosAtivos):
+    """MAT-02: aproximação de ingressante — a extração do Sistec não traz a data
+    da matrícula em si, só a do ciclo. Conta o ciclo iniciado no ano-base, OU a
+    matrícula `EM_CURSO` cujo mês de ocorrência cai no ano-base mesmo com ciclo
+    de outro ano (regra definida pela usuária em 2026-09-24). `EM_CURSO` sozinho
+    não é critério de ingresso (AC3).
+    """
+    filtrado = _aplicar_filtros(df, filtros)
+    dt_inicio = pd.to_datetime(filtrado["dt_data_inicio"], errors="coerce")
+    iniciou_no_ano_base = dt_inicio.dt.year == filtros.ano_base
+    em_curso = filtrado["status_corrigido"] == "EM_CURSO"
+    mes_ocorrencia = parsear_mes_ocorrencia(filtrado["mes_ocorrencia_corrigido"])
+    ocorreu_no_ano_base = mes_ocorrencia.dt.year == filtros.ano_base
+    return int((iniciou_no_ano_base | (em_curso & ocorreu_no_ano_base)).sum())
 
 
 def taxa_evasao(df, filtros: FiltrosAtivos):
