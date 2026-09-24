@@ -20,6 +20,26 @@ import random
 
 ANO_BASE = 2026
 
+# `MES_DE_OCORRENCIA` no Sistec real vem por extenso, em português
+# ("JUNHO 2026") — o simulador gerava "06/2026", formato que a extração real
+# nunca traz e que `app.domain.shared.parsear_mes_ocorrencia` não reconhece.
+# Dado sintético fora do formato real escondia a regra do mês de ocorrência
+# (MAT-01) do próprio modo de teste.
+MESES_PT = {
+    1: "JANEIRO",
+    2: "FEVEREIRO",
+    3: "MARÇO",
+    4: "ABRIL",
+    5: "MAIO",
+    6: "JUNHO",
+    7: "JULHO",
+    8: "AGOSTO",
+    9: "SETEMBRO",
+    10: "OUTUBRO",
+    11: "NOVEMBRO",
+    12: "DEZEMBRO",
+}
+
 # ---- Cabeçalhos no formato real do Sistec ---------------------------------
 
 CABECALHO_CICLO = (
@@ -126,7 +146,7 @@ def _status_aluno(rng, fim):
 def _mes_ocorrencia(rng, fim):
     ano = min(fim, ANO_BASE)
     mes = rng.randint(1, 12)
-    return f"{mes:02d}/{ano}"
+    return f"{MESES_PT[mes]} {ano}"
 
 
 def _data(fmt_ano, rng):
