@@ -113,11 +113,15 @@ def _candidato(db_path):
 
 
 def _publicar_os_mesmos_dados(db_path, candidato):
-    """Grava o `campus` publicado e publica as tabelas do candidato, para o
-    banco público ter exatamente os mesmos dados da fonte da prévia."""
+    """Grava a projeção `interna_campus` e publica as tabelas do candidato,
+    para o banco público ter exatamente os mesmos dados da fonte da prévia.
+
+    CPR-06: a semente vai para `interna_campus` porque é `publicar` quem copia
+    essa tabela para `campus` — antes dela só `aplicar_publico` escrevia
+    `campus`."""
     conn = get_connection(db_path)
     try:
-        _campus().to_sql("campus", conn, if_exists="append", index=False)
+        _campus().to_sql("interna_campus", conn, if_exists="append", index=False)
         conn.commit()
     finally:
         conn.close()

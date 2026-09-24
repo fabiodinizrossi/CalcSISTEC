@@ -98,9 +98,12 @@ def _conjunto_dois_campi(com_nulo=False):
 
 
 def _publicar_os_mesmos_dados(db_path, candidato):
+    # CPR-06: a semente de campus vai para `interna_campus` — `publicar` passa
+    # a copiar essa tabela para `campus` (antes dela, quem escrevia `campus`
+    # era só `aplicar_publico`, e a semente ia direto na tabela publicada).
     conn = get_connection(db_path)
     try:
-        _campus().to_sql("campus", conn, if_exists="append", index=False)
+        _campus().to_sql("interna_campus", conn, if_exists="append", index=False)
         conn.commit()
     finally:
         conn.close()

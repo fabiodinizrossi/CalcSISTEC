@@ -7,10 +7,11 @@ As tabelas atuais (`campus`, `cursos`, `ciclos`, `matriculas`,
 `anterior_*` têm DDL idêntico. Cada operação roda em uma única transação
 `BEGIN IMMEDIATE`, nunca mistura leitor com estado parcial (RN-21, RN-27).
 
-`campus` só muda por `aplicar_publico` (projeção de `campi_sistec` via
-`interna_campus`, RN-33) — nunca pelo ciclo salvar/publicar/desfazer de
-baixa, que cobre `cursos`, `ciclos`, `matriculas`, `matriculas_eficiencia` e
-`fatores`.
+`campus` acompanha o ciclo de baixa desde CPR-06: `publicar` copia
+`interna_campus` (projeção de `campi_sistec`, RN-33) para `campus` e guarda a
+publicada anterior em `anterior_campus`, e `desfazer` restaura junto. Para
+quem preferir aplicar só as edições de `campus`/`fatores`, `aplicar_publico`
+continua existindo como caminho independente.
 """
 
 import datetime
@@ -23,8 +24,8 @@ from app.data.schema import DEFAULT_DB_PATH, get_connection
 # DELETE precisa ir do filho para o pai; INSERT, do pai para o filho.
 _ORDEM_DELETE_BAIXA = ("matriculas_eficiencia", "matriculas", "ciclos", "cursos")
 _ORDEM_INSERT_BAIXA = ("cursos", "ciclos", "matriculas", "matriculas_eficiencia")
-_ORDEM_DELETE_PUBLICACAO = _ORDEM_DELETE_BAIXA + ("fatores",)
-_ORDEM_INSERT_PUBLICACAO = ("fatores",) + _ORDEM_INSERT_BAIXA
+_ORDEM_DELETE_PUBLICACAO = _ORDEM_DELETE_BAIXA + ("fatores", "campus")
+_ORDEM_INSERT_PUBLICACAO = ("fatores", "campus") + _ORDEM_INSERT_BAIXA
 
 # Colunas explícitas de cada tabela interna (mesma ordem do schema v2). A
 # gravação por `executemany` não infere colunas como `DataFrame.to_sql` fazia.

@@ -110,8 +110,33 @@ def test_salvar_interna_substitui_conteudo_anterior(db_path):
     assert codigos == ["P2"]
 
 
+def _definir_campus(db_path, cidade, nome_unidade, co_unidade="U1"):
+    """CPR-06: escreve a projeção `interna_campus` (RN-33)."""
+    conn = get_connection(db_path)
+    try:
+        conn.execute("DELETE FROM interna_campus")
+        conn.execute(
+            "INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES (?, ?, ?)",
+            (co_unidade, cidade, nome_unidade),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _campus_publicado(db_path, prefixo=""):
+    conn = get_connection(db_path)
+    try:
+        return conn.execute(
+            f"SELECT co_unidade, cidade, nome_unidade FROM {prefixo}campus ORDER BY co_unidade"
+        ).fetchall()
+    finally:
+        conn.close()
+
+
 def test_publicar_move_interna_para_publicada_e_atualiza_estado(db_path):
     versoes.salvar_interna(_conjunto_um_curso(), db_path)
+    _definir_campus(db_path, "Santa Maria", "Campus SM")
     versoes.publicar(db_path, admin_email="pi@iffarroupilha.edu.br")
 
     conn = get_connection(db_path)
@@ -127,13 +152,18 @@ def test_publicar_move_interna_para_publicada_e_atualiza_estado(db_path):
     assert rev_publicada == 1
     assert rev_anterior is None  # primeira publicação: nada a desfazer
     assert publicada_por == "pi@iffarroupilha.edu.br"
+    # CPR-06 AC3: `interna_campus` acompanha a publicação — sem isso o painel
+    # público fica sem campus numa instalação que nunca usou "Aplicar ao público".
+    assert _campus_publicado(db_path) == [("U1", "Santa Maria", "Campus SM")]
 
 
 def test_publicar_pela_segunda_vez_guarda_a_publicada_anterior(db_path):
     versoes.salvar_interna(_conjunto_um_curso("P1"), db_path)
+    _definir_campus(db_path, "Santa Maria", "Campus SM")
     versoes.publicar(db_path)
 
     versoes.salvar_interna(_conjunto_um_curso("P2"), db_path)
+    _definir_campus(db_path, "Jaguari", "Campus Jaguari")
     versoes.publicar(db_path)
 
     conn = get_connection(db_path)
@@ -150,12 +180,17 @@ def test_publicar_pela_segunda_vez_guarda_a_publicada_anterior(db_path):
     assert anterior == ["P1"]
     assert rev_publicada == 2
     assert rev_anterior == 1
+    # CPR-06 AC4: a publicação anterior também guarda o campus dela.
+    assert _campus_publicado(db_path) == [("U1", "Jaguari", "Campus Jaguari")]
+    assert _campus_publicado(db_path, prefixo="anterior_") == [("U1", "Santa Maria", "Campus SM")]
 
 
 def test_desfazer_restaura_a_publicada_anterior(db_path):
     versoes.salvar_interna(_conjunto_um_curso("P1"), db_path)
+    _definir_campus(db_path, "Santa Maria", "Campus SM")
     versoes.publicar(db_path)
     versoes.salvar_interna(_conjunto_um_curso("P2"), db_path)
+    _definir_campus(db_path, "Jaguari", "Campus Jaguari")
     versoes.publicar(db_path)
 
     versoes.desfazer(db_path)
@@ -176,6 +211,20 @@ def test_desfazer_restaura_a_publicada_anterior(db_path):
     assert interna == ["P2"]  # interna intocada pelo desfazer
     assert rev_publicada == 1
     assert rev_anterior is None
+    # CPR-06 AC4: o Desfazer devolve o campus anterior junto com a versão.
+    assert _campus_publicado(db_path) == [("U1", "Santa Maria", "Campus SM")]
+    assert _campus_publicado(db_path, prefixo="anterior_") == []
+
+
+def test_publicar_com_interna_campus_vazio_nao_falha(db_path):
+    """Edge case da spec: instalação sem campus cadastrado publica normalmente
+    e o painel público fica com `campus` vazio — sem erro."""
+    versoes.salvar_interna(_conjunto_um_curso(), db_path)
+
+    versoes.publicar(db_path)
+
+    assert _campus_publicado(db_path) == []
+    assert _campus_publicado(db_path, prefixo="anterior_") == []
 
 
 def test_desfazer_sem_nada_para_desfazer_levanta_erro(db_path):
