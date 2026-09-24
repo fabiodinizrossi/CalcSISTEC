@@ -1,25 +1,100 @@
-# Painel SISTEC (Dash) - Projeto completo (todas as páginas)
+# CalcSISTEC
+
+Painel de acompanhamento dos dados de matrícula do Sistec: lê os CSVs exportados
+do Sistec, calcula os indicadores da PNP e publica as páginas de consulta —
+Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual e Percentuais Legais.
+
+## Começar
+
+Precisa de Python 3.12 e de um terminal na raiz do clone.
+
+1. Clone o repositório e entre na pasta:
+
+   ```bash
+   git clone <url-do-repositorio> CalcSISTEC
+   cd CalcSISTEC
+   ```
+
+2. Crie o ambiente virtual e ative:
+
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate      # Windows
+   source .venv/bin/activate   # Linux/macOS
+   ```
+
+3. Instale as dependências nas versões fixas testadas:
+
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+
+4. Crie o `.env` a partir do exemplo e preencha `ADMIN_EMAIL`,
+   `ADMIN_PASSWORD_HASH` e `FLASK_SECRET_KEY`. As oito chaves estão explicadas
+   no próprio `.env.example`:
+
+   ```bash
+   copy .env.example .env      # Windows
+   cp .env.example .env        # Linux/macOS
+   ```
+
+5. Rode a suíte de testes:
+
+   ```bash
+   python -m pytest -q
+   ```
+
+6. Suba o painel — para testar, com credenciais de teste já configuradas:
+
+   ```powershell
+   .\scripts\testar.ps1 -Simulado
+   ```
+
+   Para valer (escuta em `0.0.0.0:8050`):
+
+   ```bash
+   python run.py
+   ```
+
+Passo a passo do ambiente de teste em `TESTAR.md`; publicação em `DEPLOY.md`.
 
 ## Estrutura
 
-```
-app/
-  data/        # BC-01: ingestão, validação e correção de status (Tarefa 05)
-  domain/      # BC-02/BC-03: regras de negócio puras (Tarefas 04, 06, 07)
-  pages/       # 1 arquivo por página (Tarefa 09)
-  components/  # UI reutilizável (Tarefa 09)
-  shell.py     # shell único (cabeçalho, menu, breadcrumb, rodapé): blueprint /ds/ e PainelDash
-  admin_campi.py  # gestão de campi em /admin/campi (lista, edição, inclusão)
-  templates/   # páginas administrativas (Jinja); shell/ tem os parciais e macros que o Dash também usa
-  static/      # gov.br DS, Rawline/Font Awesome e JS compartilhado (tema, menu, confirmação e ordenação), em /ds/
-  assets/      # só style.css e logotipos: o Dash carrega tudo desta pasta, por isso o DS fica fora dela
-  app.py       # app Dash + callbacks
-run.py         # entry point
-```
+| Caminho | Para que serve |
+| --- | --- |
+| `app/app.py` | App Dash e os callbacks das telas. |
+| `app/shell.py` | Shell único (cabeçalho, menu, breadcrumb, rodapé) e a rota `/ds/`. |
+| `app/auth.py` | Login e controle de acesso das rotas administrativas. |
+| `app/config.py` | Configuração de sessão (HTTPS, cookie `SameSite`) e do ano-base. |
+| `app/admin_campi.py` | Gestão de campi em `/admin/campi`. |
+| `app/domain/` | Regras de cálculo puras (matrículas, eficiência, evasão, percentuais legais). |
+| `app/data/` | Ingestão, correção, transformação e leitura dos dados (SQLite). |
+| `app/sistec/` | Coleta no Sistec, colunas aceitas, execuções e captura de perfis. |
+| `app/pages/` | Uma página pública por arquivo. |
+| `app/components/` | Componentes de UI reutilizados pelas páginas (filtros, cartões, tabelas). |
+| `app/templates/` | Páginas administrativas em Jinja e os parciais do shell. |
+| `app/static/` | gov.br DS, Rawline/Font Awesome e o JS compartilhado, servidos em `/ds/`. |
+| `app/assets/` | Só `style.css` e logotipos: o Dash carrega tudo desta pasta, por isso o DS fica fora dela. |
+| `scripts/` | `testar.ps1` (ambiente de teste), `sistec_simulado.py` e `verificar_prontidao_cutover.py`. |
+| `tests/` | Suíte `pytest` — paridade de domínio, telas, higiene do repositório. |
+| `.specs/` | Regras do projeto, estado atual e o histórico de cada feature. |
+| `extensao-sistec/` | Extensão de navegador legada; as telas atuais não a usam. |
+
+## Onde mexer
+
+| Quero… | Vá para |
+| --- | --- |
+| Mudar uma regra de cálculo | `app/domain/` — cada indicador tem seu módulo, com teste de paridade em `tests/test_parity_dominio.py`. Regra de negócio e explicação em `.specs/PROJECT_RULES.md`. |
+| Adicionar uma página pública | Crie um arquivo em `app/pages/` (uma página por arquivo), registre no menu em `app/shell.py` e use os componentes de `app/components/`. |
+| Mudar a coleta do Sistec | `app/sistec/` — URLs e tempos em `app/sistec/urls.py`, pastas vigiadas em `app/sistec/downloads.py`, execuções em `app/sistec/execucoes.py`. |
+| Mudar o visual (DS/tema) | `app/static/` (arquivos do gov.br DS servidos em `/ds/`), `app/assets/style.css` e os tokens em `app/static/govbr-ds/dist/core-tokens.css`. |
+| Mudar uma rota administrativa | `app/app.py` para a rota e o callback, `app/templates/` para a tela, `app/auth.py` se mexer no acesso. |
+| Mudar o schema ou uma migração | `app/data/schema.py`, com teste em `tests/test_schema_v2.py`. |
+| Instalar em outra instituição | Assistente em `/admin/instalacao`; a seção "Instalar em outra instituição" abaixo. |
 
 ## Painel público
 
-A rota `/` é o dashboard de **Matrículas**. Ela apresenta cinco KPIs, a matriz
+A rota `/` é o dashboard de **Matrículas**. Ele apresenta cinco KPIs, a matriz
 por campus/curso/oferta/modalidade/ciclo, filtros de campus, tipo de curso,
 programa e FIC, além do botão para limpar os filtros. `/matriculas` é mantida
 como redirecionamento para a página inicial.
@@ -31,49 +106,18 @@ toda a largura do card, os KPIs reorganizam a grade e a tabela preserva todas as
 colunas em uma região com rolagem horizontal.
 
 As tabelas de dados são ordenáveis pelo cabeçalho, com clique ou teclado
-(`Enter`/`Espaço`). O script compartilhado
-`app/static/js/ordenacao-tabelas.js` reconhece texto, números no formato
-brasileiro, percentuais e datas; cabeçalhos agrupadores e os marcados com
-`data-no-sort` não recebem ordenação. Valores vazios permanecem no fim.
-
-Ver `_reversa_sdd/migration/` e `_reversa_sdd/reconstruction-plan.md` (no repositório principal) para as specs completas desta migração.
-
-## Rodar local
-
-Para **testar**, use o atalho que já deixa tudo configurado (credenciais de teste,
-navegador aberto no login, Sistec real ou simulado) — passo a passo em
-[`TESTAR.md`](TESTAR.md):
-
-```powershell
-cd projetoFabio\CalcSISTEC
-.\scripts\testar.ps1              # Sistec real
-.\scripts\testar.ps1 -Simulado    # Sistec de mentira
-```
-
-No Claude Code, o mesmo atalho é o comando `/testar`.
-
-Para subir o app à mão (produção escuta em `0.0.0.0:8050`):
-
-```bash
-pip install -r requirements.txt
-python run.py
-```
-
-## Rodar na EC2 (modo teste)
-O `app.py` já está configurado para:
-- host 0.0.0.0
-- port 8050
-- debug False
-
-Libere a porta 8050 no Security Group (idealmente restrita ao seu IP).
+(`Enter`/`Espaço`). O script `app/static/js/ordenacao-tabelas.js` reconhece
+texto, números no formato brasileiro, percentuais e datas; cabeçalhos
+agrupadores e os marcados com `data-no-sort` não recebem ordenação. Valores
+vazios permanecem no fim.
 
 ## Atualização de dados (Sistec)
 
-Sem extensão e sem navegador automatizado: é a mecânica do script R. Quem tem
-a sessão é o **seu navegador de sempre**, com o seu login gov.br. O CalcSISTEC
-manda abrir as URLs de troca de campus e de exportação, vigia a pasta fixa de
-trabalho e a pasta de Downloads, e move, lê e apaga cada CSV assim que ele
-chega — sempre avisando na tela (passo a passo e barra de progresso).
+Sem extensão e sem navegador automatizado: quem tem a sessão é o **seu navegador
+de sempre**, com o seu login gov.br. O CalcSISTEC manda abrir as URLs de troca de
+campus e de exportação, vigia a pasta fixa de trabalho e a pasta de Downloads, e
+move, lê e apaga cada CSV assim que ele chega — sempre avisando na tela (passo a
+passo e barra de progresso).
 
 > O modo "janela do navegador" (Playwright + CDP) foi **removido**: o gov.br
 > identifica o navegador sob controle automático e recusa o login
@@ -81,12 +125,6 @@ chega — sempre avisando na tela (passo a passo e barra de progresso).
 
 O CalcSISTEC precisa rodar **na máquina de quem faz o login** (é o navegador
 dessa máquina que ele manda abrir).
-
-Uma vez só:
-
-```bash
-pip install -r requirements.txt
-```
 
 A cada atualização:
 
@@ -171,18 +209,8 @@ Teste sem o Sistec real: rode `python scripts/sistec_simulado.py` num terminal
 e o CalcSISTEC com `CALCSISTEC_SISTEC_BASE_URL=http://127.0.0.1:8051`
 (`SISTEC_SIM_LOGIN_AUTOMATICO=1` pula o login fake).
 
-Variáveis de ambiente relevantes:
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH`: credenciais da área administrativa.
-- `CALCSISTEC_SISTEC_BASE_URL`: só para desenvolvimento — aponta para o
-  Sistec simulado em vez do Sistec real.
-- `CALCSISTEC_PASTA_COLETA`: pasta fixa de trabalho da coleta (padrão
-  `%LOCALAPPDATA%\CalcSISTEC\coleta`, criada sozinha). Os CSVs são lidos e
-  apagados ali; configurar o navegador para baixar nessa pasta evita o
-  arquivo passar pela pasta de Downloads.
-- `CALCSISTEC_PASTA_DOWNLOADS`: a outra pasta vigiada (padrão: a pasta de
-  Downloads do usuário, lida do registro do Windows).
-- `CALCSISTEC_HTTPS=1`: liga `SESSION_COOKIE_SECURE` e faz `/api/sistec/*`
-  recusar HTTP simples fora de `localhost` (D-19).
+As variáveis de ambiente que o app lê estão descritas em `.env.example`, uma a
+uma.
 
 A extensão `extensao-sistec/` e as rotas `/api/sistec/*` continuam no
 repositório, mas as telas não as usam mais.
@@ -210,8 +238,19 @@ ano-base e a tabela de fatores (FEC/FECH), que são regra nacional da PNP,
 são preservados.
 
 ## Observação sobre métricas
+
 Algumas métricas (ex.: Matrículas equivalentes) estão implementadas como *proxy*:
+
 - `EQ_MATRICULA = NU_CARGA_HORARIA / CARGA_TOTAL` (quando disponível; senão 1.0)
 - `MatEq = soma(EQ_MATRICULA)`
 
-Isso pode ser ajustado depois conforme a regra oficial do seu Power BI.
+Isso pode ser ajustado depois conforme a regra oficial do seu Power BI. As
+divergências conhecidas que aguardam decisão humana estão listadas em `DEPLOY.md`.
+
+## Onde ler mais
+
+- `TESTAR.md` — ambiente de teste local, com Sistec real ou simulado.
+- `DEPLOY.md` — instalação, subida, checklist de publicação e pendências.
+- `AGENTS.md` — como agentes de IA trabalham neste repositório.
+- `.specs/README.md` — como ler as specs; `.specs/PROJECT_RULES.md` tem os
+  princípios do projeto e `.specs/STATE.md`, o estado atual.

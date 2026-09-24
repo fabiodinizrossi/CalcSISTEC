@@ -8,6 +8,7 @@ rodado de qualquer lugar.
 
 import ast
 import os
+import re
 import sys
 
 import pytest
@@ -76,7 +77,7 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
-DOCS_VERIFICADOS = ["DEPLOY.md"]
+DOCS_VERIFICADOS = ["DEPLOY.md", "README.md"]
 
 TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
 
@@ -117,6 +118,62 @@ def test_deploy_documenta_os_pontos_obrigatorios():
 
     for marcador in MARCADORES_DEPLOY:
         assert marcador in conteudo, f"{marcador} fora do DEPLOY.md"
+
+
+def texto(documento):
+    with open(caminho(*documento.split("/")), encoding="utf-8") as fonte:
+        return fonte.read()
+
+
+def test_readme_lista_cada_subdiretorio_de_app_e_as_pastas_do_projeto():
+    """DOC-03 AC6: a lista é montada do disco, então um subdiretório novo sem
+    documentação faz este teste falhar."""
+    conteudo = texto("README.md")
+
+    subpastas = sorted(
+        nome
+        for nome in os.listdir(caminho("app"))
+        if os.path.isdir(caminho("app", nome)) and nome != "__pycache__"
+    )
+    assert subpastas, "app/ sem subdiretorio nenhum?"
+
+    for pasta in subpastas:
+        assert f"app/{pasta}/" in conteudo, f"README.md nao cita app/{pasta}/"
+    for pasta in ("scripts/", "tests/", ".specs/"):
+        assert f"`{pasta}`" in conteudo, f"README.md nao cita `{pasta}`"
+
+
+def test_readme_tem_as_secoes_de_entrada_e_onde_mexer():
+    """DOC-03 AC7/AC8: "Começar" na ordem certa e "Onde mexer" presente."""
+    conteudo = texto("README.md")
+
+    assert "## Começar" in conteudo
+    assert "## Onde mexer" in conteudo
+
+    comecar = conteudo.split("## Começar", 1)[1].split("\n## ", 1)[0]
+    ordem = [
+        comecar.index("requirements-dev.txt"),
+        comecar.index(".env.example"),
+        comecar.index("pytest"),
+    ]
+    assert ordem == sorted(ordem), f"ordem errada em Comecar: {ordem}"
+
+
+PADRAO_CRASE = re.compile(r"`([^`\n]+)`")
+
+
+def test_todo_caminho_citado_no_readme_existe():
+    """DOC-03 AC6/AC7: caminho relativo citado entre crases tem de existir no
+    repositório — é o defeito que a feature corrige."""
+    citados = set()
+    for bruto in PADRAO_CRASE.findall(texto("README.md")):
+        sem_linha = re.sub(r":\d+(-\d+)?$", "", bruto.strip())
+        if sem_linha.startswith(("app/", "scripts/", "tests/", ".specs/")):
+            citados.add(sem_linha)
+
+    assert citados, "README.md nao cita caminho nenhum entre crases"
+    for citado in sorted(citados):
+        assert os.path.exists(caminho(*citado.split("/"))), f"README.md cita {citado}, que nao existe"
 
 
 def carregar_script(nome):

@@ -372,12 +372,12 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma que o README cita cada subdiretório existente de `app/` (listado dinamicamente, então um diretório novo sem documentação faz o teste falhar), mais `scripts/`, `tests/` e `.specs/`
-- [ ] O teste de higiene afirma a presença das seções "Começar" e "Onde mexer" e, dentro de "Começar", a ordem `requirements-dev.txt` → `.env.example` → `pytest`
-- [ ] O teste de higiene afirma que todo caminho relativo citado entre crases no README que comece com `app/`, `scripts/`, `tests/` ou `.specs/` existe no repositório
-- [ ] `README.md` entra na verificação de termos proibidos
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma que o README cita cada subdiretório existente de `app/` (listado dinamicamente, então um diretório novo sem documentação faz o teste falhar), mais `scripts/`, `tests/` e `.specs/`
+- [x] O teste de higiene afirma a presença das seções "Começar" e "Onde mexer" e, dentro de "Começar", a ordem `requirements-dev.txt` → `.env.example` → `pytest`
+- [x] O teste de higiene afirma que todo caminho relativo citado entre crases no README que comece com `app/`, `scripts/`, `tests/` ou `.specs/` existe no repositório
+- [x] `README.md` entra na verificação de termos proibidos
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick
