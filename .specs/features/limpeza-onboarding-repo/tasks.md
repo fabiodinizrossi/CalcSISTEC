@@ -481,11 +481,11 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] `tests/test_testar_ps1.py` ganha testes de integração marcados `skipif(sys.platform != "win32")` que usam uma porta livre (via `socket.bind(("127.0.0.1", 0))`) e `-SemNavegador`: `-Destacado` sai com 0 em menos de 60 s e a porta fica escutando (AC1); a saída cita um caminho de log dentro do diretório temporário e fora do repositório (AC2); segunda chamada com a porta ocupada sai com 1 e cita o PID (AC4); `-Parar` sai com 0 e libera a porta (AC5); `-Parar` sem nada no ar sai com 0 (AC5)
-- [ ] O teste encerra o processo em `finally`, mesmo se uma asserção falhar, e não deixa arquivo novo no repositório (`git status --porcelain` igual antes e depois, ignorando `.env`)
-- [ ] AC3 (timeout) coberto por teste que força a falha (por exemplo, uma variável de ambiente que o script lê para reduzir o timeout, combinada com uma porta que o app não vai abrir) **ou**, se isso exigir mudar o comportamento do produto, registrado como verificação manual no `validation.md` com o motivo
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] `tests/test_testar_ps1.py` ganha testes de integração marcados `skipif(sys.platform != "win32")` que usam uma porta livre (via `socket.bind(("127.0.0.1", 0))`) e `-SemNavegador`: `-Destacado` sai com 0 em menos de 60 s e a porta fica escutando (AC1); a saída cita um caminho de log dentro do diretório temporário e fora do repositório (AC2); segunda chamada com a porta ocupada sai com 1 e cita o PID (AC4); `-Parar` sai com 0 e libera a porta (AC5); `-Parar` sem nada no ar sai com 0 (AC5)
+- [x] O teste encerra o processo em `finally`, mesmo se uma asserção falhar, e não deixa arquivo novo no repositório (`git status --porcelain` igual antes e depois, ignorando `.env`)
+- [x] AC3 (timeout) coberto por teste que força a falha (por exemplo, uma variável de ambiente que o script lê para reduzir o timeout, combinada com uma porta que o app não vai abrir) **ou**, se isso exigir mudar o comportamento do produto, registrado como verificação manual no `validation.md` com o motivo
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: integration
 **Gate**: full

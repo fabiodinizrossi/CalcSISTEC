@@ -27,6 +27,16 @@
 .PARAMETER SemNavegador
     Não abre o navegador automaticamente.
 
+.PARAMETER Destacado
+    Sobe o app em um processo separado, com a saída e os erros em arquivo no
+    diretório temporário, e devolve o controle assim que a porta responde —
+    é o modo que qualquer agente (ou o comando /testar) usa. Para derrubar
+    depois, rode com -Parar.
+
+.PARAMETER Parar
+    Encerra quem estiver escutando na porta e sai. Não sobe nada. Com
+    -Simulado, encerra também o Sistec simulado da porta 8051.
+
 .EXAMPLE
     .\scripts\testar.ps1
     Testa contra o Sistec real.
@@ -39,7 +49,9 @@
 param(
     [switch]$Simulado,
     [int]$Porta = 8050,
-    [switch]$SemNavegador
+    [switch]$SemNavegador,
+    [switch]$Destacado,
+    [switch]$Parar
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,6 +60,33 @@ Set-Location $raiz
 
 function Escrever-Passo($texto) { Write-Host "  $texto" -ForegroundColor Cyan }
 function Escrever-Aviso($texto) { Write-Host "  $texto" -ForegroundColor Yellow }
+
+function Encerrar-Processos($portas) {
+    # Mata quem estiver escutando nessas portas. Devolve $true se matou alguém.
+    $algum = $false
+    foreach ($portaAlvo in $portas) {
+        $escuta = Get-NetTCPConnection -LocalPort $portaAlvo -State Listen -ErrorAction SilentlyContinue
+        if (-not $escuta) { continue }
+        foreach ($processoAlvo in ($escuta.OwningProcess | Sort-Object -Unique)) {
+            Stop-Process -Id $processoAlvo -Force -ErrorAction SilentlyContinue
+            Escrever-Passo "Encerrado o processo $processoAlvo (porta $portaAlvo)."
+            $algum = $true
+        }
+    }
+    return $algum
+}
+
+if ($Parar) {
+    # 1. Só derrubar: não confere dependências nem sobe nada.
+    $portasAlvo = @($Porta)
+    if ($Simulado) { $portasAlvo += 8051 }
+    Write-Host ""
+    if (-not (Encerrar-Processos $portasAlvo)) {
+        Escrever-Aviso "Não havia nada no ar nas portas $($portasAlvo -join ', ')."
+    }
+    Write-Host ""
+    exit 0
+}
 
 Write-Host ""
 Write-Host "=== CalcSISTEC: ambiente de teste ===" -ForegroundColor Green
@@ -119,6 +158,7 @@ $env:PYTHONIOENCODING = "utf-8"
 
 # 3. Sistec: real ou simulado ------------------------------------------------
 $trabalhoSimulado = $null
+$processoSimulado = $null
 if ($Simulado) {
     Remove-Item Env:\CALCSISTEC_SISTEC_BASE_URL -ErrorAction SilentlyContinue
     $env:CALCSISTEC_SISTEC_BASE_URL = "http://127.0.0.1:8051"
@@ -127,12 +167,22 @@ if ($Simulado) {
         Escrever-Aviso "Já havia algo escutando na porta 8051 — usando o que está no ar."
     } else {
         Escrever-Passo "Subindo o Sistec simulado na porta 8051..."
-        $trabalhoSimulado = Start-Job -ScriptBlock {
-            param($pasta)
-            Set-Location $pasta
+        if ($Destacado) {
+            # Em -Destacado o simulado também solta o terminal: quem derruba os
+            # dois depois é o -Parar, e não o fim deste processo.
             $env:SISTEC_SIM_LOGIN_AUTOMATICO = "1"
-            python scripts/sistec_simulado.py
-        } -ArgumentList $raiz
+            $processoSimulado = Start-Process -FilePath "python" `
+                -ArgumentList "scripts/sistec_simulado.py" -WindowStyle Hidden -PassThru `
+                -RedirectStandardOutput (Join-Path $env:TEMP "calcsistec-simulado-8051.log") `
+                -RedirectStandardError (Join-Path $env:TEMP "calcsistec-simulado-8051.err.log")
+        } else {
+            $trabalhoSimulado = Start-Job -ScriptBlock {
+                param($pasta)
+                Set-Location $pasta
+                $env:SISTEC_SIM_LOGIN_AUTOMATICO = "1"
+                python scripts/sistec_simulado.py
+            } -ArgumentList $raiz
+        }
         Start-Sleep -Seconds 2
     }
 } else {
@@ -146,6 +196,14 @@ if ($ocupada) {
     Write-Host ""
     Write-Host "A porta $Porta já está em uso (PID $pids) — provavelmente um CalcSISTEC antigo." -ForegroundColor Red
     Write-Host "Feche aquele terminal, ou rode: Stop-Process -Id $pids"
+    # O simulado que este processo subiu não pode ficar órfão na 8051.
+    if ($trabalhoSimulado) {
+        Stop-Job $trabalhoSimulado -ErrorAction SilentlyContinue
+        Remove-Job $trabalhoSimulado -ErrorAction SilentlyContinue
+    }
+    if ($processoSimulado) {
+        Stop-Process -Id $processoSimulado.Id -Force -ErrorAction SilentlyContinue
+    }
     exit 1
 }
 
@@ -172,12 +230,61 @@ if (-not $SemNavegador) {
 # 6. App (127.0.0.1: senha de teste não pode ficar exposta na rede) ----------
 # Sobe pelo run.py (e não por um app.run avulso) para o watchdog de execuções
 # subir junto — uma execução pausada ou travada precisa expirar também aqui.
+if ($Destacado) {
+    # Modo de quem não pode ficar preso ao servidor (agentes, /testar): sobe
+    # destacado, espera a porta responder e devolve o controle.
+    $limite = 60
+    $limitePedido = 0
+    # Escape de teste: encurta a espera sem mudar o padrão de 60 s.
+    if ([int]::TryParse($env:CALCSISTEC_TESTAR_TIMEOUT, [ref]$limitePedido) -and $limitePedido -gt 0) {
+        $limite = $limitePedido
+    }
+    $logApp = Join-Path $env:TEMP "calcsistec-$Porta.log"
+    $logErro = Join-Path $env:TEMP "calcsistec-$Porta.err.log"
+    Escrever-Passo "Subindo o app destacado na porta $Porta (logs em $env:TEMP)..."
+    $argumentos = "run.py --host 127.0.0.1 --port $Porta"
+    $processo = Start-Process -FilePath "python" -ArgumentList $argumentos `
+        -WindowStyle Hidden -PassThru `
+        -RedirectStandardOutput $logApp -RedirectStandardError $logErro
+
+    $acima = $false
+    for ($segundo = 1; $segundo -le $limite; $segundo++) {
+        Start-Sleep -Seconds 1
+        if (Get-NetTCPConnection -LocalPort $Porta -State Listen -ErrorAction SilentlyContinue) {
+            $acima = $true
+            break
+        }
+        if ($processo.HasExited) { break }
+    }
+
+    if (-not $acima) {
+        Stop-Process -Id $processo.Id -Force -ErrorAction SilentlyContinue
+        if ($processoSimulado) { Stop-Process -Id $processoSimulado.Id -Force -ErrorAction SilentlyContinue }
+        Write-Host ""
+        Write-Host "O app não abriu a porta $Porta em $limite s." -ForegroundColor Red
+        Write-Host "  Log:         $logApp"
+        Write-Host "  Log de erro: $logErro"
+        exit 1
+    }
+
+    Write-Host "  PID:         $($processo.Id)"
+    Write-Host "  Log:         $logApp"
+    Write-Host "  Log de erro: $logErro"
+    Escrever-Passo "Para derrubar: .\scripts\testar.ps1 -Parar -Porta $Porta"
+    Write-Host ""
+    exit 0
+}
+
 try {
     python run.py --host 127.0.0.1 --port $Porta
 } finally {
     if ($trabalhoSimulado) {
         Stop-Job $trabalhoSimulado -ErrorAction SilentlyContinue
         Remove-Job $trabalhoSimulado -ErrorAction SilentlyContinue
+        Write-Host "Sistec simulado encerrado." -ForegroundColor DarkGray
+    }
+    if ($processoSimulado) {
+        Stop-Process -Id $processoSimulado.Id -Force -ErrorAction SilentlyContinue
         Write-Host "Sistec simulado encerrado." -ForegroundColor DarkGray
     }
 }
