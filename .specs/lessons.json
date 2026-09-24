@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 9,
+  "next_id": 10,
   "lessons": [
     {
       "id": "L-001",
@@ -148,6 +148,24 @@
       ],
       "created": "2026-09-24T02:51:41Z",
       "last_seen": "2026-09-24T02:51:41Z"
+    },
+    {
+      "id": "L-009",
+      "key": "spec_precision_gap::edge cases de assinatura versionamento devem dizer quem mudou o estado a spec recusava 409 para qualquer mudanca em interna campus depois da montagem mas a escrita do proprio envio p1 3 ac3 precisa passar a distincao por outra origem so existia no tasks md",
+      "text": "Edge cases de assinatura/versionamento devem dizer quem mudou o estado: a spec recusava 409 para qualquer mudanca em interna_campus depois da montagem, mas a escrita do proprio envio (P1.3 AC3) precisa passar - a distincao 'por outra origem' so existia no tasks.md.",
+      "signal": "spec_precision_gap",
+      "scope": "app/app.py;app/sistec/execucoes.py;spec-ac",
+      "status": "candidate",
+      "features": [
+        "correcoes-previa-uso-real"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        ".specs/features/correcoes-previa-uso-real/spec.md:129 (app/app.py;app/sistec/execucoes.py;spec-ac)"
+      ],
+      "created": "2026-09-24T05:19:03Z",
+      "last_seen": "2026-09-24T05:19:03Z"
     }
   ]
 }

@@ -11,7 +11,7 @@ Cada task abaixo é para um modelo menos capaz executar sozinho, um de cada vez,
 ---
 
 **Spec**: `.specs/features/correcoes-previa-uso-real/spec.md`
-**Status**: In Progress (T20/T21 — correções de UAT ao vivo, 2026-09-24)
+**Status**: Done (T1–T19 + T20/T21 — esta última fechada com o Verifier PASS de 2026-09-24)
 
 ---
 
@@ -695,6 +695,8 @@ Isso é > 8 tasks no total, então a oferta de sub-agentes por lote se aplica (v
 | T17: resumo/amostra do candidato | 1 arquivo (`execucoes.py`), 1 função nova + 1 alterada | ✅ Granular |
 | T18: README | 1 arquivo | ✅ Granular |
 | T19: TESTAR.md | 1 arquivo | ✅ Granular |
+| T20: assinatura recalculada no envio | 1 arquivo (`app/app.py`), 1 linha + import | ✅ Granular |
+| T21: âncora com `check_same_thread=False` | 1 arquivo (`previa.py`), 1 chamada | ✅ Granular |
 
 Nenhuma task toca mais de um arquivo de produção; quando cita um arquivo de teste, é o "Done when" (co-localização exigida pela skill), não um segundo "Where".
 
@@ -723,6 +725,8 @@ Nenhuma task toca mais de um arquivo de produção; quando cita um arquivo de te
 | T17 | None | (sem seta) | ✅ Match |
 | T18 | T14 | `T14→T18` | ✅ Match |
 | T19 | T7, T14 | `T7→T19`, `T14→T19` | ✅ Match |
+| T20 | None | (sem seta) | ✅ Match |
+| T21 | None | (sem seta) | ✅ Match |
 
 Confirmado por `python3 .claude/skills/tlc-spec-driven/scripts/validate_tasks.py .specs/features/correcoes-previa-uso-real/tasks.md` → `0 error(s)`. T3-T5 e T12 não têm seta de entrada porque não dependem de dado de nenhuma outra task (arquivos diferentes); dentro da fase elas ainda rodam em sequência (T2 antes de T3 antes de T4...), só não é uma dependência de verdade — ver "Tips" no fim do arquivo.
 
@@ -751,6 +755,8 @@ Confirmado por `python3 .claude/skills/tlc-spec-driven/scripts/validate_tasks.py
 | T17 | `app/sistec/*.py` | unit | unit | ✅ OK |
 | T18 | Documentação | none | none | ✅ OK |
 | T19 | Documentação | none | none | ✅ OK |
+| T20 | `app/app.py` rota | integration | integration | ✅ OK |
+| T21 | `app/data/*.py` | unit | unit | ✅ OK |
 
 Nenhuma violação — nenhuma task usa "Tests: none" para uma camada que a matriz exige teste, e nenhuma task empurra teste para uma task futura (toda task que cria/altera código de produção já inclui, no próprio "Done when", os testes daquela mudança).
 

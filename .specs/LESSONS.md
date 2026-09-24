@@ -62,6 +62,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: app/app.py:468 (app/app.py)
 - last seen: 2026-09-24T02:51:41Z
 
+### L-009 - Edge cases de assinatura/versionamento devem dizer quem mudou o estado: a spec recusava 409 para qualquer mudanca em interna_campus depois da montagem, mas a escrita do proprio envio (P1.3 AC3) precisa passar - a distincao 'por outra origem' so existia no tasks.md.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `app/app.py;app/sistec/execucoes.py;spec-ac` · harmful: 0
+- features: correcoes-previa-uso-real
+- evidence: .specs/features/correcoes-previa-uso-real/spec.md:129 (app/app.py;app/sistec/execucoes.py;spec-ac)
+- last seen: 2026-09-24T05:19:03Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -126,7 +126,7 @@ A reprodução com os mesmos CSVs, numa cópia do banco, encontrou seis causas:
 - IF todos os ciclos de uma unidade forem descartados por falta de modalidade THEN the system SHALL tratar a unidade como ausente no envio, preservando os dados atuais dela.
 - IF o CSV de ciclos trouxer valores diferentes de `MUNICIPIO` para a mesma unidade THEN the system SHALL usar o primeiro valor não vazio na ordem dos arquivos.
 - IF `interna_campus` estiver vazio no Publicar THEN the system SHALL publicar mesmo assim e manter o comportamento de junção atual (painel sem linhas para unidades sem campus).
-- WHEN o Salvar recebe uma prévia cujo `interna_campus` mudou depois da montagem THEN the system SHALL recusar com o `409` de conferência desatualizada já existente.
+- WHEN o Salvar recebe uma prévia cujo `interna_campus` mudou **por outra origem** depois da montagem THEN the system SHALL recusar com o `409` de conferência desatualizada já existente. A escrita de campus feita pelo **próprio envio** (cadastro automático e complemento de cidade/nome, CPR-05) não conta como mudança: a assinatura de origem é recalculada depois dela, então o Salvar do mesmo envio grava e responde sucesso (P1.3 AC3; ver T20).
 
 ## Requirement Traceability
 
@@ -142,7 +142,7 @@ A reprodução com os mesmos CSVs, numa cópia do banco, encontrou seis causas:
 
 **Detalhamento:** CPR-01 = roteamento `path_template` e KPIs da prévia (P1.1 AC1–3); CPR-02 = Store sempre no layout e teste de IDs (P1.2 AC1–3); CPR-03 = descarte de ciclos sem modalidade e aviso (P1.3 AC1–3, AC5); CPR-04 = erro de montagem da fonte com corpo JSON (P1.3 AC4); CPR-05 = cidade/nome do campus vindos do CSV (P1.4 AC1–2, AC6); CPR-06 = Publicar/Desfazer com `campus` e prévia com `interna_campus` (P1.4 AC3–5); CPR-07 = resumo e amostra do candidato (P2 AC1–4).
 
-**Coverage:** 7 requisitos, todos verificados pelo Verifier independente em `.specs/features/correcoes-previa-uso-real/validation.md` (2026-09-24, PASS, 21/21 ACs, gate 875/875, sensor 1/1 mutação matada).
+**Coverage:** 7 requisitos, todos verificados pelo Verifier independente em `.specs/features/correcoes-previa-uso-real/validation.md` — duas rodadas em 2026-09-24, ambas **PASS**: a da feature (`4d4bbb8..1f645a4`, 21/21 ACs, gate 875/875, sensor 1/1 mutação matada) e a das duas fix tasks do UAT ao vivo (`3bfcf75..ad474c9`, T20/T21, 4/4 ACs, gate 879/879, sensor 2/2 mutações matadas).
 
 ## Project Rules & References
 

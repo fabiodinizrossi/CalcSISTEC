@@ -1,6 +1,72 @@
 # Correções da prévia após o uso real — Validação
 
-**Veredito: PASS.** O gap único da verificação anterior (CPR-04 / P1.3 AC4 — cadastro de campus gravado antes de a prévia terminar de montar) foi corrigido no commit `1f645a4`. As duas escritas (`_cadastrar_unidades_do_envio`, `_completar_unidades_incompletas`) agora rodam dentro do mesmo `try` que chama `preparar_versao`/`execucoes.abrir_previa`, só depois de `abrir_previa` suceder. O teste novo `tests/test_admin_envio.py::test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado` compara o banco antes/depois de um erro injetado e falha se qualquer escrita persistir. O gate está verde (875 testes) e o sensor, repetido especificamente no gap corrigido, matou a mutação que reintroduz a ordem antiga.
+> Este arquivo guarda as duas rodadas de verificação. O topo é a rodada
+> **2026-09-24 (T20/T21, diff `3bfcf75..ad474c9`)**; a rodada anterior
+> (2026-09-24, diff `4d4bbb8..1f645a4`) está preservada, sem alteração, na
+> seção "Rodada anterior (histórico)" mais abaixo.
+
+## Rodada 2026-09-24 — T20/T21 (fix tasks do UAT ao vivo)
+
+**Veredito: PASS.** As duas fix tasks abertas depois do UAT ao vivo estão implementadas com o mínimo necessário e ancoradas na spec: o recálculo da assinatura em `app/app.py:503` (T20, `f49580b`) e a âncora com `check_same_thread=False` em `app/data/previa.py:87` (T21, `ad474c9`). O sensor de discriminação matou a mutação de T20 (sintoma confirmado de forma independente: HTTP 409 `previa_desatualizada` com estado `previa`, idêntico ao descrito na spec) e as duas mutações esperadas de T21 (`sqlite3.ProgrammingError`). Nenhum AC ficou sem evidência e nenhum mutante sobreviveu. Uma única **lacuna de precisão da spec** foi registrada (o edge case `spec.md:129` não distingue a escrita do próprio envio da mudança de outra origem) — não bloqueia o veredito porque `tasks.md` T20 já traz a leitura correta, mas a spec deveria explicitar.
+
+**Data:** 2026-09-24
+**Spec:** `.specs/features/correcoes-previa-uso-real/spec.md`
+**Diff range:** `3bfcf75..ad474c9` — 2 commits: `f49580b` (T20, CPR-03) e `ad474c9` (T21, CPR-04)
+**Arquivos alterados:** `app/app.py`, `app/data/previa.py`, `tests/test_admin_envio.py`, `tests/test_previa_fonte.py`, `.specs/features/correcoes-previa-uso-real/tasks.md` — confirmado por `git log 3bfcf75..ad474c9 --stat`; nenhum arquivo fora desse conjunto.
+**Verifier:** subagente independente, distinto dos autores dos dois commits (author ≠ verifier). `spec.md`/`tasks.md` **não** foram marcados como Done/Verified por este relatório — a cargo do orquestrador.
+
+### Critérios de aceitação ancorados na spec
+
+Cada asserção abaixo foi conferida contra o desfecho definido na spec (não só contra "o teste passa"). As quatro linhas são desta rodada.
+
+| AC | Resultado definido na spec | Evidência de código (`file:line`) | Evidência de teste (`file:line` + asserção) | Estado |
+| --- | --- | --- | --- | --- |
+| **P1.3 AC3 / T20** | Envio que cadastra unidade nova grava a versão interna e responde sucesso (não 409 `previa_desatualizada`) | `app/app.py:503` — `candidato["assinatura_origem"] = calcular_assinatura_origem(db_path=DEFAULT_DB_PATH)`, depois das escritas (`:494-497`) e antes do retorno (`:525`); a mutação chega ao `Salvar` porque `execucoes.abrir_previa` guarda **o mesmo dict** (`app/sistec/execucoes.py:482`) e `salvar` lê `execucao.candidato["assinatura_origem"]` (`:386`) | `tests/test_admin_envio.py:736-751` — envio 200 (`:737`), `campi_cadastrados_automaticamente == ["U9"]` (`:738`), assinatura guardada == assinatura recalculada do banco já com U9 (`:744`), `Salvar` 200 (`:750`), `estado == "salva"` (`:751`) | PASS |
+| **Edge case / CPR-06 (T15)** | Mudança de **outra origem** em `interna_campus` depois do envio continua recusada com 409 | `app/sistec/execucoes.py:386` confere a assinatura (recalculada) contra o banco no `Salvar`; `:388-389` converte `ConflitoDeConferencia` em `PreviaDesatualizada`, sem mexer no estado | `tests/test_admin_envio.py:755-775` — `incluir_campus("99", …, "U7", …)` de outra origem (`:764-769`), `Salvar` 409 (`:773`), `erro == "previa_desatualizada"` (`:774`), `estado == "previa"` (`:775`) | PASS |
+| **P1.3 AC4 / T21** | A execução continua descartável: a fonte aberta no envio pode ser fechada por outra thread (`Descartar`/`Salvar` não podem dar 500) | `app/data/previa.py:87` — `sqlite3.connect(nome, uri=True, check_same_thread=False)`; `fechar` em `:55-60`; `abrir_leitura` **não** muda o default (`:50`), como pede a task | `tests/test_previa_fonte.py:294-302` — fonte criada dentro de `threading.Thread`, `fonte.fechar()` na thread principal sem exceção (`:300`), `fonte._ancora is None` (`:302`); `:305-330` — `execucoes.liberar_previa(execucao)` chamado de outra thread sem exceção (`:329`), `execucao.previa_fonte is None` (`:330`) | PASS |
+| **CPR-04 preservado** | Nenhuma escrita de campus antes de `execucoes.abrir_previa(...)` suceder | `app/app.py:486` (`try`) → `:490` `abrir_previa` → `:494-497` as duas escritas → `:503` recálculo → `:525` retorno; os dois ramos de erro (`:511-516` `MemoryError`, `:517-523` `Exception`) não chamam nenhuma escrita — só setam `resposta["erro_previa"]` e retornam | `tests/test_admin_envio.py:672` — `test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado` (verde no gate); reexecução do gate completo confirma que a ordem antiga não voltou | PASS |
+
+**Resultado:** 4 de 4 ACs com o desfecho da spec, nenhuma falha funcional, nenhum AC sem evidência.
+
+### Gate
+
+- **Comando:** `python -m pytest tests/ -q` (da raiz do repo; `python` direto no PATH, sem flags extras).
+- **Resultado:** **879 passed**, 0 failed, 0 skipped, 0 errors, 2 warnings (o `FutureWarning` pré-existente de `app/data/fatores.py:198-199`, sem relação com esta feature), 75,50 s.
+- **Baseline esperado:** 879 (875 + 4 novos) — confere. Os 4 testes novos, rodados isolados, dão 4 passed em 1,84 s.
+- **Integridade do banco:** `app/data/sistec.db` md5 `ba5b1569ae1c5fadecbc88c71451fc7c` antes e depois do gate — **inalterado**.
+- Nenhum diretório temporário novo no repo: `.pytest_cache/` já existia (mtime 2026-09-23 23:22, anterior a esta sessão) e é ignorado pelo git; nenhum `.test-*` nem `.verifier-scratch-*`.
+
+### Sensor de discriminação
+
+**Isolamento:** `git worktree add --detach <scratch> HEAD` em `%TEMP%` (`cpr2021-sensor-021654`). Baseline de `git status --porcelain` da árvore real capturado antes: exatamente `?? .agents/` e `?? nonascii.txt`. Nenhuma mutação na árvore real, nenhum `git stash`.
+
+**Achado de ambiente (já conhecido, não é falha da feature):** o worktree limpo não tem o `app/data/sistec.db` local (não versionado) e as rotas `/admin/*` devolvem 302 para `/admin/instalacao` (`_exigir_instalacao` lê `app/data/schema.DEFAULT_DB_PATH`, um caminho fixo do módulo, fora do `banco_temporario` que os testes trocam). Destravado criando um banco descartável **dentro do scratch** (`init_db` + `instalacao.concluir` no `DEFAULT_DB_PATH` do próprio worktree), sem copiar nenhum dado real; baseline do scratch então: 48 passed em `tests/test_admin_envio.py tests/test_previa_fonte.py`.
+
+| Mutação no scratch (uma por vez) | Teste alvo e resultado | Estado |
+| --- | --- | --- |
+| **M1** — remover a linha `candidato["assinatura_origem"] = calcular_assinatura_origem(db_path=DEFAULT_DB_PATH)` de `app/app.py` (volta ao comportamento com bug) | os 2 testes de T20: `..._nao_acusa_previa_desatualizada` **falha** em `tests/test_admin_envio.py:744` (`campus` do snapshot `()` vs `(('U9', 'Cidade Teste', 'Campus U9'),)`); `..._recusa_previa_quando_interna_campus_muda_depois_do_envio` continua **verde** (é guarda do caminho de 409 de outra origem, que M1 preserva — não é um mutante vivo) | **morta** (por 1 dos 2 testes) |
+| **M1, sonda extra** — no scratch, mesma mutação + sonda descartável que roda o fluxo do envio até o `Salvar` sem a asserção de `:744` | `Salvar` devolve **409 `previa_desatualizada`** com `estado == "previa"` — sintoma idêntico ao descrito na spec/tasks e ao UAT. Confirma que M1 reproduz o bug real e que o teste não morre por coincidência de asserção | confirmado |
+| **M2** — `sqlite3.connect(nome, uri=True, check_same_thread=False)` → `sqlite3.connect(nome, uri=True)` em `app/data/previa.py:87` | os 2 testes de T21 falham **ambos** com `sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread` — em `app/data/previa.py:59`, alcançado por `app/sistec/execucoes.py:496` (`liberar_previa` → `fonte.fechar()`) | **morta** |
+
+**Sobreviventes:** nenhum. O teste `..._recusa_previa_quando_interna_campus_muda_depois_do_envio` não matar M1 é o comportamento esperado (cobre o 409 de mudança externa, que M1 não altera), não um mutante vivo.
+
+**Verificação de isolamento:** `git worktree remove --force <scratch>` (diretório confirmado ausente depois); `git status --porcelain` da árvore real byte-idêntico ao baseline (`?? .agents/`, `?? nonascii.txt`); `app/data/sistec.db` com o mesmo md5; nenhum contato com o servidor de teste da porta 8050.
+
+### Lacunas e pendências (ordem de severidade)
+
+1. **Precisão da spec (baixa/média)** — `spec.md:129` diz "WHEN o Salvar recebe uma prévia cujo `interna_campus` mudou depois da montagem THEN recusar com 409", sem distinguir a origem da mudança. Depois de T20, a escrita do **próprio envio** não pode dar 409 (o teste de `:736-751` assere 200 para exatamente esse caso), então o edge case como está escrito contradiz P1.3 AC3. A distinção existe só em `tasks.md` T20 ("o 409 continua valendo para mudança de **outra** origem"). Sugestão: acrescentar "por outra origem" ao edge case de `spec.md`. Lição registrada via `lessons.py` (`spec_precision_gap`).
+2. **Cobertura do sintoma (baixa)** — o sintoma real de T21 foi o `Descartar` responder 500 sem corpo JSON (P1.3 AC4). Os dois testes novos cobrem a operação de base (`FontePrevia.fechar` / `execucoes.liberar_previa` atravessando threads), não a rota `POST …/descartar` end-to-end via `test_client`. Como a causa raiz é exatamente a exceção reproduzida (M2 a mata), a cobertura é considerada suficiente, mas não há teste de rota para o 500 do Descartar.
+3. **Doc desatualizada (baixa, a cargo do orquestrador)** — `spec.md:145` ainda registra "gate 875/875" e `tasks.md` está com `Status: In Progress (T20/T21)`; ambos precisam ser fechados junto com `validate_state.py`.
+
+**Pendências/UAT:** o UAT com os CSVs reais dos 11 campi — o cenário que originou as duas tarefas — continua pendente de confirmação humana; toda a paridade automatizada usa dados sintéticos.
+
+**Resumo desta rodada:** gate 879/879; sensor 3 mutações/sondas, nenhuma sobrevivente; ACs 4/4; 1 lacuna de precisão da spec registrada; **PASS**.
+
+---
+
+## Rodada anterior (histórico) — 2026-09-24, diff `4d4bbb8..1f645a4`
+
+**Veredito (rodada anterior): PASS.** O gap único da verificação anterior (CPR-04 / P1.3 AC4 — cadastro de campus gravado antes de a prévia terminar de montar) foi corrigido no commit `1f645a4`. As duas escritas (`_cadastrar_unidades_do_envio`, `_completar_unidades_incompletas`) agora rodam dentro do mesmo `try` que chama `preparar_versao`/`execucoes.abrir_previa`, só depois de `abrir_previa` suceder. O teste novo `tests/test_admin_envio.py::test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado` compara o banco antes/depois de um erro injetado e falha se qualquer escrita persistir. O gate está verde (875 testes) e o sensor, repetido especificamente no gap corrigido, matou a mutação que reintroduz a ordem antiga.
 
 **Data:** 2026-09-24
 **Spec:** `.specs/features/correcoes-previa-uso-real/spec.md`
