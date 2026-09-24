@@ -677,9 +677,9 @@ T18 → T19 → T20 → T21 → T22
 
 **Done when**:
 
-- [ ] Numa cópia isolada, cada uma destas mutações faz um teste falhar: apagar a linha "coleta do Sistec" de "Onde mexer"; escrever `projetoFabio` num comentário de `run.py`; pôr um hash `scrypt:...` em `ADMIN_PASSWORD_HASH` do `.env.example`; tirar a frase de não monitorar de `.claude/commands/testar.md`
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Numa cópia isolada, cada uma destas mutações faz um teste falhar: apagar a linha "coleta do Sistec" de "Onde mexer"; escrever `projetoFabio` num comentário de `run.py`; pôr um hash `scrypt:...` em `ADMIN_PASSWORD_HASH` do `.env.example`; tirar a frase de não monitorar de `.claude/commands/testar.md`
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 989 + 2, 0 failed
 
 **Tests**: unit
 **Gate**: full

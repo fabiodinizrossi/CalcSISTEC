@@ -50,6 +50,7 @@ TERMOS_PROIBIDOS = [
     "PARITY_REPORT.md",
     "CUTOVER.md",
     "APAGAR",
+    "projetoFabio",
 ]
 
 
@@ -87,7 +88,7 @@ DOCS_VERIFICADOS = [
     "TESTAR.md",
 ]
 
-TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
+TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["Tarefa "]
 
 
 @pytest.mark.parametrize("documento", DOCS_VERIFICADOS)
@@ -114,11 +115,13 @@ def test_project_rules_esta_na_versao_1_2_0():
 
 def test_specs_readme_nao_cita_o_fluxo_arquivado():
     """DOC-04 AC10: o índice das specs não manda mais ler nem apagar o material
-    do workflow anterior."""
+    do workflow anterior, e não aponta para arquivo que não existe — vale a
+    mesma lista de termos proibidos dos outros documentos."""
     conteudo = texto(".specs/README.md")
 
     assert "Spec Kit" not in conteudo
-    assert "APAGAR" not in conteudo
+    for termo in TERMOS_PROIBIDOS_EM_DOCS:
+        assert termo not in conteudo, f".specs/README.md cita {termo}"
 
 
 def test_cutover_e_parity_report_sairam_do_repositorio():
@@ -170,6 +173,15 @@ def test_readme_lista_cada_subdiretorio_de_app_e_as_pastas_do_projeto():
         assert f"`{pasta}`" in conteudo, f"README.md nao cita `{pasta}`"
 
 
+TEMAS_DE_ONDE_MEXER = [
+    "regra de cálculo",
+    "página pública",
+    "coleta do Sistec",
+    "visual",
+    "rota administrativa",
+]
+
+
 def test_readme_tem_as_secoes_de_entrada_e_onde_mexer():
     """DOC-03 AC7/AC8: "Começar" na ordem certa e "Onde mexer" presente."""
     conteudo = texto("README.md")
@@ -184,6 +196,16 @@ def test_readme_tem_as_secoes_de_entrada_e_onde_mexer():
         comecar.index("pytest"),
     ]
     assert ordem == sorted(ordem), f"ordem errada em Comecar: {ordem}"
+
+
+def test_onde_mexer_cobre_os_cinco_temas():
+    """DOC-03 AC8: "Onde mexer" responde às cinco perguntas previsíveis —
+    regra de cálculo, página pública, coleta do Sistec, visual e rota
+    administrativa. É a tabela que evita o agente procurar no lugar errado."""
+    secao = texto("README.md").split("## Onde mexer", 1)[1].split("\n## ", 1)[0]
+
+    for tema in TEMAS_DE_ONDE_MEXER:
+        assert tema in secao, f"Onde mexer não cita {tema}"
 
 
 PADRAO_CRASE = re.compile(r"`([^`\n]+)`")
@@ -243,6 +265,31 @@ def test_agents_tem_as_secoes_de_entrada_e_de_ambiente_de_teste():
     assert "## Subir o ambiente de teste" in conteudo
     assert "-Destacado" in conteudo
     assert "-Parar" in conteudo
+
+
+FRASE_DE_NAO_MONITORAR_AGENTS = "monitora o servidor depois"
+FRASE_DE_NAO_MONITORAR_COMANDO = "acompanhe o servidor"
+
+
+def test_instrucao_de_nao_monitorar_o_servidor_depois_de_subir():
+    """AMB-02 AC7/AC8: quem sobe em `-Destacado` não fica preso ao servidor —
+    a ordem de não monitorar o log depois de subir está escrita para o agente,
+    no guia (AGENTS.md) e no atalho (`/testar`)."""
+    secao = texto("AGENTS.md").split("## Subir o ambiente de teste", 1)[1].split("\n## ", 1)[0]
+    linha = next(
+        (linha for linha in secao.splitlines() if FRASE_DE_NAO_MONITORAR_AGENTS in linha),
+        None,
+    )
+    assert linha is not None, "AGENTS.md não diz para não monitorar o servidor"
+    assert "não" in linha, linha
+
+    comando = texto(".claude/commands/testar.md")
+    linha = next(
+        (linha for linha in comando.splitlines() if FRASE_DE_NAO_MONITORAR_COMANDO in linha),
+        None,
+    )
+    assert linha is not None, "o /testar não diz para não acompanhar o servidor"
+    assert "Não" in linha, linha
 
 
 def test_claude_importa_o_agents():
@@ -399,9 +446,26 @@ def test_env_exemplo_documenta_todas_as_chaves_de_ambiente():
         assert chave in valores, f"{chave} fora do .env.example"
 
 
+VALORES_DE_EXEMPLO = {
+    "CALCSISTEC_SISTEC_BASE_URL": "https://sistec.mec.gov.br",
+    "ANO_BASE": "2026",
+}
+
+PADRAO_HASH_HEX = re.compile(r"[0-9a-fA-F]{32,}")
+
+
 def test_env_exemplo_nao_traz_segredo_nenhum():
-    """DEP-02 AC4: arquivo versionado não pode carregar segredo real."""
+    """DEP-02 AC4: arquivo versionado não pode carregar segredo real — cada
+    chave fica vazia ou com um valor de exemplo reconhecido, e nenhum valor
+    parece hash de senha (`scrypt:`/`pbkdf2:`) nem segredo hexadecimal."""
     valores = valores_env_exemplo()
 
     assert valores["FLASK_SECRET_KEY"] == ""
     assert valores["ADMIN_PASSWORD_HASH"] == ""
+
+    for chave, valor in valores.items():
+        assert valor == "" or valor == VALORES_DE_EXEMPLO.get(chave), (
+            f"{chave} tem valor que não é de exemplo: {valor!r}"
+        )
+        assert not valor.startswith(("scrypt:", "pbkdf2:")), f"{chave} tem hash de senha"
+        assert not PADRAO_HASH_HEX.fullmatch(valor), f"{chave} tem segredo hexadecimal"
