@@ -270,6 +270,30 @@ def preencher_unidade(id_perfil, co_unidade, db_path=DEFAULT_DB_PATH):
         conn.close()
 
 
+def completar_cidade_nome(co_unidade, cidade, nome_unidade, db_path=DEFAULT_DB_PATH):
+    """CPR-05 AC2: preenche `cidade`/`nome_unidade` de toda linha de
+    `campi_sistec` com esse `co_unidade`, só onde o campo está vazio — valor
+    já gravado nunca é sobrescrito (`COALESCE`). `None` não preenche nada.
+
+    Código inexistente não é erro (0 linhas afetadas): quem cadastra unidade
+    nova é `incluir_campus`."""
+    conn = get_connection(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            "UPDATE campi_sistec SET cidade = COALESCE(cidade, ?), "
+            "nome_unidade = COALESCE(nome_unidade, ?) WHERE co_unidade = ?",
+            (cidade, nome_unidade, co_unidade),
+        )
+        _regravar_interna_campus(conn)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def excluir_campus(id_perfil, db_path=DEFAULT_DB_PATH):
     """Exclui um perfil da lista. Se ele ainda existir no Sistec, volta na
     próxima leitura; para deixar de baixá-lo de vez, use `definir_ativo`."""

@@ -396,11 +396,11 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Nova função `completar_cidade_nome(co_unidade, cidade, nome_unidade, db_path=DEFAULT_DB_PATH)` em `app/data/campi.py`, seguindo o mesmo esqueleto transacional das funções vizinhas (`BEGIN IMMEDIATE`, `try`/`except Exception: rollback; raise`/`finally: close`).
-- [ ] O `UPDATE` afeta **todas** as linhas de `campi_sistec` com aquele `co_unidade` (pode haver mais de uma, se houver duplicidade histórica — mas normalmente uma só) usando `cidade = COALESCE(cidade, ?), nome_unidade = COALESCE(nome_unidade, ?) WHERE co_unidade = ?`. Se `cidade`/`nome_unidade` recebidos forem `None`, o `COALESCE` não muda nada (comportamento correto: nada para preencher).
-- [ ] Chama `_regravar_interna_campus(conn)` (linha 289) antes do commit, do mesmo jeito que as outras funções de escrita deste arquivo.
-- [ ] `co_unidade` que não existe em `campi_sistec`: a função não faz nada (0 linhas afetadas) e não levanta erro — quem cadastra unidades novas é `incluir_campus`, não esta função.
-- [ ] Em `tests/test_campi.py`: teste que cadastra um campus sem cidade/nome (via `incluir_campus`, sem passar esses argumentos), chama `completar_cidade_nome` com valores, e confere que `cidade`/`nome_unidade` foram gravados E que `interna_campus` foi regravada (mesmo padrão de asserção que os outros testes deste arquivo usam para `_regravar_interna_campus`). Outro teste confirma que, se o campus já tinha `cidade` preenchida, chamar `completar_cidade_nome` com um valor diferente **não** sobrescreve o valor existente.
+- [x] Nova função `completar_cidade_nome(co_unidade, cidade, nome_unidade, db_path=DEFAULT_DB_PATH)` em `app/data/campi.py`, seguindo o mesmo esqueleto transacional das funções vizinhas (`BEGIN IMMEDIATE`, `try`/`except Exception: rollback; raise`/`finally: close`).
+- [x] O `UPDATE` afeta **todas** as linhas de `campi_sistec` com aquele `co_unidade` (pode haver mais de uma, se houver duplicidade histórica — mas normalmente uma só) usando `cidade = COALESCE(cidade, ?), nome_unidade = COALESCE(nome_unidade, ?) WHERE co_unidade = ?`. Se `cidade`/`nome_unidade` recebidos forem `None`, o `COALESCE` não muda nada (comportamento correto: nada para preencher).
+- [x] Chama `_regravar_interna_campus(conn)` (linha 289) antes do commit, do mesmo jeito que as outras funções de escrita deste arquivo.
+- [x] `co_unidade` que não existe em `campi_sistec`: a função não faz nada (0 linhas afetadas) e não levanta erro — quem cadastra unidades novas é `incluir_campus`, não esta função.
+- [x] Em `tests/test_campi.py`: teste que cadastra um campus sem cidade/nome (via `incluir_campus`, sem passar esses argumentos), chama `completar_cidade_nome` com valores, e confere que `cidade`/`nome_unidade` foram gravados E que `interna_campus` foi regravada (mesmo padrão de asserção que os outros testes deste arquivo usam para `_regravar_interna_campus`). Outro teste confirma que, se o campus já tinha `cidade` preenchida, chamar `completar_cidade_nome` com um valor diferente **não** sobrescreve o valor existente.
 
 **Tests**: unit
 **Gate**: full

@@ -211,3 +211,74 @@ def test_inclusao_exige_so_identificador_e_nome_do_perfil():
         {"id_perfil": "8278857", "nome_perfil": "Perfil", "co_unidade": "", "cidade": "", "nome_unidade": ""},
         inclusao=True,
     ) == {}
+
+
+def _interna_campus(db_path):
+    conn = get_connection(db_path)
+    try:
+        return conn.execute(
+            "SELECT co_unidade, cidade, nome_unidade FROM interna_campus ORDER BY co_unidade"
+        ).fetchall()
+    finally:
+        conn.close()
+
+
+def test_completar_cidade_nome_preenche_o_que_esta_vazio(tmp_path):
+    """CPR-05 AC2: campus cadastrado sem cidade/nome recebe os dois valores da
+    planilha, e `interna_campus` é regravada com o par completo."""
+    db_path = str(tmp_path / "captura.db")
+    init_db(db_path)
+    campi.incluir_campus("1", "Assessor - Sem unidade", co_unidade="U1", db_path=db_path)
+    assert _interna_campus(db_path) == []
+
+    campi.completar_cidade_nome("U1", "Santa Maria", "Campus SM", db_path)
+
+    assert _campi_sistec(db_path) == [
+        {
+            "id_perfil": "1",
+            "nome_perfil": "Assessor - Sem unidade",
+            "co_unidade": "U1",
+            "cidade": "Santa Maria",
+            "nome_unidade": "Campus SM",
+        }
+    ]
+    assert _interna_campus(db_path) == [("U1", "Santa Maria", "Campus SM")]
+
+
+def test_completar_cidade_nome_nao_sobrescreve_valor_existente(tmp_path):
+    """CPR-05 AC2: o `COALESCE` só preenche o campo vazio — cidade já gravada
+    continua a antiga."""
+    db_path = str(tmp_path / "captura.db")
+    init_db(db_path)
+    campi.incluir_campus(
+        "1", "Assessor - Campus A", co_unidade="U1", cidade="Cidade Antiga", db_path=db_path
+    )
+
+    campi.completar_cidade_nome("U1", "Cidade Nova", "Campus A", db_path)
+
+    linha = _campi_sistec(db_path)[0]
+    assert linha["cidade"] == "Cidade Antiga"
+    assert linha["nome_unidade"] == "Campus A"
+    assert _interna_campus(db_path) == [("U1", "Cidade Antiga", "Campus A")]
+
+
+def test_completar_cidade_nome_com_valores_nulos_nao_muda_nada(tmp_path):
+    db_path = str(tmp_path / "captura.db")
+    init_db(db_path)
+    campi.incluir_campus("1", "Assessor - Campus A", co_unidade="U1", db_path=db_path)
+
+    campi.completar_cidade_nome("U1", None, None, db_path)
+
+    linha = _campi_sistec(db_path)[0]
+    assert linha["cidade"] is None and linha["nome_unidade"] is None
+    assert _interna_campus(db_path) == []
+
+
+def test_completar_cidade_nome_de_codigo_inexistente_nao_falha(tmp_path):
+    db_path = str(tmp_path / "captura.db")
+    init_db(db_path)
+    campi.incluir_campus("1", "Assessor - Campus A", co_unidade="U1", db_path=db_path)
+
+    campi.completar_cidade_nome("U9", "Cidade", "Campus 9", db_path)
+
+    assert _campi_sistec(db_path)[0]["cidade"] is None
