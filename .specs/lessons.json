@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 11,
+  "next_id": 18,
   "lessons": [
     {
       "id": "L-001",
@@ -184,6 +184,132 @@
       ],
       "created": "2026-09-24T06:26:46Z",
       "last_seen": "2026-09-24T06:26:46Z"
+    },
+    {
+      "id": "L-011",
+      "key": "surviving_mutant::assertar o numero que a spec fixa timeout limite no proprio valor nao so o resultado da operacao",
+      "text": "Assertar o numero que a spec fixa (timeout, limite) no proprio valor, nao so o resultado da operacao.",
+      "signal": "surviving_mutant",
+      "scope": "scripts/testar.ps1",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/test_testar_ps1.py:147 (M9) (scripts/testar.ps1)"
+      ],
+      "created": "2026-09-24T17:11:13Z",
+      "last_seen": "2026-09-24T17:11:13Z"
+    },
+    {
+      "id": "L-012",
+      "key": "surviving_mutant::assertar cada dado que a spec manda o comando imprimir url credenciais identificadores nao so o codigo de saida e a porta",
+      "text": "Assertar cada dado que a spec manda o comando imprimir (URL, credenciais, identificadores), nao so o codigo de saida e a porta.",
+      "signal": "surviving_mutant",
+      "scope": "scripts/testar.ps1",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "scripts/testar.ps1:215 (M12) (scripts/testar.ps1)"
+      ],
+      "created": "2026-09-24T17:11:13Z",
+      "last_seen": "2026-09-24T17:11:13Z"
+    },
+    {
+      "id": "L-013",
+      "key": "surviving_mutant::dar teste automatizado a todo ac criterio verificado so a mao deixa o ramo invisivel para o sensor",
+      "text": "Dar teste automatizado a todo AC: criterio verificado so a mao deixa o ramo invisivel para o sensor.",
+      "signal": "surviving_mutant",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "scripts/testar.ps1:82 (M13) (tests)"
+      ],
+      "created": "2026-09-24T17:11:13Z",
+      "last_seen": "2026-09-24T17:11:13Z"
+    },
+    {
+      "id": "L-014",
+      "key": "surviving_mutant::cobrir com teste os edge cases declarados de funcao pre existente mesmo quando a feature so passa a chama la",
+      "text": "Cobrir com teste os edge cases declarados de funcao pre-existente, mesmo quando a feature so passa a chama-la.",
+      "signal": "surviving_mutant",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "app/sistec/execucoes.py:571 (M11) (tests)"
+      ],
+      "created": "2026-09-24T17:11:13Z",
+      "last_seen": "2026-09-24T17:11:13Z"
+    },
+    {
+      "id": "L-015",
+      "key": "ac_gap::quando o ac enumera n itens obrigatorios assertar os n itens assertar so o recipiente deixa implementacao parcial passar",
+      "text": "Quando o AC enumera N itens obrigatorios, assertar os N itens; assertar so o recipiente deixa implementacao parcial passar.",
+      "signal": "ac_gap",
+      "scope": "docs",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "DOC-03 AC8 (tests/test_higiene_repositorio.py:177) (docs)"
+      ],
+      "created": "2026-09-24T17:11:14Z",
+      "last_seen": "2026-09-24T17:11:14Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::assertar o conjunto inteiro de chaves que o criterio enumera nao so as uma ou duas que carregam risco",
+      "text": "Assertar o conjunto inteiro de chaves que o criterio enumera, nao so as uma ou duas que carregam risco.",
+      "signal": "ac_gap",
+      "scope": "docs",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "DEP-02 AC4 (tests/test_higiene_repositorio.py:402) (docs)"
+      ],
+      "created": "2026-09-24T17:11:14Z",
+      "last_seen": "2026-09-24T17:11:14Z"
+    },
+    {
+      "id": "L-017",
+      "key": "ac_gap::assertar o efeito preparatorio que um passo exige antes de rodar arquivo criado pasta garantida nao so o estado final",
+      "text": "Assertar o efeito preparatorio que um passo exige antes de rodar (arquivo criado, pasta garantida), nao so o estado final.",
+      "signal": "ac_gap",
+      "scope": "scripts/testar.ps1",
+      "status": "candidate",
+      "features": [
+        "limpeza-onboarding-repo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "edge case .env (scripts/testar.ps1:122) (scripts/testar.ps1)"
+      ],
+      "created": "2026-09-24T17:11:14Z",
+      "last_seen": "2026-09-24T17:11:14Z"
     }
   ]
 }

@@ -74,6 +74,48 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: G2 / .specs/features/correcao-matricula-atendida/spec.md (Out of Scope, residuo 16.750 vs 16.832) (paridade/spec)
 - last seen: 2026-09-24T06:26:46Z
 
+### L-011 - Assertar o numero que a spec fixa (timeout, limite) no proprio valor, nao so o resultado da operacao.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `scripts/testar.ps1` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: tests/test_testar_ps1.py:147 (M9) (scripts/testar.ps1)
+- last seen: 2026-09-24T17:11:13Z
+
+### L-012 - Assertar cada dado que a spec manda o comando imprimir (URL, credenciais, identificadores), nao so o codigo de saida e a porta.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `scripts/testar.ps1` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: scripts/testar.ps1:215 (M12) (scripts/testar.ps1)
+- last seen: 2026-09-24T17:11:13Z
+
+### L-013 - Dar teste automatizado a todo AC: criterio verificado so a mao deixa o ramo invisivel para o sensor.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: scripts/testar.ps1:82 (M13) (tests)
+- last seen: 2026-09-24T17:11:13Z
+
+### L-014 - Cobrir com teste os edge cases declarados de funcao pre-existente, mesmo quando a feature so passa a chama-la.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: app/sistec/execucoes.py:571 (M11) (tests)
+- last seen: 2026-09-24T17:11:13Z
+
+### L-015 - Quando o AC enumera N itens obrigatorios, assertar os N itens; assertar so o recipiente deixa implementacao parcial passar.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `docs` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: DOC-03 AC8 (tests/test_higiene_repositorio.py:177) (docs)
+- last seen: 2026-09-24T17:11:14Z
+
+### L-016 - Assertar o conjunto inteiro de chaves que o criterio enumera, nao so as uma ou duas que carregam risco.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `docs` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: DEP-02 AC4 (tests/test_higiene_repositorio.py:402) (docs)
+- last seen: 2026-09-24T17:11:14Z
+
+### L-017 - Assertar o efeito preparatorio que um passo exige antes de rodar (arquivo criado, pasta garantida), nao so o estado final.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scripts/testar.ps1` · harmful: 0
+- features: limpeza-onboarding-repo
+- evidence: edge case .env (scripts/testar.ps1:122) (scripts/testar.ps1)
+- last seen: 2026-09-24T17:11:14Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
