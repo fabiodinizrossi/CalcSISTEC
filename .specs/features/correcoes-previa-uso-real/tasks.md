@@ -372,10 +372,10 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Nova função `dados_unidades_do_envio(df_ciclos)` em `app/sistec/envio.py`, que devolve `dict[str, dict]` no formato `{"U1": {"cidade": "Santa Maria", "nome_unidade": "Campus SM"}, ...}` — uma entrada por `CO_UNIDADE` distinto presente em `df_ciclos`.
-- [ ] Para cada `CO_UNIDADE`, `cidade` é o primeiro valor de `MUNICIPIO_UNIDADE` não nulo/não vazio (depois de `str().strip()`) entre as linhas daquele código, na ordem em que aparecem no DataFrame; mesma regra para `nome_unidade`/`NOME_UNIDADE_ENSINO`. Se nenhuma linha tiver valor não vazio, o campo correspondente fica `None` (não a string vazia).
-- [ ] `df_ciclos` vazio, ou sem as colunas `CO_UNIDADE`/`MUNICIPIO_UNIDADE`/`NOME_UNIDADE_ENSINO`, devolve `{}` sem erro (mesma tolerância de `_codigos_ciclo`, linha 60).
-- [ ] Em `tests/test_envio.py`: teste com duas linhas do mesmo `CO_UNIDADE`, a primeira com `MUNICIPIO` vazio e a segunda preenchida, confirmando que o valor da segunda linha é usado (primeiro não vazio, não necessariamente a primeira linha). Outro teste com uma unidade sem nenhum valor preenchido, confirmando `None`. Outro teste com duas unidades diferentes, confirmando que cada uma recebe seu próprio valor.
+- [x] Nova função `dados_unidades_do_envio(df_ciclos)` em `app/sistec/envio.py`, que devolve `dict[str, dict]` no formato `{"U1": {"cidade": "Santa Maria", "nome_unidade": "Campus SM"}, ...}` — uma entrada por `CO_UNIDADE` distinto presente em `df_ciclos`.
+- [x] Para cada `CO_UNIDADE`, `cidade` é o primeiro valor de `MUNICIPIO_UNIDADE` não nulo/não vazio (depois de `str().strip()`) entre as linhas daquele código, na ordem em que aparecem no DataFrame; mesma regra para `nome_unidade`/`NOME_UNIDADE_ENSINO`. Se nenhuma linha tiver valor não vazio, o campo correspondente fica `None` (não a string vazia).
+- [x] `df_ciclos` vazio, ou sem as colunas `CO_UNIDADE`/`MUNICIPIO_UNIDADE`/`NOME_UNIDADE_ENSINO`, devolve `{}` sem erro (mesma tolerância de `_codigos_ciclo`, linha 60).
+- [x] Em `tests/test_envio.py`: teste com duas linhas do mesmo `CO_UNIDADE`, a primeira com `MUNICIPIO` vazio e a segunda preenchida, confirmando que o valor da segunda linha é usado (primeiro não vazio, não necessariamente a primeira linha). Outro teste com uma unidade sem nenhum valor preenchido, confirmando `None`. Outro teste com duas unidades diferentes, confirmando que cada uma recebe seu próprio valor.
 
 **Tests**: unit
 **Gate**: full

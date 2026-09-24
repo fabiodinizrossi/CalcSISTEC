@@ -7,7 +7,14 @@ import pandas as pd
 from werkzeug.datastructures import FileStorage
 
 from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA
-from app.sistec.envio import EnvioInvalido, campi_ausentes, campi_nao_cadastrados, ler_pastas, nome_seguro
+from app.sistec.envio import (
+    EnvioInvalido,
+    campi_ausentes,
+    campi_nao_cadastrados,
+    dados_unidades_do_envio,
+    ler_pastas,
+    nome_seguro,
+)
 
 
 def _arquivo(nome, colunas):
@@ -108,3 +115,57 @@ def test_campus_com_todos_ciclos_excluidos_aparece_como_ausente():
     ciclos = pd.DataFrame({"CO_UNIDADE": ["1"], "SITUACAO_CICLO": ["EXCLUÍDO"]})
 
     assert campi_ausentes(ciclos, [{"co_unidade": "1"}]) == ["1"]
+
+
+def _ciclos(cidade, nome):
+    return pd.DataFrame(
+        {
+            "CO_UNIDADE": ["1", "1"],
+            "MUNICIPIO_UNIDADE": cidade,
+            "NOME_UNIDADE_ENSINO": nome,
+        }
+    )
+
+
+def test_dados_unidades_do_envio_usa_o_primeiro_valor_nao_vazio():
+    """CPR-05 AC1: linha com valor vazio não fecha o campo — vale o primeiro
+    valor não vazio na ordem das linhas."""
+    ciclos = _ciclos(["", "Santa Maria"], ["", "Campus SM"])
+
+    assert dados_unidades_do_envio(ciclos) == {
+        "1": {"cidade": "Santa Maria", "nome_unidade": "Campus SM"}
+    }
+
+
+def test_dados_unidades_do_envio_sem_valor_preenchido_fica_none():
+    ciclos = _ciclos(["   ", None], [None, "   "])
+
+    assert dados_unidades_do_envio(ciclos) == {"1": {"cidade": None, "nome_unidade": None}}
+
+
+def test_dados_unidades_do_envio_separa_cada_unidade():
+    ciclos = pd.DataFrame(
+        {
+            "CO_UNIDADE": ["1", "2", "1", "2"],
+            "MUNICIPIO_UNIDADE": ["Alegrete", "Jaguari", "", ""],
+            "NOME_UNIDADE_ENSINO": ["Campus Alegrete", None, "", "Campus Jaguari"],
+        }
+    )
+
+    assert dados_unidades_do_envio(ciclos) == {
+        "1": {"cidade": "Alegrete", "nome_unidade": "Campus Alegrete"},
+        "2": {"cidade": "Jaguari", "nome_unidade": "Campus Jaguari"},
+    }
+
+
+def test_dados_unidades_do_envio_tolera_df_vazio_ou_sem_as_colunas():
+    assert dados_unidades_do_envio(pd.DataFrame(columns=["CO_UNIDADE"])) == {}
+    assert dados_unidades_do_envio(pd.DataFrame({"CO_UNIDADE": ["1"]})) == {}
+
+
+def test_dados_unidades_do_envio_remove_espacos_das_pontas():
+    ciclos = _ciclos(["  Santa Maria  ", ""], ["  Campus SM  ", ""])
+
+    assert dados_unidades_do_envio(ciclos) == {
+        "1": {"cidade": "Santa Maria", "nome_unidade": "Campus SM"}
+    }
