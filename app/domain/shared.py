@@ -11,6 +11,8 @@ Paradigma alvo (`paradigm_decision.md`): procedural rico, estilo funcional leve 
 cada função pura, recebendo os filtros ativos como parâmetro explícito, sem estado global.
 """
 
+import pandas as pd
+
 from app.domain.contrato import EixoQuebra, FiltrosAtivos
 
 # BR-MIGRAR-005: definição única de evasão (7 status) — o legado tinha 3
@@ -30,6 +32,28 @@ STATUS_EVADIDO = {
 # Qualificação Profissional, onde fech = carga_horaria_total / 800.
 TIPO_CURSO_QUALIFICACAO_PROFISSIONAL = "QUALIFICAÇÃO PROFISSIONAL"
 CARGA_HORARIA_REFERENCIA_FECH = 800
+
+# MAT-01 (AC2): o Sistec exporta `MES_DE_OCORRENCIA` por extenso, em português
+# e em maiúsculas ("JUNHO 2026"). `pandas`/`dateutil` não reconhece nomes de mês
+# em português — `pd.to_datetime(..., errors="coerce")` devolvia `NaT` para
+# 100% das linhas, e a via do mês de ocorrência em `t07_grao_matricula_atendida`
+# nunca era verdadeira. `MARCO` sem cedilha entra como chave extra porque as
+# exportações variam na acentuação (edge case de `spec.md`).
+MESES_PT = {
+    "JANEIRO": 1,
+    "FEVEREIRO": 2,
+    "MARÇO": 3,
+    "MARCO": 3,
+    "ABRIL": 4,
+    "MAIO": 5,
+    "JUNHO": 6,
+    "JULHO": 7,
+    "AGOSTO": 8,
+    "SETEMBRO": 9,
+    "OUTUBRO": 10,
+    "NOVEMBRO": 11,
+    "DEZEMBRO": 12,
+}
 
 # BR-MIGRAR-020: mapeia cada eixo de quebra (seleção única) para a coluna do
 # dataset consolidado usada para agrupar — corrige o bug M-D3 do legado
@@ -99,3 +123,28 @@ def modalidade(df):
     coluna `modalidade_ensino` em `cursos` — este acessor existe para que
     nenhuma página leia outra coluna divergente."""
     return df["modalidade_ensino"]
+
+
+def parsear_mes_ocorrencia(serie):
+    """MAT-01: interpreta `MES_DE_OCORRENCIA` do Sistec, texto em português
+    (`"JUNHO 2026"`), como o dia 1 daquele mês.
+
+    Devolve `pandas.Series` de `pandas.Timestamp` com o mesmo índice de
+    `serie`. Qualquer valor que não seja `<nome de mês em português> <ano de 4
+    dígitos>` (nulo, vazio, texto inesperado, outro formato de data) vira
+    `pandas.NaT` — nunca levanta exceção (MAT-01 AC4, `RISK-002`). O contrato
+    de retorno é o mesmo de `pd.to_datetime(..., errors="coerce")`, com
+    `.dt.year` já pronto para uso.
+    """
+    texto = serie.astype("string").str.strip().str.upper()
+    extraido = texto.str.extract(r"^([A-ZÇ]+)\s+(\d{4})$")
+    mes = extraido[0].map(MESES_PT)
+    ano = pd.to_numeric(extraido[1], errors="coerce")
+    valido = mes.notna() & ano.notna()
+    # `pd.to_datetime` não aceita ano/mês ausentes; preenche com um valor
+    # qualquer e apaga depois com `where`, preservando o índice.
+    datas = pd.to_datetime(
+        {"year": ano.fillna(1970).astype("int64"), "month": mes.fillna(1).astype("int64"), "day": 1},
+        errors="coerce",
+    )
+    return datas.where(valido, pd.NaT)
