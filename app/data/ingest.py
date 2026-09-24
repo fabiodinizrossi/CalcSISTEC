@@ -173,6 +173,24 @@ def _ler_mantidos(conn, campi_falhos):
     return {"cursos": cursos, "ciclos": ciclos, "matriculas": matriculas, "matriculas_eficiencia": matriculas_eficiencia}
 
 
+def ciclos_com_modalidade(df_ciclo):
+    """CPR-03: descarta os ciclos sem `MODALIDADE_ENSINO` (nulo, `NaN` ou
+    vazio/só espaço) antes de montar `cursos`/`ciclos`/`matriculas`.
+
+    Ciclos antigos de programas encerrados (ex.: MULHERES MIL 2011–2013)
+    chegam assim do Sistec, e `modalidade_ensino` é `NOT NULL` em
+    `cursos`/`interna_cursos` — a gravação da fonte da prévia quebrava com
+    `IntegrityError`. As matrículas desses ciclos saem junto: o `merge` de
+    `montar_matriculas_e_eficiencia` é `inner` contra os ciclos.
+
+    `df_ciclo` vazio ou sem a coluna volta como veio."""
+    if df_ciclo is None or df_ciclo.empty or "MODALIDADE_ENSINO" not in df_ciclo.columns:
+        return df_ciclo
+    modalidade = df_ciclo["MODALIDADE_ENSINO"]
+    sem_modalidade = modalidade.isna() | (modalidade.astype(str).str.strip() == "")
+    return df_ciclo.loc[~sem_modalidade]
+
+
 def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
     """PVP-10 (`previa-paginas-publicas`, T1): assinatura de origem do
     candidato — as dependências que precisam continuar iguais entre a
@@ -224,8 +242,24 @@ def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=No
     else:
         df_ciclo_novos = df_ciclo
 
-    cursos_novos, ciclos_novos, cursos_rejeitados = _cursos_e_ciclos_do_conjunto(df_ciclo_novos)
-    matriculas_novos, eficiencia_novos = montar_matriculas_e_eficiencia(df_matricula, df_ciclo_novos, ano_base)
+    # CPR-03: ciclos sem modalidade de ensino são descartados antes de montar
+    # o candidato — as matrículas deles saem por não casarem no merge interno.
+    df_ciclo_novos_validos = ciclos_com_modalidade(df_ciclo_novos)
+    codigos_descartados = set(df_ciclo_novos["CODIGO_CICLO_MATRICULA"]) - set(
+        df_ciclo_novos_validos["CODIGO_CICLO_MATRICULA"]
+    )
+    n_ciclos_descartados = int(len(df_ciclo_novos) - len(df_ciclo_novos_validos))
+    if codigos_descartados and "CODIGO_CICLO_MATRICULA" in df_matricula.columns:
+        n_matriculas_descartadas = int(
+            df_matricula["CODIGO_CICLO_MATRICULA"].isin(codigos_descartados).sum()
+        )
+    else:
+        n_matriculas_descartadas = 0
+
+    cursos_novos, ciclos_novos, cursos_rejeitados = _cursos_e_ciclos_do_conjunto(df_ciclo_novos_validos)
+    matriculas_novos, eficiencia_novos = montar_matriculas_e_eficiencia(
+        df_matricula, df_ciclo_novos_validos, ano_base
+    )
     matriculas_novos = matriculas_novos.rename(
         columns={"CO_MATRICULA": "co_matricula", "CODIGO_CICLO_MATRICULA": "codigo_ciclo_matricula"}
     ).assign(ano_base=ano_base)[_COLUNAS_MATRICULAS_SCHEMA] if not matriculas_novos.empty else pd.DataFrame(
@@ -277,6 +311,8 @@ def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=No
         "cursos_rejeitados_sem_portfolio": cursos_rejeitados,
         "cursos_fator_nao_encontrado": int(cursos_final["fator_nao_encontrado"].sum()),
         "campi_mantidos": sorted(campi_falhos),
+        "ciclos_sem_modalidade_descartados": n_ciclos_descartados,
+        "matriculas_sem_modalidade_descartadas": n_matriculas_descartadas,
     }
     return {
         "tabelas": tabelas,

@@ -217,5 +217,67 @@ def test_montar_versao_interna_mantem_retorno_e_grava(db_path):
         "cursos_rejeitados_sem_portfolio",
         "cursos_fator_nao_encontrado",
         "campi_mantidos",
+        "ciclos_sem_modalidade_descartados",
+        "matriculas_sem_modalidade_descartadas",
     }
     assert _rev_interna(db_path) == 1
+
+
+def _conjunto_com_ciclo_sem_modalidade(modalidade_vazia):
+    """Um ciclo normal (C1/P1, 1 matrícula) e um ciclo sem `MODALIDADE
+    ENSINO` (C2/P2, 2 matrículas) — os casos reais de 2011–2013."""
+    ciclos = [
+        _linha_ciclo(),
+        _linha_ciclo(
+            CODIGO_CICLO_MATRICULA="C2",
+            **{"CÓDIGO DO PORTFÓLIO": "P2", "MODALIDADE_ENSINO": modalidade_vazia},
+        ),
+    ]
+    matriculas = [
+        _linha_matricula(),
+        _linha_matricula(CO_MATRICULA="M2", CODIGO_CICLO_MATRICULA="C2"),
+        _linha_matricula(CO_MATRICULA="M3", CODIGO_CICLO_MATRICULA="C2"),
+    ]
+    return _conjunto(ciclos, matriculas)
+
+
+@pytest.mark.parametrize("modalidade_vazia", ["", "   ", None])
+def test_preparar_versao_descarta_ciclos_sem_modalidade(db_path, modalidade_vazia):
+    """CPR-03: ciclo sem `MODALIDADE_ENSINO` (vazio, só espaço ou nulo) sai do
+    candidato com as matrículas dele; o ciclo normal continua."""
+    conjunto = _conjunto_com_ciclo_sem_modalidade(modalidade_vazia)
+
+    candidato = preparar_versao(conjunto, (), db_path=db_path, ano_base=2026)
+
+    assert candidato["resumo"]["ciclos_sem_modalidade_descartados"] == 1
+    assert candidato["resumo"]["matriculas_sem_modalidade_descartadas"] == 2
+
+    tabelas = candidato["tabelas"]
+    assert set(tabelas["ciclos"]["codigo_ciclo_matricula"]) == {"C1"}
+    assert set(tabelas["cursos"]["codigo_portfolio"]) == {"P1"}
+    assert set(tabelas["matriculas"]["codigo_ciclo_matricula"]) == {"C1"}
+    assert set(tabelas["matriculas"]["co_matricula"]) == {"M1"}
+    assert "C2" not in set(tabelas["matriculas_eficiencia"]["codigo_ciclo_matricula"])
+
+
+def test_montar_versao_interna_descarta_ciclos_sem_modalidade(db_path):
+    """CPR-03 AC5: a baixa direta do Sistec usa a mesma preparação e descarta
+    os ciclos sem modalidade, sem deixar resíduo na interna."""
+    conjunto = _conjunto_com_ciclo_sem_modalidade("")
+
+    resumo = montar_versao_interna(conjunto, (), db_path=db_path, ano_base=2026)
+
+    assert resumo["ciclos_sem_modalidade_descartados"] == 1
+    assert resumo["matriculas_sem_modalidade_descartadas"] == 2
+
+    conn = get_connection(db_path)
+    try:
+        ciclos = {linha[0] for linha in conn.execute("SELECT codigo_ciclo_matricula FROM interna_ciclos")}
+        portas = {linha[0] for linha in conn.execute("SELECT codigo_portfolio FROM interna_cursos")}
+        matriculas = {linha[0] for linha in conn.execute("SELECT co_matricula FROM interna_matriculas")}
+    finally:
+        conn.close()
+
+    assert ciclos == {"C1"}
+    assert portas == {"P1"}
+    assert matriculas == {"M1"}
