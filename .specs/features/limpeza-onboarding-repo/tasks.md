@@ -651,9 +651,9 @@ T18 → T19 → T20 → T21 → T22
 
 **Done when**:
 
-- [ ] Numa cópia isolada, remover a guarda `if _VARREDURA_THREAD is not None and _VARREDURA_THREAD.is_alive(): return` faz o teste falhar (mata M11)
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Numa cópia isolada, remover a guarda `if _VARREDURA_THREAD is not None and _VARREDURA_THREAD.is_alive(): return` faz o teste falhar (mata M11)
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 988 + 1, 0 failed
 
 **Tests**: unit
 **Gate**: full

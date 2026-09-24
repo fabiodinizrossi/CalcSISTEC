@@ -4,6 +4,7 @@ pausa de 4 h — com relógio injetável, sem `sleep` real."""
 
 import os
 import sys
+import threading
 from datetime import datetime, timedelta
 
 import pytest
@@ -528,3 +529,39 @@ def test_obter_captura_por_token_recusa_token_errado():
     captura = execucoes.criar_captura("pi@iffarroupilha.edu.br", relogio=relogio)
     with pytest.raises(execucoes.ExecucaoInvalida):
         execucoes.obter_captura_por_token(captura.id, "errado")
+
+
+def threads_do_laco():
+    """Threads de varredura vivas (o alvo do laço é `_loop`)."""
+    return [
+        thread
+        for thread in threading.enumerate()
+        if getattr(getattr(thread, "_target", None), "__name__", None) == "_loop"
+    ]
+
+
+def test_iniciar_varredura_e_idempotente():
+    """WDG-01 (edge case): `run.py` chama `iniciar_varredura` e o app também
+    pode chamar — duas chamadas não podem deixar dois laços varrendo o mesmo
+    registro. `intervalo_s` curto (0,05 s) para a thread sair rápido no fim.
+
+    O estado global é restaurado no `finally`: sem isso a thread ficaria viva
+    entre testes, varrendo o registro que o `limpar_registro` acabou de limpar.
+    """
+    anterior = execucoes._VARREDURA_THREAD
+    assert anterior is None, "outro teste deixou uma varredura no ar"
+
+    try:
+        execucoes.iniciar_varredura(intervalo_s=0.05)
+        primeira = execucoes._VARREDURA_THREAD
+        assert primeira is not None and primeira.is_alive()
+
+        execucoes.iniciar_varredura(intervalo_s=0.05)
+
+        assert execucoes._VARREDURA_THREAD is primeira, "a segunda chamada trocou a thread"
+        assert threads_do_laco() == [primeira], threads_do_laco()
+    finally:
+        execucoes.parar_varredura()
+        if execucoes._VARREDURA_THREAD is not None:
+            execucoes._VARREDURA_THREAD.join(timeout=5)
+        execucoes._VARREDURA_THREAD = anterior
