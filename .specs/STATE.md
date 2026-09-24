@@ -44,9 +44,24 @@
 
 ## Handoff
 
+**Estado atual** (2026-09-24)
+
+- **Branch**: `migracao-dash-gov-br`, só commits locais (sem push/merge/deploy).
+- **Última feature concluída e validada**: `correcao-matricula-atendida` (Verifier PASS; gate 939 passed).
+- **Em execução**: `limpeza-onboarding-repo` — T1–T17 implementados e commitados; verificação independente ainda **não** rodou, nada marcado como `Verified`.
+- **Pendências humanas abertas**: conferência dos KPIs de `correcao-matricula-atendida` no navegador (Matrículas Atendida ~16.750/16.832 e Ingressantes ≠ total Em Curso); DS-42 (validação em celular real); CSRF nas rotas administrativas (`POST` só com `SameSite=Lax`).
+- **Follow-ups registrados**: refatorar `app.py` em blueprints, junto com IDs de spec nas docstrings e nomes em inglês; funções usadas só por testes (`filter_panel`, `agrupar_por_eixo`, `paginas_com_falha`, `deduplicar_por_campus`); cerca de 40 linhas em docstrings de `app/` e `scripts/` ainda citam documentos Reversa inexistentes fora da lista do DOC-01 (`roadmap.md`, `data-delta.md`, `f0-resultado.md`, `data_migration_plan.md`, `target_*.md`, `paradigm_decision.md`, `parity_tests/`) — tratar junto da feature de enxugar docstrings.
+
 Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao vivo).
 
-### Feature atual: `correcao-matricula-atendida`
+### Feature atual: `limpeza-onboarding-repo`
+
+- **Estado**: **implementada, aguardando o Verifier**. Small (DOC/LIM/DEP/AMB/WDG/EST); `spec.md` e `tasks.md` aprovados em `b68118e`. Execução em três lotes delegados, todos com gate verde e `[x]` marcado no `tasks.md` no mesmo commit: lote A (T1–T7, fases 1–3) em `492f086`, `2fa2c65`, `b26e7c6`, `e4e0974`, `01f732d`, `8386596`, `f28f685` — 939 → 960 testes; lote B (T8–T14, fase 4) em `9b6eda0`, `c39d604`, `89c76f1`, `942824d`, `979a0e4`, `3bff893`, `eb67820` — 960 → 975; lote C (T15–T17, fase 5) em `dcb95cf` (T15), `a3829bf` (T16) e o commit de fechamento (T17) — 975 → **985 passed, 0 failed**. Baseline da feature: 939 passed (`21941fd`).
+- **O que mudou**: `run.py` ganha `main(argv=None)` com `argparse` e sobe o watchdog antes do `app.run` (WDG-01/WDG-02, bug corrigido por teste que reproduz a falha); `testar.ps1` passa a subir o app por `run.py` e ganha `-Destacado`/`-Parar` (AMB-01, com testes de integração em Windows usando porta livre — nunca a 8050); saem `app/data/validators.py`, quatro funções sem chamador, `nonascii.txt` e `chromedriver/`; `requirements.txt`, `requirements-dev.txt`, `.python-version` e `.env.example` fixam a instalação; `README.md` reescrito com Começar/Estrutura/Onde mexer, `TESTAR.md` alinhado, os dois documentos antigos de cutover e paridade substituídos por `DEPLOY.md`, `PROJECT_RULES.md` emendado para 1.2.0 (`.specs/` é a fonte, sem fonte externa), `.specs/README.md` sem o material arquivado; `AGENTS.md`, `.claude/commands/testar.md` e `CLAUDE.md` dão o guia comum a qualquer agente.
+- **Divergências da execução**: AC6 do AMB-01 (`-Destacado -Simulado` sobe o simulado na 8051 e `-Parar` derruba os dois) foi verificado **à mão**, não por teste — a 8051 pode estar ocupada por ambiente manual da usuária e um teste automático a mataria; a evidência está no relatório do lote C (app na 64006, simulado na 8051, `-Parar` encerrou os PIDs 4032 e 25568, 8050 intacta). AC1–AC5 têm teste automatizado. Cerca de 40 linhas de docstring em `app/`/`scripts/` ainda citam documentos Reversa fora da lista do DOC-01 (follow-up acima).
+- **Verificação pendente**: `validation.md` com PASS/FAIL e `file:line` por AC, o teste de venv limpo (DEP-03), o sensor de discriminação (7 mutações listadas em `tasks.md`) e `validate_state.py limpeza-onboarding-repo`. Nenhuma AC desta feature está marcada como `Verified`.
+
+### Handoff anterior: `correcao-matricula-atendida`
 
 - **Estado**: **concluída e validada**. Execute inline (sem `tasks.md` formal, conforme a tabela de rastreabilidade de `spec.md`). Os dois bugs confirmados com o export real (`Downloads/08agosto`, 11 campi — 14.022 matrículas no painel novo contra 16.750 no legado) foram corrigidos e as duas regras ficaram cobertas por teste. Verifier independente em `validation.md` → **PASS** (8/8 ACs com o resultado da spec, 6/6 edge cases, sensor 9/9 mutações mortas, gate 939 passed); MAT-01/MAT-02 em `Verified`. Branch `migracao-dash-gov-br`, sem push/merge/deploy. Commits de código: `9411302`, `8df7552`, `59b6444`, `182375b`; fechamento em `98a2efd`.
 - **O que estava errado (MAT-01, causa raiz da divergência de ~2.700 matrículas)**: `t07_grao_matricula_atendida` interpretava `MES_DE_OCORRENCIA` com `pd.to_datetime(..., errors="coerce")`, mas o Sistec exporta esse campo por extenso em português ("JUNHO 2026", "DEZEMBRO 2025") — formato que `pandas`/`dateutil` não reconhece. O parse falhava para **100% das linhas** silenciosamente (`NaT`), então a via "mês de ocorrência no ano-base" nunca era verdadeira: só sobrava ciclo iniciado no ano-base ou `EM_CURSO`, descartando as concluídas/evadidas de 2026 com ciclo iniciado antes.

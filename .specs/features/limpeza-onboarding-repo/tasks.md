@@ -537,9 +537,9 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O bloco tem no máximo 10 linhas e aparece antes de qualquer subseção `###` do Handoff
-- [ ] `python -m pytest -q` passa (build gate de fim de fase)
-- [ ] Test count: total anterior, 0 failed
+- [x] O bloco tem no máximo 10 linhas e aparece antes de qualquer subseção `###` do Handoff
+- [x] `python -m pytest -q` passa (build gate de fim de fase)
+- [x] Test count: total anterior, 0 failed
 
 **Tests**: none
 **Gate**: build
