@@ -70,3 +70,23 @@ def test_colunas_pii_continua_com_as_mesmas_entradas():
     from app.data.transform import COLUNAS_PII
 
     assert COLUNAS_PII == COLUNAS_PII_ESPERADAS
+
+
+def test_arquivos_soltos_na_raiz_nao_existem():
+    """LIM-02 AC4: `nonascii.txt` e `chromedriver/` (Princípio VI: nada de
+    automação de navegador no repositório)."""
+    assert not os.path.exists(caminho("nonascii.txt"))
+    assert not os.path.exists(caminho("chromedriver"))
+
+
+ENTRADAS_GITIGNORE = [".agents/", ".uv-cache/", ".uv-python/"]
+
+
+def test_gitignore_lista_o_estado_das_ferramentas_locais():
+    """LIM-02 AC5: pastas de ferramenta ficam fora do versionamento, mas
+    continuam existindo no disco (não são apagadas)."""
+    with open(caminho(".gitignore"), encoding="utf-8") as arquivo:
+        linhas = {linha.strip() for linha in arquivo}
+
+    for entrada in ENTRADAS_GITIGNORE:
+        assert entrada in linhas, f"{entrada} nao esta no .gitignore"

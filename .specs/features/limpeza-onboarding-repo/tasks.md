@@ -210,10 +210,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma a ausência de `nonascii.txt` e `chromedriver/` e a presença das três entradas no `.gitignore`
-- [ ] `git status --short` não mostra `.agents/` como não rastreado
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma a ausência de `nonascii.txt` e `chromedriver/` e a presença das três entradas no `.gitignore`
+- [x] `git status --short` não mostra `.agents/` como não rastreado
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

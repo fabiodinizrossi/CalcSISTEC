@@ -10,6 +10,9 @@ venv/
 .test-*/
 .verifier-scratch-*/
 APAGAR/
+.agents/
+.uv-cache/
+.uv-python/
 app/data/uploads/*
 !app/data/uploads/**/.gitkeep
 
