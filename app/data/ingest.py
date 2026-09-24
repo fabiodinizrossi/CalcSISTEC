@@ -196,8 +196,9 @@ def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
     candidato — as dependências que precisam continuar iguais entre a
     conferência e o Salvar. Devolve `rev_interna`, `rev_publicada`,
     `ano_base` e um resumo determinístico (tuplas ordenadas) de
-    `interna_fatores` e do `campus` publicado. Estável entre chamadas com o
-    mesmo banco."""
+    `interna_fatores` e de `interna_campus` (CPR-06: é a interna que vai ao
+    ar no Publicar; o `campus` publicado pode estar desatualizado até lá).
+    Estável entre chamadas com o mesmo banco."""
     conn = get_connection(db_path)
     try:
         rev_interna, rev_publicada = conn.execute(
@@ -208,7 +209,7 @@ def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
             "FROM interna_fatores ORDER BY chave_tipo, chave_nome"
         ).fetchall()
         campus = conn.execute(
-            "SELECT co_unidade, cidade, nome_unidade FROM campus ORDER BY co_unidade"
+            "SELECT co_unidade, cidade, nome_unidade FROM interna_campus ORDER BY co_unidade"
         ).fetchall()
     finally:
         conn.close()

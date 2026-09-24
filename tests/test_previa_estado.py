@@ -124,17 +124,34 @@ def test_alterar_interna_fatores_invalida_o_salvar(db_path, monkeypatch):
         execucoes.salvar(envio, db_path, 2026)
 
 
-def test_alterar_campus_publicado_invalida_o_salvar(db_path, monkeypatch):
+def test_alterar_campus_interno_invalida_o_salvar(db_path, monkeypatch):
+    """CPR-06 AC5: a assinatura de origem é de `interna_campus` — mudá-la
+    depois de montar a prévia derruba o Salvar com o 409 já existente."""
     envio = _envio_com_previa(db_path, monkeypatch)
     conn = get_connection(db_path)
     try:
-        conn.execute("INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES ('U9', 'Outro', 'Campus Outro')")
+        conn.execute("INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES ('U9', 'Outro', 'Campus Outro')")
         conn.commit()
     finally:
         conn.close()
 
     with pytest.raises(execucoes.PreviaDesatualizada):
         execucoes.salvar(envio, db_path, 2026)
+
+
+def test_alterar_campus_publicado_nao_invalida_o_salvar(db_path, monkeypatch):
+    """O `campus` publicado só entra em cena no Publicar: mexer nele sozinho
+    (sem tocar em `interna_campus`) não muda a assinatura da prévia."""
+    envio = _envio_com_previa(db_path, monkeypatch)
+    conn = get_connection(db_path)
+    try:
+        conn.execute("DELETE FROM campus")
+        conn.execute("INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES ('U9', 'Outro', 'Campus Outro')")
+        conn.commit()
+    finally:
+        conn.close()
+
+    execucoes.salvar(envio, db_path, 2026)  # não levanta
 
 
 def test_alterar_ano_base_invalida_o_salvar(db_path, monkeypatch):

@@ -471,11 +471,11 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `calcular_assinatura_origem` (linha 192-194), a consulta `"SELECT co_unidade, cidade, nome_unidade FROM campus ORDER BY co_unidade"` passa a ler `FROM interna_campus` em vez de `FROM campus`.
-- [ ] O docstring da função (linhas 177-182, "...e um resumo determinístico... de `interna_fatores` e do `campus` publicado") é atualizado para dizer `interna_campus` em vez de "`campus` publicado".
-- [ ] A chave do dict devolvido continua se chamando `"campus"` (linha 203) — só a fonte dos dados muda, não o formato do retorno (isso evita quebrar `tests/test_versoes.py:268`, que monta um dict `assinatura_falsa` com a chave `"campus"`).
-- [ ] Em `tests/test_previa_candidato.py`: novo teste que grava uma linha em `interna_campus` (não em `campus`) e confere que `calcular_assinatura_origem(db_path)["campus"]` reflete essa linha, mesmo com `campus` publicado vazio ou diferente.
-- [ ] Rode `python -m pytest tests/test_versoes.py -q` sozinho antes do gate completo — este arquivo tem `assinatura_falsa`/`assinatura_esperada` comparados contra `calcular_assinatura_origem` de verdade em vários testes de `ConflitoDeConferencia` (linhas 255-342); é exatamente o tipo de "quebra em quem chama a função" que a lição registrada em `.specs/STATE.md` (Handoff) pede para cobrir.
+- [x] Em `calcular_assinatura_origem` (linha 192-194), a consulta `"SELECT co_unidade, cidade, nome_unidade FROM campus ORDER BY co_unidade"` passa a ler `FROM interna_campus` em vez de `FROM campus`.
+- [x] O docstring da função (linhas 177-182, "...e um resumo determinístico... de `interna_fatores` e do `campus` publicado") é atualizado para dizer `interna_campus` em vez de "`campus` publicado".
+- [x] A chave do dict devolvido continua se chamando `"campus"` (linha 203) — só a fonte dos dados muda, não o formato do retorno (isso evita quebrar `tests/test_versoes.py:268`, que monta um dict `assinatura_falsa` com a chave `"campus"`).
+- [x] Em `tests/test_previa_candidato.py`: novo teste que grava uma linha em `interna_campus` (não em `campus`) e confere que `calcular_assinatura_origem(db_path)["campus"]` reflete essa linha, mesmo com `campus` publicado vazio ou diferente.
+- [x] Rode `python -m pytest tests/test_versoes.py -q` sozinho antes do gate completo — este arquivo tem `assinatura_falsa`/`assinatura_esperada` comparados contra `calcular_assinatura_origem` de verdade em vários testes de `ConflitoDeConferencia` (linhas 255-342); é exatamente o tipo de "quebra em quem chama a função" que a lição registrada em `.specs/STATE.md` (Handoff) pede para cobrir.
 
 **Tests**: unit
 **Gate**: full

@@ -281,3 +281,47 @@ def test_montar_versao_interna_descarta_ciclos_sem_modalidade(db_path):
     assert ciclos == {"C1"}
     assert portas == {"P1"}
     assert matriculas == {"M1"}
+
+
+def test_calcular_assinatura_origem_resume_interna_campus(db_path):
+    """CPR-06 AC5: a assinatura acompanha `interna_campus` (o que o Publicar
+    leva ao ar), não o `campus` já publicado."""
+    conn = get_connection(db_path)
+    try:
+        conn.execute(
+            "INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES ('U1', 'Santa Maria', 'Campus SM')"
+        )
+        conn.execute(
+            "INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES ('U1', 'Cidade Antiga', 'Campus Antigo')"
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    assinatura = calcular_assinatura_origem(db_path)
+    assert assinatura["campus"] == (("U1", "Santa Maria", "Campus SM"),)
+
+    conn = get_connection(db_path)
+    try:
+        conn.execute("UPDATE interna_campus SET cidade = 'Jaguari' WHERE co_unidade = 'U1'")
+        conn.commit()
+    finally:
+        conn.close()
+
+    # Mudar só a publicada não muda a assinatura; mudar a interna muda.
+    assert calcular_assinatura_origem(db_path)["campus"] == (("U1", "Jaguari", "Campus SM"),)
+
+
+def test_calcular_assinatura_origem_ignora_campus_publicado_diferente(db_path):
+    """O `campus` publicado desatualizado (à espera do próximo Publicar) não
+    entra na assinatura."""
+    conn = get_connection(db_path)
+    try:
+        conn.execute(
+            "INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES ('U1', 'Santa Maria', 'Campus SM')"
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    assert calcular_assinatura_origem(db_path)["campus"] == ()
