@@ -206,6 +206,18 @@ def test_matriculas_sem_dados_mostra_br_message_info(monkeypatch):
     assert "empty-state" not in classes(layout)
 
 
+def test_matriculas_layout_publico_inclui_o_store_da_previa(matriculas_com_dados, monkeypatch):
+    """CPR-02: o callback declara `State("matriculas-preview", "data")` também
+    no caminho público; sem o componente no layout o navegador lança
+    ReferenceError e KPIs/tabela ficam vazios."""
+    monkeypatch.setattr(matriculas_com_dados, "dataset_disponivel", lambda: True)
+
+    layout = matriculas_com_dados.layout()
+
+    ids = {getattr(componente, "id", None) for componente in componentes(layout)}
+    assert "matriculas-preview" in ids
+
+
 def _eficiencia_de_teste():
     return pd.DataFrame(
         {

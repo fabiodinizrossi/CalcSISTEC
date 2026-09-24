@@ -152,10 +152,10 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `app/pages/matriculas.py:161-163`, a linha `filhos.append(dcc.Store(id="matriculas-preview", data=preview_id))` deixa de estar dentro do `if preview_id is not None:` e passa a rodar sempre (incondicional), como a penúltima linha antes do `return html.Div(filhos, ...)`.
-- [ ] O restante da função `layout` (o bloco que decide `df`/`ano_base`/`atualizado` a partir de `preview_id`, linhas 142-152) **não muda** — só a inclusão do `Store` deixa de ser condicional.
-- [ ] `app/pages/matriculas.py:339` (`State("matriculas-preview", "data")`) não muda.
-- [ ] Teste novo ou ajustado em `tests/test_paginas_publicas.py` (ou onde já existir teste de `pagina("matriculas").layout()` sem `preview_id`) que monta o layout público (`layout()`, sem argumento) e confere que a árvore de componentes contém um componente com `id="matriculas-preview"` (use o helper `componentes` de `tests/arvore_dash.py`, já importado em `test_paginas_publicas.py:8`).
+- [x] Em `app/pages/matriculas.py:161-163`, a linha `filhos.append(dcc.Store(id="matriculas-preview", data=preview_id))` deixa de estar dentro do `if preview_id is not None:` e passa a rodar sempre (incondicional), como a penúltima linha antes do `return html.Div(filhos, ...)`.
+- [x] O restante da função `layout` (o bloco que decide `df`/`ano_base`/`atualizado` a partir de `preview_id`, linhas 142-152) **não muda** — só a inclusão do `Store` deixa de ser condicional.
+- [x] `app/pages/matriculas.py:339` (`State("matriculas-preview", "data")`) não muda.
+- [x] Teste novo ou ajustado em `tests/test_paginas_publicas.py` (ou onde já existir teste de `pagina("matriculas").layout()` sem `preview_id`) que monta o layout público (`layout()`, sem argumento) e confere que a árvore de componentes contém um componente com `id="matriculas-preview"` (use o helper `componentes` de `tests/arvore_dash.py`, já importado em `test_paginas_publicas.py:8`).
 
 **Tests**: integration
 **Gate**: full
