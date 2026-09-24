@@ -11,7 +11,7 @@ Cada task abaixo é para um modelo menos capaz executar sozinho, um de cada vez,
 ---
 
 **Spec**: `.specs/features/correcoes-previa-uso-real/spec.md`
-**Status**: Done
+**Status**: In Progress (T20/T21 — correções de UAT ao vivo, 2026-09-24)
 
 ---
 
@@ -103,6 +103,16 @@ T18 depende de T14 (Phase 5); T19 depende de T7 (Phase 3) e de T14 (Phase 5):
 T14 -> T18
 T7 -> T19
 T14 -> T19
+```
+
+### Phase 8: Correções encontradas no UAT ao vivo (CPR-03, CPR-04)
+
+Duas falhas reais do UAT de 2026-09-24 (envio dos 11 campi, servidor local), em
+arquivos e camadas diferentes — rodam em ordem, sem dependência de dado:
+
+```
+T20
+T21
 ```
 
 ---
@@ -576,6 +586,58 @@ T14 -> T19
 
 ---
 
+### T20: Escrita de campus do próprio envio deixa de invalidar a assinatura da prévia
+
+**What**: `preparar_versao` guarda `candidato["assinatura_origem"]` (resumo de `interna_campus` etc.) **antes** de qualquer escrita de campus. Depois do fix de CPR-04 (`1f645a4`), `_cadastrar_unidades_do_envio`/`_completar_unidades_incompletas` rodam **depois** de `preparar_versao`+`abrir_previa` — então o próprio envio muda `interna_campus` depois de a assinatura ter sido capturada, e o `Salvar` do mesmo envio compara contra um estado que já não existe: HTTP 409 `previa_desatualizada` sempre, sem edição concorrente nenhuma (foi o que travou o envio real dos 11 campi no UAT de 2026-09-24). Corrigir recalculando a assinatura depois das duas escritas e antes de responder sucesso, preservando a garantia do CPR-04 (nada grava antes do sucesso da prévia) — a assinatura passa a refletir o estado que a **própria requisição** deixou, e continua protegendo contra mudança de **outra** origem depois disso (comportamento pretendido por T15/CPR-06).
+
+**Where**: `app/app.py`
+**Depends on**: None
+**Reuses**: `calcular_assinatura_origem` (`app/data/ingest.py:194`, já usada por `preparar_versao` na linha 322) e o próprio bloco `try` da rota `/admin/atualizar/envio` (`app/app.py:486-517`) — é uma linha a mais depois das duas escritas.
+**Requirement**: CPR-03 (spec P1.3 AC3); Edge Case "Salvar recebe prévia cujo `interna_campus` mudou depois da montagem → 409" (o 409 continua valendo para mudança de **outra** origem, não para a escrita do próprio envio)
+
+**Tools**:
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+- [x] O import da linha 29 vira `from app.data.ingest import calcular_assinatura_origem, ciclos_com_modalidade, preparar_versao`.
+- [x] Dentro do `try`, logo depois de `_completar_unidades_incompletas(campi_cadastrados, dados_unidades)` (`app/app.py:497`) e antes de `return flask.jsonify(resposta)` da linha 519: `candidato["assinatura_origem"] = calcular_assinatura_origem(db_path=DEFAULT_DB_PATH)`, com comentário curto dizendo por que (a escrita de campus desta requisição mudou `interna_campus` depois da captura de `preparar_versao`; a assinatura passa a ser a do estado que esta requisição deixou).
+- [x] Nenhuma outra linha da rota muda: `execucoes.abrir_previa(execucao, candidato, ...)` continua antes das escritas (CPR-04) e a assinatura recalculada chega ao `Salvar` porque `abrir_previa` guarda **o mesmo dict** em `execucao.candidato` (`app/sistec/execucoes.py:482`), e `salvar` lê `execucao.candidato["assinatura_origem"]` (`:386`).
+- [x] Em `tests/test_admin_envio.py`, novo teste que reproduz o bug antes do fix: envio sintético com uma unidade **nova** (U9, fora de `CAMPI`, com `MUNICIPIO`/`NOME UNIDADE DE ENSINO` no CSV — é o caso que grava em `interna_campus` durante o envio), usando a fixture `banco_temporario`, seguido de `POST /admin/atualizar/execucoes/<id>/salvar` com `{"confirmar_preservacao": True}` (U2/U3 ficam ausentes do envio), conferindo `resposta.status_code == 200` (não 409 `previa_desatualizada`) e `execucao.estado == "salva"`.
+- [x] O mesmo teste confere que a proteção continua de pé: uma mudança **externa** em `interna_campus` depois do envio (ex.: `campi.incluir_campus(...)` de outra unidade no mesmo banco) faz o Salvar responder 409 `previa_desatualizada` — o recalculo não anula o 409 de T15/CPR-06.
+- [x] Gate: `python -m pytest tests/ -q` com ≥ 876 passed e nenhuma falha nova.
+
+**Tests**: integration
+**Gate**: full
+
+---
+
+### T21: Fonte da prévia pode ser fechada por outra thread do servidor
+
+**What**: `abrir_fonte_previa` cria a conexão âncora com `sqlite3.connect(nome, uri=True)`, e o default do `sqlite3` é `check_same_thread=True`. O Flask/Werkzeug atende cada requisição numa thread: a fonte aberta no `POST /admin/atualizar/envio` é fechada no `POST .../descartar` (ou no `salvar` bem-sucedido) por **outra** thread, e `FontePrevia.fechar()` levanta `sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread` — o `Descartar` responde 500 sem corpo JSON tratado (a rota só captura `ExecucaoInvalida`) e a execução fica presa em `previa` (foi o que travou a execução real do UAT de 2026-09-24). Passar `check_same_thread=False` na âncora é seguro: todo acesso à fonte já é serializado por `com_trava(execucao)` (`app/sistec/execucoes.py:70`), então nunca há duas threads usando a mesma conexão ao mesmo tempo — a flag só remove a checagem de identidade de thread do Python.
+
+**Where**: `app/data/previa.py`
+**Depends on**: None
+**Reuses**: a própria criação da âncora (`app/data/previa.py:75`) e o `com_trava` já existente em `execucoes.py` (nenhuma trava nova).
+**Requirement**: CPR-04 (spec P1.3 AC4); o `Descartar` precisa continuar funcionando depois de qualquer falha da prévia
+
+**Tools**:
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+- [ ] `app/data/previa.py:75` passa a `ancora = sqlite3.connect(nome, uri=True, check_same_thread=False)`, com comentário curto explicando que a serialização é do `com_trava` (Salvar/Descartar fecham a fonte de outra thread).
+- [ ] O docstring do módulo/da `FontePrevia` registra que a âncora pode ser fechada por thread diferente da que a criou.
+- [ ] `abrir_leitura` não muda (`check_same_thread` default continua: cada conexão de leitura é criada e usada na mesma thread da requisição).
+- [ ] Em `tests/test_previa_fonte.py`, novo teste que reproduz o bug antes do fix: abre a fonte (`abrir_fonte_previa(...)`) **dentro de uma `threading.Thread`**, guarda o objeto `FontePrevia` devolvido e chama `.fechar()` na thread principal (fora da thread que criou) — falha hoje com `sqlite3.ProgrammingError` e passa depois do fix. Use um `queue`/lista para devolver o objeto e a exceção da thread ao teste, com `thread.join()` antes das asserções.
+- [ ] Um segundo teste (mesmo arquivo) cobre o caminho real de `execucoes.liberar_previa(execucao)` chamado de outra thread: a fonte aberta numa thread é liberada na principal sem exceção e `execucao.previa_fonte` fica `None` (não é preciso `test_client`; o `abrir_previa`/`liberar_previa` são chamados direto, como os outros testes do repo fazem).
+- [ ] Gate: `python -m pytest tests/ -q` com ≥ 877 passed e nenhuma falha nova.
+
+**Tests**: unit
+**Gate**: full
+
+---
+
 ## Phase Execution Map
 
 Fases executam nesta ordem: Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7. Dentro de cada fase, as tasks rodam na ordem em que aparecem em "Task Breakdown" (T1, T2, T3, ...), mesmo quando não há seta abaixo — a ausência de seta só significa "sem dependência de dado", não "pode rodar em paralelo" (não há paralelismo dentro de uma fase).
@@ -596,6 +658,10 @@ T14 -> T18
 T7 -> T19
 T14 -> T19
 ```
+
+Phase 8 só tem as duas correções do UAT ao vivo, sem dependência de dado:
+`T20`, `T21` — dentro da fase rodam em ordem T20 antes de T21 (arquivos
+diferentes, sem dependência real).
 
 Execução é estritamente sequencial — sem paralelismo dentro de uma fase. Um agente (ou worker de lote) trabalha uma task de cada vez, em ordem.
 

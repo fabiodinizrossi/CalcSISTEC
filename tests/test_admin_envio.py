@@ -712,3 +712,64 @@ def test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado(sessao, ba
     assert "U9" not in campi_depois
     assert campi_depois["U2"]["cidade"] is None
     assert campi_depois["U2"]["nome_unidade"] is None
+
+
+def _envio_com_unidade_nova():
+    """Envio das unidades U1 (cadastrada) e U9 (nova, fora de `CAMPI`): o
+    cadastro automático de U9 é a escrita em `interna_campus` que roda dentro
+    do próprio envio."""
+    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C1", "M1", "U1"), _matricula("C9", "M9", "U9")]
+    return ciclos, matriculas
+
+
+def test_salvar_envio_que_cadastra_unidade_nova_nao_acusa_previa_desatualizada(sessao, banco_temporario):
+    """T20 (regressão do UAT de 2026-09-24): o cadastro automático de U9 grava
+    em `interna_campus` *depois* de `preparar_versao` ter capturado a
+    assinatura de origem — e o Salvar do mesmo envio acusava divergência para
+    sempre (409 `previa_desatualizada`), sem nenhuma edição concorrente."""
+    from app.data.ingest import calcular_assinatura_origem
+
+    ciclos, matriculas = _envio_com_unidade_nova()
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["campi_cadastrados_automaticamente"] == ["U9"]
+
+    execucao = execucoes.obter_do_admin(ADMIN)
+    # A assinatura guardada é a do estado que este envio deixou no banco: a
+    # unidade nova já está em `interna_campus` quando ela é calculada. (Lida
+    # antes do Salvar, que por si só incrementa `rev_interna`.)
+    assert execucao.candidato["assinatura_origem"] == calcular_assinatura_origem(banco_temporario)
+
+    resposta_salvar = sessao.post(
+        f"/admin/atualizar/execucoes/{execucao.id}/salvar", json={"confirmar_preservacao": True}
+    )
+
+    assert resposta_salvar.status_code == 200, resposta_salvar.get_json()
+    assert execucao.estado == "salva"
+
+
+def test_salvar_recusa_previa_quando_interna_campus_muda_depois_do_envio(sessao, banco_temporario):
+    """O recálculo da assinatura no envio (T20) não anula o 409 de T15/CPR-06:
+    uma mudança de OUTRA origem em `interna_campus` depois do envio continua
+    recusando o Salvar."""
+    from app.data import campi as dados_campi
+
+    ciclos, matriculas = _envio_com_unidade_nova()
+    sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    execucao = execucoes.obter_do_admin(ADMIN)
+
+    dados_campi.incluir_campus(
+        "99", "Campus U7", co_unidade="U7", cidade="Cidade U7", nome_unidade="Campus U7",
+        db_path=banco_temporario,
+    )
+
+    resposta = sessao.post(
+        f"/admin/atualizar/execucoes/{execucao.id}/salvar", json={"confirmar_preservacao": True}
+    )
+
+    assert resposta.status_code == 409
+    assert resposta.get_json()["erro"] == "previa_desatualizada"
+    assert execucao.estado == "previa"

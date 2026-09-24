@@ -26,7 +26,7 @@ from app.data.historico import encerrar as historico_encerrar
 from app.data.historico import iniciar as historico_iniciar
 from app.data.historico import listar as historico_listar
 from app.data.consulta import ano_base_ativo
-from app.data.ingest import ciclos_com_modalidade, preparar_versao
+from app.data.ingest import calcular_assinatura_origem, ciclos_com_modalidade, preparar_versao
 from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
@@ -495,6 +495,12 @@ def admin_atualizar_envio():
             envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados), dados_unidades
         )
         _completar_unidades_incompletas(campi_cadastrados, dados_unidades)
+        # T20: as duas escritas acima mudaram `interna_campus` DEPOIS de
+        # `preparar_versao` ter calculado a assinatura — sem recalculá-la aqui,
+        # o Salvar do próprio envio acusava divergência (409) para sempre. A
+        # assinatura passa a ser a do estado que esta requisição deixou;
+        # mudança de outra origem depois disto continua recusada (CPR-06).
+        candidato["assinatura_origem"] = calcular_assinatura_origem(db_path=DEFAULT_DB_PATH)
         resposta["campi_cadastrados_automaticamente"] = execucao.campi_cadastrados_automaticamente
         execucao.ciclos_sem_modalidade_descartados = candidato["resumo"]["ciclos_sem_modalidade_descartados"]
         execucao.matriculas_sem_modalidade_descartadas = candidato["resumo"][
