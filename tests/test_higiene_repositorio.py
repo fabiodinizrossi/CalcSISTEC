@@ -9,6 +9,7 @@ rodado de qualquer lugar.
 import ast
 import os
 import re
+import subprocess
 import sys
 
 import pytest
@@ -77,7 +78,14 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
-DOCS_VERIFICADOS = [".specs/PROJECT_RULES.md", "DEPLOY.md", "README.md", "TESTAR.md"]
+DOCS_VERIFICADOS = [
+    ".specs/PROJECT_RULES.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "DEPLOY.md",
+    "README.md",
+    "TESTAR.md",
+]
 
 TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
 
@@ -202,6 +210,44 @@ def test_testar_md_documenta_o_modo_destacado_e_o_requirements_dev():
 
     for marcador in ("-Destacado", "-Parar", "requirements-dev.txt"):
         assert marcador in conteudo, f"TESTAR.md nao cita {marcador}"
+
+
+def test_comando_testar_sobe_destacado_e_sem_navegador():
+    """AMB-02 AC7: o `/testar` é o atalho de quem não pode ficar preso ao app."""
+    conteudo = texto(".claude/commands/testar.md")
+
+    assert "-Destacado" in conteudo
+    assert "-SemNavegador" in conteudo
+    assert "-Parar" in conteudo
+
+
+def git(*argumentos):
+    return subprocess.run(
+        ["git", *argumentos], cwd=RAIZ, capture_output=True, text=True
+    )
+
+
+def test_comando_testar_e_versionado_e_o_settings_local_nao():
+    """AMB-02 AC7: o comando é do repositório; a configuração da máquina não."""
+    assert git("check-ignore", ".claude/commands/testar.md").returncode != 0
+    assert (
+        git("ls-files", "--error-unmatch", ".claude/settings.local.json").returncode != 0
+    )
+
+
+def test_agents_tem_as_secoes_de_entrada_e_de_ambiente_de_teste():
+    """AMB-02 AC8: qualquer agente lê por onde começar e como subir o ambiente."""
+    conteudo = texto("AGENTS.md")
+
+    assert "## Começar" in conteudo
+    assert "## Subir o ambiente de teste" in conteudo
+    assert "-Destacado" in conteudo
+    assert "-Parar" in conteudo
+
+
+def test_claude_importa_o_agents():
+    """AMB-02 AC9: `CLAUDE.md` só aponta para o guia comum."""
+    assert "@AGENTS.md" in texto("CLAUDE.md")
 
 
 def carregar_script(nome):
