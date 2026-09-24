@@ -82,6 +82,14 @@ T8 → T9 → T10 → T11 → T12 → T13 → T14
 T15 → T16 → T17
 ```
 
+### Phase 6: Correções da verificação (rodada 1)
+
+Origem: `validation.md` (commit `80bfc6f`), veredito FAIL com 4 mutantes sobreviventes (M9, M11, M12, M13) e gaps G1–G7. O produto está correto; só os testes ficaram aquém do spec. Nenhuma tarefa desta fase muda código de produto.
+
+```
+T18 → T19 → T20 → T21 → T22
+```
+
 ---
 
 ## Task Breakdown
@@ -548,6 +556,138 @@ T15 → T16 → T17
 
 ---
 
+### T18: Fixar o limite de 60 s e a saída completa do `-Destacado`
+
+**What**: Em `tests/test_testar_ps1.py`: (1) teste de unidade que lê `scripts/testar.ps1` e afirma que, sem `CALCSISTEC_TESTAR_TIMEOUT`, o limite de espera é 60 s: a atribuição padrão é `60` e não há outra atribuição literal ao limite (mata M9). (2) No teste de integração do `-Destacado` que já existe, afirmar que a saída contém `http://localhost:<porta>/admin/login`, o `ADMIN_EMAIL` e a `ADMIN_SENHA` lidos do `.env` da raiz (mata M12 e endurece a asserção de URL).
+**Where**: `tests/test_testar_ps1.py`
+**Depends on**: None
+**Reuses**: helpers de porta livre e de leitura de saída já existentes no arquivo
+**Requirement**: AMB-01 (AC1) — gaps G1, G2
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Numa cópia isolada, trocar `60` por `30` no limite faz o teste novo falhar; apagar a linha `Senha:` do script faz o teste de integração falhar (registrar as duas no corpo do commit)
+- [ ] Gate check passes: `python -m pytest -q`
+- [ ] Test count: 985 + novos, 0 failed
+
+**Tests**: integration
+**Gate**: full
+
+**Commit**: `test(testar): fixar limite de 60 s e credenciais na saida do modo destacado`
+
+---
+
+### T19: Teste automatizado de `-Destacado -Simulado` e `-Parar -Simulado`
+
+**What**: Teste de integração em `tests/test_testar_ps1.py`, com `skipif` fora de Windows **e** `skipif` quando a porta 8051 já estiver escutando (motivo no `reason`: não derrubar ambiente manual). Em porta livre para o app: `-Destacado -SemNavegador -Simulado -Porta <livre>` sai com 0, e as portas `<livre>` e 8051 ficam escutando. Depois, `-Parar -Simulado -Porta <livre>` sai com 0, e as duas ficam livres. O `finally` roda `-Parar -Simulado -Porta <livre>` sempre.
+**Where**: `tests/test_testar_ps1.py`
+**Depends on**: T18
+**Reuses**: helpers do arquivo
+**Requirement**: AMB-01 (AC6) — gap G3
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Com a 8051 livre, o teste roda (não é pulado) e passa; numa cópia isolada, tirar do `-Parar` o encerramento da 8051 faz o teste falhar (mata M13)
+- [ ] A porta 8050 continua escutando, com o mesmo PID, antes e depois do teste
+- [ ] Gate check passes: `python -m pytest -q`
+- [ ] Test count: total anterior + novos, 0 failed
+
+**Tests**: integration
+**Gate**: full
+
+**Commit**: `test(testar): cobrir o modo destacado com o Sistec simulado`
+
+---
+
+### T20: Teste do `.env` criado antes da subida
+
+**What**: Teste de integração em `tests/test_testar_ps1.py` que cria um `git worktree` do `HEAD` no diretório temporário do sistema (o worktree não tem `.env`, que é ignorado), roda nele `scripts/testar.ps1 -Destacado -SemNavegador -Porta <livre>` e afirma: saída 0, `.env` criado no worktree com `ADMIN_EMAIL`, `ADMIN_SENHA` e `FLASK_SECRET_KEY` preenchidos, porta escutando. O `finally` roda `-Parar -Porta <livre>` e remove o worktree (`git worktree remove --force`), deixando `git worktree list` igual ao do início. Nunca apague nem altere o `.env` da raiz do repositório.
+**Where**: `tests/test_testar_ps1.py`
+**Depends on**: T19
+**Reuses**: helpers do arquivo
+**Requirement**: AMB-01 (edge case do `.env` ausente) — gap G7
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] O `.env` da raiz fica com o mesmo hash antes e depois do teste
+- [ ] `git worktree list` fica igual antes e depois do teste
+- [ ] Gate check passes: `python -m pytest -q`
+- [ ] Test count: total anterior + novos, 0 failed
+
+**Tests**: integration
+**Gate**: full
+
+**Commit**: `test(testar): cobrir a criacao do .env antes de subir o app`
+
+---
+
+### T21: Teste da idempotência de `iniciar_varredura`
+
+**What**: Teste de unidade em `tests/test_execucoes.py`: chamar `execucoes.iniciar_varredura(intervalo_s=0.05)` duas vezes e afirmar que a segunda chamada não cria outra thread (mesmo objeto em `execucoes._VARREDURA_THREAD`, e só uma thread viva com o alvo do laço de varredura). No `finally`, `parar_varredura()`, `join` da thread com timeout e `_VARREDURA_THREAD` restaurado ao valor anterior, para não vazar estado para outros testes.
+**Where**: `tests/test_execucoes.py`
+**Depends on**: T20
+**Reuses**: `app/sistec/execucoes.py:569-591`
+**Requirement**: WDG-01 (edge case de idempotência) — gap G4
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Numa cópia isolada, remover a guarda `if _VARREDURA_THREAD is not None and _VARREDURA_THREAD.is_alive(): return` faz o teste falhar (mata M11)
+- [ ] Gate check passes: `python -m pytest -q`
+- [ ] Test count: total anterior + novos, 0 failed
+
+**Tests**: unit
+**Gate**: full
+
+**Commit**: `test(execucoes): cobrir a idempotencia da varredura`
+
+---
+
+### T22: Apertar o teste de higiene até o texto dos ACs
+
+**What**: Em `tests/test_higiene_repositorio.py`: (1) DOC-03 AC8: a seção "Onde mexer" do README cita os cinco temas: regra de cálculo, página pública, coleta do Sistec, visual e rota administrativa (G5). (2) DOC-01 AC1: `projetoFabio` entra na lista de termos da varredura de `.py`, e `.specs/README.md` passa pela lista completa de termos proibidos (G6). (3) DEP-02 AC4: cada uma das oito chaves de `.env.example` tem valor vazio ou de exemplo; nenhum valor começa com `scrypt:` ou `pbkdf2:` nem é uma sequência hexadecimal de 32 caracteres ou mais, e `FLASK_SECRET_KEY`/`ADMIN_PASSWORD_HASH` continuam vazios. (4) AMB-02 AC7/AC8: `.claude/commands/testar.md` e a seção "Subir o ambiente de teste" de `AGENTS.md` contêm a instrução de não monitorar o servidor depois de subir (asserção sobre a frase que já está nos arquivos; não reescreva os arquivos para caber no teste).
+**Where**: `tests/test_higiene_repositorio.py`
+**Depends on**: T21
+**Reuses**: estrutura atual do arquivo
+**Requirement**: DOC-01, DOC-03, DEP-02, AMB-02 — gaps G5, G6 e precisão do spec
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Numa cópia isolada, cada uma destas mutações faz um teste falhar: apagar a linha "coleta do Sistec" de "Onde mexer"; escrever `projetoFabio` num comentário de `run.py`; pôr um hash `scrypt:...` em `ADMIN_PASSWORD_HASH` do `.env.example`; tirar a frase de não monitorar de `.claude/commands/testar.md`
+- [ ] Gate check passes: `python -m pytest -q`
+- [ ] Test count: total anterior + novos, 0 failed
+
+**Tests**: unit
+**Gate**: full
+
+**Commit**: `test(higiene): alinhar asserções de higiene ao texto dos ACs`
+
+---
+
 ## Verificação (automática, depois de T17)
 
 Verifier **independente**, em sessão separada da que implementou (author ≠ verifier), como nas features anteriores. Além do fluxo da skill:
@@ -569,6 +709,7 @@ Phase 2:  T3 → T4 → T5
 Phase 3:  T6 → T7
 Phase 4:  T8 → T9 → T10 → T11 → T12 → T13 → T14
 Phase 5:  T15 → T16 → T17
+Phase 6:  T18 → T19 → T20 → T21 → T22   (correções da rodada 1 de verificação)
 ```
 
 Lotes para execução delegada (fases inteiras, cerca de 7 tarefas): **lote A** = fases 1–3 (T1–T7), **lote B** = fase 4 (T8–T14), **lote C** = fase 5 (T15–T17), depois o Verifier.
@@ -618,6 +759,11 @@ Lotes para execução delegada (fases inteiras, cerca de 7 tarefas): **lote A** 
 | T15 | None | início da fase 5 | ✅ |
 | T16 | T15 | T15 → T16 | ✅ |
 | T17 | T16 | T16 → T17 | ✅ |
+| T18 | None | início da fase 6 | ✅ |
+| T19 | T18 | T18 → T19 | ✅ |
+| T20 | T19 | T19 → T20 | ✅ |
+| T21 | T20 | T20 → T21 | ✅ |
+| T22 | T21 | T21 → T22 | ✅ |
 
 ## Test Co-location Validation
 
