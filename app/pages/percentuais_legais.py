@@ -37,17 +37,6 @@ def _data_curta(valor):
     return "/".join(reversed(texto.split("-"))) if "-" in texto else texto
 
 
-def _rotulo_eixo(eixo):
-    return {
-        "campus": "Campus",
-        "tipo_curso": "Tipo de Curso",
-        "oferta": "Oferta (Técnico)",
-        "nome_curso": "Nome do Curso",
-        "modalidade": "Modalidade",
-        "ciclo": "Ciclo",
-    }.get(eixo, "Campus")
-
-
 def _formatar_percentual(valor):
     return f"{valor:.1%}".replace(".", ",")
 

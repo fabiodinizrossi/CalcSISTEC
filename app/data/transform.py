@@ -66,12 +66,6 @@ COLUNAS_PII = [
 ]
 
 
-def t01_remover_pii(df):
-    """T-01: descarta colunas de PII, se presentes, antes de qualquer outra transformação."""
-    colunas_presentes = [c for c in COLUNAS_PII if c in df.columns]
-    return df.drop(columns=colunas_presentes)
-
-
 def t02_corrigir_status(df, col_sistec="STATUS_MATRICULA_SISTEC", col_pnp="STATUS_MATRICULA_PNP"):
     """T-02: PNP terminativo prevalece; PNP EM_CURSO/nulo -> vale o Sistec.
 

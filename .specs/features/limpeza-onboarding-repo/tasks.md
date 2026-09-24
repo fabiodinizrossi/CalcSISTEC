@@ -182,11 +182,11 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma, por AST, que nenhum dos quatro nomes é definido no seu arquivo
-- [ ] O teste de higiene afirma que `COLUNAS_PII` contém exatamente as mesmas entradas de antes (copie a lista atual para o teste)
-- [ ] Antes de apagar cada função, `git grep -nw <nome>` confirma zero chamadores (se aparecer chamador, PARE e reporte)
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma, por AST, que nenhum dos quatro nomes é definido no seu arquivo
+- [x] O teste de higiene afirma que `COLUNAS_PII` contém exatamente as mesmas entradas de antes (copie a lista atual para o teste)
+- [x] Antes de apagar cada função, `git grep -nw <nome>` confirma zero chamadores (se aparecer chamador, PARE e reporte)
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

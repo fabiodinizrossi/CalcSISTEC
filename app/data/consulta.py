@@ -29,19 +29,6 @@ def dataset_disponivel(db_path=DEFAULT_DB_PATH, conn=None):
         conn.close()
 
 
-def data_ultimo_upload_valido(db_path=DEFAULT_DB_PATH):
-    """BR-MIGRAR-015: "atualizado em" derivado do timestamp real do último
-    upload válido, nunca uma string fixa editada manualmente."""
-    conn = get_connection(db_path)
-    try:
-        row = conn.execute(
-            "SELECT uploaded_at FROM uploads_log WHERE status='valido' ORDER BY uploaded_at DESC LIMIT 1"
-        ).fetchone()
-        return row[0] if row else None
-    finally:
-        conn.close()
-
-
 def data_ultima_publicacao(db_path=DEFAULT_DB_PATH, conn=None):
     """Timestamp da última publicação (`estado_versoes.publicada_em`), usado
     pela página inicial no rótulo "Atualizado em". Com `conn` explícita (fonte
