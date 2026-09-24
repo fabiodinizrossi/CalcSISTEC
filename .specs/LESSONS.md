@@ -56,6 +56,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: app/static/js/atualizar.js:395 (if arquivos.length === 0) (app/static/js/atualizar.js)
 - last seen: 2026-09-23T02:57:51Z
 
+### L-008 - Quando uma rota promete nenhuma gravação após falha, cadastros auxiliares devem ser adiados ou revertidos junto com a operação principal.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/app.py` · harmful: 0
+- features: correcoes-previa-uso-real
+- evidence: app/app.py:468 (app/app.py)
+- last seen: 2026-09-24T02:51:41Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

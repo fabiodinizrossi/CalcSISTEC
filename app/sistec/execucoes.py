@@ -469,7 +469,7 @@ def _resumo_amostra(candidato):
 
 def abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH):
     """Abre a fonte candidata da prévia na execução (PVP-03/PVP-08). Lê o
-    `campus` publicado e guarda a fonte e o `candidato` na execução.
+    `interna_campus` e guarda a fonte e o `candidato` na execução.
     Idempotente: chamadas repetidas não criam uma segunda fonte. Depois de
     abrir, libera os DataFrames por arquivo e o consolidado pesado,
     conservando o resumo/amostra do polling."""

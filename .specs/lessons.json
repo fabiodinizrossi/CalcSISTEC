@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 8,
+  "next_id": 9,
   "lessons": [
     {
       "id": "L-001",
@@ -130,6 +130,24 @@
       ],
       "created": "2026-09-23T02:57:51Z",
       "last_seen": "2026-09-23T02:57:51Z"
+    },
+    {
+      "id": "L-008",
+      "key": "ac_gap::quando uma rota promete nenhuma gravacao apos falha cadastros auxiliares devem ser adiados ou revertidos junto com a operacao principal",
+      "text": "Quando uma rota promete nenhuma gravação após falha, cadastros auxiliares devem ser adiados ou revertidos junto com a operação principal.",
+      "signal": "ac_gap",
+      "scope": "app/app.py",
+      "status": "candidate",
+      "features": [
+        "correcoes-previa-uso-real"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "app/app.py:468 (app/app.py)"
+      ],
+      "created": "2026-09-24T02:51:41Z",
+      "last_seen": "2026-09-24T02:51:41Z"
     }
   ]
 }
