@@ -58,6 +58,30 @@ def test_polling_de_envio_devolve_os_campos_da_tela(sessao):
     assert corpo["matriculas_orfas"] == 4
 
 
+def test_polling_de_envio_leva_as_contagens_de_ciclos_sem_modalidade(sessao):
+    """CPR-03 AC2: a contagem do descarte por falta de modalidade aparece
+    também no polling, não só na resposta imediata do envio."""
+    execucao = execucoes.criar_execucao_envio(ADMIN, ["ciclos-U1.csv"], ["matriculas-U1.csv"])
+    execucao.estado = "previa"
+    execucao.ciclos_sem_modalidade_descartados = 11
+    execucao.matriculas_sem_modalidade_descartadas = 42
+
+    corpo = sessao.get("/admin/atualizar/execucao").get_json()
+
+    assert corpo["ciclos_sem_modalidade_descartados"] == 11
+    assert corpo["matriculas_sem_modalidade_descartadas"] == 42
+
+
+def test_polling_de_baixa_zera_as_contagens_de_ciclos_sem_modalidade(sessao):
+    execucao = execucoes.criar_execucao(ADMIN, CAMPI_BAIXA)
+    execucao.estado = "baixando"
+
+    corpo = sessao.get("/admin/atualizar/execucao").get_json()
+
+    assert corpo["ciclos_sem_modalidade_descartados"] == 0
+    assert corpo["matriculas_sem_modalidade_descartadas"] == 0
+
+
 def test_polling_de_baixa_mantem_a_resposta_e_zera_os_campos_novos(sessao):
     execucao = execucoes.criar_execucao(ADMIN, CAMPI_BAIXA)
     execucao.estado = "baixando"

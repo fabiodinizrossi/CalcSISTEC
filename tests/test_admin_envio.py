@@ -366,6 +366,63 @@ def test_unidade_fora_do_cadastro_e_cadastrada_automaticamente(sessao, banco_tem
     assert dados_campi.id_suspeito(unidade["id_perfil"]) is True
 
 
+def test_ciclo_sem_modalidade_e_descartado_e_contado_na_resposta(sessao, banco_temporario):
+    """CPR-03 AC2: o envio informa quantos ciclos e matrículas saíram por falta
+    de modalidade, e o candidato sai sem eles (sem estourar a fonte)."""
+    ciclos = [
+        _ciclo("C1", "U1", nome="ciclos-U1.csv"),
+        _ciclo("C9", "U9", nome="ciclos-U9.csv", **{"MODALIDADE ENSINO": ""}),
+    ]
+    matriculas = [_matricula("C1", "M1", "U1"), _matricula("C9", "M9", "U9")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    assert corpo["ciclos_sem_modalidade_descartados"] == 1
+    assert corpo["matriculas_sem_modalidade_descartadas"] == 1
+
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.previa_fonte is not None
+    assert execucao.candidato["tabelas"]["ciclos"]["codigo_ciclo_matricula"].tolist() == ["C1"]
+
+
+def test_unidade_cujo_unico_ciclo_nao_tem_modalidade_nao_e_cadastrada(sessao, banco_temporario):
+    """Edge case da spec: unidade cujos ciclos são TODOS sem modalidade está
+    ausente do envio — nada dela entra no candidato, então ela não é
+    cadastrada automaticamente."""
+    from app.data import campi as dados_campi
+
+    ciclos = [
+        _ciclo("C1", "U1", nome="ciclos-U1.csv"),
+        _ciclo("C9", "U9", nome="ciclos-U9.csv", **{"MODALIDADE ENSINO": ""}),
+    ]
+    matriculas = [_matricula("C1", "M1", "U1"), _matricula("C9", "M9", "U9")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["campi_cadastrados_automaticamente"] == []
+    assert "U9" not in {c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)}
+
+
+def test_unidade_cadastrada_sem_ciclo_com_modalidade_fica_preservada(sessao, banco_temporario):
+    """Edge case: U2 tem ciclo no envio, mas o ciclo sai por falta de
+    modalidade — para a lista de preservados ela conta como ausente, e os
+    dados atuais dela ficam intactos."""
+    ciclos = [
+        _ciclo("C1", "U1", nome="ciclos-U1.csv"),
+        _ciclo("C2", "U2", nome="ciclos-U2.csv", **{"MODALIDADE ENSINO": ""}),
+    ]
+    matriculas = [_matricula("C1", "M1", "U1"), _matricula("C2", "M2", "U2")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    corpo = resposta.get_json()
+    assert resposta.status_code == 200
+    assert corpo["campi_preservados"] == ["U2", "U3"]
+    assert execucoes.obter_do_admin(ADMIN).campi_falhos == {"U2", "U3"}
+
+
 def test_colisao_no_cadastro_automatico_nao_derruba_o_envio(sessao, banco_temporario):
     """AFE-03 AC3: se `incluir_campus` colidir numa unidade (aqui "U9", cujo
     identificador `envio-U9` já pertence a outro campus), o envio não falha por

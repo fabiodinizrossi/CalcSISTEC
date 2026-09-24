@@ -26,7 +26,7 @@ from app.data.historico import encerrar as historico_encerrar
 from app.data.historico import iniciar as historico_iniciar
 from app.data.historico import listar as historico_listar
 from app.data.consulta import ano_base_ativo
-from app.data.ingest import preparar_versao
+from app.data.ingest import ciclos_com_modalidade, preparar_versao
 from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
@@ -437,10 +437,13 @@ def admin_atualizar_envio():
         return flask.jsonify(resposta)
 
     campi_cadastrados = listar_campi()
-    preservados = envio.campi_ausentes(execucao.previa["ciclos"], campi_cadastrados)
+    # CPR-03: unidade cujos ciclos são TODOS sem modalidade não entra no
+    # candidato — para "ausente"/"não cadastrado" ela conta como ausente.
+    ciclos_validos = ciclos_com_modalidade(execucao.previa["ciclos"])
+    preservados = envio.campi_ausentes(ciclos_validos, campi_cadastrados)
     execucoes.definir_campi_preservados(execucao, preservados)
     execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
-        envio.campi_nao_cadastrados(execucao.previa["ciclos"], campi_cadastrados)
+        envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados)
     )
     execucao.matriculas_orfas = _matriculas_orfas_envio(execucao.previa)
 
@@ -460,6 +463,12 @@ def admin_atualizar_envio():
             execucao.previa, preservados, db_path=DEFAULT_DB_PATH, ano_base=ano_base_ativo()
         )
         execucoes.abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH)
+        execucao.ciclos_sem_modalidade_descartados = candidato["resumo"]["ciclos_sem_modalidade_descartados"]
+        execucao.matriculas_sem_modalidade_descartadas = candidato["resumo"][
+            "matriculas_sem_modalidade_descartadas"
+        ]
+        resposta["ciclos_sem_modalidade_descartados"] = execucao.ciclos_sem_modalidade_descartados
+        resposta["matriculas_sem_modalidade_descartadas"] = execucao.matriculas_sem_modalidade_descartadas
     except MemoryError:
         # Falha ao montar a fonte (memória insuficiente): nada é gravado, a
         # execução continua pendente e Descartar permanece disponível.
@@ -655,6 +664,8 @@ def admin_atualizar_estado():
             ),
             "arquivos_ignorados": list(getattr(execucao, "arquivos_ignorados", []) or []),
             "matriculas_orfas": getattr(execucao, "matriculas_orfas", 0) or 0,
+            "ciclos_sem_modalidade_descartados": getattr(execucao, "ciclos_sem_modalidade_descartados", 0) or 0,
+            "matriculas_sem_modalidade_descartadas": getattr(execucao, "matriculas_sem_modalidade_descartadas", 0) or 0,
         }
     )
 
