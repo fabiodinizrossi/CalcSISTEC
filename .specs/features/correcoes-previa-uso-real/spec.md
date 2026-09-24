@@ -132,17 +132,17 @@ A reprodução com os mesmos CSVs, numa cópia do banco, encontrou seis causas:
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| CPR-01 | P1: Abrir a prévia das quatro páginas | Specify | Pending |
-| CPR-02 | P1: Painel público volta a funcionar | Specify | Pending |
-| CPR-03 | P1: Envio e Salvar com os CSVs reais | Specify | Pending |
-| CPR-04 | P1: Envio e Salvar com os CSVs reais | Specify | Pending |
-| CPR-05 | P1: Unidades do envio aparecem nos indicadores | Specify | Pending |
-| CPR-06 | P1: Unidades do envio aparecem nos indicadores | Specify | Pending |
-| CPR-07 | P2: Resumo e tabela da prévia com o conjunto PNP | Specify | Pending |
+| CPR-01 | P1: Abrir a prévia das quatro páginas | Execute | Verified |
+| CPR-02 | P1: Painel público volta a funcionar | Execute | Verified |
+| CPR-03 | P1: Envio e Salvar com os CSVs reais | Execute | Verified |
+| CPR-04 | P1: Envio e Salvar com os CSVs reais | Execute | Verified |
+| CPR-05 | P1: Unidades do envio aparecem nos indicadores | Execute | Verified |
+| CPR-06 | P1: Unidades do envio aparecem nos indicadores | Execute | Verified |
+| CPR-07 | P2: Resumo e tabela da prévia com o conjunto PNP | Execute | Verified |
 
 **Detalhamento:** CPR-01 = roteamento `path_template` e KPIs da prévia (P1.1 AC1–3); CPR-02 = Store sempre no layout e teste de IDs (P1.2 AC1–3); CPR-03 = descarte de ciclos sem modalidade e aviso (P1.3 AC1–3, AC5); CPR-04 = erro de montagem da fonte com corpo JSON (P1.3 AC4); CPR-05 = cidade/nome do campus vindos do CSV (P1.4 AC1–2, AC6); CPR-06 = Publicar/Desfazer com `campus` e prévia com `interna_campus` (P1.4 AC3–5); CPR-07 = resumo e amostra do candidato (P2 AC1–4).
 
-**Coverage:** 7 requisitos, 0 mapeados a tarefas nesta etapa.
+**Coverage:** 7 requisitos, todos verificados pelo Verifier independente em `.specs/features/correcoes-previa-uso-real/validation.md` (2026-09-24, PASS, 21/21 ACs, gate 875/875, sensor 1/1 mutação matada).
 
 ## Project Rules & References
 

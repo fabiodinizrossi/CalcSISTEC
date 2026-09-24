@@ -11,7 +11,7 @@ Cada task abaixo é para um modelo menos capaz executar sozinho, um de cada vez,
 ---
 
 **Spec**: `.specs/features/correcoes-previa-uso-real/spec.md`
-**Status**: In Progress
+**Status**: Done
 
 ---
 
