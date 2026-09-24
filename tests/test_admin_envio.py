@@ -11,6 +11,7 @@ import io
 import json
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 
@@ -666,3 +667,48 @@ def test_falha_ao_montar_a_fonte_devolve_erro_json_nunca_500(sessao, banco_tempo
 
     descarte = sessao.post(f"/admin/atualizar/execucoes/{execucao.id}/descartar")
     assert descarte.status_code == 204
+
+
+def test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado(sessao, banco_temporario, monkeypatch):
+    """CPR-04 / P1.3 AC4: antes desta correção, o cadastro automático de U9 e
+    o complemento de cidade/nome de U2 já rodavam antes de `preparar_versao`
+    poder falhar — o erro devolvia JSON de falha, mas a escrita já tinha ido
+    para o banco. `campi_sistec`/`interna_campus` precisam ficar idênticas ao
+    estado anterior quando a montagem da prévia falha."""
+    from app.data import campi as dados_campi
+
+    dados_campi.incluir_campus(
+        id_perfil="2", nome_perfil="Assessor B", co_unidade="U2", db_path=banco_temporario
+    )
+
+    def _boom(*a, **k):
+        raise ValueError("boom")
+
+    monkeypatch.setattr(app_module, "preparar_versao", _boom)
+
+    ciclos = [_ciclo("C2", "U2", nome="ciclos-U2.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
+    matriculas = [_matricula("C2", "M2", "U2"), _matricula("C9", "M9", "U9")]
+
+    def _estado_banco():
+        campi_por_unidade = {c["co_unidade"]: c for c in dados_campi.listar_campi(banco_temporario)}
+        with sqlite3.connect(banco_temporario) as conn:
+            interna = conn.execute(
+                "SELECT co_unidade, cidade, nome_unidade FROM interna_campus ORDER BY co_unidade"
+            ).fetchall()
+        return campi_por_unidade, interna
+
+    campi_antes, interna_antes = _estado_banco()
+
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    corpo = resposta.get_json()
+
+    assert resposta.status_code == 200
+    assert corpo["erro_previa"] == "falha_previa"
+    assert corpo["previa"] is None
+
+    campi_depois, interna_depois = _estado_banco()
+    assert campi_depois == campi_antes
+    assert interna_depois == interna_antes
+    assert "U9" not in campi_depois
+    assert campi_depois["U2"]["cidade"] is None
+    assert campi_depois["U2"]["nome_unidade"] is None

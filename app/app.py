@@ -471,14 +471,9 @@ def admin_atualizar_envio():
     dados_unidades = envio.dados_unidades_do_envio(ciclos_validos)
     preservados = envio.campi_ausentes(ciclos_validos, campi_cadastrados)
     execucoes.definir_campi_preservados(execucao, preservados)
-    execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
-        envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados), dados_unidades
-    )
-    _completar_unidades_incompletas(campi_cadastrados, dados_unidades)
     execucao.matriculas_orfas = _matriculas_orfas_envio(execucao.previa)
 
     resposta["campi_preservados"] = preservados
-    resposta["campi_cadastrados_automaticamente"] = execucao.campi_cadastrados_automaticamente
     resposta["matriculas_orfas"] = execucao.matriculas_orfas
     resposta["previa"] = {
         "ciclos": len(execucao.previa["ciclos"]),
@@ -493,6 +488,14 @@ def admin_atualizar_envio():
             execucao.previa, preservados, db_path=DEFAULT_DB_PATH, ano_base=ano_base_ativo()
         )
         execucoes.abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH)
+        # CPR-04: cadastro/complemento de campi só grava depois que a prévia foi
+        # montada com sucesso — se `preparar_versao`/`abrir_previa` falhar antes
+        # disto, nada foi persistido (era o gap: a escrita rodava antes do try).
+        execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
+            envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados), dados_unidades
+        )
+        _completar_unidades_incompletas(campi_cadastrados, dados_unidades)
+        resposta["campi_cadastrados_automaticamente"] = execucao.campi_cadastrados_automaticamente
         execucao.ciclos_sem_modalidade_descartados = candidato["resumo"]["ciclos_sem_modalidade_descartados"]
         execucao.matriculas_sem_modalidade_descartadas = candidato["resumo"][
             "matriculas_sem_modalidade_descartadas"
