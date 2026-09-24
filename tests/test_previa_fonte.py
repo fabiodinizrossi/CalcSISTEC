@@ -184,3 +184,91 @@ def test_fonte_sem_colunas_pessoais():
         assert not (colunas & pii)
     finally:
         fonte.fechar()
+
+
+def _banco_com_campus(tmp_path, interna, publicado):
+    """Banco temporário com uma linha em `interna_campus` e outra (ou
+    nenhuma) em `campus`."""
+    from app.data.schema import get_connection, init_db
+
+    db_path = str(tmp_path / "fonte.db")
+    init_db(db_path)
+    conn = get_connection(db_path)
+    try:
+        conn.execute(
+            "INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES (?, ?, ?)", interna
+        )
+        if publicado is not None:
+            conn.execute(
+                "INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES (?, ?, ?)", publicado
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return db_path
+
+
+def test_abrir_fonte_previa_sem_campus_explicito_le_interna_campus(tmp_path):
+    """CPR-06 AC5: o fallback da fonte da prévia lê `interna_campus` (o que o
+    Publicar leva ao ar), não o `campus` já publicado."""
+    db_path = _banco_com_campus(
+        tmp_path,
+        interna=("U1", "Santa Maria", "Campus SM"),
+        publicado=("U1", "Cidade Antiga", "Campus Antigo"),
+    )
+
+    fonte = abrir_fonte_previa(_candidato(), campus_publico=None, db_path=db_path)
+    try:
+        conn = fonte.abrir_leitura()
+        try:
+            linhas = conn.execute("SELECT co_unidade, cidade, nome_unidade FROM campus").fetchall()
+        finally:
+            conn.close()
+    finally:
+        fonte.fechar()
+
+    assert linhas == [("U1", "Santa Maria", "Campus SM")]
+
+
+def test_abrir_fonte_previa_com_interna_campus_vazio_nao_falha(tmp_path):
+    from app.data.schema import get_connection, init_db
+
+    db_path = str(tmp_path / "fonte.db")
+    init_db(db_path)
+
+    fonte = abrir_fonte_previa(_candidato(), campus_publico=None, db_path=db_path)
+    try:
+        conn = fonte.abrir_leitura()
+        try:
+            assert conn.execute("SELECT COUNT(*) FROM campus").fetchone()[0] == 0
+        finally:
+            conn.close()
+    finally:
+        fonte.fechar()
+
+
+def test_abrir_fonte_previa_com_campus_explicito_ignora_o_banco(tmp_path):
+    """O parâmetro `campus_publico` continua valendo: quem passa um DataFrame
+    não é afetado pela troca do fallback."""
+    from app.data.schema import get_connection, init_db
+
+    db_path = str(tmp_path / "fonte.db")
+    init_db(db_path)
+    conn = get_connection(db_path)
+    try:
+        conn.execute("INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES ('U9', 'Outra', 'Campus Outro')")
+        conn.commit()
+    finally:
+        conn.close()
+
+    fonte = abrir_fonte_previa(_candidato(), _campus_publico(), db_path=db_path)
+    try:
+        conn = fonte.abrir_leitura()
+        try:
+            linhas = conn.execute("SELECT co_unidade FROM campus").fetchall()
+        finally:
+            conn.close()
+    finally:
+        fonte.fechar()
+
+    assert linhas == [("U1",)]

@@ -496,10 +496,10 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `abrir_fonte_previa` (linhas 64-71), a consulta `"SELECT co_unidade, cidade, nome_unidade FROM campus"` passa a ler `FROM interna_campus`.
-- [ ] O docstring da função (linha 58-59, "`campus_publico`: DataFrame do `campus` publicado... se None, é lido de `db_path`") é atualizado para dizer que o fallback lê `interna_campus`, não o `campus` publicado.
-- [ ] O parâmetro `campus_publico` da função **não muda de nome nem de posição** (quem já passa um DataFrame explícito continua funcionando igual — só o fallback interno muda de tabela).
-- [ ] Em `tests/test_previa_fonte.py`: novo teste (ou ajuste de um existente que já testava o fallback lendo `campus`) que grava uma linha em `interna_campus` e nenhuma (ou uma diferente) em `campus`, chama `abrir_fonte_previa(candidato, campus_publico=None, db_path=...)`, e confere pela conexão de leitura da fonte (`fonte.abrir_leitura()`) que a tabela `campus` da fonte tem os dados de `interna_campus`.
+- [x] Em `abrir_fonte_previa` (linhas 64-71), a consulta `"SELECT co_unidade, cidade, nome_unidade FROM campus"` passa a ler `FROM interna_campus`.
+- [x] O docstring da função (linha 58-59, "`campus_publico`: DataFrame do `campus` publicado... se None, é lido de `db_path`") é atualizado para dizer que o fallback lê `interna_campus`, não o `campus` publicado.
+- [x] O parâmetro `campus_publico` da função **não muda de nome nem de posição** (quem já passa um DataFrame explícito continua funcionando igual — só o fallback interno muda de tabela).
+- [x] Em `tests/test_previa_fonte.py`: novo teste (ou ajuste de um existente que já testava o fallback lendo `campus`) que grava uma linha em `interna_campus` e nenhuma (ou uma diferente) em `campus`, chama `abrir_fonte_previa(candidato, campus_publico=None, db_path=...)`, e confere pela conexão de leitura da fonte (`fonte.abrir_leitura()`) que a tabela `campus` da fonte tem os dados de `interna_campus`.
 
 **Tests**: unit
 **Gate**: full

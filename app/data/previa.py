@@ -55,9 +55,10 @@ class FontePrevia:
 
 def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
     """Cria a fonte em memória a partir do `candidato` (T1: dict com
-    `tabelas` e `ano_base`). `campus_publico`: DataFrame do `campus`
-    publicado (colunas `co_unidade`, `cidade`, `nome_unidade`); se None, é
-    lido de `db_path`. Não toca nem grava no banco publicado."""
+    `tabelas` e `ano_base`). `campus_publico`: DataFrame de campus (colunas
+    `co_unidade`, `cidade`, `nome_unidade`); se None, o fallback lê
+    `interna_campus` de `db_path` (CPR-06: é o que o Publicar leva ao ar).
+    Não toca nem grava no banco publicado."""
     tabelas = candidato["tabelas"]
     ano_base = candidato["ano_base"]
 
@@ -65,7 +66,7 @@ def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
         conn = get_connection(db_path)
         try:
             campus_publico = pd.read_sql_query(
-                "SELECT co_unidade, cidade, nome_unidade FROM campus", conn
+                "SELECT co_unidade, cidade, nome_unidade FROM interna_campus", conn
             )
         finally:
             conn.close()

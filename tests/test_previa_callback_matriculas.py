@@ -81,7 +81,7 @@ def _envio_com_previa(db_path, monkeypatch):
     conn = get_connection(db_path)
     try:
         conn.execute(
-            "INSERT INTO campus (co_unidade, cidade, nome_unidade) VALUES ('U1', 'Santa Maria', 'Campus SM')"
+            "INSERT INTO interna_campus (co_unidade, cidade, nome_unidade) VALUES ('U1', 'Santa Maria', 'Campus SM')"
         )
         conn.commit()
     finally:
