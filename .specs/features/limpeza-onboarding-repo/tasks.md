@@ -571,9 +571,9 @@ T18 → T19 → T20 → T21 → T22
 
 **Done when**:
 
-- [ ] Numa cópia isolada, trocar `60` por `30` no limite faz o teste novo falhar; apagar a linha `Senha:` do script faz o teste de integração falhar (registrar as duas no corpo do commit)
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: 985 + novos, 0 failed
+- [x] Numa cópia isolada, trocar `60` por `30` no limite faz o teste novo falhar; apagar a linha `Senha:` do script faz o teste de integração falhar (registrar as duas no corpo do commit)
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 985 + novos, 0 failed
 
 **Tests**: integration
 **Gate**: full

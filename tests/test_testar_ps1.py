@@ -11,6 +11,7 @@ da 8050, onde pode haver um ambiente de teste em uso.
 
 import glob
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -40,6 +41,35 @@ def test_script_sobe_o_app_por_run_py_na_porta_pedida():
 
 def test_script_nao_chama_app_run_direto():
     assert "app.run(" not in ler_script()
+
+
+PADRAO_LIMITE = re.compile(r"(?m)^\s*\$limite\s*=\s*(\S.*?)\s*$")
+
+
+def test_limite_padrao_do_destacado_e_60_segundos():
+    """AMB-01 AC1: "esperar a porta aceitar conexão por no máximo 60 s".
+
+    O único outro caminho é o escape `CALCSISTEC_TESTAR_TIMEOUT`, que só
+    encurta a espera de um teste — nenhum outro literal pode virar o padrão.
+    """
+    atribuicoes = PADRAO_LIMITE.findall(ler_script())
+
+    assert atribuicoes, "$limite não é atribuído em testar.ps1"
+    assert atribuicoes[0] == "60", atribuicoes
+    assert [valor for valor in atribuicoes if valor.isdigit()] == ["60"], atribuicoes
+    assert atribuicoes[1] == "$limitePedido", atribuicoes
+
+
+def ler_env(caminho=None):
+    """`{chave: valor}` do `.env`, sem comentários e sem linhas vazias."""
+    valores = {}
+    with open(caminho or os.path.join(RAIZ, ".env"), encoding="utf-8") as arquivo:
+        for linha in arquivo:
+            if not linha.strip() or linha.strip().startswith("#"):
+                continue
+            chave, _separador, valor = linha.partition("=")
+            valores[chave.strip()] = valor.strip()
+    return valores
 
 
 # --- integração: processo real ----------------------------------------------
@@ -145,8 +175,9 @@ def apagar_logs(porta):
 
 
 def test_destacado_sobe_o_app_e_parar_derruba():
-    """AMB-01 AC1, AC2 e AC5: `-Destacado` volta com a porta no ar, citando o log
-    fora do repositório, e `-Parar` libera a porta."""
+    """AMB-01 AC1, AC2 e AC5: `-Destacado` volta com a porta no ar, imprimindo a
+    URL de login e as credenciais do `.env`, citando o log fora do repositório; e
+    `-Parar` libera a porta."""
     porta = porta_livre()
     try:
         subida = rodar_script("-Destacado", "-SemNavegador", "-Porta", str(porta))
@@ -160,7 +191,10 @@ def test_destacado_sobe_o_app_e_parar_derruba():
         assert os.path.join(TEMPORARIO, f"calcsistec-{porta}.log") in subida.stdout
         assert RAIZ not in linha_log, f"log dentro do repositorio: {linha_log}"
 
-        assert str(porta) in subida.stdout
+        assert f"http://localhost:{porta}/admin/login" in subida.stdout, subida.stdout
+        credenciais = ler_env()
+        assert credenciais["ADMIN_EMAIL"] in subida.stdout, subida.stdout
+        assert credenciais["ADMIN_SENHA"] in subida.stdout, subida.stdout
         assert "PID" in subida.stdout
 
         parada = rodar_script("-Parar", "-Porta", str(porta))
