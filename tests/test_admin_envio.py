@@ -27,10 +27,13 @@ from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA  # noqa: E402
 ADMIN = "pi@ife.edu.br"
 CELULA_SENSIVEL = "SEGREDO-DE-CELULA"
 
+# Cadastro completo (CPR-05): cidade/nome preenchidos — é o estado normal do
+# cadastro, e sem isso a etapa de completar unidades incompletas sairia
+# gravando no banco do repositório nos testes que não usam `banco_temporario`.
 CAMPI = [
-    {"id_perfil": "1", "nome_perfil": "Assessor A", "co_unidade": "U1"},
-    {"id_perfil": "2", "nome_perfil": "Assessor B", "co_unidade": "U2"},
-    {"id_perfil": "3", "nome_perfil": "Assessor C", "co_unidade": "U3"},
+    {"id_perfil": "1", "nome_perfil": "Assessor A", "co_unidade": "U1", "cidade": "Cidade U1", "nome_unidade": "Campus U1"},
+    {"id_perfil": "2", "nome_perfil": "Assessor B", "co_unidade": "U2", "cidade": "Cidade U2", "nome_unidade": "Campus U2"},
+    {"id_perfil": "3", "nome_perfil": "Assessor C", "co_unidade": "U3", "cidade": "Cidade U3", "nome_unidade": "Campus U3"},
 ]
 
 HISTORICO = []
@@ -368,6 +371,9 @@ def test_unidade_fora_do_cadastro_e_cadastrada_automaticamente(sessao, banco_tem
     # O CSV não traz o identificador de perfil real: o prefixo textual faz o
     # aviso de identificador inválido aparecer em Configurações.
     assert dados_campi.id_suspeito(unidade["id_perfil"]) is True
+    # CPR-05 AC1: cidade e nome vêm do próprio CSV, na ordem das colunas dele.
+    assert unidade["cidade"] == "Cidade Teste"
+    assert unidade["nome_unidade"] == "Campus U9"
 
 
 def test_ciclo_sem_modalidade_e_descartado_e_contado_na_resposta(sessao, banco_temporario):
@@ -525,6 +531,43 @@ def test_unidade_cadastrada_pelo_envio_sobrevive_a_uma_leitura_do_sistec(sessao,
     )
 
     assert "U9" in {c["co_unidade"] for c in dados_campi.listar_campi(banco_temporario)}
+
+
+def test_unidade_cadastrada_incompleta_e_completada_pelo_envio(sessao, banco_temporario, monkeypatch):
+    """CPR-05 AC2: U1 já está no cadastro, mas sem cidade/nome; o envio traz os
+    dois valores e completa o que faltava."""
+    from app.data import campi as dados_campi
+
+    dados_campi.incluir_campus("1", "Assessor A", co_unidade="U1", db_path=banco_temporario)
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+
+    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv")]
+    matriculas = [_matricula("C1", "M1", "U1")]
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    assert resposta.status_code == 200
+    (unidade,) = dados_campi.listar_campi(banco_temporario)
+    assert unidade["cidade"] == "Cidade Teste"
+    assert unidade["nome_unidade"] == "Campus U1"
+
+
+def test_envio_nao_sobrescreve_cidade_ja_cadastrada(sessao, banco_temporario, monkeypatch):
+    """CPR-05 AC2: só o campo vazio é preenchido — cidade já gravada continua
+    a antiga, e `nome_unidade` (vazio) entra."""
+    from app.data import campi as dados_campi
+
+    dados_campi.incluir_campus(
+        "1", "Assessor A", co_unidade="U1", cidade="Cidade Antiga", db_path=banco_temporario
+    )
+    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+
+    ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv")]
+    matriculas = [_matricula("C1", "M1", "U1")]
+    sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+
+    (unidade,) = dados_campi.listar_campi(banco_temporario)
+    assert unidade["cidade"] == "Cidade Antiga"
+    assert unidade["nome_unidade"] == "Campus U1"
 
 
 def test_matriculas_de_ciclo_ausente_entram_na_contagem_de_orfas(sessao):

@@ -352,9 +352,13 @@ def _matriculas_orfas_envio(previa):
     return int((~matriculas[coluna].isin(chaves)).sum())
 
 
-def _cadastrar_unidades_do_envio(codigos):
+def _cadastrar_unidades_do_envio(codigos, dados_unidades):
     """AFE-03: cadastra as unidades que vieram nos ciclos e ainda não estavam
     na lista de campi. Se a unidade está no arquivo do Sistec, ela existe.
+
+    CPR-05 AC1: `dados_unidades` (de `envio.dados_unidades_do_envio`) traz
+    cidade e nome da unidade lidos do próprio CSV — a unidade nova já nasce
+    com os dois preenchidos.
 
     O CSV do envio não traz o identificador de perfil real, então ele é
     prefixado com `envio-` — de propósito: `id_suspeito()` sinaliza esse campus
@@ -365,17 +369,39 @@ def _cadastrar_unidades_do_envio(codigos):
     colisão inesperada (`CampusInvalido`) pula só aquela unidade."""
     cadastrados = []
     for codigo in codigos:
+        unidade = dados_unidades.get(codigo, {})
         try:
             campi.incluir_campus(
                 id_perfil=f"envio-{codigo}",
                 nome_perfil=f"Unidade {codigo} (cadastrada pelo envio de pastas)",
                 co_unidade=codigo,
+                cidade=unidade.get("cidade"),
+                nome_unidade=unidade.get("nome_unidade"),
                 db_path=DEFAULT_DB_PATH,
             )
         except campi.CampusInvalido:
             continue
         cadastrados.append(codigo)
     return cadastrados
+
+
+def _completar_unidades_incompletas(campi_cadastrados, dados_unidades):
+    """CPR-05 AC2: unidades já cadastradas que vieram neste envio com cidade
+    ou nome vazios ganham o valor do CSV — sem sobrescrever o que já existe
+    (`campi.completar_cidade_nome` usa `COALESCE`)."""
+    for campus in campi_cadastrados:
+        codigo = str(campus.get("co_unidade") or "").strip()
+        unidade = dados_unidades.get(codigo)
+        if not unidade:
+            continue
+        if campus.get("cidade") and campus.get("nome_unidade"):
+            continue
+        campi.completar_cidade_nome(
+            codigo,
+            unidade["cidade"],
+            unidade["nome_unidade"],
+            db_path=DEFAULT_DB_PATH,
+        )
 
 
 @server.route("/admin/atualizar/envio", methods=["POST"])
@@ -440,11 +466,15 @@ def admin_atualizar_envio():
     # CPR-03: unidade cujos ciclos são TODOS sem modalidade não entra no
     # candidato — para "ausente"/"não cadastrado" ela conta como ausente.
     ciclos_validos = ciclos_com_modalidade(execucao.previa["ciclos"])
+    # CPR-05: cidade/nome vêm do próprio CSV — do mesmo recorte que vai para o
+    # candidato, não dos ciclos brutos.
+    dados_unidades = envio.dados_unidades_do_envio(ciclos_validos)
     preservados = envio.campi_ausentes(ciclos_validos, campi_cadastrados)
     execucoes.definir_campi_preservados(execucao, preservados)
     execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
-        envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados)
+        envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados), dados_unidades
     )
+    _completar_unidades_incompletas(campi_cadastrados, dados_unidades)
     execucao.matriculas_orfas = _matriculas_orfas_envio(execucao.previa)
 
     resposta["campi_preservados"] = preservados
