@@ -122,3 +122,47 @@ def test_requirements_dev_inclui_o_principal_e_o_pytest():
         "-r requirements.txt",
         "pytest==9.1.1",
     ]
+
+
+def test_python_version_declara_a_versao_do_projeto():
+    """DEP-02 AC3: projeto é Python 3.12 (PROJECT_RULES, Restrições Técnicas)."""
+    assert linhas_uteis(".python-version") == ["3.12"]
+
+
+CHAVES_ENV = [
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD_HASH",
+    "FLASK_SECRET_KEY",
+    "CALCSISTEC_HTTPS",
+    "CALCSISTEC_SISTEC_BASE_URL",
+    "CALCSISTEC_PASTA_DOWNLOADS",
+    "CALCSISTEC_PASTA_COLETA",
+    "ANO_BASE",
+]
+
+
+def valores_env_exemplo():
+    """`{chave: valor}` de `.env.example`, sem as linhas de comentário."""
+    valores = {}
+    for linha in linhas_uteis(".env.example"):
+        if linha.startswith("#"):
+            continue
+        chave, _separador, valor = linha.partition("=")
+        valores[chave.strip()] = valor.strip()
+    return valores
+
+
+def test_env_exemplo_documenta_todas_as_chaves_de_ambiente():
+    """DEP-02 AC4: quem clona sabe o que definir antes de subir."""
+    valores = valores_env_exemplo()
+
+    for chave in CHAVES_ENV:
+        assert chave in valores, f"{chave} fora do .env.example"
+
+
+def test_env_exemplo_nao_traz_segredo_nenhum():
+    """DEP-02 AC4: arquivo versionado não pode carregar segredo real."""
+    valores = valores_env_exemplo()
+
+    assert valores["FLASK_SECRET_KEY"] == ""
+    assert valores["ADMIN_PASSWORD_HASH"] == ""

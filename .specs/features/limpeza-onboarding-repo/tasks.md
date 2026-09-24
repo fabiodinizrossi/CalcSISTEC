@@ -263,11 +263,11 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma o conteúdo `3.12` de `.python-version` e a presença de cada uma das oito chaves em `.env.example`
-- [ ] O teste de higiene afirma que `.env.example` não tem valor com cara de segredo: `FLASK_SECRET_KEY` e `ADMIN_PASSWORD_HASH` estão vazios
-- [ ] `.env.example` **não** é ignorado pelo `.gitignore` (`git check-ignore .env.example` não imprime nada)
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma o conteúdo `3.12` de `.python-version` e a presença de cada uma das oito chaves em `.env.example`
+- [x] O teste de higiene afirma que `.env.example` não tem valor com cara de segredo: `FLASK_SECRET_KEY` e `ADMIN_PASSWORD_HASH` estão vazios
+- [x] `.env.example` **não** é ignorado pelo `.gitignore` (`git check-ignore .env.example` não imprime nada)
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick
