@@ -97,6 +97,13 @@ A cada atualização:
 4. O CalcSISTEC troca de campus e baixa ciclos e matrículas de cada um.
 5. Confira a prévia, clique em **Salvar na versão interna** e depois em **Publicar**.
 
+**Publicar** leva a versão interna inteira ao painel público: os dados de ciclos e
+matrículas e também a lista de campi (`interna_campus`, a projeção do cadastro de
+`/admin/campi`). A publicação anterior fica guardada, e **Desfazer** devolve a versão
+anterior por inteiro, campi incluídos. **Aplicar ao público**, em Configurações,
+continua existindo para levar só as edições de campi e de fatores, fora do ciclo de
+baixa.
+
 ### As duas formas de atualizar
 
 A tela **Atualizar dados** tem duas origens, e as duas terminam na mesma prévia e na

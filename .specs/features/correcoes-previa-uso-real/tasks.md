@@ -545,8 +545,8 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] A seção do README que descreve **Publicar** passa a citar que a lista de campi (`interna_campus`) também é levada ao público na mesma operação, com a versão anterior preservada para Desfazer — mesma linguagem/nível de detalhe do restante do documento, em português.
-- [ ] Nenhuma outra seção do README é reescrita além do necessário para essa frase.
+- [x] A seção do README que descreve **Publicar** passa a citar que a lista de campi (`interna_campus`) também é levada ao público na mesma operação, com a versão anterior preservada para Desfazer — mesma linguagem/nível de detalhe do restante do documento, em português.
+- [x] Nenhuma outra seção do README é reescrita além do necessário para essa frase.
 
 **Tests**: none
 **Gate**: full
