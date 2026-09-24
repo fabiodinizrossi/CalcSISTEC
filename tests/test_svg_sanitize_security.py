@@ -1,8 +1,8 @@
 """Teste de segurança dedicado (Tarefa `001-govbr-design-system`, T041).
 
-Usa literalmente o payload de `_reversa_forward/001-govbr-design-system/onboarding.md`
-§6 (passo 6 — "Teste de segurança obrigatório") para confirmar que nenhum dos
-três vetores (`<script>`, `onload`, `onclick`) sobrevive à sanitização.
+Usa literalmente o payload do passo "Teste de segurança obrigatório" do
+onboarding do design system gov.br para confirmar que nenhum dos três vetores
+(`<script>`, `onload`, `onclick`) sobrevive à sanitização.
 """
 
 import os

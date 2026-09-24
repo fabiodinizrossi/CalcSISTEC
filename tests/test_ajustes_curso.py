@@ -1,9 +1,8 @@
 """Testes das regras de ajuste de nome de curso A2, A3 e A5 do legado
 (`002-baixador-planilhas-sistec`, T019, T027).
 
-Fonte literal: `previaPNP2026_28032025.SemanticModel/definition/tables/dimCurso.tmdl:193-304`
-(`_reversa_sdd/code-analysis.md` A2, A3, A5). Fecha o GAP `mapa_nomes_curso={}`
-de `app.py:166-170` (D-08).
+Fonte literal: `dimCurso.tmdl:193-304` do modelo semântico do painel legado
+(A2, A3, A5). Fecha o GAP `mapa_nomes_curso={}` de `app.py:166-170` (D-08).
 """
 
 import os

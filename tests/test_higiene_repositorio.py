@@ -61,6 +61,42 @@ def test_app_nao_cita_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
+def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
+    """DOC-01 AC1: o mesmo vale para `scripts/`, `tests/` e `run.py`. O próprio
+    teste de higiene é a exceção — ele lista os termos proibidos."""
+    arquivos = list(arquivos_py("scripts", "tests")) + [caminho("run.py")]
+
+    for arquivo in arquivos:
+        if os.path.basename(arquivo) == "test_higiene_repositorio.py":
+            continue
+        with open(arquivo, encoding="utf-8") as fonte:
+            conteudo = fonte.read()
+        for termo in TERMOS_PROIBIDOS:
+            if termo in conteudo:
+                pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
+
+
+def carregar_script(nome):
+    """Importa um `scripts/*.py` pelo caminho (não é pacote)."""
+    import importlib.util
+
+    espec = importlib.util.spec_from_file_location(nome, caminho("scripts", f"{nome}.py"))
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    return modulo
+
+
+def test_verificacao_de_prontidao_aponta_para_o_deploy(capsys):
+    """DOC-02 AC5: a seção fora do escopo automatizável manda ler o `DEPLOY.md`."""
+    modulo = carregar_script("verificar_prontidao_cutover")
+
+    modulo.imprimir_relatorio([])
+    saida = capsys.readouterr().out
+
+    assert "DEPLOY.md" in saida
+    assert "CUTOVER.md" not in saida
+
+
 def test_modulo_validators_foi_removido():
     """LIM-01 AC1: `app/data/validators.py` não era importado por ninguém."""
     assert not os.path.exists(caminho("app", "data", "validators.py"))

@@ -1,9 +1,7 @@
 """Suíte de testes de paridade (Tarefa 11 do plano de reconstrução).
 
-Cobre os 7 arquivos de fluxo de domínio de
-`_reversa_sdd/migration/parity_tests/*.feature` (PT-001 a PT-007), traduzidos
-para `pytest` (framework a critério do agente de codificação, conforme
-`parity_specs.md` §"Tipos de teste a aplicar"). Cada teste referencia o
+Cobre os 7 fluxos de domínio do painel legado (PT-001 a PT-007), traduzidos
+para `pytest`. Cada teste referencia o
 `spec-id`/cenário Gherkin de origem no docstring, para rastreabilidade.
 
 Não cobre os 5 arquivos `parity_tests/screens/*.feature` (contrato de tela) —

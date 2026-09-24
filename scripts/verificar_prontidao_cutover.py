@@ -1,8 +1,7 @@
 """Verificação automatizada de prontidão para o cutover — Tarefa 10 do plano
-de reconstrução, atualizada por `002-baixador-planilhas-sistec` (T068) a
-partir de `_reversa_sdd/migration/cutover_plan.md`,
-`_reversa_sdd/migration/risk_register.md` e
-`_reversa_forward/002-baixador-planilhas-sistec/roadmap.md` §10.
+de reconstrução, atualizada por `002-baixador-planilhas-sistec` (T068).
+
+O roteiro de implantação e as pendências humanas estão em `DEPLOY.md`.
 
 Cobre a parte do checklist que é verificável por código antes do corte:
 
@@ -150,7 +149,7 @@ def imprimir_relatorio(resultados):
         print(linha)
 
     print()
-    print("--- Fora do escopo automatizável (ver CUTOVER.md) ---")
+    print("--- Fora do escopo automatizável (ver DEPLOY.md) ---")
     print("[ ] Paridade 100% em parity_specs.md/parity_tests/ (Tarefa 11)")
     print("[ ] Design gov.br responsivo validado em dispositivo móvel real")
     print("[ ] Roteiro de onboarding.md com o Sistec simulado e 1 baixa real")

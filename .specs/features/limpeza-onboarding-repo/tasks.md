@@ -318,10 +318,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene cobre também `scripts/*.py`, `tests/*.py` (excluindo a si mesmo) e `run.py`
-- [ ] Um teste roda `scripts/verificar_prontidao_cutover.py` (ou importa a função que imprime a seção) e afirma que a saída contém `DEPLOY.md` e não contém `CUTOVER.md`
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene cobre também `scripts/*.py`, `tests/*.py` (excluindo a si mesmo) e `run.py`
+- [x] Um teste roda `scripts/verificar_prontidao_cutover.py` (ou importa a função que imprime a seção) e afirma que a saída contém `DEPLOY.md` e não contém `CUTOVER.md`
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
