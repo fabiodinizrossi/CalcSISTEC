@@ -101,11 +101,11 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] `tests/test_run.py` cobre: ordem `iniciar_varredura` → `app.run` com uma chamada de cada (WDG-01 AC1); `--host 127.0.0.1 --port 9999` repassados (AC2); padrão `0.0.0.0`/`8050` sem argumentos (AC2); `--port abc` sai com `SystemExit` código 2 sem chamar `iniciar_varredura` (edge case)
-- [ ] Teste em **subprocesso** (`sys.executable -c "import app.app; from app.sistec import execucoes; print(execucoes._VARREDURA_THREAD)"`) afirma a saída `None` (WDG-02); subprocesso evita contaminar o estado global dos outros testes
-- [ ] Os testes de WDG-01 falham antes da mudança em `run.py` (registre no commit)
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: 939 + novos, 0 failed (sem deleções)
+- [x] `tests/test_run.py` cobre: ordem `iniciar_varredura` → `app.run` com uma chamada de cada (WDG-01 AC1); `--host 127.0.0.1 --port 9999` repassados (AC2); padrão `0.0.0.0`/`8050` sem argumentos (AC2); `--port abc` sai com `SystemExit` código 2 sem chamar `iniciar_varredura` (edge case)
+- [x] Teste em **subprocesso** (`sys.executable -c "import app.app; from app.sistec import execucoes; print(execucoes._VARREDURA_THREAD)"`) afirma a saída `None` (WDG-02); subprocesso evita contaminar o estado global dos outros testes
+- [x] Os testes de WDG-01 falham antes da mudança em `run.py` (registre no commit)
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 939 + novos, 0 failed (sem deleções)
 
 **Tests**: unit
 **Gate**: full
