@@ -199,9 +199,9 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `app/pages/evasao.py`, a linha `filhos.append(dcc.Store(id="evasao-preview", data=preview_id))` (hoje dentro de `if preview_id is not None:`, por volta da linha 80-81) passa a rodar sempre.
-- [ ] `State("evasao-preview", "data")` (por volta da linha 133) não muda.
-- [ ] Teste equivalente ao de T2, para `pagina("evasao").layout()` sem `preview_id`, confirmando `id="evasao-preview"` presente no layout público.
+- [x] Em `app/pages/evasao.py`, a linha `filhos.append(dcc.Store(id="evasao-preview", data=preview_id))` (hoje dentro de `if preview_id is not None:`, por volta da linha 80-81) passa a rodar sempre.
+- [x] `State("evasao-preview", "data")` (por volta da linha 133) não muda.
+- [x] Teste equivalente ao de T2, para `pagina("evasao").layout()` sem `preview_id`, confirmando `id="evasao-preview"` presente no layout público.
 
 **Tests**: integration
 **Gate**: full

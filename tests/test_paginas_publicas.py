@@ -374,6 +374,16 @@ def test_evasao_mostra_taxa_agregada_destacada_antes_da_tabela_publica(evasao_co
     exigir_sem_componente_do_ds_que_precisa_de_js(tabela)
 
 
+def test_evasao_layout_publico_inclui_o_store_da_previa(evasao_com_dados, monkeypatch):
+    """CPR-02: mesmo defeito de `matriculas` no painel público."""
+    monkeypatch.setattr(evasao_com_dados, "dataset_disponivel", lambda: True)
+
+    layout = evasao_com_dados.layout()
+
+    ids = {getattr(componente, "id", None) for componente in componentes(layout)}
+    assert "evasao-preview" in ids
+
+
 def test_evasao_sem_dados_mostra_br_message_info(monkeypatch):
     pagina_evasao = pagina("evasao")
     monkeypatch.setattr(pagina_evasao, "dataset_disponivel", lambda: False)

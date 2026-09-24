@@ -76,9 +76,11 @@ def layout(preview_id=None):
         dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
         dcc.Loading(html.Div(id="evasao-heatmap")),
         _filtros(df),
+        # CPR-02: o `Store` entra sempre — o callback o declara como `State`
+        # também no caminho público (`data=None`), e um `State` apontando para
+        # id inexistente trava a página com ReferenceError no navegador.
+        dcc.Store(id="evasao-preview", data=preview_id),
     ]
-    if preview_id is not None:
-        filhos.append(dcc.Store(id="evasao-preview", data=preview_id))
 
     return html.Div(filhos, className="painel-dashboard")
 
