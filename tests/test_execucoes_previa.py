@@ -470,3 +470,78 @@ def test_salvar_baixa_direta_nao_usa_salvar_interna(monkeypatch):
 
     assert execucoes.salvar(baixa, "qualquer.db", 2026) == {"salva": True}
     assert baixa.estado == "salva"
+
+
+def _leitura_envio_com_ciclo_sem_modalidade():
+    """Dois ciclos no CSV bruto; um deles sem modalidade sai do candidato
+    (CPR-03), então a contagem do candidato é menor que a do consolidado."""
+    leitura = _leitura_envio()
+    ciclo_extra = {
+        **leitura["ciclo"][0][1].iloc[0].to_dict(),
+        "CODIGO_CICLO_MATRICULA": "C2",
+        "CÓDIGO DO PORTFÓLIO": "P2",
+        "MODALIDADE_ENSINO": "",
+    }
+    matricula_extra = {
+        **leitura["matricula"][0][1].iloc[0].to_dict(),
+        "CO_MATRICULA": "M2",
+        "CODIGO_CICLO_MATRICULA": "C2",
+    }
+    return {
+        "ciclo": [("ciclos.csv", pd.DataFrame([leitura["ciclo"][0][1].iloc[0].to_dict(), ciclo_extra]))],
+        "matricula": [
+            ("matriculas.csv", pd.DataFrame([leitura["matricula"][0][1].iloc[0].to_dict(), matricula_extra]))
+        ],
+    }
+
+
+def test_abrir_previa_resumo_e_amostra_vem_do_candidato(db_path):
+    """CPR-07 AC1/AC2/AC3: o polling mostra o que o Salvar grava, não o
+    consolidado bruto — contagens do candidato e uma linha por matrícula com o
+    curso dela."""
+    candidato = _candidato(db_path)
+    envio = execucoes.criar_execucao_envio(
+        "pi@iffarroupilha.edu.br", ["ciclos.csv"], ["matriculas.csv"], sessao_id="sessao-A"
+    )
+    execucoes.registrar_leitura(envio, _leitura_envio_com_ciclo_sem_modalidade())
+    assert envio.previa["ciclos"] is not None
+
+    execucoes.abrir_previa(envio, candidato, db_path=db_path)
+
+    bruto = execucoes._resumo_amostra(candidato)
+    assert envio.previa_resumo["ciclos"] == candidato["resumo"]["ciclos"] == 1
+    assert envio.previa_resumo["matriculas"] == candidato["resumo"]["matriculas"] == 1
+    assert envio.previa_resumo["cursos"] == candidato["resumo"]["cursos"] == 1
+    assert envio.previa_resumo["matriculas_eficiencia"] == candidato["resumo"]["matriculas_eficiencia"]
+    assert bruto["ciclos"] == 1  # o bruto tinha 2; o candidato tem 1
+
+    (linha,) = envio.previa_resumo["amostra"]
+    assert linha["co_matricula"] == "M1"
+    assert linha["codigo_ciclo_matricula"] == "C1"
+    assert linha["nome_curso_ajustado"] == "Técnico em X"
+    assert linha["co_unidade"] == "U1"
+    assert linha["status_corrigido"] == "EM_CURSO"
+    execucoes.liberar_previa(envio)
+
+
+def test_amostra_do_candidato_nao_tem_coluna_de_pii(db_path):
+    """CPR-07 AC2: a amostra sai só das tabelas do candidato, que não têm
+    coluna pessoal."""
+    from app.data.transform import COLUNAS_PII
+
+    amostra = execucoes._amostra_candidato(_candidato(db_path))
+
+    assert amostra
+    for registro in amostra:
+        assert set(registro).isdisjoint(COLUNAS_PII)
+
+
+def test_resumo_amostra_sem_candidato_devolve_none():
+    assert execucoes._resumo_amostra(None) is None
+
+
+def test_amostra_do_candidato_sem_matriculas_devolve_lista_vazia(db_path):
+    candidato = _candidato(db_path)
+    candidato["tabelas"]["matriculas"] = candidato["tabelas"]["matriculas"].iloc[0:0]
+
+    assert execucoes._amostra_candidato(candidato) == []

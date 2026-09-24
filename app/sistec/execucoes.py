@@ -406,18 +406,64 @@ def descartar(execucao):
         execucao.estado = "descartada"
 
 
-def _resumo_amostra(previa):
-    """Resumo/amostra leves do consolidado para o polling, sem reter os
-    DataFrames completos. Espelha `admin_atualizar_estado` (amostra de 20
-    linhas de ciclos, sem NaN/inf)."""
-    if previa is None:
-        return None
-    amostra = previa["ciclos"].head(20).astype(object)
+_COLUNAS_AMOSTRA = [
+    "co_matricula",
+    "status_corrigido",
+    "mes_ocorrencia_corrigido",
+    "ano_base",
+    "codigo_ciclo_matricula",
+    "nome_curso_ajustado",
+    "tipo_curso_pnp",
+    "modalidade_ensino",
+    "co_unidade",
+]
+
+
+def _amostra_candidato(candidato):
+    """CPR-07 AC2: até 20 linhas do candidato (já filtrado pela regra PNP),
+    uma por matrícula, com o curso daquela matrícula na mesma linha — é o que
+    o Salvar vai gravar, ao contrário do consolidado bruto. Só colunas
+    institucionais: nenhuma de `COLUNAS_PII` existe no candidato."""
+    tabelas = (candidato or {}).get("tabelas") or {}
+    matriculas = tabelas.get("matriculas")
+    ciclos = tabelas.get("ciclos")
+    cursos = tabelas.get("cursos")
+    if matriculas is None or matriculas.empty or ciclos is None or ciclos.empty:
+        return []
+
+    df = matriculas.merge(
+        ciclos[["codigo_ciclo_matricula", "codigo_portfolio", "co_unidade"]],
+        on="codigo_ciclo_matricula",
+        how="left",
+    )
+    if cursos is not None and not cursos.empty:
+        df = df.merge(
+            cursos[["codigo_portfolio", "nome_curso_ajustado", "tipo_curso_pnp", "modalidade_ensino"]],
+            on="codigo_portfolio",
+            how="left",
+        )
+    for coluna in _COLUNAS_AMOSTRA:
+        if coluna not in df.columns:
+            df[coluna] = None
+
+    amostra = df[_COLUNAS_AMOSTRA].head(20).astype(object)
     amostra = amostra.replace([float("inf"), float("-inf")], None).where(amostra.notna(), None)
+    return amostra.to_dict(orient="records")
+
+
+def _resumo_amostra(candidato):
+    """Resumo/amostra leves da prévia para o polling, sem reter os DataFrames
+    completos. CPR-07 AC1/AC3: as contagens e a amostra saem do `candidato`
+    (o que o Salvar grava), não do consolidado bruto de `execucao.previa`."""
+    if candidato is None:
+        return None
+    resumo = candidato["resumo"]
     return {
-        "ciclos": len(previa["ciclos"]),
-        "matriculas": len(previa["matriculas"]),
-        "amostra": amostra.to_dict(orient="records"),
+        "cursos": resumo["cursos"],
+        "ciclos": resumo["ciclos"],
+        "matriculas": resumo["matriculas"],
+        "matriculas_eficiencia": resumo["matriculas_eficiencia"],
+        "amostra": _amostra_candidato(candidato),
     }
 
 
@@ -435,7 +481,7 @@ def abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH):
     execucao.previa_fonte = abrir_fonte_previa(candidato, None, db_path)
     execucao.candidato = candidato
 
-    execucao.previa_resumo = _resumo_amostra(execucao.previa)
+    execucao.previa_resumo = _resumo_amostra(candidato)
     execucao.previa = None
     for par in execucao.fila:
         par.df = None
