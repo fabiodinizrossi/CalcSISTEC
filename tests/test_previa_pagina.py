@@ -6,6 +6,7 @@ registra `registrar_falha_pagina` (PVP-01/PVP-02/PVP-05/PVP-09).
 """
 
 import importlib
+import json
 import os
 import sys
 
@@ -164,6 +165,75 @@ def test_layout_mostra_avisos(monkeypatch, db_path):
     assert "Unidades cadastradas pelo envio: U3." in texto
     assert "2 matrícula(s) órfã(s)." in texto
     assert "Arquivos ignorados: x.txt." in texto
+
+
+def _resposta_roteamento(cliente, execucao_id, pagina):
+    """PVP-01: bate no roteamento de verdade do Dash Pages (`path_template`),
+    não em `previa.layout()` direto — era o que deixava toda URL de prévia
+    cair em "404 - Page not found".
+
+    O corpo do `POST` é montado a partir do próprio `callback_map`: o Dash 4
+    registra o roteador de páginas só na primeira requisição ao servidor
+    (`enable_pages`), e usa uma chave de saída concatenada quando o callback
+    tem mais de um `Output`.
+    """
+    cliente.get("/")  # primeira requisição: o Dash registra o roteador de páginas
+    chaves = [chave for chave in _app.app.callback_map if "_pages_content.children" in chave]
+    assert chaves, "roteador de páginas do Dash não registrado"
+    registro = _app.app.callback_map[chaves[0]]
+
+    valores = {
+        ("_pages_location", "pathname"): f"/admin/previa/{execucao_id}/{pagina}",
+        ("_pages_location", "search"): "",
+    }
+    return cliente.post(
+        "/_dash-update-component",
+        json={
+            "output": chaves[0],
+            "inputs": [
+                {
+                    "id": entrada.component_id,
+                    "property": entrada.component_property,
+                    "value": valores.get((entrada.component_id, entrada.component_property)),
+                }
+                for entrada in registro["raw_inputs"]
+            ],
+            "outputs": [
+                {"id": saida.component_id, "property": saida.component_property}
+                for saida in registro["output"]
+            ],
+            "changedPropIds": ["_pages_location.pathname"],
+        },
+    )
+
+
+def _conteudo_da_pagina(resposta):
+    corpo = resposta.get_json()["response"]["_pages_content"]["children"]
+    return json.dumps(corpo, ensure_ascii=False)
+
+
+def test_roteamento_real_abre_a_previa(monkeypatch, db_path):
+    envio = _envio_com_previa(db_path, monkeypatch)
+    cliente = _app.server.test_client()
+
+    resposta = _resposta_roteamento(cliente, envio.id, "matriculas")
+
+    assert resposta.status_code == 200
+    texto = _conteudo_da_pagina(resposta)
+    assert "Page not found" not in texto and "404" not in texto
+    assert "Prévia não publicada" in texto
+
+
+def test_roteamento_real_slug_invalido_nao_e_404(monkeypatch, db_path):
+    envio = _envio_com_previa(db_path, monkeypatch)
+    cliente = _app.server.test_client()
+
+    resposta = _resposta_roteamento(cliente, envio.id, "nao-existe")
+
+    assert resposta.status_code == 200
+    texto = _conteudo_da_pagina(resposta)
+    assert "Page not found" not in texto and "404" not in texto
+    assert "Prévia indisponível" in texto
 
 
 def test_layout_falha_render_registra(monkeypatch, db_path):

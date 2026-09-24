@@ -24,7 +24,9 @@ from app.sistec.execucoes import (
 )
 
 dash.register_page(
-    __name__, path="/admin/previa/<execucao_id>/<pagina>", title="Prévia - Pesquisa Institucional - SISTEC"
+    __name__,
+    path_template="/admin/previa/<execucao_id>/<pagina>",
+    title="Prévia - Pesquisa Institucional - SISTEC",
 )
 
 # slug da URL -> (rótulo, módulo da página pública em `pages/`).
