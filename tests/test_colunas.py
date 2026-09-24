@@ -28,11 +28,71 @@ def test_lista_de_permissao_nao_intersecta_colunas_pii():
     assert nomes.isdisjoint(COLUNAS_PII)
 
 
-def test_permissao_do_ciclo_cobre_as_14_colunas_de_data_delta():
-    assert len(COLUNAS_CICLO) == 14
+def test_permissao_do_ciclo_cobre_as_16_colunas_de_data_delta():
+    """São 16 desde CPR-05: as 14 de `data-delta.md` §4.1 mais `MUNICIPIO` e
+    `NOME UNIDADE DE ENSINO`, que só alimentam o cadastro automático."""
+    assert len(COLUNAS_CICLO) == 16
     assert COLUNAS_CICLO["CÓDIGO CICLO DE MATRÍCULA"] == "CODIGO_CICLO_MATRICULA"
     assert COLUNAS_CICLO["CÓDIGO UNIDADE DE ENSINO"] == "CO_UNIDADE"
     assert "SITUAÇÃO DO CICLO " in COLUNAS_CICLO  # espaço final confirmado em data-delta.md §4.1
+
+
+def test_aplicar_permissao_le_municipio_e_nome_da_unidade_no_ciclo():
+    """CPR-05 AC1: as duas colunas institucionais da unidade passam a ser
+    lidas, com os nomes internos esperados (grafia do CSV real: sem acento,
+    maiúsculas)."""
+    df = pd.DataFrame(
+        {
+            "CÓDIGO CICLO DE MATRÍCULA": ["1"],
+            "CÓDIGO UNIDADE DE ENSINO": ["9001"],
+            "MUNICIPIO": ["Alegrete"],
+            "NOME UNIDADE DE ENSINO": ["Campus Alegrete"],
+        }
+    )
+
+    resultado = aplicar_permissao(df, tipo="ciclo")
+
+    assert list(resultado.columns) == [
+        "CODIGO_CICLO_MATRICULA",
+        "CO_UNIDADE",
+        "MUNICIPIO_UNIDADE",
+        "NOME_UNIDADE_ENSINO",
+    ]
+    assert resultado.iloc[0]["MUNICIPIO_UNIDADE"] == "Alegrete"
+    assert resultado.iloc[0]["NOME_UNIDADE_ENSINO"] == "Campus Alegrete"
+
+
+def test_permissao_da_matricula_nao_tem_colunas_da_unidade():
+    """CPR-05: `MUNICIPIO`/`NOME UNIDADE DE ENSINO` só existem na planilha de
+    ciclo — a de matrícula continua com as suas 4 colunas."""
+    assert set(COLUNAS_MATRICULA) == {
+        "CO_MATRICULA",
+        "CO_CICLO_MATRICULA",
+        "NO_STATUS_MATRICULA",
+        "MES_DE_OCORRENCIA",
+    }
+    assert "MUNICIPIO_UNIDADE" not in COLUNAS_MATRICULA.values()
+    assert "NOME_UNIDADE_ENSINO" not in COLUNAS_MATRICULA.values()
+
+
+def test_colunas_da_unidade_nao_entram_no_schema_de_gravacao():
+    """CPR-05 AC6: `MUNICIPIO_UNIDADE`/`NOME_UNIDADE_ENSINO` são só de leitura
+    — nenhum schema de gravação da versão interna as lista."""
+    from app.data.ingest import (
+        _COLUNAS_CICLOS_SCHEMA,
+        _COLUNAS_CURSOS_SCHEMA,
+        _COLUNAS_EFICIENCIA_SCHEMA,
+        _COLUNAS_MATRICULAS_SCHEMA,
+    )
+
+    schemas = (
+        _COLUNAS_CURSOS_SCHEMA
+        + _COLUNAS_CICLOS_SCHEMA
+        + _COLUNAS_MATRICULAS_SCHEMA
+        + _COLUNAS_EFICIENCIA_SCHEMA
+    )
+    assert "MUNICIPIO_UNIDADE" not in schemas
+    assert "NOME_UNIDADE_ENSINO" not in schemas
 
 
 def test_permissao_da_matricula_cobre_as_4_colunas_de_data_delta():

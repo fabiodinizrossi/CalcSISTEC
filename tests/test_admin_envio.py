@@ -52,6 +52,10 @@ def _linha_ciclo(co_unidade, codigo):
         "DATA FIM PREVISTO DO CURSO": "2027-01-01",
         "STATUS DO CICLO DE MATRÍCULA": "ATIVO",
         "SITUAÇÃO DO CICLO ": "ATIVO",
+        # CPR-05: presentes na exportação real; o CSV sintético precisa
+        # trazê-las para `ler_planilha` aceitar a planilha de ciclo.
+        "MUNICIPIO": "Cidade Teste",
+        "NOME UNIDADE DE ENSINO": f"Campus {co_unidade}",
     }
 
 

@@ -36,6 +36,12 @@ COLUNAS_CICLO = {
     "DATA FIM PREVISTO DO CURSO": "DT_DATA_FIM_PREVISTO",
     "STATUS DO CICLO DE MATRÍCULA": "STATUS_CICLO",
     "SITUAÇÃO DO CICLO ": "SITUACAO_CICLO",  # espaço final confirmado em data-delta.md §4.1
+    # CPR-05: dado institucional da unidade (nunca pessoal — Princípio III),
+    # lido só para o cadastro automático de campus. Não entra em nenhum
+    # schema de gravação (`app/data/ingest.py`), então não é persistido.
+    # Grafia confirmada no cabeçalho dos CSVs reais: sem acento, em maiúsculas.
+    "MUNICIPIO": "MUNICIPIO_UNIDADE",
+    "NOME UNIDADE DE ENSINO": "NOME_UNIDADE_ENSINO",
 }
 
 # §4.2 Planilha de matrícula (`sistec.csv`).
