@@ -2,8 +2,7 @@
 `app/pages/*`.
 
 Não faz parte da árvore aprovada em `target_architecture.md` §"Honra à
-topologia escolhida" (que só lista `ingest.py`/`validators.py`/`correction.py`
-em `app/data/*`, cobrindo apenas a escrita do dataset). É glue necessária para
+topologia escolhida" (que cobre apenas a escrita do dataset). É glue necessária para
 materializar a seta `Domain --> Store` do diagrama de `target_architecture.md`
 — cada função de `app/domain/*` recebe `DataFrame` como parâmetro explícito
 (`target_domain_model.md`), e algo precisa montá-lo a partir do SQLite antes

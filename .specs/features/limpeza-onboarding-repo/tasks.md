@@ -155,10 +155,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] `git grep -n "validators"` em `app/`, `scripts/`, `tests/` e `run.py` não encontra import nem menção ao módulo (exceto o próprio teste de higiene)
-- [ ] O teste de higiene usa a raiz do repositório calculada a partir de `__file__`, não o diretório corrente
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] `git grep -n "validators"` em `app/`, `scripts/`, `tests/` e `run.py` não encontra import nem menção ao módulo (exceto o próprio teste de higiene)
+- [x] O teste de higiene usa a raiz do repositório calculada a partir de `__file__`, não o diretório corrente
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
