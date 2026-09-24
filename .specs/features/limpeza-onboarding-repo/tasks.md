@@ -428,10 +428,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma `**Version**: 1.2.0` no arquivo e a ausência dos termos proibidos
-- [ ] Os Princípios I–VII ficam com o texto inalterado (`git diff` só toca o cabeçalho, a seção "Fluxo de Desenvolvimento e Gates de Qualidade", Governance e o rodapé)
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma `**Version**: 1.2.0` no arquivo e a ausência dos termos proibidos
+- [x] Os Princípios I–VII ficam com o texto inalterado (`git diff` só toca o cabeçalho, a seção "Fluxo de Desenvolvimento e Gates de Qualidade", Governance e o rodapé)
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick

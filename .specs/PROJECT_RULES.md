@@ -1,5 +1,16 @@
 <!--
 Sync Impact Report
+- Version change: 1.1.0 → 1.2.0 (2026-09-24)
+- Modified sections: "Fluxo de Desenvolvimento e Gates de Qualidade" — a fonte de
+  regras e decisões passa a ser `.specs/`; a documentação histórica do Reversa deixa
+  de ser fonte obrigatória e sai do repositório. Os identificadores herdados
+  (`BR-*`, `RISK-*`, `D-*`, `P-*`) continuam válidos onde já aparecem.
+- Modified references: o checklist de publicação é o do `DEPLOY.md`, que passa a ser o
+  documento citado nos gates, na documentação acompanhada e em Governance.
+- Principles I–VII: conteúdo preservado.
+- Follow-up TODOs: nenhum.
+
+Historical sync impact report (2026-09-22):
 - Version change: 1.0.0 → 1.1.0 (2026-09-22)
 - Workflow: Spec Kit substituído por tlc-spec-driven; regras do projeto movidas
   de .specify/memory/constitution.md para .specs/PROJECT_RULES.md.
@@ -135,12 +146,12 @@ humana nem ficar sem caminho de volta.
   (quando necessário) → Execute, com artefatos em `.specs/features/<feature>/`.
 - A especificação e o design MUST conferir os Princípios I–VII; qualquer exceção MUST ser
   registrada com justificativa e alternativa mais simples rejeitada.
-- Documentação do Reversa (`_reversa_sdd/`, `_reversa_forward/`) é fonte de regras e decisões
-  (`BR-*`, `RISK-*`, `D-*`, `P-*`); specs novas MUST referenciar esses identificadores quando
-  aplicáveis.
-- Antes do cutover ou de publicação em produção: `pytest` verde,
-  `scripts/verificar_prontidao_cutover.py` com saída 0 e checklist de `CUTOVER.md` atualizado.
-- Alterações em `README.md`, `TESTAR.md` ou `CUTOVER.md` MUST acompanhar mudanças de fluxo de
+- `.specs/` é a fonte de regras e decisões do projeto. Os identificadores herdados
+  (`BR-*`, `RISK-*`, `D-*`, `P-*`) continuam válidos onde já aparecem, e specs novas MUST
+  referenciá-los quando aplicáveis.
+- Antes de publicar em produção: `pytest` verde,
+  `scripts/verificar_prontidao_cutover.py` com saída 0 e checklist de `DEPLOY.md` atualizado.
+- Alterações em `README.md`, `TESTAR.md` ou `DEPLOY.md` MUST acompanhar mudanças de fluxo de
   uso, instalação ou operação.
 
 ## Governance
@@ -155,6 +166,6 @@ humana nem ficar sem caminho de volta.
 - Conformidade é verificada durante o design, na validação independente de
   `/tlc-spec-driven` e em revisão de código; complexidade adicional MUST ser
   justificada por escrito.
-- Orientação operacional do dia a dia fica em `README.md`, `TESTAR.md` e `CUTOVER.md`.
+- Orientação operacional do dia a dia fica em `README.md`, `TESTAR.md` e `DEPLOY.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-22
+**Version**: 1.2.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-24

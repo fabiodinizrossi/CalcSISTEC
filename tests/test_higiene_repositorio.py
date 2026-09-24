@@ -77,7 +77,7 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
-DOCS_VERIFICADOS = ["DEPLOY.md", "README.md", "TESTAR.md"]
+DOCS_VERIFICADOS = [".specs/PROJECT_RULES.md", "DEPLOY.md", "README.md", "TESTAR.md"]
 
 TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
 
@@ -92,6 +92,16 @@ def test_documentos_nao_citam_arquivos_ausentes_nem_tarefa_nn(documento):
     for termo in TERMOS_PROIBIDOS_EM_DOCS:
         if termo in conteudo:
             pytest.fail(f"{documento} cita {termo}")
+
+
+def test_project_rules_esta_na_versao_1_2_0():
+    """DOC-04 AC9: emenda MINOR aprovada com esta feature. `.specs/` passa a ser a
+    fonte de regras, sem apontar para documentação que não está no repositório."""
+    conteudo = texto(".specs/PROJECT_RULES.md")
+
+    assert "**Version**: 1.2.0" in conteudo
+    for termo in TERMOS_PROIBIDOS:
+        assert termo not in conteudo, f"PROJECT_RULES.md cita {termo}"
 
 
 def test_cutover_e_parity_report_sairam_do_repositorio():
