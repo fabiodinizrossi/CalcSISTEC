@@ -8,5 +8,6 @@ Antes de uma nova feature, consulte `PROJECT_RULES.md` para os princípios do
 CalcSISTEC e `STATE.md` para as decisões e o estado atual. Para novas features,
 use as fases Specify → Design → Tasks → Execute da skill, conforme a complexidade.
 
-O material antigo do Spec Kit foi separado em `APAGAR/arquivos-rastreados/`
-para revisão local. `APAGAR/` é ignorada pelo Git.
+Cada feature em andamento ou concluída fica em `.specs/features/<feature>/`, com
+a spec, as tarefas e a validação daquela feature — é o histórico dela. As mais
+antigas podem citar documentos que já não existem no repositório.

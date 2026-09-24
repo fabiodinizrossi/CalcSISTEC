@@ -104,6 +104,15 @@ def test_project_rules_esta_na_versao_1_2_0():
         assert termo not in conteudo, f"PROJECT_RULES.md cita {termo}"
 
 
+def test_specs_readme_nao_cita_o_fluxo_arquivado():
+    """DOC-04 AC10: o índice das specs não manda mais ler nem apagar o material
+    do workflow anterior."""
+    conteudo = texto(".specs/README.md")
+
+    assert "Spec Kit" not in conteudo
+    assert "APAGAR" not in conteudo
+
+
 def test_cutover_e_parity_report_sairam_do_repositorio():
     """DOC-02 AC3: os dois documentos antigos saem; o `DEPLOY.md` entra."""
     assert not os.path.exists(caminho("CUTOVER.md"))

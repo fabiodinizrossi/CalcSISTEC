@@ -455,9 +455,9 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma a ausência de `Spec Kit` e `APAGAR` em `.specs/README.md`
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma a ausência de `Spec Kit` e `APAGAR` em `.specs/README.md`
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick
