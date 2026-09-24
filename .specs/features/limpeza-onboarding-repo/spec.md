@@ -19,11 +19,11 @@ nunca expira sozinha.
 
 ## Goals
 
-- [ ] Uma pessoa ou agente de LLM que clona o repositório instala, testa e sobe o app seguindo só
+- [x] Uma pessoa ou agente de LLM que clona o repositório instala, testa e sobe o app seguindo só
       README e AGENTS.md, sem referências a arquivos ausentes (verificado por teste automatizado).
-- [ ] O watchdog de execuções roda sempre que o app sobe por `run.py` ou `scripts/testar.ps1`.
-- [ ] Nenhum módulo ou função de `app/` fica sem referência (exceto as listadas em Out of Scope).
-- [ ] `pip install -r requirements-dev.txt` num ambiente limpo com Python 3.12 instala versões fixas
+- [x] O watchdog de execuções roda sempre que o app sobe por `run.py` ou `scripts/testar.ps1`.
+- [x] Nenhum módulo ou função de `app/` fica sem referência (exceto as listadas em Out of Scope).
+- [x] `pip install -r requirements-dev.txt` num ambiente limpo com Python 3.12 instala versões fixas
       e o gate `python -m pytest -q` passa.
 
 ## Out of Scope
@@ -258,21 +258,21 @@ antes do histórico detalhado de handoffs.
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| WDG-01 | P1: Watchdog — AC1, AC2, edge case de porta inválida | Tasks | Pending |
-| WDG-02 | P1: Watchdog — AC3 (import sem thread) | Tasks | Pending |
-| WDG-03 | P1: Watchdog — AC4 (testar.ps1 usa run.py) | Tasks | Pending |
-| LIM-01 | P1: Código sem uso — AC1, AC2, AC3 | Tasks | Pending |
-| LIM-02 | P1: Código sem uso — AC4, AC5 | Tasks | Pending |
-| DEP-01 | P1: Instalação — AC1, AC2 | Tasks | Pending |
-| DEP-02 | P1: Instalação — AC3, AC4 | Tasks | Pending |
-| DEP-03 | P1: Instalação — AC5 (venv limpo) | Validate | Pending |
-| DOC-01 | P1: Documentação — AC1, AC2, AC3 (teste de higiene) | Tasks | Pending |
-| DOC-02 | P1: Documentação — AC4, AC5 (DEPLOY.md) | Tasks | Pending |
-| DOC-03 | P1: Documentação — AC6, AC7, AC8 (README) | Tasks | Pending |
-| DOC-04 | P1: Documentação — AC9, AC10 (PROJECT_RULES, .specs/README) | Tasks | Pending |
-| AMB-01 | P1: Ambiente — AC1..AC6 (testar.ps1 -Destacado/-Parar) | Tasks | Pending |
-| AMB-02 | P1: Ambiente — AC7, AC8, AC9 (/testar, AGENTS.md, CLAUDE.md) | Tasks | Pending |
-| EST-01 | P2: STATE.md — AC1 | Tasks | Pending |
+| WDG-01 | P1: Watchdog — AC1, AC2, edge case de porta inválida | Tasks | Verified |
+| WDG-02 | P1: Watchdog — AC3 (import sem thread) | Tasks | Verified |
+| WDG-03 | P1: Watchdog — AC4 (testar.ps1 usa run.py) | Tasks | Verified |
+| LIM-01 | P1: Código sem uso — AC1, AC2, AC3 | Tasks | Verified |
+| LIM-02 | P1: Código sem uso — AC4, AC5 | Tasks | Verified |
+| DEP-01 | P1: Instalação — AC1, AC2 | Tasks | Verified |
+| DEP-02 | P1: Instalação — AC3, AC4 | Tasks | Verified |
+| DEP-03 | P1: Instalação — AC5 (venv limpo) | Validate | Verified |
+| DOC-01 | P1: Documentação — AC1, AC2, AC3 (teste de higiene) | Tasks | Verified |
+| DOC-02 | P1: Documentação — AC4, AC5 (DEPLOY.md) | Tasks | Verified |
+| DOC-03 | P1: Documentação — AC6, AC7, AC8 (README) | Tasks | Verified |
+| DOC-04 | P1: Documentação — AC9, AC10 (PROJECT_RULES, .specs/README) | Tasks | Verified |
+| AMB-01 | P1: Ambiente — AC1..AC6 (testar.ps1 -Destacado/-Parar) | Tasks | Verified |
+| AMB-02 | P1: Ambiente — AC7, AC8, AC9 (/testar, AGENTS.md, CLAUDE.md) | Tasks | Verified |
+| EST-01 | P2: STATE.md — AC1 | Tasks | Verified |
 
 **Coverage:** 15 total, 15 mapped to tasks, 0 unmapped.
 
@@ -280,8 +280,8 @@ antes do histórico detalhado de handoffs.
 
 ## Success Criteria
 
-- [ ] `python -m pytest -q` passa com 0 falhas, incluindo o teste de higiene novo.
-- [ ] Um venv limpo instala `requirements-dev.txt` e passa no gate.
-- [ ] `testar.ps1 -Destacado -SemNavegador` devolve o controle em menos de 60 s, com o app no ar;
+- [x] `python -m pytest -q` passa com 0 falhas, incluindo o teste de higiene novo.
+- [x] Um venv limpo instala `requirements-dev.txt` e passa no gate.
+- [x] `testar.ps1 -Destacado -SemNavegador` devolve o controle em menos de 60 s, com o app no ar;
       `testar.ps1 -Parar` derruba o app.
-- [ ] Nenhum termo proibido (DOC-01) aparece nos arquivos listados.
+- [x] Nenhum termo proibido (DOC-01) aparece nos arquivos listados.

@@ -20,7 +20,7 @@ Regras do projeto que valem em toda tarefa (de `AGENTS.md`, `.specs/PROJECT_RULE
 
 **Spec**: `.specs/features/limpeza-onboarding-repo/spec.md`
 **Design**: não há `design.md`. A única decisão técnica (onde iniciar o watchdog) está registrada em Assumptions do spec.
-**Status**: Approved (2026-09-24)
+**Status**: Done
 
 ---
 

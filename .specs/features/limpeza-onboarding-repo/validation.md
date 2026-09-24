@@ -1,6 +1,264 @@
 # Limpeza de resíduos e onboarding do repositório — Validation
 
-## Validation — `limpeza-onboarding-repo`: FAIL ❌
+## Validation — `limpeza-onboarding-repo` (Rodada 2): PASS ✅
+
+**Date**: 2026-09-24
+**Spec**: `.specs/features/limpeza-onboarding-repo/spec.md`
+**Diff range (rodada 2)**: `80bfc6f..3f8aa7b` (6 commits)
+**Faixa original**: `b68118e..506c1b5` (17 tarefas, veredito FAIL ❌ em `80bfc6f`, arquivado no fim deste arquivo)
+**Verifier**: sub-agente independente (author ≠ verifier)
+
+**Veredito**: **PASS**. A rodada 1 deu FAIL por 4 mutantes sobreviventes (M9, M11, M12, M13) e 7 gaps de
+teste (G1–G7) — o produto já estava correto, faltava teste onde a spec é precisa. O implementador fez
+T18–T22 só em testes (`a0bb3cd..3f8aa7b`); re-derivei tudo nesta rodada: **nenhuma linha de produto
+mudou** na faixa, **21 de 21 mutações morreram** (as 15 da rodada 1 + 6 novas), **29 de 29 critérios da
+spec** têm evidência `file:line` e **4 de 4 edge cases** estão cobertos. Gate: **991 passed, 0 failed,
+0 skipped**. G1–G7 e as três precisões do spec: fechados (só a precisão nº 3, o resíduo `(Tarefa 10)`,
+segue como follow-up fora do escopo do AC).
+
+---
+
+## Escopo da rodada 2
+
+Depois do FAIL da rodada 1, o orquestrador planejou a Phase 6 (`f8eabeb`) e o implementador fez
+T18–T22 (`a0bb3cd..3f8aa7b`). Re-derivei tudo: nada de produto mudou.
+
+`git diff --stat 80bfc6f..HEAD` (575 inserções, 13 deleções):
+
+| Arquivo | +/− |
+| --- | --- |
+| `.specs/LESSONS.md` | +42 |
+| `.specs/features/limpeza-onboarding-repo/tasks.md` | +146 |
+| `.specs/lessons.json` | +128 |
+| `tests/test_execucoes.py` | +37 |
+| `tests/test_higiene_repositorio.py` | +72 |
+| `tests/test_testar_ps1.py` | +163 −13 |
+
+**Nenhum arquivo de produto** (`app/`, `run.py`, `scripts/`, `README.md`, `DEPLOY.md`, `AGENTS.md`,
+`.env.example`, `requirements*.txt`) foi tocado na faixa. Nada de findings.
+
+**Auditoria das 13 linhas removidas nos testes**: nenhum `def test_` e nenhum decorador foi apagado
+(`git diff 80bfc6f..HEAD -- tests/ | grep -E "^-def test_|^-@pytest"` → vazio). As remoções são
+substituições por asserções mais fortes: `assert "APAGAR" not in conteudo` → laço sobre a lista
+completa de termos; `TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]` →
+`projetoFabio` promovido para `TERMOS_PROIBIDOS` + `["Tarefa "]` (varredura maior); `assert str(porta)
+in subida.stdout` → URL de login, e-mail e senha do `.env`; `rodar_script`/`derrubar` ganharam o
+parâmetro `em` para rodar em cópia isolada.
+
+---
+
+## Gate Check (rodada 2)
+
+- **Comando**: `python -m pytest -q -p no:cacheprovider`
+- **Resultado**: **991 passed, 0 failed, 0 skipped** em 145,55 s (exit 0)
+- **Antes da rodada 2**: 985; **depois**: 991 → **+6** (T18 +1, T19 +1, T20 +1, T21 +1, T22 +2), 0 testes
+  deletados, 0 pulados — o teste do `-Simulado` (`tests/test_testar_ps1.py:281`) **rodou** nesta
+  execução (a 8051 estava livre)
+- **DEP-03**: não repetido — nenhum arquivo de produto nem dependência mudou na faixa
+  (`requirements*.txt` fora do diff), então o resultado da rodada 1 (venv limpo 3.12.10 → 985 passed)
+  continua valendo. O `+6` são só testes, sem dependência nova.
+
+---
+
+## Spec-Anchored Acceptance Criteria (rodada 2)
+
+Linhas das asserções re-derivadas no HEAD. As linhas do arquivo de higiene mudaram porque o arquivo
+cresceu — todas recalculadas.
+
+| Criterion (WHEN X THEN Y) | `file:line` + asserção | Result |
+| --- | --- | --- |
+| WDG-01 AC1 varredura antes do `app.run`, uma vez cada | `tests/test_run.py:43` — `assert len(espioes) == 2`; `:44` `espioes[0] == "varredura"`; `:45` `espioes[1][0] == "run"` | ✅ PASS |
+| WDG-01 AC2 `--host`/`--port` repassados; padrão `0.0.0.0`/`8050` | `tests/test_run.py:51` — `{"host": "127.0.0.1", "port": 9999, "debug": False}`; `:57` — `{"host": "0.0.0.0", "port": 8050, "debug": False}` | ✅ PASS |
+| WDG-01 edge `--port abc` sai com 2 sem varredura | `tests/test_run.py:64` — `assert excinfo.value.code == 2`; `:65` `assert espioes == []`; `:79-81` subprocesso | ✅ PASS |
+| WDG-02 AC3 importar `app.app` não cria thread | `tests/test_run.py:98` — `assert resultado.stdout.strip() == "None"` (subprocesso, `:97` rc 0) | ✅ PASS |
+| WDG-03 AC4 `testar.ps1` sobe por `run.py` | `tests/test_testar_ps1.py:40` — `"run.py --host 127.0.0.1 --port $Porta" in ler_script()`; contraprova `:44` — `"app.run(" not in ler_script()` | ✅ PASS |
+| LIM-01 AC1 sem `app/data/validators.py` | `tests/test_higiene_repositorio.py:323` — `assert not os.path.exists(caminho("app","data","validators.py"))` | ✅ PASS |
+| LIM-01 AC2 sem as 4 funções sem chamador (AST) | `tests/test_higiene_repositorio.py:337` — `assert nome not in definicoes(arquivo_relativo)` (parametrizado por `:324`) | ✅ PASS |
+| LIM-01 AC3 `COLUNAS_PII` intacta | `tests/test_higiene_repositorio.py:358` — `assert COLUNAS_PII == COLUNAS_PII_ESPERADAS` | ✅ PASS |
+| LIM-02 AC4 sem `nonascii.txt` nem `chromedriver/` | `tests/test_higiene_repositorio.py:364-365` — dois `assert not os.path.exists(...)` | ✅ PASS |
+| LIM-02 AC5 `.gitignore` com `.agents/`, `.uv-cache/`, `.uv-python/` | `tests/test_higiene_repositorio.py:378` — `assert entrada in linhas` | ✅ PASS |
+| DEP-01 AC1 `requirements.txt` com 9 versões fixas | `tests/test_higiene_repositorio.py:402` — `assert linhas_uteis("requirements.txt") == REQUIREMENTS_ESPERADOS` | ✅ PASS |
+| DEP-01 AC2 `requirements-dev.txt` = `-r` + `pytest==9.1.1` | `tests/test_higiene_repositorio.py:407` — `assert linhas_uteis("requirements-dev.txt") == ["-r requirements.txt", "pytest==9.1.1"]` | ✅ PASS |
+| DEP-02 AC3 `.python-version` = `3.12` | `tests/test_higiene_repositorio.py:415` — `assert linhas_uteis(".python-version") == ["3.12"]` | ✅ PASS |
+| DEP-02 AC4 as 8 chaves do `.env.example` sem segredo real | `tests/test_higiene_repositorio.py:446` — `assert chave in valores`; `:463-464` vazios; `:467` — `valor == "" or valor == VALORES_DE_EXEMPLO.get(chave)`; `:470` — `not valor.startswith(("scrypt:", "pbkdf2:"))`; `:471` — `not PADRAO_HASH_HEX.fullmatch(valor)`. **Gap da rodada 1 fechado** (mutação X3 mata) | ✅ PASS |
+| DEP-03 AC5 venv limpo instala e passa | rodada 1 (venv 3.12.10 → 985 passed); produto e dependências inalterados | ✅ PASS |
+| DOC-01 AC1 sem termos proibidos, `projetoFabio` incluído | `tests/test_higiene_repositorio.py:53` — `"projetoFabio"` dentro de `TERMOS_PROIBIDOS` (`:46`); `:62` e `:77` — `pytest.fail(f"{arquivo} cita {termo}")` para `app/`, `scripts/`, `tests/`, `run.py`. **G6 fechado** (mutação X2 mata) | ✅ PASS |
+| DOC-01 AC2 sem "Tarefa NN" em README/TESTAR/DEPLOY | `tests/test_higiene_repositorio.py:91` — `TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["Tarefa "]`; `:101` — `pytest.fail(f"{documento} cita {termo}")` | ✅ PASS |
+| DOC-01 AC3 sem `CUTOVER.md`/`PARITY_REPORT.md`, com `DEPLOY.md` | `tests/test_higiene_repositorio.py:129-131` | ✅ PASS |
+| DOC-01 AC4 `DEPLOY.md` com os 7 marcadores | `tests/test_higiene_repositorio.py:150` — `assert marcador in conteudo` | ✅ PASS |
+| DOC-01 AC5 seção fora do escopo aponta para `DEPLOY.md` | `tests/test_higiene_repositorio.py:317` — `assert "DEPLOY.md" in saida`; `:318` — `assert "CUTOVER.md" not in saida` | ✅ PASS |
+| DOC-03 AC6 README lista cada subdiretório de `app/` + `scripts/`, `tests/`, `.specs/` | `tests/test_higiene_repositorio.py:171` — `assert f"app/{pasta}/" in conteudo`; `:173` — `f"`{pasta}`"` | ✅ PASS |
+| DOC-03 AC7 "Começar" na ordem venv → dev.txt → `.env.example` → pytest → subir | `tests/test_higiene_repositorio.py:198` — `assert ordem == sorted(ordem)` | ✅ PASS |
+| DOC-03 AC8 "Onde mexer" cobre os 5 temas | `tests/test_higiene_repositorio.py:208` — `assert tema in secao, f"Onde mexer não cita {tema}"` sobre `TEMAS_DE_ONDE_MEXER` (`:176-182`: regra de cálculo, página pública, coleta do Sistec, visual, rota administrativa). **G5 fechado** (mutação X1 mata) | ✅ PASS |
+| DOC-01 AC1 README sem caminho inexistente | `tests/test_higiene_repositorio.py:225` — `assert os.path.exists(caminho(*citado.split("/")))` | ✅ PASS |
+| DOC-04 AC9 `PROJECT_RULES.md` 1.2.0 e princípios intactos | `tests/test_higiene_repositorio.py:111` — `assert "**Version**: 1.2.0" in conteudo`; `:113` — nenhum termo proibido; Princípios I–VII byte a byte iguais a `b68118e` (conferido na rodada 1, arquivo fora do diff da rodada 2) | ✅ PASS |
+| DOC-04 AC10 `.specs/README.md` sem Spec Kit nem termos proibidos | `tests/test_higiene_repositorio.py:122` — `assert "Spec Kit" not in conteudo`; `:124` — `assert termo not in conteudo` sobre a lista **completa**. **G6 fechado** | ✅ PASS |
+| AMB-01 AC1 `-Destacado` com porta livre: 60 s, URL, e-mail, senha, PID, log, rc 0 | `tests/test_testar_ps1.py:221` — `assert f"http://localhost:{porta}/admin/login" in subida.stdout`; `:223` — `credenciais["ADMIN_EMAIL"] in subida.stdout`; `:224` — `credenciais["ADMIN_SENHA"] in subida.stdout`; `:225` — `assert "PID" in subida.stdout`; limite padrão em `:59` — `assert atribuicoes[0] == "60"`, `:60` — `[valor for valor in atribuicoes if valor.isdigit()] == ["60"]`, `:61` — `atribuicoes[1] == "$limitePedido"`. **G1 e G2 fechados** (mutações M9 e M12 mortas) | ✅ PASS |
+| AMB-01 AC2 log no `%TEMP%`, nunca no repositório | `tests/test_testar_ps1.py:218` — caminho do log em `%TEMP%`; `:219` — `assert RAIZ not in linha_log`; `:249` — nenhum log quando a porta está ocupada | ✅ PASS |
+| AMB-01 AC3 sem porta em 60 s: encerra, cita o log, sai 1 | `tests/test_testar_ps1.py:268-270` — rc 1, `f"calcsistec-{porta}.log" in saida.stdout`, `not escutando(porta)` | ✅ PASS |
+| AMB-01 AC4 porta ocupada: PID de quem ocupa, rc 1, sem derrubar | `tests/test_testar_ps1.py:245-247` — `returncode == 1`, `str(os.getpid()) in saida.stdout`, `escutando(porta)` | ✅ PASS |
+| AMB-01 AC5 `-Parar` derruba e sai 0; nada no ar avisa e sai 0 | `tests/test_testar_ps1.py:229-230`; `:316-317` — rc 0 e `"nada no ar" in saida.stdout.lower()` | ✅ PASS |
+| AMB-01 AC6 `-Destacado -Simulado` sobe os dois; `-Parar -Simulado` derruba os dois | `tests/test_testar_ps1.py:295` — `assert escutando(8051)`; `:300-301` — `not escutando(porta)` e `not escutando(8051)`; `:303-304` — PID da 8050 inalterado; `skipif` em `:277-280`. **G3 fechado** (mutação M13 morta por este teste) | ✅ PASS |
+| AMB-02 AC7 `/testar` com os switches e a ordem de não monitorar | `tests/test_higiene_repositorio.py:241-243` — switches; `:291` — `assert linha is not None`; `:292` — `assert "Não" in linha`. **Precisão nº 2 fechada** (mutação X4 mata) | ✅ PASS |
+| AMB-02 AC8 `AGENTS.md` com a seção e a ordem de não monitorar | `tests/test_higiene_repositorio.py:265-267`; `:283` — `assert linha is not None`; `:284` — `assert "não" in linha`. **Precisão nº 2 fechada** (mutação X5 mata) | ✅ PASS |
+| AMB-02 AC9 `CLAUDE.md` importa `@AGENTS.md` | `tests/test_higiene_repositorio.py:297` — `assert "@AGENTS.md" in texto("CLAUDE.md")` | ✅ PASS |
+| EST-01 bloco "Estado atual" no topo do Handoff, ≤ 10 linhas | sem teste por desenho (`tasks.md`: "none — build gate only"); inspeção da rodada 1: `.specs/STATE.md:61-71`, 6 bullets antes do primeiro `###` (`:77`) | ✅ PASS (por inspeção) |
+
+**Status**: ✅ **29/29 critérios com o resultado da spec** — nenhum gap, nenhuma asserção parcial.
+
+### Delta em relação à rodada 1
+
+| Item da rodada 1 | Antes | Agora | Evidência nova |
+| --- | --- | --- | --- |
+| DOC-03 AC8 "Onde mexer" | ⚠️ GAP | ✅ PASS | `tests/test_higiene_repositorio.py:201-208`; mata X1 |
+| AMB-01 AC1 (60 s) | ⚠️ GAP (G1) | ✅ PASS | `tests/test_testar_ps1.py:50-61`; mata M9 |
+| AMB-01 AC1 (e-mail/senha) | ⚠️ GAP (G2) | ✅ PASS | `tests/test_testar_ps1.py:221-224`; mata M12 |
+| AMB-01 AC6 `-Simulado` | ⚠️ GAP (G3) | ✅ PASS | `tests/test_testar_ps1.py:281-307`; mata M13 |
+| DOC-01 AC1 (`projetoFabio`) | ⚠️ parcial (G6) | ✅ PASS | `tests/test_higiene_repositorio.py:46-53,62,77,124`; mata X2 |
+| DEP-02 AC4 (8 chaves) | ⚠️ parcial (precisão 1) | ✅ PASS | `tests/test_higiene_repositorio.py:457-471`; mata X3 |
+| AMB-02 AC7/AC8 (não monitorar) | ⚠️ parcial (precisão 2) | ✅ PASS | `tests/test_higiene_repositorio.py:274-292`; matam X4 e X5 |
+
+---
+
+## Edge Cases (rodada 2)
+
+| Edge case (spec) | Evidência | Result |
+| --- | --- | --- |
+| `--port` não inteiro → sai com 2 sem iniciar varredura | `tests/test_run.py:64-65` e subprocesso `:79-81` | ✅ PASS |
+| `iniciar_varredura` duas vezes → uma única thread viva | `tests/test_execucoes.py:543-567` — `:552` `anterior is None`, `:559` segunda chamada, `:561` `assert execucoes._VARREDURA_THREAD is primeira`, `:562` `threads_do_laco() == [primeira]`; `finally` (`:563-567`) para a thread e restaura o global. M11 morto | ✅ PASS |
+| `.env` ausente + `-Destacado` → cria o `.env` antes de subir | `tests/test_testar_ps1.py:337-370` — `:351` `git worktree add --detach` no `%TEMP%`, `:353` sem `.env`, `:360-362` `ADMIN_EMAIL`/`ADMIN_SENHA`/`FLASK_SECRET_KEY` preenchidos no `.env` criado, `:369-370` hash do `.env` da raiz e `git worktree list` inalterados. M16 (script deixa de criar o `.env`) morto | ✅ PASS |
+| Termo proibido encontrado → mensagem cita arquivo e termo | `tests/test_higiene_repositorio.py:63`, `:78`, `:102` — `pytest.fail(f"{...} cita {termo}")` (caminho relativo + termo); é o próprio teste, conferido por inspeção | ✅ PASS (por inspeção) |
+
+**Edge cases: 4/4 com evidência** (3 automatizadas + 1 por inspeção).
+
+---
+
+## Discrimination Sensor (rodada 2)
+
+Cópia isolada por `git worktree add --detach` no diretório temporário do sistema
+(`%TEMP%\calcsistec-sensor-r2*`), **cada mutação commitada dentro da cópia** (o teste de T20 cria o
+próprio `worktree` a partir do `HEAD` da cópia — mutação não commitada seria invisível para ele), e
+`git reset --hard` + `git clean -fdx` entre as mutações, conferindo `git status --porcelain` vazio a
+cada passo. Nunca usei `git stash` nem editei a árvore real. As 15 mutações da rodada 1 foram
+reaplicadas + 6 novas (5 do "Done when" de T22 e 1 para o edge case do `.env`).
+
+**Resultado: 21 mutações, 21 mortas, 0 sobreviventes.**
+
+| # | Mutação | Arquivo | Alvo | Resultado |
+| --- | --- | --- | --- | --- |
+| M1 | tirar `iniciar_varredura()` de `run.main` | `run.py:28` | `tests/test_run.py` | ✅ MORTO (3 failed) |
+| M2 | `iniciar_varredura()` depois de `app.run` | `run.py:28-29` | `tests/test_run.py` | ✅ MORTO (3 failed) |
+| M3 | recriar `t01_remover_pii` | `app/data/transform.py` | higiene | ✅ MORTO (1 failed) |
+| M4 | `requirements.txt` sem versão fixa | `requirements.txt` | higiene | ✅ MORTO (1 failed) |
+| M5 | `CUTOVER.md` de volta no `README.md` | `README.md` | higiene | ✅ MORTO (1 failed) |
+| M6 | recriar `CUTOVER.md` na raiz | `CUTOVER.md` | higiene | ✅ MORTO (1 failed) |
+| M7 | tirar `-Destacado` (switch + bloco) | `scripts/testar.ps1:53,233-276` | `tests/test_testar_ps1.py` | ✅ MORTO (6 failed) |
+| M8 | `iniciar_varredura` no import de `app.app` | `app/app.py` (fim do módulo) | `tests/test_run.py` | ✅ MORTO (1 failed) |
+| M9 | limite do `-Destacado` 60 s → 30 s | `scripts/testar.ps1:236` | `tests/test_testar_ps1.py` | ✅ **MORTO agora** — `test_limite_padrao_do_destacado_e_60_segundos` (era sobrevivente) |
+| M10 | `-Parar` sem nada no ar sai 1 | `scripts/testar.ps1:88` | `tests/test_testar_ps1.py -k parar` | ✅ MORTO (3 failed) |
+| M11 | remover a guarda de idempotência | `app/sistec/execucoes.py:571-573` | `tests/test_execucoes.py` + `tests/test_run.py` | ✅ **MORTO agora** — `test_iniciar_varredura_e_idempotente` (era sobrevivente) |
+| M12 | `-Destacado` não imprime a senha | `scripts/testar.ps1:215` | `tests/test_testar_ps1.py -k destacado` | ✅ **MORTO agora** — `test_destacado_sobe_o_app_e_parar_derruba` (era sobrevivente) |
+| M13 | `-Parar` não encerra o simulado da 8051 | `scripts/testar.ps1:82` | `tests/test_testar_ps1.py -k "simulado or parar"` | ✅ **MORTO agora** — `test_destacado_com_simulado_sobe_e_parar_derruba_os_dois` (era sobrevivente) |
+| M14 | porta padrão do `run.py` 8050 → 8051 | `run.py:18` | `tests/test_run.py` | ✅ MORTO (1 failed) |
+| M15 | prontidão volta a citar `CUTOVER.md` | `scripts/verificar_prontidao_cutover.py:152` | higiene | ✅ MORTO (2 failed) |
+| X1 | apagar "coleta do Sistec" do "Onde mexer" | `README.md:89` | higiene | ✅ MORTO — `test_onde_mexer_cobre_os_cinco_temas` |
+| X2 | `# legado do projetoFabio` em `run.py` | `run.py` | higiene | ✅ MORTO — `test_scripts_tests_e_run_nao_citam_documentos_ausentes` |
+| X3 | `ADMIN_PASSWORD_HASH=scrypt:...` no `.env.example` | `.env.example` | higiene | ✅ MORTO — `test_env_exemplo_nao_traz_segredo_nenhum` |
+| X4 | `/testar` manda **acompanhar** o servidor | `.claude/commands/testar.md:21` | higiene | ✅ MORTO — `test_instrucao_de_nao_monitorar_o_servidor_depois_de_subir` |
+| X5 | `AGENTS.md` manda **monitorar** o servidor | `AGENTS.md:24` | higiene | ✅ MORTO — `test_instrucao_de_nao_monitorar_o_servidor_depois_de_subir` |
+| M16 | `testar.ps1` deixa de criar o `.env` | `scripts/testar.ps1:123-134` | `tests/test_testar_ps1.py -k env_e_criado` | ✅ MORTO — `test_env_e_criado_antes_de_subir_o_app` |
+
+**Isolamento**: `git status --porcelain` da árvore real ficou vazio **antes de cada mutação** (asserção
+no próprio driver) e no fim; `git worktree list` mostra só o repositório principal; nenhum
+`.pytest_cache/`, `.test-*` ou `.verifier-scratch-*` no repositório.
+
+**Ressalva do sensor (não é gap)**: sob M13 o próprio `derrubar(porta, simulado=True)` do teste também
+não encerra a 8051, então a execução do mutante **deixa um `sistec_simulado.py` órfão** no ar. Matei os
+três que apareceram (PIDs 42024, 5488 e 25808, todos com `scripts/sistec_simulado.py` na linha de
+comando e log em `%TEMP%\calcsistec-simulado-8051*.log`) e removi os logs. Consequência prática: com a
+8051 ocupada, o `skipif` de `tests/test_testar_ps1.py:277` **pula** o único teste que mata M13 — por
+isso o sensor de M13 foi rodado com a 8051 livre e conferido caso a caso.
+
+---
+
+## Gaps da rodada 1 — reavaliação
+
+| Gap | Fechado? | Evidência |
+| --- | --- | --- |
+| **G1** 60 s sem asserção | ✅ FECHADO | `tests/test_testar_ps1.py:50-61`; M9 morto |
+| **G2** e-mail/senha não asseverados | ✅ FECHADO | `tests/test_testar_ps1.py:221-224` (`http://localhost:<porta>/admin/login`, `ADMIN_EMAIL`, `ADMIN_SENHA` lidos do `.env`); M12 morto |
+| **G3** `-Simulado` sem teste automatizado | ✅ FECHADO | `tests/test_testar_ps1.py:281-307`; M13 morto |
+| **G4** idempotência de `iniciar_varredura` | ✅ FECHADO | `tests/test_execucoes.py:543-567`; M11 morto |
+| **G5** "Onde mexer" só tinha a seção | ✅ FECHADO | `tests/test_higiene_repositorio.py:176-208`; X1 morto |
+| **G6** lista de termos mais estreita que o AC | ✅ FECHADO | `tests/test_higiene_repositorio.py:46-53` + `:91` + `:124`; X2 morto |
+| **G7** edge case do `.env` ausente | ✅ FECHADO | `tests/test_testar_ps1.py:337-370` (worktree `--detach` no `%TEMP%`, hash da raiz e `worktree list` conferidos); M16 morto |
+| **Precisão 1** DEP-02 AC4 (8 chaves) | ✅ FECHADO | `tests/test_higiene_repositorio.py:457-471`; X3 morto |
+| **Precisão 2** AMB-02 AC7/AC8 (não monitorar) | ✅ FECHADO | `tests/test_higiene_repositorio.py:274-292`; X4 e X5 mortos |
+| **Precisão 3** resíduo `(Tarefa 10)` em `scripts/verificar_prontidao_cutover.py:143` | ⏳ follow-up (não é gap) | O AC2 de DOC-01 cobre apenas README/TESTAR/DEPLOY; o resíduo segue registrado como pendência de limpeza de numeração, fora do escopo desta feature |
+
+**Nenhum gap aberto. 1 follow-up documentado.**
+
+---
+
+## Follow-ups (não bloqueiam o PASS)
+
+1. `scripts/verificar_prontidao_cutover.py:143` ainda imprime `(Tarefa 10)` no relatório de prontidão —
+   resíduo da numeração antiga, fora do escopo do DOC-01 AC2.
+2. `tests/test_testar_ps1.py:277-280` usa `skipif` avaliado na coleta: com a 8051 ocupada o teste do
+   `-Simulado` é pulado (correto para não derrubar ambiente manual, mas é o único que mata M13). Vale
+   registrar em `.specs/LESSONS.md` na próxima passagem se isso voltar a esconder mutante.
+3. EST-01 continua sem teste automatizado por decisão de `tasks.md` (build gate only) — inspeção manual.
+
+---
+
+## Code Quality (rodada 2)
+
+| Princípio | Status |
+| --- | --- |
+| Código mínimo / sem abstração para uso único | ✅ (rodada 2 só toca testes e `.specs/`) |
+| Mudanças cirúrgicas (só os arquivos das tarefas) | ✅ `tests/test_testar_ps1.py`, `tests/test_execucoes.py`, `tests/test_higiene_repositorio.py`, `tasks.md` |
+| Sem scope creep | ✅ nenhum arquivo de produto no diff |
+| Sem asserção enfraquecida | ✅ nenhum `def test_`/decorador removido; as 13 linhas trocadas foram substituídas por versões mais fortes |
+| Cada teste mapeia para um AC, edge case ou "Done when" | ✅ T18→G1/G2, T19→G3, T20→G7, T21→G4, T22→G5/G6/precisões 1–2 |
+| Guidelines seguidas (`AGENTS.md`, `.specs/PROJECT_RULES.md` IV) | ✅ um commit por tarefa, gate completo por tarefa |
+
+---
+
+## Requirement Traceability Update (rodada 2)
+
+| Requirement | Status anterior | Status novo |
+| --- | --- | --- |
+| WDG-01, WDG-02, WDG-03 | Pending | **Verified** |
+| LIM-01, LIM-02 | Pending | **Verified** |
+| DEP-01, DEP-02, DEP-03 | Pending | **Verified** |
+| DOC-01, DOC-02, DOC-03, DOC-04 | Pending | **Verified** |
+| AMB-01, AMB-02 | Pending | **Verified** |
+| EST-01 | Pending | **Verified** (por inspeção, como o `tasks.md` prevê) |
+
+---
+
+## Summary (rodada 2)
+
+**Overall**: ✅ **Ready** — 29/29 critérios com evidência, 4/4 edge cases, 21/21 mutantes mortos,
+gate 991 passed / 0 failed / 0 skipped, nenhuma linha de produto alterada na faixa `80bfc6f..3f8aa7b`.
+
+**Faixa**: `80bfc6f..3f8aa7b` (6 commits: lições `ebd46be`, planejamento `f8eabeb`, T18 `a0bb3cd`,
+T19 `70438d7`, T20 `c8fb091`, T21 `c24e709`, T22 `3f8aa7b`).
+
+**O que mudou desde o FAIL**: 6 testes novos em 3 arquivos de teste fecharam os 7 gaps e as 3 precisões
+do spec. O produto já estava correto na rodada 1 — o FAIL era de cobertura de teste, e o sensor de
+discriminação agora mata as quatro mutações que escapavam (M9, M11, M12, M13).
+
+**Porta 8050**: intacta (PID 5644) durante toda a rodada; todo teste usou porta livre via
+`socket.bind(("127.0.0.1", 0))` com `-Porta` explícito, inclusive no `-Parar`.
+
+---
+
+## Rodada 1 — arquivo histórico (2026-09-24, veredito FAIL ❌)
+
+_Conteúdo original preservado (commit `80bfc6f`); só o título da rodada 1 mudou de nível._
+
+### Veredito da rodada 1: FAIL ❌
 
 **Date**: 2026-09-24
 **Spec**: `.specs/features/limpeza-onboarding-repo/spec.md`
@@ -16,7 +274,7 @@ código: é teste fraco onde a spec é precisa. Os gaps ranqueados estão no fim
 
 ---
 
-## Task Completion
+### Task Completion
 
 Todas as 17 tarefas estão `[x]` em `tasks.md`. Verificado por commit: um commit por tarefa, na faixa
 `b68118e..506c1b5`, com a marcação `[x]` no mesmo commit.
@@ -43,7 +301,7 @@ Todas as 17 tarefas estão `[x]` em `tasks.md`. Verificado por commit: um commit
 
 ---
 
-## Gate Check
+### Gate Check
 
 - **Gate command**: `python -m pytest -q -p no:cacheprovider` (Build gate de `tasks.md`)
 - **Result**: **985 passed, 0 failed, 0 skipped** em 138,52 s
@@ -57,7 +315,7 @@ Todas as 17 tarefas estão `[x]` em `tasks.md`. Verificado por commit: um commit
 
 ---
 
-## Spec-Anchored Acceptance Criteria
+### Spec-Anchored Acceptance Criteria
 
 | Criterion (WHEN X THEN Y) | Spec-defined outcome | `file:line` + assertion | Result |
 | --- | --- | --- | --- |
@@ -104,7 +362,7 @@ teste (AMB-01 AC6).
 
 ---
 
-## Edge Cases
+### Edge Cases
 
 | Edge case (spec) | Evidência | Result |
 | --- | --- | --- |
@@ -115,7 +373,7 @@ teste (AMB-01 AC6).
 
 ---
 
-## Discrimination Sensor
+### Discrimination Sensor
 
 Cópia isolada em `git worktree add --detach` no diretório temporário do sistema (`/tmp/calcsistec-sensor-wt`,
 fora do repositório), descartada no fim. Nunca usei `git stash` nem editei a árvore real.
@@ -145,7 +403,7 @@ limpeza (vazio) — igual. O worktree foi removido (`git worktree list` só most
 
 ---
 
-## DEP-03 (venv limpo)
+### DEP-03 (venv limpo)
 
 | Passo | Comando | Resultado |
 | --- | --- | --- |
@@ -159,7 +417,7 @@ O venv foi criado e apagado dentro do diretório temporário do sistema; o repos
 
 ---
 
-## Conferências extras
+### Conferências extras
 
 | Conferência | Resultado | Evidência |
 | --- | --- | --- |
@@ -188,7 +446,7 @@ Ou seja: o comportamento do AC6 está correto (depende de passar `-Simulado` no 
 
 ---
 
-## Code Quality
+### Code Quality
 
 | Princípio | Status |
 | --- | --- |
@@ -205,7 +463,7 @@ respeita o Out of Scope de "IDs de spec" e a instrução de não renomear identi
 
 ---
 
-## Gaps (ranqueados)
+### Gaps (ranqueados)
 
 ### G1 — AMB-01 AC1: o limite de 60 s não está pinado em teste algum (Major)
 
@@ -286,7 +544,7 @@ afirma que ele passou a existir antes da subida.
 
 ---
 
-## Requirement Traceability Update
+### Requirement Traceability Update
 
 O veredito é FAIL, então **nenhum** requisito foi movido para `Verified` (decisão do fluxo do
 Verifier: gaps viram tarefas de correção, e o `spec.md`/`tasks.md` não são tocados neste commit).
@@ -303,7 +561,7 @@ Verifier: gaps viram tarefas de correção, e o `spec.md`/`tasks.md` não são t
 
 ---
 
-## Summary
+### Summary
 
 **Overall**: ❌ Not Ready (gaps de teste em ACs P1)
 
