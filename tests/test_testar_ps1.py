@@ -10,6 +10,7 @@ da 8050, onde pode haver um ambiente de teste em uso.
 """
 
 import glob
+import hashlib
 import os
 import re
 import socket
@@ -103,13 +104,17 @@ def escutando(porta):
         return sonda.connect_ex(("127.0.0.1", porta)) == 0
 
 
-def rodar_script(*argumentos, timeout=180, ambiente=None):
+def rodar_script(*argumentos, timeout=180, ambiente=None, em=RAIZ):
     """Roda o script e devolve o resultado com a saída já decodificada.
 
     A saída vai para arquivo, nunca para um pipe: o app que o `-Destacado` deixa
     no ar herda os handles do processo que o subiu, e um pipe herdado nunca
     chega a EOF — o teste ficaria preso esperando. O arquivo é escrito pelo
     host do PowerShell na página de código do console, daí o `cp850`.
+
+    `em` é a raiz de onde o script roda: o `testar.ps1` se orienta pelo próprio
+    caminho, então apontar para a cópia de um worktree faz todo o resto — `.env`,
+    logs, app — acontecer lá dentro.
     """
     env = dict(os.environ)
     env.pop("CALCSISTEC_TESTAR_TIMEOUT", None)
@@ -125,10 +130,10 @@ def rodar_script(*argumentos, timeout=180, ambiente=None):
                     "-ExecutionPolicy",
                     "Bypass",
                     "-File",
-                    SCRIPT,
+                    os.path.join(em, "scripts", "testar.ps1"),
                     *argumentos,
                 ],
-                cwd=RAIZ,
+                cwd=em,
                 stdout=saida,
                 stderr=subprocess.STDOUT,
                 timeout=timeout,
@@ -148,13 +153,13 @@ def apagar(caminho):
         pass
 
 
-def derrubar(porta, simulado=False):
+def derrubar(porta, simulado=False, em=RAIZ):
     """`-Parar` na porta dada; nunca falha o teste por si."""
     argumentos = ["-Parar", "-Porta", str(porta)]
     if simulado:
         argumentos.append("-Simulado")
     try:
-        rodar_script(*argumentos, timeout=60)
+        rodar_script(*argumentos, timeout=60, em=em)
     except (subprocess.SubprocessError, OSError):
         pass
 
@@ -310,3 +315,56 @@ def test_parar_sem_nada_no_ar_sai_0():
 
     assert saida.returncode == 0, saida.stdout + saida.stderr
     assert "nada no ar" in saida.stdout.lower()
+
+
+# --- integração: repositório sem `.env` -------------------------------------
+
+
+def git(*argumentos, cwd=RAIZ):
+    return subprocess.run(
+        ["git", *argumentos], cwd=cwd, capture_output=True, text=True, timeout=120
+    )
+
+
+def hash_de(caminho):
+    """SHA-256 do arquivo, ou `None` se ele não existir."""
+    if not os.path.exists(caminho):
+        return None
+    with open(caminho, "rb") as arquivo:
+        return hashlib.sha256(arquivo.read()).hexdigest()
+
+
+def test_env_e_criado_antes_de_subir_o_app():
+    """AMB-01 (`.env` ausente): num repositório recém-clonado, o script cria o
+    `.env` com credenciais e segredo e só então sobe o app.
+
+    O repositório exercitado é um `git worktree` do `HEAD` no diretório
+    temporário: o `.env` da raiz não é copiado (é ignorado), então o caminho de
+    primeira execução roda de verdade sem chegar perto do `.env` da usuária.
+    """
+    destino = os.path.join(TEMPORARIO, f"calcsistec-t20-{uuid4().hex[:8]}")
+    porta = porta_livre()
+    env_da_raiz = os.path.join(RAIZ, ".env")
+    hash_antes = hash_de(env_da_raiz)
+    worktrees_antes = git("worktree", "list", "--porcelain").stdout
+    try:
+        criado = git("worktree", "add", "--detach", destino, "HEAD")
+        assert criado.returncode == 0, criado.stderr
+        assert not os.path.exists(os.path.join(destino, ".env"))
+
+        subida = rodar_script("-Destacado", "-SemNavegador", "-Porta", str(porta), em=destino)
+
+        assert subida.returncode == 0, subida.stdout + subida.stderr
+        assert escutando(porta), "o app não ficou escutando no worktree"
+
+        credenciais = ler_env(os.path.join(destino, ".env"))
+        for chave in ("ADMIN_EMAIL", "ADMIN_SENHA", "FLASK_SECRET_KEY"):
+            assert credenciais.get(chave), f"{chave} vazio no .env criado"
+    finally:
+        derrubar(porta, em=destino)
+        git("worktree", "remove", "--force", destino)
+        git("worktree", "prune")
+        apagar_logs(porta)
+
+    assert hash_de(env_da_raiz) == hash_antes, "o teste mexeu no .env da raiz"
+    assert git("worktree", "list", "--porcelain").stdout == worktrees_antes

@@ -624,10 +624,10 @@ T18 → T19 → T20 → T21 → T22
 
 **Done when**:
 
-- [ ] O `.env` da raiz fica com o mesmo hash antes e depois do teste
-- [ ] `git worktree list` fica igual antes e depois do teste
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O `.env` da raiz fica com o mesmo hash antes e depois do teste
+- [x] `git worktree list` fica igual antes e depois do teste
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: 987 + 1, 0 failed
 
 **Tests**: integration
 **Gate**: full
