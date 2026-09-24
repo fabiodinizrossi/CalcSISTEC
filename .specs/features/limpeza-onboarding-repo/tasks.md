@@ -129,9 +129,9 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] `tests/test_testar_ps1.py` (arquivo novo) afirma que o script contém `run.py --host 127.0.0.1 --port $Porta` e **não** contém `app.run(`
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total de T1 + novos, 0 failed
+- [x] `tests/test_testar_ps1.py` (arquivo novo) afirma que o script contém `run.py --host 127.0.0.1 --port $Porta` e **não** contém `app.run(`
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total de T1 + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

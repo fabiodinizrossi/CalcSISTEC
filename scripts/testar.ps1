@@ -170,8 +170,10 @@ if (-not $SemNavegador) {
 }
 
 # 6. App (127.0.0.1: senha de teste não pode ficar exposta na rede) ----------
+# Sobe pelo run.py (e não por um app.run avulso) para o watchdog de execuções
+# subir junto — uma execução pausada ou travada precisa expirar também aqui.
 try {
-    python -c "from app.app import app; app.run(host='127.0.0.1', port=$Porta, debug=False)"
+    python run.py --host 127.0.0.1 --port $Porta
 } finally {
     if ($trabalhoSimulado) {
         Stop-Job $trabalhoSimulado -ErrorAction SilentlyContinue
