@@ -626,12 +626,12 @@ T21
 - Skill: NONE
 
 **Done when**:
-- [ ] `app/data/previa.py:75` passa a `ancora = sqlite3.connect(nome, uri=True, check_same_thread=False)`, com comentário curto explicando que a serialização é do `com_trava` (Salvar/Descartar fecham a fonte de outra thread).
-- [ ] O docstring do módulo/da `FontePrevia` registra que a âncora pode ser fechada por thread diferente da que a criou.
-- [ ] `abrir_leitura` não muda (`check_same_thread` default continua: cada conexão de leitura é criada e usada na mesma thread da requisição).
-- [ ] Em `tests/test_previa_fonte.py`, novo teste que reproduz o bug antes do fix: abre a fonte (`abrir_fonte_previa(...)`) **dentro de uma `threading.Thread`**, guarda o objeto `FontePrevia` devolvido e chama `.fechar()` na thread principal (fora da thread que criou) — falha hoje com `sqlite3.ProgrammingError` e passa depois do fix. Use um `queue`/lista para devolver o objeto e a exceção da thread ao teste, com `thread.join()` antes das asserções.
-- [ ] Um segundo teste (mesmo arquivo) cobre o caminho real de `execucoes.liberar_previa(execucao)` chamado de outra thread: a fonte aberta numa thread é liberada na principal sem exceção e `execucao.previa_fonte` fica `None` (não é preciso `test_client`; o `abrir_previa`/`liberar_previa` são chamados direto, como os outros testes do repo fazem).
-- [ ] Gate: `python -m pytest tests/ -q` com ≥ 877 passed e nenhuma falha nova.
+- [x] `app/data/previa.py:75` passa a `ancora = sqlite3.connect(nome, uri=True, check_same_thread=False)`, com comentário curto explicando que a serialização é do `com_trava` (Salvar/Descartar fecham a fonte de outra thread).
+- [x] O docstring do módulo/da `FontePrevia` registra que a âncora pode ser fechada por thread diferente da que a criou.
+- [x] `abrir_leitura` não muda (`check_same_thread` default continua: cada conexão de leitura é criada e usada na mesma thread da requisição).
+- [x] Em `tests/test_previa_fonte.py`, novo teste que reproduz o bug antes do fix: abre a fonte (`abrir_fonte_previa(...)`) **dentro de uma `threading.Thread`**, guarda o objeto `FontePrevia` devolvido e chama `.fechar()` na thread principal (fora da thread que criou) — falha hoje com `sqlite3.ProgrammingError` e passa depois do fix. Use um `queue`/lista para devolver o objeto e a exceção da thread ao teste, com `thread.join()` antes das asserções.
+- [x] Um segundo teste (mesmo arquivo) cobre o caminho real de `execucoes.liberar_previa(execucao)` chamado de outra thread: a fonte aberta numa thread é liberada na principal sem exceção e `execucao.previa_fonte` fica `None` (não é preciso `test_client`; o `abrir_previa`/`liberar_previa` são chamados direto, como os outros testes do repo fazem).
+- [x] Gate: `python -m pytest tests/ -q` com ≥ 877 passed e nenhuma falha nova.
 
 **Tests**: unit
 **Gate**: full

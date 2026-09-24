@@ -272,3 +272,61 @@ def test_abrir_fonte_previa_com_campus_explicito_ignora_o_banco(tmp_path):
         fonte.fechar()
 
     assert linhas == [("U1",)]
+
+
+def _fonte_aberta_em_thread():
+    """Abre a fonte dentro de uma `threading.Thread` e devolve o objeto — o
+    servidor Flask atende cada requisição numa thread, então a fonte nasce
+    numa thread e é fechada em outra."""
+    import threading
+
+    resultado = {}
+
+    def _abrir():
+        resultado["fonte"] = abrir_fonte_previa(_candidato(), _campus_publico())
+
+    thread = threading.Thread(target=_abrir)
+    thread.start()
+    thread.join()
+    return resultado["fonte"]
+
+
+def test_fechar_em_thread_diferente_da_que_abriu():
+    """T21 (UAT de 2026-09-24): `Descartar`/`Salvar` fecham a fonte numa thread
+    diferente da que abriu no envio — com o default `check_same_thread=True`
+    isso levantava `sqlite3.ProgrammingError` e a rota devolvia 500."""
+    fonte = _fonte_aberta_em_thread()
+
+    fonte.fechar()  # não levanta
+
+    assert fonte._ancora is None
+
+
+def test_liberar_previa_de_outra_thread_fecha_a_fonte(tmp_path):
+    """O caminho real (`execucoes.liberar_previa`, usado por `descartar` e pelo
+    `salvar` bem-sucedido) também funciona entre threads."""
+    from app.data.schema import init_db
+    from app.sistec import execucoes
+
+    db_path = str(tmp_path / "previa.db")
+    init_db(db_path)
+    candidato = {
+        **_candidato(),
+        "resumo": {"cursos": 1, "ciclos": 1, "matriculas": 1, "matriculas_eficiencia": 1},
+    }
+
+    execucoes._REGISTRO.clear()
+    try:
+        execucao = execucoes.criar_execucao_envio("pi@ife.edu.br", ["ciclos.csv"], ["matriculas.csv"])
+
+        import threading
+
+        thread = threading.Thread(target=lambda: execucoes.abrir_previa(execucao, candidato, db_path))
+        thread.start()
+        thread.join()
+
+        assert execucao.previa_fonte is not None
+        execucoes.liberar_previa(execucao)  # não levanta
+        assert execucao.previa_fonte is None
+    finally:
+        execucoes._REGISTRO.clear()

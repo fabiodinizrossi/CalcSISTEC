@@ -9,6 +9,12 @@ Um banco nomeado em memória morre quando a última conexão fecha; a conexão
 conexão nova somente leitura (`query_only=ON`). Nenhum arquivo em disco e
 nenhuma coluna pessoal (as tabelas vêm do candidato, já sem PII — PVP-03,
 `RISK-008`).
+
+A âncora é criada com `check_same_thread=False` (T21): o Flask atende cada
+requisição numa thread, então a fonte aberta no envio é fechada por outra
+thread no Salvar/Descartar. A serialização continua sendo a de
+`execucoes.com_trava`, não a do `sqlite3` — a flag só remove a checagem de
+identidade de thread, não introduz concorrência.
 """
 
 import secrets
@@ -32,7 +38,8 @@ _ORDEM_INSERT = ("cursos", "ciclos", "matriculas", "matriculas_eficiencia")
 class FontePrevia:
     """Banco nomeado em memória com as tabelas de leitura da prévia. A
     conexão âncora mantém o banco vivo; `abrir_leitura` devolve conexões
-    novas somente leitura para os callbacks/páginas."""
+    novas somente leitura para os callbacks/páginas. `fechar` pode rodar numa
+    thread diferente da que criou a fonte (requisições distintas do Flask)."""
 
     def __init__(self, nome, ancora):
         self.nome = nome
@@ -72,7 +79,12 @@ def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
             conn.close()
 
     nome = f"file:previa-{secrets.token_urlsafe(16)}?mode=memory&cache=shared"
-    ancora = sqlite3.connect(nome, uri=True)
+    # `check_same_thread=False` (T21): o Flask atende cada requisição numa
+    # thread, então a fonte aberta no envio é fechada por outra thread no
+    # Salvar/Descartar. Todo acesso à âncora já é serializado por
+    # `execucoes.com_trava`, então nunca há duas threads na conexão ao mesmo
+    # tempo — a flag só remove a checagem de identidade de thread do Python.
+    ancora = sqlite3.connect(nome, uri=True, check_same_thread=False)
     try:
         ancora.execute("PRAGMA foreign_keys = ON")
         ancora.executescript(SCHEMA_PUBLICAS_SQL)
