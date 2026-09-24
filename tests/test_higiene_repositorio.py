@@ -90,3 +90,35 @@ def test_gitignore_lista_o_estado_das_ferramentas_locais():
 
     for entrada in ENTRADAS_GITIGNORE:
         assert entrada in linhas, f"{entrada} nao esta no .gitignore"
+
+
+def linhas_uteis(arquivo_relativo):
+    """Linhas não vazias de um arquivo de texto, sem espaços nas pontas."""
+    with open(caminho(*arquivo_relativo.split("/")), encoding="utf-8") as arquivo:
+        return [linha.strip() for linha in arquivo if linha.strip()]
+
+
+REQUIREMENTS_ESPERADOS = [
+    "dash==4.4.1",
+    "dash-bootstrap-components==2.0.4",
+    "pandas==2.3.0",
+    "openpyxl==3.1.5",
+    "plotly==6.8.0",
+    "defusedxml==0.7.1",
+    "Pillow==11.2.1",
+    "Flask==3.1.3",
+    "Werkzeug==3.1.8",
+]
+
+
+def test_requirements_fixa_as_versoes_testadas():
+    """DEP-01 AC1: sem `==`, um `pip install` de amanhã pode quebrar o gate."""
+    assert linhas_uteis("requirements.txt") == REQUIREMENTS_ESPERADOS
+
+
+def test_requirements_dev_inclui_o_principal_e_o_pytest():
+    """DEP-01 AC2: quem instala o `-dev` tem o app e a suíte."""
+    assert linhas_uteis("requirements-dev.txt") == [
+        "-r requirements.txt",
+        "pytest==9.1.1",
+    ]

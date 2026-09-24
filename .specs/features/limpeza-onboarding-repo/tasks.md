@@ -237,9 +237,9 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene compara as linhas não vazias de cada arquivo com a lista exata do spec (DEP AC1, AC2)
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene compara as linhas não vazias de cada arquivo com a lista exata do spec (DEP AC1, AC2)
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
