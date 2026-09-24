@@ -222,9 +222,9 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `app/pages/percentuais_legais.py:108-109`, a linha `filhos.append(dcc.Store(id="percentuais-preview", data=preview_id))` passa a rodar sempre, fora do `if preview_id is not None:`.
-- [ ] `State("percentuais-preview", "data")` (por volta da linha 138, citada na spec) não muda.
-- [ ] Teste equivalente ao de T2, para `pagina("percentuais_legais").layout()` sem `preview_id`, confirmando `id="percentuais-preview"` presente no layout público.
+- [x] Em `app/pages/percentuais_legais.py:108-109`, a linha `filhos.append(dcc.Store(id="percentuais-preview", data=preview_id))` passa a rodar sempre, fora do `if preview_id is not None:`.
+- [x] `State("percentuais-preview", "data")` (por volta da linha 138, citada na spec) não muda.
+- [x] Teste equivalente ao de T2, para `pagina("percentuais_legais").layout()` sem `preview_id`, confirmando `id="percentuais-preview"` presente no layout público.
 
 **Tests**: integration
 **Gate**: full

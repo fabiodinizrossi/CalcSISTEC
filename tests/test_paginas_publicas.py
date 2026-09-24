@@ -523,6 +523,16 @@ def test_percentuais_sem_registro_no_ano_base_mostra_aviso_em_vez_de_indicadores
     assert textos(tabela) == ""
 
 
+def test_percentuais_layout_publico_inclui_o_store_da_previa(percentuais_com_dados, monkeypatch):
+    """CPR-02: mesmo defeito de `matriculas` no painel público."""
+    monkeypatch.setattr(percentuais_com_dados, "dataset_disponivel", lambda: True)
+
+    layout = percentuais_com_dados.layout()
+
+    ids = {getattr(componente, "id", None) for componente in componentes(layout)}
+    assert "percentuais-preview" in ids
+
+
 def test_percentuais_sem_dados_mostra_br_message_info(monkeypatch):
     pagina_percentuais = pagina("percentuais_legais")
     monkeypatch.setattr(pagina_percentuais, "dataset_disponivel", lambda: False)
