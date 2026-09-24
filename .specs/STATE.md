@@ -42,6 +42,14 @@
 - **Date**: 2026-09-20
 - **Status**: active
 
+### AD-006
+- **Decision**: A validação responsiva antes do cutover (DS-42) é feita no navegador do computador, reduzindo a janela ou pelo modo de dispositivo do DevTools, em 320–430 px e em 1280 px ou mais. Não exige celular físico.
+- **Reason**: Decisão da responsável pelo projeto: ela sempre valida assim, e o teste físico pela rede local expunha o app na rede sem ganho proporcional.
+- **Trade-off**: Diferenças próprias de aparelho (teclado virtual, barra de endereço dinâmica, toque) não são cobertas.
+- **Scope**: `PROJECT_RULES.md` 1.3.0 (Restrições Técnicas), `DEPLOY.md`, `TESTAR.md`, `scripts/verificar_prontidao_cutover.py`.
+- **Date**: 2026-09-24
+- **Status**: active
+
 ## Handoff
 
 **Estado atual** (2026-09-24)
@@ -49,7 +57,7 @@
 - **Branch**: `migracao-dash-gov-br`, só commits locais (sem push/merge/deploy).
 - **Última feature concluída e validada**: `limpeza-onboarding-repo` (Verifier PASS na rodada 2, `ca28119`; gate 991 passed). Antes dela: `correcao-matricula-atendida`.
 - **Em execução**: nenhuma. Próxima candidata: refatoração de `app.py` (follow-ups abaixo).
-- **Pendências humanas abertas**: conferência dos KPIs de `correcao-matricula-atendida` no navegador (Matrículas Atendida ~16.750/16.832 e Ingressantes ≠ total Em Curso); DS-42 (validação em celular real); CSRF nas rotas administrativas (`POST` só com `SameSite=Lax`).
+- **Pendências humanas abertas**: conferência dos KPIs de `correcao-matricula-atendida` no navegador (Matrículas Atendida ~16.750/16.832 e Ingressantes ≠ total Em Curso); DS-42 (validação responsiva no navegador, 320–430 px e ≥1280 px — AD-006); CSRF nas rotas administrativas (`POST` só com `SameSite=Lax`).
 - **Follow-ups registrados**: refatorar `app.py` em blueprints, junto com IDs de spec nas docstrings e nomes em inglês; funções usadas só por testes (`filter_panel`, `agrupar_por_eixo`, `paginas_com_falha`, `deduplicar_por_campus`); cerca de 40 linhas em docstrings de `app/` e `scripts/` ainda citam documentos Reversa inexistentes fora da lista do DOC-01 (`roadmap.md`, `data-delta.md`, `f0-resultado.md`, `data_migration_plan.md`, `target_*.md`, `paradigm_decision.md`, `parity_tests/`) — tratar junto da feature de enxugar docstrings; `scripts/verificar_prontidao_cutover.py:143` ainda imprime `(Tarefa 10)`.
 
 Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao vivo).

@@ -1,5 +1,14 @@
 <!--
 Sync Impact Report
+- Version change: 1.2.0 → 1.3.0 (2026-09-24)
+- Modified sections: "Restrições Técnicas e de Segurança" — a validação responsiva
+  antes do cutover passa a ser feita no navegador (janela reduzida ou modo de
+  dispositivo do DevTools, 320–430 px e 1280 px ou mais), não mais em dispositivo
+  móvel real. Decisão da responsável pelo projeto (AD-006 em STATE.md).
+- Principles I–VII: conteúdo preservado.
+- Follow-up TODOs: nenhum.
+
+Previous amendment:
 - Version change: 1.1.0 → 1.2.0 (2026-09-24)
 - Modified sections: "Fluxo de Desenvolvimento e Gates de Qualidade" — a fonte de
   regras e decisões passa a ser `.specs/`; a documentação histórica do Reversa deixa
@@ -132,7 +141,8 @@ humana nem ficar sem caminho de volta.
   Plotly, SQLite. Nova dependência em `requirements.txt` MUST ser justificada no plano da
   feature.
 - Interface MUST seguir o Padrão Digital de Governo (gov.br DS) e ser responsiva, com
-  validação em dispositivo móvel real antes do cutover.
+  validação no navegador antes do cutover: janela reduzida ou modo de dispositivo do
+  DevTools em 320–430 px e em 1280 px ou mais.
 - Uploads de imagem MUST passar por validação de imagem e sanitização de SVG
   (`app/data/image_validation.py`, `app/data/svg_sanitize.py`); XML externo MUST ser lido com
   `defusedxml`.
@@ -168,4 +178,4 @@ humana nem ficar sem caminho de volta.
   justificada por escrito.
 - Orientação operacional do dia a dia fica em `README.md`, `TESTAR.md` e `DEPLOY.md`.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-24
+**Version**: 1.3.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-24

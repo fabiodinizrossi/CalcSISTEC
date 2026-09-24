@@ -57,7 +57,7 @@ funcionando, como em `scripts/testar.ps1`.
 - [ ] `CALCSISTEC_HTTPS=1` e certificado válido fora de `localhost`.
 - [ ] Um único worker/processo.
 - [ ] Banco publicado presente e `ANO_BASE` conferido.
-- [ ] Validação em celular real concluída (pendência DS-42, abaixo).
+- [ ] Validação responsiva no navegador concluída (pendência DS-42, abaixo).
 
 ## Verificação automatizada de prontidão
 
@@ -74,13 +74,13 @@ real de teste não for publicada, mesmo com os critérios técnicos OK.
 
 ## Pendências abertas
 
-### 1. Validação em celular real (DS-42)
+### 1. Validação responsiva no navegador (DS-42)
 
-Passo humano: o código foi verificado no Chrome, mas o teste em aparelho real
-ainda não foi feito.
+Passo humano, feito no navegador do computador: reduza a janela ou use o modo de
+dispositivo do DevTools (`Ctrl+Shift+M` no Chrome e no Edge). Não é preciso
+celular físico.
 
-Roteiro, em um celular real (**largura de 320 px a 430 px**) e depois em uma
-tela de **1280 px ou mais**:
+Roteiro, com a largura entre **320 px e 430 px** e depois com **1280 px ou mais**:
 
 1. Abrir as 4 páginas públicas (`/`, `/eficiencia`, `/evasao`,
    `/percentuais-legais`) e confirmar que a rota legada `/matriculas` redireciona
@@ -97,7 +97,7 @@ tela de **1280 px ou mais**:
 4. Anotar o resultado **neste arquivo**. Enquanto estiver em branco, o item de
    design fica desmarcado no checklist acima.
 
-Resultado: dispositivo ______ · largura ______ px · data ______
+Resultado: navegador ______ · larguras ______ px · data ______
 
 ### 2. CSRF nas rotas administrativas
 

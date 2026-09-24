@@ -246,27 +246,16 @@ percentuais, datas, células vazias, cabeçalhos com `rowspan`/`colspan` e tecla
 
 - `README.md` — visão geral, variáveis de ambiente e instalação em outra instituição.
 - `DEPLOY.md` — instalação, subida, checklist antes de publicar e as pendências
-  abertas (validação em celular, CSRF, divergências conhecidas).
+  abertas (validação responsiva, CSRF, divergências conhecidas).
 
 ## Conferir o design (gov.br DS)
 
-### Abrir no celular pela rede local
+### Conferir larguras no navegador
 
-O endereço `localhost` funciona somente no computador que executa o app. Para fazer o
-teste físico, conecte o celular e o computador à **mesma rede Wi-Fi privada** e siga:
-
-1. No computador, execute `ipconfig` e anote o endereço **IPv4** do adaptador Wi-Fi,
-   por exemplo `192.168.1.25`.
-2. Na raiz do projeto, execute `python run.py`. Esse comando escuta na rede local;
-   use-o só durante o teste e pare com `Ctrl+C` ao terminar.
-3. No celular, abra `http://<IPv4>:8050`, substituindo `<IPv4>` pelo endereço anotado.
-   Exemplo: `http://192.168.1.25:8050`.
-4. Se o Windows pedir autorização de firewall, permita o Python **somente em redes
-   privadas**. Não crie regra para rede pública, não redirecione a porta no roteador e
-   não exponha o endereço à internet.
-
-O modo de dispositivo do Chrome ajuda a antecipar problemas de largura, mas não
-substitui este teste: registre em `DEPLOY.md` o modelo do celular, a largura e a data.
+A validação responsiva é feita no navegador do computador, sem celular físico:
+reduza a janela ou abra o modo de dispositivo do DevTools (`Ctrl+Shift+M` no Chrome
+e no Edge) e confira as telas entre 320 px e 430 px e depois com 1280 px ou mais.
+Registre em `DEPLOY.md` o navegador, as larguras e a data.
 
 - O botão **Usar tema escuro** fica no cabeçalho de todas as telas. A escolha fica salva no navegador
   (`localStorage`, chave `calcsistec-tema`) e a página não recarrega ao trocar.
@@ -289,8 +278,8 @@ substitui este teste: registre em `DEPLOY.md` o modelo do celular, a largura e a
 - Nas três rotas, repita a conferência nos temas claro e escuro. Use teclado para alcançar
   o seletor de eixo, os filtros, **Limpar Filtros** e os cabeçalhos ordenáveis das tabelas;
   o foco deve permanecer visível.
-- Antes de publicar, repita esse roteiro em celular real entre 320px e 430px e em uma tela
-  de 1280px ou mais. Registre dispositivo, largura e data em `DEPLOY.md`; o item de
-  validação em celular só pode ser marcado depois dessa evidência.
+- Antes de publicar, repita esse roteiro no navegador com a largura entre 320px e 430px e
+  com 1280px ou mais. Registre navegador, larguras e data em `DEPLOY.md`; o item de
+  validação responsiva só pode ser marcado depois dessa evidência.
 - Os testes automáticos: `python -m pytest -q`. Os de JavaScript (`tests/test_js_*.py`) precisam do `node` no PATH
   e são pulados sem ele.

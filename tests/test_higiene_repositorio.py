@@ -108,7 +108,7 @@ def test_project_rules_esta_na_versao_1_2_0():
     fonte de regras, sem apontar para documentação que não está no repositório."""
     conteudo = texto(".specs/PROJECT_RULES.md")
 
-    assert "**Version**: 1.2.0" in conteudo
+    assert "Version change: 1.1.0 → 1.2.0" in conteudo
     for termo in TERMOS_PROIBIDOS:
         assert termo not in conteudo, f"PROJECT_RULES.md cita {termo}"
 

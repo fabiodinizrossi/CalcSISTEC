@@ -16,7 +16,7 @@ Cobre a parte do checklist que é verificável por código antes do corte:
 
 NÃO cobre (são passos humanos, não automatizáveis):
 - Paridade numérica 100% (`parity_specs.md`/`parity_tests/` — Tarefa 11).
-- Validação de design responsivo em dispositivo móvel real.
+- Validação de design responsivo no navegador (320–430 px e 1280 px ou mais).
 - Roteiro de `onboarding.md` (Sistec simulado + 1 baixa real).
 - Instalação da extensão na máquina da PI e política institucional (P-10).
 - Comunicação aos stakeholders e decommission do Power BI Service.
@@ -151,7 +151,7 @@ def imprimir_relatorio(resultados):
     print()
     print("--- Fora do escopo automatizável (ver DEPLOY.md) ---")
     print("[ ] Paridade 100% em parity_specs.md/parity_tests/ (Tarefa 11)")
-    print("[ ] Design gov.br responsivo validado em dispositivo móvel real")
+    print("[ ] Design gov.br responsivo validado no navegador (320-430 px e 1280 px ou mais)")
     print("[ ] Roteiro de onboarding.md com o Sistec simulado e 1 baixa real")
     print("[ ] Extensão Baixador Sistec instalada na máquina da PI (P-10)")
     print("[ ] Comunicação da data de transição aos stakeholders")
