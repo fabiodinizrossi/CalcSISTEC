@@ -68,6 +68,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: .specs/features/correcoes-previa-uso-real/spec.md:129 (app/app.py;app/sistec/execucoes.py;spec-ac)
 - last seen: 2026-09-24T05:19:03Z
 
+### L-010 - Antes de registrar na spec uma hipotese de causa para um residuo de paridade, teste a hipotese contra o dado real; hipotese nao confirmada entra como causa nao identificada, nao como explicacao.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `paridade/spec` · harmful: 0
+- features: correcao-matricula-atendida
+- evidence: G2 / .specs/features/correcao-matricula-atendida/spec.md (Out of Scope, residuo 16.750 vs 16.832) (paridade/spec)
+- last seen: 2026-09-24T06:26:46Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

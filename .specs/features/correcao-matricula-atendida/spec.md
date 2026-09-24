@@ -39,7 +39,7 @@ de outro ano".
 | Item | Motivo |
 | --- | --- |
 | KPI "Ingressantes" em outras páginas | Eficiência Acadêmica, Evasão Anual e Percentuais Legais não têm esse KPI. |
-| Paridade exata (16.750 vs 16.832, diferença de 82) | A diferença residual pode ser ruído de amostragem/edge case menor (ex.: algum mês não-padrão); não há orçamento para caçar 0,5% sem mais dado da usuária. Se ela quiser fechar esse resíduo, é follow-up. |
+| Paridade exata (16.750 vs 16.832, diferença de 82) | **Causa do resíduo não identificada.** A hipótese original ("algum mês não-padrão") foi testada contra o export real e não se sustenta: as 330 linhas com formato irregular (`"FEVEREIRO/2011"`, 0,27% do total) contribuem **0** matrículas pela via do mês. Fica como follow-up, se a usuária quiser fechar os 0,5%. |
 | Outros usos de `pd.to_datetime` no pipeline | `dt_data_inicio`/`dt_data_fim_previsto` (`app/data/transform.py:166,181`) usam formato ISO (`"2010-02-22 00:00:00"`) e parseiam corretamente — conferido nos dados reais; não precisam de mudança. |
 
 ---
@@ -145,3 +145,8 @@ mês de outro ano (não deve contar) — a nova função inclui (a) e (b), exclu
       cases de `RISK-002`) — 939 passed, 0 failed.
 - [ ] Reenviando `Downloads/08agosto` pelo envio real, o total de matrículas fica próximo de
       16.750 (não mais 14.022) e "Ingressantes" deixa de ser igual ao total de Em Curso.
+      **Substanciado no pipeline, não pela UI (G1).** O Verifier rodou o caminho real de
+      código (`ler_planilha` → `consolidar` → `montar_matriculas_e_eficiencia`) sobre o
+      export: regra antiga **14.022** (bate com a spec), implementação nova **16.832** (bate
+      com a spec), `contar_ingressantes` **5.432** contra **13.328** de Em Curso — o KPI
+      deixa de ser igual a Em Curso. O reenvio pela tela de envio continua com a usuária.

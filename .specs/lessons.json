@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 10,
+  "next_id": 11,
   "lessons": [
     {
       "id": "L-001",
@@ -166,6 +166,24 @@
       ],
       "created": "2026-09-24T05:19:03Z",
       "last_seen": "2026-09-24T05:19:03Z"
+    },
+    {
+      "id": "L-010",
+      "key": "spec_precision_gap::antes de registrar na spec uma hipotese de causa para um residuo de paridade teste a hipotese contra o dado real hipotese nao confirmada entra como causa nao identificada nao como explicacao",
+      "text": "Antes de registrar na spec uma hipotese de causa para um residuo de paridade, teste a hipotese contra o dado real; hipotese nao confirmada entra como causa nao identificada, nao como explicacao.",
+      "signal": "spec_precision_gap",
+      "scope": "paridade/spec",
+      "status": "candidate",
+      "features": [
+        "correcao-matricula-atendida"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "G2 / .specs/features/correcao-matricula-atendida/spec.md (Out of Scope, residuo 16.750 vs 16.832) (paridade/spec)"
+      ],
+      "created": "2026-09-24T06:26:46Z",
+      "last_seen": "2026-09-24T06:26:46Z"
     }
   ]
 }
