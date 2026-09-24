@@ -475,6 +475,13 @@ def admin_atualizar_envio():
         resposta["previa"] = None
         resposta["erro_previa"] = "sem_memoria"
         return flask.jsonify(resposta)
+    except Exception:
+        # CPR-04: qualquer outra falha ao montar a fonte (ex.: erro de
+        # integridade do conjunto) responde erro estruturado com corpo JSON —
+        # nunca 500 sem corpo. Nada é gravado e a execução segue descartável.
+        resposta["previa"] = None
+        resposta["erro_previa"] = "falha_previa"
+        return flask.jsonify(resposta)
 
     return flask.jsonify(resposta)
 

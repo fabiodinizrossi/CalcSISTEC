@@ -591,3 +591,31 @@ def test_falha_de_memoria_devolve_erro_sem_gravar(sessao, banco_temporario, monk
     execucao = execucoes.obter_do_admin(ADMIN)
     assert execucao.estado == "previa"
     assert execucao.previa_fonte is None
+
+
+def test_falha_ao_montar_a_fonte_devolve_erro_json_nunca_500(sessao, banco_temporario, monkeypatch):
+    """CPR-04: qualquer falha ao montar a fonte da prévia responde erro
+    estruturado com corpo JSON; a execução continua em `previa`, descartável,
+    e nada é gravado."""
+
+    def _boom(*a, **k):
+        raise ValueError("boom")
+
+    monkeypatch.setattr(app_module, "preparar_versao", _boom)
+    ciclos, matriculas = _envio_valido(("U1",))
+
+    resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
+    corpo = resposta.get_json()
+
+    assert resposta.status_code == 200
+    assert corpo["estado"] == "previa"
+    assert corpo["erro_previa"] == "falha_previa"
+    assert corpo["previa"] is None
+
+    execucao = execucoes.obter_do_admin(ADMIN)
+    assert execucao.estado == "previa"
+    assert execucao.previa_fonte is None
+    assert execucao.candidato is None
+
+    descarte = sessao.post(f"/admin/atualizar/execucoes/{execucao.id}/descartar")
+    assert descarte.status_code == 204

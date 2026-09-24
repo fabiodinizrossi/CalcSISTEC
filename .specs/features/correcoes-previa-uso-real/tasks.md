@@ -321,12 +321,12 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] O bloco try (que chama `preparar_versao(...)` e `execucoes.abrir_previa(...)`) ganha um `except Exception:` **depois** do `except MemoryError:` já existente (ordem importa: `MemoryError` é mais específico e precisa vir primeiro, senão o `except Exception` genérico o captura primeiro e a mensagem "sem_memoria" nunca aparece).
-- [ ] O novo `except Exception:` faz exatamente o que o `except MemoryError:` já faz, trocando só o valor: `resposta["previa"] = None`, `resposta["erro_previa"] = "falha_previa"` (em vez de `"sem_memoria"`), `return flask.jsonify(resposta)`.
-- [ ] Nenhuma escrita acontece nesse caminho de erro: confirme que `execucoes.abrir_previa` só atribui `execucao.previa_fonte`/`execucao.candidato` DEPOIS de `abrir_fonte_previa` retornar com sucesso (veja `app/sistec/execucoes.py:435-436`) — se a leitura estiver certa, nada precisa mudar lá, só confirmar no teste.
-- [ ] `execucao.estado` continua `"previa"` depois da falha (já era `"previa"` antes de `preparar_versao` ser chamado — confirme lendo `app/sistec/execucoes.py` em volta de onde `estado = "previa"` é setado na consolidação, não mexer nisso).
-- [ ] Em `tests/test_admin_envio.py`: novo teste que usa `monkeypatch` para fazer `preparar_versao` (ou `execucoes.abrir_previa`) levantar uma exceção genérica (ex. `ValueError("boom")`) e confere: `resposta.status_code == 200` (nunca 500), `corpo["erro_previa"] == "falha_previa"`, `corpo["previa"] is None`, e que a execução (via `execucoes.obter_do_admin(ADMIN)` ou equivalente) continua em estado `"previa"` e pode ser descartada (`execucoes.descartar(...)` não levanta erro).
-- [ ] O teste já existente `test_falha_de_memoria_devolve_erro_sem_gravar` (linha 520 de `tests/test_admin_envio.py`) continua passando sem alteração.
+- [x] O bloco try (que chama `preparar_versao(...)` e `execucoes.abrir_previa(...)`) ganha um `except Exception:` **depois** do `except MemoryError:` já existente (ordem importa: `MemoryError` é mais específico e precisa vir primeiro, senão o `except Exception` genérico o captura primeiro e a mensagem "sem_memoria" nunca aparece).
+- [x] O novo `except Exception:` faz exatamente o que o `except MemoryError:` já faz, trocando só o valor: `resposta["previa"] = None`, `resposta["erro_previa"] = "falha_previa"` (em vez de `"sem_memoria"`), `return flask.jsonify(resposta)`.
+- [x] Nenhuma escrita acontece nesse caminho de erro: confirme que `execucoes.abrir_previa` só atribui `execucao.previa_fonte`/`execucao.candidato` DEPOIS de `abrir_fonte_previa` retornar com sucesso (veja `app/sistec/execucoes.py:435-436`) — se a leitura estiver certa, nada precisa mudar lá, só confirmar no teste.
+- [x] `execucao.estado` continua `"previa"` depois da falha (já era `"previa"` antes de `preparar_versao` ser chamado — confirme lendo `app/sistec/execucoes.py` em volta de onde `estado = "previa"` é setado na consolidação, não mexer nisso).
+- [x] Em `tests/test_admin_envio.py`: novo teste que usa `monkeypatch` para fazer `preparar_versao` (ou `execucoes.abrir_previa`) levantar uma exceção genérica (ex. `ValueError("boom")`) e confere: `resposta.status_code == 200` (nunca 500), `corpo["erro_previa"] == "falha_previa"`, `corpo["previa"] is None`, e que a execução (via `execucoes.obter_do_admin(ADMIN)` ou equivalente) continua em estado `"previa"` e pode ser descartada (`execucoes.descartar(...)` não levanta erro).
+- [x] O teste já existente `test_falha_de_memoria_devolve_erro_sem_gravar` (linha 520 de `tests/test_admin_envio.py`) continua passando sem alteração.
 
 **Tests**: integration
 **Gate**: full
