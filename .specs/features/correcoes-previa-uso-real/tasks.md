@@ -567,9 +567,9 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] O passo a passo de **Publicar** em `TESTAR.md` passa a citar que os campi vão junto.
-- [ ] O passo a passo de **Atualizar dados** (envio) passa a citar que ciclos sem `MODALIDADE ENSINO` são descartados automaticamente, com a contagem aparecendo na tela/polling.
-- [ ] Nenhuma outra seção do documento é reescrita além do necessário.
+- [x] O passo a passo de **Publicar** em `TESTAR.md` passa a citar que os campi vão junto.
+- [x] O passo a passo de **Atualizar dados** (envio) passa a citar que ciclos sem `MODALIDADE ENSINO` são descartados automaticamente, com a contagem aparecendo na tela/polling.
+- [x] Nenhuma outra seção do documento é reescrita além do necessário.
 
 **Tests**: none
 **Gate**: full

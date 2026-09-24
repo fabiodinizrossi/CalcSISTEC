@@ -74,7 +74,9 @@ identificadores.
 6. Acompanhe a barra de progresso e o passo a passo. Deve baixar 2 planilhas por
    campus (ciclos e matrículas).
 7. Confira a prévia e clique em **Salvar na versão interna**.
-8. Se estiver tudo certo, **Publicar**.
+8. Se estiver tudo certo, **Publicar**. A publicação leva os dados de ciclos e
+   matrículas **e a lista de campi** (a mesma de `/admin/campi`); **Desfazer** devolve
+   a versão anterior inteira, campi incluídos.
 
 Se algum campus estiver com identificador inválido, a atualização **para antes de
 começar** e diz quais corrigir — em vez de baixar 22 planilhas vazias.
@@ -95,6 +97,13 @@ salvou os `.csv`) ou rode `python scripts/sistec_simulado.py` e faça uma baixa 
 4. Com as duas preenchidas, o resultado aparece linha por linha (arquivo, tipo, situação,
    linhas). Ponha um `.txt` numa das pastas para ver o arquivo ser ignorado e listado.
 5. Confira a prévia e clique em **Salvar na versão interna**.
+6. **Publicar** leva ao painel público os dados de ciclos e matrículas **e a lista de
+   campi**; **Desfazer** devolve a versão anterior inteira, campi incluídos.
+
+Ciclos **sem `MODALIDADE ENSINO`** (planilhas antigas, de programas já encerrados) são
+descartados automaticamente, com as matrículas deles. A contagem não aparece na tela: ela
+vem na resposta do envio e no acompanhamento, nos campos
+`ciclos_sem_modalidade_descartados` e `matriculas_sem_modalidade_descartadas`.
 
 Casos que valem conferir:
 
