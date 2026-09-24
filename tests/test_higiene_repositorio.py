@@ -76,6 +76,49 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
+DOCS_VERIFICADOS = ["DEPLOY.md"]
+
+TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
+
+
+@pytest.mark.parametrize("documento", DOCS_VERIFICADOS)
+def test_documentos_nao_citam_arquivos_ausentes_nem_tarefa_nn(documento):
+    """DOC-01 AC1/AC2: documento que manda o leitor para caminho inexistente ou
+    para a numeração do plano de reconstrução antigo."""
+    with open(caminho(*documento.split("/")), encoding="utf-8") as fonte:
+        conteudo = fonte.read()
+
+    for termo in TERMOS_PROIBIDOS_EM_DOCS:
+        if termo in conteudo:
+            pytest.fail(f"{documento} cita {termo}")
+
+
+def test_cutover_e_parity_report_sairam_do_repositorio():
+    """DOC-02 AC3: os dois documentos antigos saem; o `DEPLOY.md` entra."""
+    assert not os.path.exists(caminho("CUTOVER.md"))
+    assert not os.path.exists(caminho("PARITY_REPORT.md"))
+    assert os.path.exists(caminho("DEPLOY.md"))
+
+
+MARCADORES_DEPLOY = [
+    "run.py",
+    "CALCSISTEC_HTTPS=1",
+    "verificar_prontidao_cutover.py",
+    "DS-42",
+    "CSRF",
+    "worker",
+]
+
+
+def test_deploy_documenta_os_pontos_obrigatorios():
+    """DOC-02 AC4: pré-requisitos, subida, HTTPS, worker único, pendências."""
+    with open(caminho("DEPLOY.md"), encoding="utf-8") as fonte:
+        conteudo = fonte.read()
+
+    for marcador in MARCADORES_DEPLOY:
+        assert marcador in conteudo, f"{marcador} fora do DEPLOY.md"
+
+
 def carregar_script(nome):
     """Importa um `scripts/*.py` pelo caminho (não é pacote)."""
     import importlib.util

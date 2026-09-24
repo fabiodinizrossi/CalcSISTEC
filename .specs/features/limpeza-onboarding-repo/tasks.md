@@ -345,10 +345,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene afirma a ausência de `CUTOVER.md` e `PARITY_REPORT.md`, a presença de `DEPLOY.md` e, em `DEPLOY.md`, os marcadores `run.py`, `CALCSISTEC_HTTPS=1`, `verificar_prontidao_cutover.py`, `DS-42`, `CSRF` e a palavra `worker`
-- [ ] `DEPLOY.md` entra na lista de arquivos verificados contra termos proibidos (DOC AC1, AC2)
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene afirma a ausência de `CUTOVER.md` e `PARITY_REPORT.md`, a presença de `DEPLOY.md` e, em `DEPLOY.md`, os marcadores `run.py`, `CALCSISTEC_HTTPS=1`, `verificar_prontidao_cutover.py`, `DS-42`, `CSRF` e a palavra `worker`
+- [x] `DEPLOY.md` entra na lista de arquivos verificados contra termos proibidos (DOC AC1, AC2)
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick
