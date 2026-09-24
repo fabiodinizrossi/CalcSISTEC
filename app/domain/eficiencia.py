@@ -4,9 +4,8 @@ Depende de BC-02 (`app/domain/shared.py`, `app/domain/matriculas.py`) — nunca 
 conforme `ORDEM_DEPENDENCIA` em `app/domain/contrato.py` (Tarefa 04). Toda função
 recebe `filtros: FiltrosAtivos` como parâmetro explícito.
 
-Implementado na Tarefa 07 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_architecture.md` (seção BC-03) e
-`_reversa_sdd/migration/target_business_rules.md` (BR-MIGRAR-013, IEA = 0 quando pC+pE=0).
+Implementado na Tarefa 07 do plano de reconstrução (seção BC-03,
+BR-MIGRAR-013, IEA = 0 quando pC+pE=0).
 
 `classificar_matriculas_eficiencia` espera um `df` já consolidado (matrículas
 de `matriculas_eficiencia` — grão de BR-MIGRAR-002, já aplicado na ingestão —

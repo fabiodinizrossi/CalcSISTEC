@@ -1,11 +1,10 @@
 """BC-05 (Administração): autenticação e controle de acesso da rota de upload.
 
-Implementado na Tarefa 08 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_architecture.md` (seção "BC-05", AD-04) e
-`_reversa_sdd/migration/target_business_rules.md` (BR-MIGRAR-027).
+Implementado na Tarefa 08 do plano de reconstrução (seção "BC-05", AD-04 e
+BR-MIGRAR-027).
 
-Único ponto do sistema com requisito de segurança de acesso (`target_domain_model.md`
-§AGG-Administracao): a rota administrativa de upload exige login; as 5 páginas de
+Único ponto do sistema com requisito de segurança de acesso (§AGG-Administracao):
+a rota administrativa de upload exige login; as 5 páginas de
 consumo público nunca exigem autenticação (`BR-MIGRAR-027`, decisão confirmada —
 "é público, podem ver todos os dados do instituto inteiro"). Não é um serviço de
 identidade separado (`AD-03`, monolito único) — apenas um guarda de rota simples

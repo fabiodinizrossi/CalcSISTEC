@@ -2,7 +2,7 @@
 sistec`, T059, D-19).
 
 `SESSION_COOKIE_SAMESITE="Lax"` sempre; `SESSION_COOKIE_SECURE=True` quando
-`CALCSISTEC_HTTPS=1` (implantação com HTTPS configurado, `CUTOVER.md`). As
+`CALCSISTEC_HTTPS=1` (implantação com HTTPS configurado, ver `DEPLOY.md`). As
 ações novas desta feature mudam o painel público (publicar, desfazer), e
 bytes com dado pessoal só podem trafegar cifrados.
 """

@@ -291,10 +291,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] O teste de higiene percorre todo `.py` de `app/` e falha citando arquivo e termo se achar um termo proibido
-- [ ] `git diff --stat` só mostra arquivos `.py` de `app/`, e `git diff` só altera linhas de docstring e comentário
-- [ ] Gate check passes: `python -m pytest -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] O teste de higiene percorre todo `.py` de `app/` e falha citando arquivo e termo se achar um termo proibido
+- [x] `git diff --stat` só mostra arquivos `.py` de `app/`, e `git diff` só altera linhas de docstring e comentário
+- [x] Gate check passes: `python -m pytest -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

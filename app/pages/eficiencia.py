@@ -1,7 +1,7 @@
 """BC-04 (Apresentação): página Eficiência Acadêmica.
 
-Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
-`_reversa_sdd/migration/target_screens.md` §"Tela: Eficiência Acadêmica".
+Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
+tela de Eficiência Acadêmica.
 `DEV-003`: link de Percentuais Legais mantido no menu (já liberada).
 
 Tarefa 11: corrigido bug em que o toggle FIC não tinha nenhum efeito sobre os

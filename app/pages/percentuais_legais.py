@@ -1,7 +1,7 @@
 """BC-04 (Apresentação): página Percentuais Legais.
 
-Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
-`_reversa_sdd/migration/target_screens.md` §"Tela: Percentuais Legais".
+Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
+tela de Percentuais Legais.
 `BR-MIGRAR-022`: página já liberada — nunca retida/oculta.
 """
 

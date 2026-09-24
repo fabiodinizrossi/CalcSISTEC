@@ -1,10 +1,9 @@
 """Regras de ajuste de nome e eixo de curso do legado — A2, A3 e A5
 (`002-baixador-planilhas-sistec`, T027, D-08).
 
-Transcrição literal de
-`previaPNP2026_28032025.SemanticModel/definition/tables/dimCurso.tmdl:193-304`
-(`_reversa_sdd/code-analysis.md`, itens A2, A3, A5). Fecha o GAP
-`mapa_nomes_curso={}` apontado em `app.py:166-170` e `PARITY_REPORT.md` item 3.
+Transcrição literal do modelo semântico do painel legado
+(`dimCurso.tmdl:193-304`), itens A2, A3 e A5. Fecha o GAP
+`mapa_nomes_curso={}` apontado em `app.py:166-170`.
 
 O legado aplica os passos nesta ordem sobre `NOME DO CURSO` (cru, maiúsculo,
 como vem do Sistec):
@@ -23,7 +22,7 @@ igualdade exata. As 24 chaves abaixo são nomes de curso completos e
 específicos o bastante para que a diferença não importe na prática; um nome
 do Sistec que apenas *contenha* uma dessas chaves como trecho (e não seja
 exatamente ela) não é coberto por este mapa — risco a monitorar na primeira
-baixa real (ver `roadmap.md` §9, "casamento por nome" já é risco conhecido).
+baixa real (o casamento por nome já é risco conhecido).
 """
 
 # A2 (dimCurso.tmdl:193-216): 24 substituições, na ordem em que o legado encadeia.

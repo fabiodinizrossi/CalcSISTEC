@@ -2,8 +2,7 @@
 dashboard — `FicToggle`, `AxisSelector`, `Select` (dentro de `FilterPanel`) e
 o botão "Limpar Filtros".
 
-Implementado na Tarefa 09 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_screens.md`. Substitui o antigo filtro único
+Implementado na Tarefa 09 do plano de reconstrução. Substitui o antigo filtro único
 de sidebar global (compartilhado entre páginas) por um `FilterPanel` por
 página, conforme o contrato de cada tela.
 """

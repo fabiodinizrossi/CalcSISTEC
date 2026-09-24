@@ -1,7 +1,7 @@
 """BC-04 (Apresentação): página Taxa de Evasão Anual.
 
-Implementado na Tarefa 09 do plano de reconstrução, a partir do contrato em
-`_reversa_sdd/migration/target_screens.md` §"Tela: Taxa de Evasão Anual".
+Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
+tela de Taxa de Evasão Anual.
 """
 
 import dash

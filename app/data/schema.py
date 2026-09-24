@@ -1,11 +1,9 @@
 """Schema do banco alvo (SQLite) — Tarefa 02 do plano de reconstrução.
 
-DDL e inicialização do armazenamento local definido em
-`_reversa_sdd/migration/target_data_model.md` (AD-01 de `target_architecture.md`).
+DDL e inicialização do armazenamento local (AD-01 do desenho alvo).
 Nenhuma tabela contém coluna de dado pessoal identificável (BR-DESCARTAR-001).
 
-Schema v2 (`002-baixador-planilhas-sistec`, ver
-`_reversa_forward/002-baixador-planilhas-sistec/data-delta.md`): versionamento
+Schema v2 (`002-baixador-planilhas-sistec`): versionamento
 interna/publicada/anterior, fatores por versão, lista de campi do Sistec,
 estado de versões e histórico de execuções.
 """
@@ -116,7 +114,7 @@ CREATE TABLE IF NOT EXISTS {tabela} (
 # Tabelas públicas (vazias na migração, RN-30). Sem FK cursos.co_unidade -> campus (RN-16).
 SCHEMA_PUBLICAS_SQL = _ddl_conjunto("")
 
-# `interna_*` e `anterior_*`: mesmo DDL, prefixo no nome (data-delta.md §1).
+# `interna_*` e `anterior_*`: mesmo DDL, prefixo no nome.
 SCHEMA_INTERNA_SQL = _ddl_conjunto("interna_")
 SCHEMA_ANTERIOR_SQL = _ddl_conjunto("anterior_")
 

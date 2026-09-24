@@ -2,9 +2,8 @@
 
 Depende apenas de `app/domain/shared.py` (ordem de dependência em
 `app/domain/contrato.py`, Tarefa 04). Toda função recebe `filtros: FiltrosAtivos`
-como parâmetro explícito. Implementado na Tarefa 06 do plano de reconstrução,
-a partir de `_reversa_sdd/migration/target_architecture.md` (seção BC-02) e
-`_reversa_sdd/migration/target_business_rules.md` (BR-MIGRAR-004, 005, 014).
+como parâmetro explícito. Implementado na Tarefa 06 do plano de reconstrução
+(seção BC-02, BR-MIGRAR-004, 005, 014).
 
 `taxa_evasao()` e `filtrar_fic()` adicionados na Tarefa 11, após
 `parity_tests/02-contagem-evasao.feature` e

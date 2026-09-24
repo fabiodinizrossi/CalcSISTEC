@@ -32,6 +32,35 @@ def definicoes(arquivo_relativo):
     }
 
 
+def arquivos_py(*pastas):
+    """Todos os `.py` das pastas, em ordem estável."""
+    for pasta in pastas:
+        for raiz, _subpastas, nomes in os.walk(caminho(*pasta.split("/"))):
+            for nome in sorted(nomes):
+                if nome.endswith(".py"):
+                    yield os.path.join(raiz, nome)
+
+
+TERMOS_PROIBIDOS = [
+    "_reversa_sdd",
+    "_reversa_forward",
+    "cutover_plan.md",
+    "PARITY_REPORT.md",
+    "CUTOVER.md",
+    "APAGAR",
+]
+
+
+def test_app_nao_cita_documentos_ausentes():
+    """DOC-01 AC1: nenhum `.py` de `app/` aponta para arquivo que não existe."""
+    for arquivo in arquivos_py("app"):
+        with open(arquivo, encoding="utf-8") as fonte:
+            conteudo = fonte.read()
+        for termo in TERMOS_PROIBIDOS:
+            if termo in conteudo:
+                pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
+
+
 def test_modulo_validators_foi_removido():
     """LIM-01 AC1: `app/data/validators.py` não era importado por ninguém."""
     assert not os.path.exists(caminho("app", "data", "validators.py"))

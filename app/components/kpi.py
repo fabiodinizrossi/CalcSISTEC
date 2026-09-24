@@ -1,8 +1,7 @@
 """BC-04 (Apresentação): cartão de KPI (`KpiCard`), reusado por todas as
 páginas de dashboard.
 
-Implementado na Tarefa 09 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_screens.md` (componente `KpiCard`).
+Implementado na Tarefa 09 do plano de reconstrução (componente `KpiCard`).
 """
 
 from dash import html

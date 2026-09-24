@@ -3,11 +3,9 @@
 Contrato de domínio (filtros ativos, ordem de dependência entre módulos) definido em
 `app/domain/contrato.py` (Tarefa 04). Toda função deste módulo deve receber
 `filtros: FiltrosAtivos` como parâmetro explícito. Funções implementadas na
-Tarefa 06, a partir de `_reversa_sdd/migration/target_architecture.md` (seção BC-02),
-`_reversa_sdd/migration/target_domain_model.md` e
-`_reversa_sdd/migration/target_business_rules.md` (BR-MIGRAR-005, 007, 008, 014, 019, 020).
+Tarefa 06 (seção BC-02, BR-MIGRAR-005, 007, 008, 014, 019, 020).
 
-Paradigma alvo (`paradigm_decision.md`): procedural rico, estilo funcional leve —
+Paradigma alvo: procedural rico, estilo funcional leve —
 cada função pura, recebendo os filtros ativos como parâmetro explícito, sem estado global.
 """
 

@@ -4,9 +4,8 @@ Depende de BC-02 (`app/domain/shared.py`, `app/domain/matriculas.py`) — nunca 
 conforme `ORDEM_DEPENDENCIA` em `app/domain/contrato.py` (Tarefa 04). Toda função
 recebe `filtros: FiltrosAtivos` como parâmetro explícito.
 
-Implementado na Tarefa 07 do plano de reconstrução, a partir de
-`_reversa_sdd/migration/target_architecture.md` (seção BC-03) e
-`_reversa_sdd/migration/target_business_rules.md` (BR-MIGRAR-009 a 012, 024).
+Implementado na Tarefa 07 do plano de reconstrução (seção BC-03,
+BR-MIGRAR-009 a 012, 024).
 
 Todas as funções recebem uma única base já consolidada `df` — uma linha por
 combinação curso x ciclo com as colunas: `tipo_curso_pnp`, `subtipo_curso`,

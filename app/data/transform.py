@@ -1,14 +1,13 @@
 """Transformações T-01 a T-08 do pipeline de ingestão — Tarefa 03 do plano de reconstrução.
 
-Reimplementa em pandas o pipeline descrito em
-`_reversa_sdd/migration/data_migration_plan.md` §"Transformações", produzindo
-DataFrames prontos para gravação no schema alvo (`app/data/schema.py` /
-`_reversa_sdd/migration/target_data_model.md`).
+Reimplementa em pandas o pipeline de transformações do painel legado,
+produzindo DataFrames prontos para gravação no schema alvo
+(`app/data/schema.py`).
 
 Cada função é pura (mesma entrada -> mesma saída), conforme
 `AGG-Ingestao`/`AGG-NucleoMatriculas` no paradigma alvo (sem estado global).
 
-GAP sinalizado (🔴): `data_migration_plan.md` não especifica os nomes exatos
+GAP sinalizado (🔴): o plano de migração não especifica os nomes exatos
 das colunas cruas de status Sistec/PNP (T-02) nem da planilha de fatores
 FEC/FECH (T-05) na fonte real do Sistec. Este módulo assume os nomes abaixo
 como convenção provisória; confirmar com a usuária ou com a planilha real de
@@ -59,8 +58,8 @@ COLUNAS_PII = [
     "DT_DATA_NASCIMENTO",
     "NU_CPF",
     # Confirmadas na planilha de CICLO pela investigação ao vivo F0 (2026-09-14,
-    # `_reversa_forward/002-baixador-planilhas-sistec/f0-resultado.md`, achado 4):
-    # nome e CPF do responsável, não previstos na versão anterior desta lista.
+    # achado 4): nome e CPF do responsável, não previstos na versão anterior
+    # desta lista.
     "NOME_RESPONSAVEL",
     "CPF",
 ]

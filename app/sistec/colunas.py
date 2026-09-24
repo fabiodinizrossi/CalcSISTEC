@@ -5,13 +5,12 @@ cálculos do painel. Qualquer coluna fora da lista de permissão é descartada
 já na leitura (D-03), e isso é obrigatório para toda coluna de dado pessoal
 (defesa em profundidade) — inclusive `NOME_RESPONSAVEL` e `CPF` do
 responsável, confirmadas na planilha de ciclo pela investigação ao vivo F0
-(`f0-resultado.md`, achado 4), que não estavam na versão anterior de
+(achado 4), que não estavam na versão anterior de
 `app/data/transform.COLUNAS_PII`.
 
-Cada mapa é {nome no Sistec: nome interno}. Nomes conforme
-`_reversa_forward/002-baixador-planilhas-sistec/data-delta.md` §4 (P-03:
-convenção provisória para a planilha de matrícula, ainda não confirmada em
-exploração ao vivo — a de ciclo já foi, pela F0).
+Cada mapa é {nome no Sistec: nome interno}, conforme a convenção provisória
+para a planilha de matrícula (P-03), ainda não confirmada em exploração ao
+vivo — a de ciclo já foi, pela F0.
 """
 
 import io
