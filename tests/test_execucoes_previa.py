@@ -521,7 +521,31 @@ def test_abrir_previa_resumo_e_amostra_vem_do_candidato(db_path):
     assert linha["nome_curso_ajustado"] == "Técnico em X"
     assert linha["co_unidade"] == "U1"
     assert linha["status_corrigido"] == "EM_CURSO"
+    assert set(linha) == {
+        "co_matricula", "status_corrigido", "mes_ocorrencia_corrigido",
+        "ano_base", "codigo_ciclo_matricula", "nome_curso_ajustado",
+        "tipo_curso_pnp", "modalidade_ensino", "co_unidade",
+    }
+    assert linha["ano_base"] == 2026
+    assert linha["tipo_curso_pnp"] == "TECNICO"
+    assert linha["modalidade_ensino"] == "PRESENCIAL"
+    assert linha["mes_ocorrencia_corrigido"] == candidato["tabelas"]["matriculas"].iloc[0]["mes_ocorrencia_corrigido"]
     execucoes.liberar_previa(envio)
+
+
+def test_amostra_do_candidato_limita_a_20_matriculas(db_path):
+    candidato = _candidato(db_path)
+    matricula = candidato["tabelas"]["matriculas"]
+    candidato["tabelas"]["matriculas"] = pd.concat(
+        [matricula.assign(co_matricula=f"M{i}") for i in range(1, 22)],
+        ignore_index=True,
+    )
+
+    amostra = execucoes._amostra_candidato(candidato)
+
+    assert len(amostra) == 20
+    assert [linha["co_matricula"] for linha in amostra] == [f"M{i}" for i in range(1, 21)]
+    assert all(linha["codigo_ciclo_matricula"] == "C1" for linha in amostra)
 
 
 def test_amostra_do_candidato_nao_tem_coluna_de_pii(db_path):

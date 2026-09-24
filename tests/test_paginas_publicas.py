@@ -241,6 +241,7 @@ def eficiencia_com_dados(monkeypatch):
     pagina_eficiencia = pagina("eficiencia")
     monkeypatch.setattr(pagina_eficiencia, "carregar_eficiencia", _eficiencia_de_teste)
     monkeypatch.setattr(pagina_eficiencia, "ano_base_ativo", lambda: 2026)
+    monkeypatch.setattr(pagina_eficiencia, "dataset_disponivel", lambda: True)
     return pagina_eficiencia
 
 
@@ -278,7 +279,8 @@ def test_eficiencia_layout_poem_contexto_kpi_eixo_tabela_e_filtros_nesta_ordem(e
     layout = eficiencia_com_dados.layout()
     filhos = layout.children
     assert layout.className == "painel-dashboard"
-    assert [getattr(filho, "className", None) for filho in filhos] == ["cabecalho-pagina", None, "card-chips", None, None, "card-filtros"]
+    assert [getattr(filho, "className", None) for filho in filhos] == ["cabecalho-pagina", None, "card-chips", None, None, "card-filtros", None]
+    assert filhos[-1].id == "eficiencia-preview"
     assert filhos[1].children.className == "kpis-figma"
     assert "chips-grupo" in classes(filhos[2])
     assert "Atualizado em 22/09/2026" in textos(filhos[0])
@@ -405,6 +407,7 @@ def percentuais_com_dados(monkeypatch):
     pagina_percentuais = pagina("percentuais_legais")
     monkeypatch.setattr(pagina_percentuais, "carregar_matriculas", _matriculas_de_teste)
     monkeypatch.setattr(pagina_percentuais, "ano_base_ativo", lambda: 2026)
+    monkeypatch.setattr(pagina_percentuais, "dataset_disponivel", lambda: True)
     return pagina_percentuais
 
 
@@ -477,8 +480,9 @@ def test_percentuais_layout_ordena_contexto_cartoes_eixo_tabela_e_filtros(percen
     layout = percentuais_com_dados.layout()
     assert layout.className == "painel-dashboard"
     assert [getattr(filho, "className", None) for filho in layout.children] == [
-        "cabecalho-pagina", None, "card-chips", None, None, "card-filtros",
+        "cabecalho-pagina", None, "card-chips", None, None, "card-filtros", None,
     ]
+    assert layout.children[-1].id == "percentuais-preview"
     assert layout.children[1].children.className == "kpis-figma"
     assert "chips-grupo" in classes(layout.children[2])
     assert "Atualizado em 22/09/2026" in textos(layout.children[0])

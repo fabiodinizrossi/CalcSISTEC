@@ -98,6 +98,26 @@ def test_polling_de_baixa_mantem_a_resposta_e_zera_os_campos_novos(sessao):
     assert corpo["progresso"] == {"total": 2, "concluidos": 0}
 
 
+def test_polling_de_baixa_preserva_resumo_e_amostra_dos_ciclos(sessao):
+    """CPR-07 AC4: a baixa direta continua exibindo o consolidado bruto."""
+    execucao = execucoes.criar_execucao(ADMIN, CAMPI_BAIXA)
+    execucao.estado = "previa"
+    execucao.previa = {
+        "ciclos": pd.DataFrame([{"codigo_ciclo_matricula": "C1"}, {"codigo_ciclo_matricula": "C2"}]),
+        "matriculas": pd.DataFrame([{"co_matricula": "M1"}, {"co_matricula": "M2"}, {"co_matricula": "M3"}]),
+    }
+
+    corpo = sessao.get("/admin/atualizar/execucao").get_json()
+
+    assert corpo["origem"] == "baixa"
+    assert corpo["previa"] == {
+        "ciclos": 2,
+        "matriculas": 3,
+        "campi_falhos": [],
+        "amostra": [{"codigo_ciclo_matricula": "C1"}, {"codigo_ciclo_matricula": "C2"}],
+    }
+
+
 def test_polling_sem_execucao_nao_quebra(sessao):
     corpo = sessao.get("/admin/atualizar/execucao").get_json()
     assert corpo["estado"] is None
