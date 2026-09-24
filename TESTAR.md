@@ -1,18 +1,38 @@
 # Como testar o CalcSISTEC
 
-> Um comando sobe tudo configurado: `.\scripts\testar.ps1`
-> No Claude Code, basta escrever **`/testar`** (ou `/testar simulado`).
+> Um comando sobe tudo configurado: `.\scripts\testar.ps1`, da raiz do clone.
+> No Claude Code, basta escrever **`/testar`** (ou `/testar simulado`): o atalho
+> roda `scripts/testar.ps1 -Destacado -SemNavegador` e devolve o controle.
 
 ## O comando
 
 ```powershell
-cd projetoFabio\CalcSISTEC
 .\scripts\testar.ps1              # Sistec REAL (login gov.br seu)
 .\scripts\testar.ps1 -Simulado    # Sistec de mentira, sem gov.br
 ```
 
 Ele confere as dependências, prepara o login administrativo, sobe o app em
 `http://localhost:8050` e abre o navegador na tela de login. Para parar: `Ctrl+C`.
+
+### Subir sem prender o terminal (`-Destacado`) e derrubar (`-Parar`)
+
+```powershell
+.\scripts\testar.ps1 -Destacado -SemNavegador   # sobe e devolve o controle
+.\scripts\testar.ps1 -Parar                     # encerra quem está na porta
+```
+
+`-Destacado` inicia o app em um processo separado, grava a saída em um arquivo de
+log no diretório temporário do sistema (`%TEMP%`, nunca no repositório) e espera
+a porta aceitar conexão por até 60 s. Em seguida imprime URL de login, e-mail,
+senha, PID e o caminho do log, e sai com código 0. Se a porta não abrir em 60 s,
+ele encerra o processo, imprime o caminho do log e sai com 1. Com `-Simulado`,
+sobe também o Sistec simulado na porta 8051.
+
+`-Parar` encerra o processo que escuta na porta (8050 por padrão) e sai com 0;
+sem nada no ar, avisa e também sai com 0. Junto com `-Simulado`, encerra os dois.
+
+Quem sobe em `-Destacado` **não** acompanha o servidor depois: rode o comando,
+leia a saída e use `-Parar` quando terminar.
 
 ### Login de teste
 
@@ -180,8 +200,11 @@ Downloads ficaram **vazias** — nenhum CSV com CPF pode sobrar.
 ## Testes automatizados
 
 ```powershell
+pip install -r requirements-dev.txt
 python -m pytest -q
 ```
+
+`requirements-dev.txt` traz o `requirements.txt` inteiro mais o `pytest`.
 
 Cobrem a coleta contra o Sistec simulado, a recusa de rodar com identificador
 inválido, o CRUD de campi (inclusive a troca do identificador preservando o resto),
@@ -222,10 +245,8 @@ percentuais, datas, células vazias, cabeçalhos com `rowspan`/`colspan` e tecla
 ## Onde ler mais
 
 - `README.md` — visão geral, variáveis de ambiente e instalação em outra instituição.
-- `_reversa_forward/002-baixador-planilhas-sistec/onboarding.md` — roteiro de teste
-  detalhado por cenário (Partes A, B e C).
-- `_reversa_forward/002-baixador-planilhas-sistec/interfaces/navegador-local.md` —
-  como a coleta funciona por dentro.
+- `DEPLOY.md` — instalação, subida, checklist antes de publicar e as pendências
+  abertas (validação em celular, CSRF, divergências conhecidas).
 
 ## Conferir o design (gov.br DS)
 
@@ -245,7 +266,7 @@ teste físico, conecte o celular e o computador à **mesma rede Wi-Fi privada** 
    não exponha o endereço à internet.
 
 O modo de dispositivo do Chrome ajuda a antecipar problemas de largura, mas não
-substitui este teste: registre em `CUTOVER.md` o modelo do celular, a largura e a data.
+substitui este teste: registre em `DEPLOY.md` o modelo do celular, a largura e a data.
 
 - O botão **Usar tema escuro** fica no cabeçalho de todas as telas. A escolha fica salva no navegador
   (`localStorage`, chave `calcsistec-tema`) e a página não recarrega ao trocar.
@@ -268,8 +289,8 @@ substitui este teste: registre em `CUTOVER.md` o modelo do celular, a largura e 
 - Nas três rotas, repita a conferência nos temas claro e escuro. Use teclado para alcançar
   o seletor de eixo, os filtros, **Limpar Filtros** e os cabeçalhos ordenáveis das tabelas;
   o foco deve permanecer visível.
-- Antes do cutover, repita esse roteiro em celular real entre 320px e 430px e em uma tela
-  de 1280px ou mais. Registre dispositivo, largura e data em `CUTOVER.md`; o item de
+- Antes de publicar, repita esse roteiro em celular real entre 320px e 430px e em uma tela
+  de 1280px ou mais. Registre dispositivo, largura e data em `DEPLOY.md`; o item de
   validação em celular só pode ser marcado depois dessa evidência.
 - Os testes automáticos: `python -m pytest -q`. Os de JavaScript (`tests/test_js_*.py`) precisam do `node` no PATH
   e são pulados sem ele.

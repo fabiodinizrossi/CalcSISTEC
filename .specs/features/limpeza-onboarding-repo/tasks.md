@@ -401,10 +401,10 @@ T15 → T16 → T17
 
 **Done when**:
 
-- [ ] `TESTAR.md` entra na verificação de termos proibidos e "Tarefa NN"
-- [ ] O teste de higiene afirma que `TESTAR.md` cita `-Destacado`, `-Parar` e `requirements-dev.txt`
-- [ ] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] `TESTAR.md` entra na verificação de termos proibidos e "Tarefa NN"
+- [x] O teste de higiene afirma que `TESTAR.md` cita `-Destacado`, `-Parar` e `requirements-dev.txt`
+- [x] Gate check passes: `python -m pytest tests/test_higiene_repositorio.py -q`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: quick

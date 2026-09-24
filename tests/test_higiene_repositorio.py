@@ -77,7 +77,7 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
                 pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
 
 
-DOCS_VERIFICADOS = ["DEPLOY.md", "README.md"]
+DOCS_VERIFICADOS = ["DEPLOY.md", "README.md", "TESTAR.md"]
 
 TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["projetoFabio", "Tarefa "]
 
@@ -174,6 +174,15 @@ def test_todo_caminho_citado_no_readme_existe():
     assert citados, "README.md nao cita caminho nenhum entre crases"
     for citado in sorted(citados):
         assert os.path.exists(caminho(*citado.split("/"))), f"README.md cita {citado}, que nao existe"
+
+
+def test_testar_md_documenta_o_modo_destacado_e_o_requirements_dev():
+    """DOC-01 (TESTAR): os dois switches que qualquer agente usa e o comando
+    que instala as dependências de teste."""
+    conteudo = texto("TESTAR.md")
+
+    for marcador in ("-Destacado", "-Parar", "requirements-dev.txt"):
+        assert marcador in conteudo, f"TESTAR.md nao cita {marcador}"
 
 
 def carregar_script(nome):
