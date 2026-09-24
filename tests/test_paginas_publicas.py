@@ -311,6 +311,16 @@ def test_eficiencia_sem_dados_mostra_br_message_info(monkeypatch):
     assert SEM_DADOS in textos(layout)
 
 
+def test_eficiencia_layout_publico_inclui_o_store_da_previa(eficiencia_com_dados, monkeypatch):
+    """CPR-02: mesmo defeito de `matriculas` no painel público."""
+    monkeypatch.setattr(eficiencia_com_dados, "dataset_disponivel", lambda: True)
+
+    layout = eficiencia_com_dados.layout()
+
+    ids = {getattr(componente, "id", None) for componente in componentes(layout)}
+    assert "eficiencia-preview" in ids
+
+
 def _matriculas_para_evasao():
     base = _matriculas_de_teste().iloc[:1]
     linhas = []

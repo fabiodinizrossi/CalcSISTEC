@@ -176,9 +176,9 @@ T14 -> T19
 - Skill: NONE
 
 **Done when**:
-- [ ] Em `app/pages/eficiencia.py`, a linha `filhos.append(dcc.Store(id="eficiencia-preview", data=preview_id))` (hoje dentro de `if preview_id is not None:`, por volta da linha 89-90) passa a rodar sempre.
-- [ ] `State("eficiencia-preview", "data")` (por volta da linha 119) não muda.
-- [ ] Teste equivalente ao de T2, para `pagina("eficiencia").layout()` sem `preview_id`, confirmando `id="eficiencia-preview"` presente no layout público.
+- [x] Em `app/pages/eficiencia.py`, a linha `filhos.append(dcc.Store(id="eficiencia-preview", data=preview_id))` (hoje dentro de `if preview_id is not None:`, por volta da linha 89-90) passa a rodar sempre.
+- [x] `State("eficiencia-preview", "data")` (por volta da linha 119) não muda.
+- [x] Teste equivalente ao de T2, para `pagina("eficiencia").layout()` sem `preview_id`, confirmando `id="eficiencia-preview"` presente no layout público.
 
 **Tests**: integration
 **Gate**: full

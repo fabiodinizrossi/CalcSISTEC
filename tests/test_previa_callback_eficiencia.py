@@ -108,7 +108,11 @@ def test_layout_publico_sem_preview_inalterado(monkeypatch):
 
     assert layout.className == "painel-dashboard"
     assert "Atualizado em 22/09/2026" in textos(layout)
-    assert not any(getattr(c, "id", None) == "eficiencia-preview" for c in layout.children)
+    # CPR-02: o `Store` da prévia fica no layout também no caminho público,
+    # com `data=None` — o callback o declara como `State` sempre.
+    store = [c for c in layout.children if getattr(c, "id", None) == "eficiencia-preview"]
+    assert len(store) == 1
+    assert store[0].data is None
 
 
 def test_layout_previa_sem_publicacao_inicial(monkeypatch, db_path):
