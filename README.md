@@ -1,7 +1,7 @@
-# CalcSISTEC
+# Painel de Acompanhamento do SISTEC
 
 Painel de acompanhamento dos dados de matrícula do Sistec: lê os CSVs exportados
-do Sistec, calcula os indicadores da PNP e publica as páginas de consulta —
+do Sistec, calcula os indicadores baseados no Guia da PNP e publica as páginas de consulta: 
 Matrículas, Eficiência Acadêmica, Taxa de Evasão Anual e Percentuais Legais.
 
 ## Começar
@@ -238,11 +238,6 @@ ano-base e a tabela de fatores (FEC/FECH), que são regra nacional da PNP,
 são preservados.
 
 ## Observação sobre métricas
-
-Algumas métricas (ex.: Matrículas equivalentes) estão implementadas como *proxy*:
-
-- `EQ_MATRICULA = NU_CARGA_HORARIA / CARGA_TOTAL` (quando disponível; senão 1.0)
-- `MatEq = soma(EQ_MATRICULA)`
 
 Isso pode ser ajustado depois conforme a regra oficial do seu Power BI. As
 divergências conhecidas que aguardam decisão humana estão listadas em `DEPLOY.md`.
