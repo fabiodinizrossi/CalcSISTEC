@@ -21,6 +21,7 @@ equivalentes, e o checklist de cutover ainda cobra itens da coleta.
 | --- | --- |
 | Esconder ou desligar a coleta | Decisão da responsável: continua visível. |
 | Validar a coleta com baixa real | Spec futura. |
+| Fazer a coleta funcionar com o app no servidor | Spec futura (`.specs/MVP.md`, "Fora do MVP"). |
 | Mudar o funcionamento da coleta | Nada muda além do texto. |
 
 ---

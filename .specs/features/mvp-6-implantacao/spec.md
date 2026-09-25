@@ -21,7 +21,7 @@ só termina quando a PI publica sozinha um ciclo real no servidor.
 | --- | --- |
 | Automatizar o provisionamento (Ansible, Docker) | O MVP precisa de um servidor, não de uma esteira. |
 | Vários processos ou vários servidores | O registro de execuções é em memória (P-09): um processo só. |
-| Servidor Windows | O roteiro cobre Linux; ver Assumptions. |
+| Servidor Windows | O servidor é Ubuntu; ver Assumptions. |
 | Monitoramento e alertas | Fora do MVP. |
 
 ---
@@ -30,7 +30,7 @@ só termina quando a PI publica sozinha um ciclo real no servidor.
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Sistema do servidor | Linux com systemd e nginx (ex.: Ubuntu 24.04 LTS) | O README já cita EC2; é o caso mais comum. Se for Windows, o roteiro muda | n (Jaline pode corrigir na revisão) |
+| Sistema do servidor | Ubuntu (24.04 LTS) com systemd e nginx | Decisão da Jaline em 2026-09-24 | y |
 | Servidor WSGI | `waitress==3.0.2` | Puro Python, roda em Linux e Windows, multithread num processo só (compatível com P-09). Dependência nova justificada aqui, como o PROJECT_RULES exige | y |
 | Threads do waitress | 8 | Suficiente para o painel público de uma instituição | y |
 | Endereço do app atrás do nginx | `127.0.0.1:8050`; só o nginx fica exposto | O app não precisa aceitar conexão de fora | y |

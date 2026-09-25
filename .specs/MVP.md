@@ -19,7 +19,7 @@ ajuda. Não há data fixa; o objetivo é trocar logo, sem perder qualidade.
 | Entrada de dados | Só o **envio de pastas** é a via oficial. A coleta automática pela extensão continua visível, marcada como **experimental**. Validar a coleta é spec futura. |
 | Paridade numérica | Número a número nas 4 páginas públicas. Toda diferença maior que zero em relação ao Power BI precisa de causa registrada: bug corrigido ou diferença de regra aceita por escrito. |
 | Paridade visual | As 4 páginas públicas seguem a estrutura, os indicadores, os filtros e as interações do Power BI (prints em `.specs/referencias/`), com as cores e os componentes do gov.br DS. O amarelo do Power BI não volta. A coluna lateral tem, como no Power BI, o logotipo no topo, o menu e os filtros abaixo dele. A Evasão mantém o botão Com FIC / Sem FIC. |
-| Hospedagem | Servidor na internet, com `/admin` acessível de fora. CSRF, bloqueio de força bruta e HTTPS entram no MVP. |
+| Hospedagem | Servidor Ubuntu na internet, com `/admin` acessível de fora. CSRF, bloqueio de força bruta e HTTPS entram no MVP. |
 | Acesso administrativo | Uma conta, definida no `.env`. Cadastro de pessoas com perfis é spec futura. |
 | Validação responsiva | No navegador, com a janela reduzida ou o modo de dispositivo (AD-006). Nunca em celular físico. |
 | Código | Separar `app/app.py` em blueprints e limpar as docstrings dentro do MVP. |
@@ -69,6 +69,10 @@ Algumas tarefas só uma pessoa pode fazer. Elas aparecem nos `tasks.md` com
 ## Fora do MVP (specs futuras)
 
 - Validar e oficializar a coleta automática pelo Sistec.
+- Coleta pelo servidor: hoje o botão "Atualizar do Sistec" abre o navegador e
+  vigia a pasta de downloads do computador onde o app roda, então não funciona
+  com o CalcSISTEC num servidor. A spec futura decide como fazer essa coleta
+  com o app no servidor.
 - Cadastro de pessoas com perfis diferentes na área administrativa.
 - Tokens oficiais do gov.br DS e botão dedicado de "voltar à capa".
 - Renomear identificadores em inglês (`filter_panel`, `correction.py`…).
