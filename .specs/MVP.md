@@ -18,7 +18,7 @@ ajuda. Não há data fixa; o objetivo é trocar logo, sem perder qualidade.
 | --- | --- |
 | Entrada de dados | Só o **envio de pastas** é a via oficial. A coleta automática pela extensão continua visível, marcada como **experimental**. Validar a coleta é spec futura. |
 | Paridade numérica | Número a número nas 4 páginas públicas. Toda diferença maior que zero em relação ao Power BI precisa de causa registrada: bug corrigido ou diferença de regra aceita por escrito. |
-| Paridade visual | As 4 páginas públicas seguem a estrutura, os indicadores, os filtros e as interações do Power BI (prints em `.specs/referencias/`), com as cores e os componentes do gov.br DS. O amarelo do Power BI não volta. |
+| Paridade visual | As 4 páginas públicas seguem a estrutura, os indicadores, os filtros e as interações do Power BI (prints em `.specs/referencias/`), com as cores e os componentes do gov.br DS. O amarelo do Power BI não volta. A coluna lateral tem, como no Power BI, o logotipo no topo, o menu e os filtros abaixo dele. A Evasão mantém o botão Com FIC / Sem FIC. |
 | Hospedagem | Servidor na internet, com `/admin` acessível de fora. CSRF, bloqueio de força bruta e HTTPS entram no MVP. |
 | Acesso administrativo | Uma conta, definida no `.env`. Cadastro de pessoas com perfis é spec futura. |
 | Validação responsiva | No navegador, com a janela reduzida ou o modo de dispositivo (AD-006). Nunca em celular físico. |
@@ -30,7 +30,7 @@ ajuda. Não há data fixa; o objetivo é trocar logo, sem perder qualidade.
 | --- | --- | --- | --- |
 | 1 | Refatoração | `.specs/features/mvp-1-refatoracao/` | `app/app.py` dividido em `app/rotas/`; docstrings só com o que o código faz. |
 | 2 | Paridade numérica | `.specs/features/mvp-2-paridade/` | `app/paineis/` calcula todos os números do Power BI; `scripts/paridade.py` gera e confere a planilha de comparação; campanha com o export de agosto. |
-| 3 | Páginas como o Power BI | `.specs/features/mvp-3-paginas-power-bi/` | As 4 páginas com os filtros, indicadores, medidores, gráfico e colunas do Power BI. |
+| 3 | Páginas como o Power BI | `.specs/features/mvp-3-paginas-power-bi/` | Coluna lateral com logotipo, menu e filtros; as 4 páginas com os indicadores, medidores, gráfico e colunas do Power BI. |
 | 4 | Segurança para internet | `.specs/features/mvp-4-seguranca/` | CSRF, bloqueio de força bruta, cabeçalhos de segurança, proxy, chave de sessão obrigatória. |
 | 5 | Coleta experimental | `.specs/features/mvp-5-coleta-experimental/` | Selo e aviso na coleta automática; documentos e checklist sem a coleta. |
 | 6 | Implantação | `.specs/features/mvp-6-implantacao/` | Servidor de produção (waitress), exemplos de systemd e nginx, backup, roteiro no `DEPLOY.md`, primeiro ciclo real. |
