@@ -1,5 +1,4 @@
-"""Lista de campi do Sistec (`002-baixador-planilhas-sistec`, T034, RN-03,
-RN-05, `data-delta.md` §3.2).
+"""Lista de campi do Sistec.
 
 `campi_sistec` não tem versão (não faz parte do ciclo interna/publicada/
 anterior). A projeção para `interna_campus`/`campus` acontece em
@@ -72,7 +71,7 @@ def _ler(conn, somente_ativos=False):
 
 
 def salvar_captura(perfis, db_path=DEFAULT_DB_PATH):
-    """RN-05: grava os perfis lidos do Sistec numa transação, preservando o
+    """Grava os perfis lidos do Sistec numa transação, preservando o
     que já estava salvo para o mesmo perfil.
 
     - Casa pelo `id_perfil`; sem casamento, pelo nome do campus
@@ -170,7 +169,7 @@ def salvar_captura(perfis, db_path=DEFAULT_DB_PATH):
 
 
 def salvar_campus_manual(id_perfil, co_unidade, cidade, nome_unidade, db_path=DEFAULT_DB_PATH, novo_id_perfil=None):
-    """RF-10: corrige identificador do perfil, código, cidade e nome da unidade.
+    """Corrige identificador do perfil, código, cidade e nome da unidade.
 
     `novo_id_perfil` troca o próprio identificador — é o campo que o Sistec usa
     para mudar o campus ativo, e o que precisa ser corrigido numa lista gravada
@@ -271,7 +270,7 @@ def preencher_unidade(id_perfil, co_unidade, db_path=DEFAULT_DB_PATH):
 
 
 def completar_cidade_nome(co_unidade, cidade, nome_unidade, db_path=DEFAULT_DB_PATH):
-    """CPR-05 AC2: preenche `cidade`/`nome_unidade` de toda linha de
+    """Preenche `cidade`/`nome_unidade` de toda linha de
     `campi_sistec` com esse `co_unidade`, só onde o campo está vazio — valor
     já gravado nunca é sobrescrito (`COALESCE`). `None` não preenche nada.
 
@@ -311,7 +310,7 @@ def excluir_campus(id_perfil, db_path=DEFAULT_DB_PATH):
 
 
 def _regravar_interna_campus(conn):
-    """data-delta.md §3.2: `interna_campus` é a projeção (co_unidade,
+    """`interna_campus` é a projeção (co_unidade,
     cidade, nome_unidade) das linhas de `campi_sistec` com os três campos
     preenchidos, regravada a cada gravação de `campi_sistec`."""
     conn.execute("DELETE FROM interna_campus")
@@ -331,7 +330,7 @@ def listar_campi(db_path=DEFAULT_DB_PATH, somente_ativos=False):
 
 
 def existe_campus_sem_unidade(db_path=DEFAULT_DB_PATH):
-    """RF-10: algum campus ativo ainda sem `co_unidade`."""
+    """Algum campus ativo ainda sem `co_unidade`."""
     conn = get_connection(db_path)
     try:
         (n,) = conn.execute("SELECT COUNT(*) FROM campi_sistec WHERE co_unidade IS NULL AND ativo = 1").fetchone()

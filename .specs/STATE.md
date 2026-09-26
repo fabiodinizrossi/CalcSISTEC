@@ -112,3 +112,4 @@ Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao viv
 - **Branch**: migracao-dash-gov-br.
 - T10 concluída (20260926-170551)
 - T1 concluída (20260926-170551)
+- T11 concluída (20260926-170551)

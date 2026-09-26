@@ -1,6 +1,6 @@
-"""Sanitização de SVG enviado como logotipo (`001-govbr-design-system`, T010).
+"""Sanitização de SVG enviado como logotipo.
 
-RF-21/RN-13: o logotipo pode ser enviado como SVG; antes de ser aceito, o
+O logotipo pode ser enviado como SVG; antes de ser aceito, o
 arquivo passa por uma lista de permissão explícita de elementos/atributos,
 removendo `<script>`, `<foreignObject>`, atributos `on*` e referências
 externas (`href`/`xlink:href` para fora do próprio documento) — defesa contra

@@ -573,7 +573,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T11: Limpar docstrings e comentários de `app/data/`
+### [x] T11: Limpar docstrings e comentários de `app/data/`
 
 **What**: Mesmo trabalho de T10 em `app/data/`.
 **Where**: `app/data/`

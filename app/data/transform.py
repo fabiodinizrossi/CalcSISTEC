@@ -1,17 +1,12 @@
-"""Transformações T-01 a T-08 do pipeline de ingestão — Tarefa 03 do plano de reconstrução.
+"""Transformações do pipeline de ingestão (`t02` a `t08`).
 
 Reimplementa em pandas o pipeline de transformações do painel legado,
 produzindo DataFrames prontos para gravação no schema alvo
 (`app/data/schema.py`).
 
-Cada função é pura (mesma entrada -> mesma saída), conforme
-`AGG-Ingestao`/`AGG-NucleoMatriculas` no paradigma alvo (sem estado global).
+Cada função é pura (mesma entrada -> mesma saída), sem estado global.
 
-GAP sinalizado (🔴): o plano de migração não especifica os nomes exatos
-das colunas cruas de status Sistec/PNP (T-02) nem da planilha de fatores
-FEC/FECH (T-05) na fonte real do Sistec. Este módulo assume os nomes abaixo
-como convenção provisória; confirmar com a usuária ou com a planilha real de
-teste antes da Tarefa 05 (BC-01), que conecta este pipeline ao upload real:
+Nomes de coluna crus esperados da fonte real do Sistec:
 - Status Sistec: `STATUS_MATRICULA_SISTEC`
 - Status PNP: `STATUS_MATRICULA_PNP`
 - Planilha de fatores: colunas `CÓDIGO DO PORTFÓLIO`, `FEC`, `FECH`
@@ -21,19 +16,13 @@ import pandas as pd
 
 from app.domain.shared import parsear_mes_ocorrencia
 
-# Domínio fechado de StatusMatricula (T-02). PNP "terminativo" é qualquer
+# Domínio fechado de StatusMatricula. PNP "terminativo" é qualquer
 # status != EM_CURSO e != nulo.
 #
-# Correção da Tarefa 11 (parity_tests/05-eficiencia-academica-iea.feature,
-# "nenhum status some do total"): o conjunto original da Tarefa 03 era um
-# placeholder provisório ({"CONCLUINTE", "EVADIDO", "TRANCADO",
-# "TRANSFERIDO", ...}) que não batia com o value object `StatusMatricula`
-# canônico definido em `target_domain_model.md` §"Value objects" (8 valores,
-# usado por `app/domain/shared.STATUS_EVADIDO` e
-# `app/domain/eficiencia.STATUS_CONCLUIDO`). Um status válido segundo o
-# domínio antigo (ex.: "CONCLUINTE") não pertencia a nenhum bucket de
-# eficiência (nem concluído, nem evadido, nem retido) — divergência
-# encontrada ao rodar o cenário de paridade.
+# O conjunto é o value object `StatusMatricula` canônico, o mesmo usado por
+# `app/domain/shared.STATUS_EVADIDO` e `app/domain/eficiencia.STATUS_CONCLUIDO`:
+# um status aceito aqui que não pertencesse a nenhum bucket de eficiência
+# (nem concluído, nem evadido, nem retido) sumiria dos totais.
 STATUS_MATRICULA_VALIDOS = {
     "EM_CURSO",
     "CONCLUÍDA",
@@ -47,7 +36,7 @@ STATUS_MATRICULA_VALIDOS = {
     "TRANSF_INT",
 }
 
-# Colunas de PII a descartar incondicionalmente (T-01).
+# Colunas de PII a descartar incondicionalmente.
 COLUNAS_PII = [
     "DS_SENHA",
     "DS_EMAIL",
@@ -66,7 +55,7 @@ COLUNAS_PII = [
 
 
 def t02_corrigir_status(df, col_sistec="STATUS_MATRICULA_SISTEC", col_pnp="STATUS_MATRICULA_PNP"):
-    """T-02: PNP terminativo prevalece; PNP EM_CURSO/nulo -> vale o Sistec.
+    """PNP terminativo prevalece; PNP EM_CURSO/nulo -> vale o Sistec.
 
     Linhas cujo status corrigido não pertence a STATUS_MATRICULA_VALIDOS são
     rejeitadas (retornadas em separado) em vez de passar silenciosamente.
@@ -89,7 +78,7 @@ def t02_corrigir_status(df, col_sistec="STATUS_MATRICULA_SISTEC", col_pnp="STATU
 
 
 def t03_normalizar_curso(df, mapa_nomes, col_nome="NOME_CURSO", col_tipo="TIPO_CURSO"):
-    """T-03: aplica mapa de nomes históricos -> padrão PNP e colapsa
+    """Aplica mapa de nomes históricos -> padrão PNP e colapsa
     FORMAÇÃO INICIAL / FORMAÇÃO CONTINUADA / MULHERES MIL em QUALIFICAÇÃO PROFISSIONAL.
 
     Nome não encontrado no mapa mantém o original e é sinalizado em `aviso_qualidade`.
@@ -99,10 +88,9 @@ def t03_normalizar_curso(df, mapa_nomes, col_nome="NOME_CURSO", col_tipo="TIPO_C
     df["nome_curso_ajustado"] = nomes_ajustados.fillna(df[col_nome])
     df["aviso_qualidade_nome"] = nomes_ajustados.isna()
 
-    # Tarefa 11 (parity_tests/06-eixo-dinamico-e-fic.feature): preserva o
-    # tipo cru ANTES do colapso — BR-MIGRAR-021 exige distinguir Formação
-    # Inicial/Continuada de Mulheres Mil no toggle FIC, distinção que o
-    # colapso abaixo, sozinho, destruiria.
+    # Preserva o tipo cru ANTES do colapso: o toggle FIC exige distinguir
+    # Formação Inicial/Continuada de Mulheres Mil, distinção que o colapso
+    # abaixo, sozinho, destruiria.
     df["categoria_origem_curso"] = df[col_tipo].str.upper()
 
     colapso = {
@@ -116,7 +104,7 @@ def t03_normalizar_curso(df, mapa_nomes, col_nome="NOME_CURSO", col_tipo="TIPO_C
 
 
 def t04_chave_curso_unica(df, col_portfolio="CÓDIGO DO PORTFÓLIO"):
-    """T-04: usa CÓDIGO DO PORTFÓLIO como chave real; rejeita linhas sem esse código."""
+    """Usa CÓDIGO DO PORTFÓLIO como chave real; rejeita linhas sem esse código."""
     tem_chave = df[col_portfolio].notna() & (df[col_portfolio] != "")
 
     df_valido = df.loc[tem_chave].copy()
@@ -129,7 +117,7 @@ def t04_chave_curso_unica(df, col_portfolio="CÓDIGO DO PORTFÓLIO"):
 
 
 def t05_default_fec_fech(df_cursos, df_fatores, col_portfolio="codigo_portfolio"):
-    """T-05: merge com a planilha de fatores; ausência de par -> fec=fech=1 (default
+    """Merge com a planilha de fatores; ausência de par -> fec=fech=1 (default
     explícito) e sinalização em `fator_nao_encontrado`, nunca NULL silencioso."""
     merged = df_cursos.merge(
         df_fatores[[col_portfolio, "FEC", "FECH"]],
@@ -144,7 +132,7 @@ def t05_default_fec_fech(df_cursos, df_fatores, col_portfolio="codigo_portfolio"
 
 
 def t06_filtrar_ciclos_excluidos(df, col_status="STATUS_CICLO"):
-    """T-06: descarta ciclos com status EXCLUÍDO."""
+    """Descarta ciclos com status EXCLUÍDO."""
     return df.loc[df[col_status] != "EXCLUÍDO"].copy()
 
 
@@ -155,7 +143,7 @@ def t07_grao_matricula_atendida(
     col_status="status_corrigido",
     col_mes_ocorrencia="mes_ocorrencia_corrigido",
 ):
-    """T-07 (BR-MIGRAR-001, MAT-01): inclui a matrícula se o ciclo iniciou no
+    """Inclui a matrícula se o ciclo iniciou no
     ano-base, OU se o status é EM_CURSO, OU se o mês de ocorrência é do
     ano-base — independente de quando o ciclo começou.
 
@@ -165,9 +153,9 @@ def t07_grao_matricula_atendida(
     ano exato (`== ano_base`), não "a partir do ano-base".
 
     `dt_data_inicio` é ISO ("2010-02-22 00:00:00") e continua com
-    `pd.to_datetime` direto. `dt_data_inicio` nula não exclui por si só
-    (BR-HUMANA-010: o campo pertence ao ciclo, não à matrícula) — a matrícula
-    ainda pode entrar por EM_CURSO ou pelo mês de ocorrência.
+    `pd.to_datetime` direto. `dt_data_inicio` nula não exclui por si só (o
+    campo pertence ao ciclo, não à matrícula) — a matrícula ainda pode entrar
+    por EM_CURSO ou pelo mês de ocorrência.
     """
     dt_inicio = pd.to_datetime(df[col_dt_inicio], errors="coerce")
     mes_ocorrencia = parsear_mes_ocorrencia(df[col_mes_ocorrencia])
@@ -181,7 +169,7 @@ def t07_grao_matricula_atendida(
 
 
 def t08_grao_eficiencia_academica(df, ano_base, col_dt_fim_previsto="dt_data_fim_previsto"):
-    """T-08: inclui apenas matrículas cujo DT_DATA_FIM_PREVISTO do ciclo cai em
+    """Inclui apenas matrículas cujo DT_DATA_FIM_PREVISTO do ciclo cai em
     ano_base - 1. DT_DATA_FIM_PREVISTO nulo -> excluída (sem decisão em contrário)."""
     dt_fim = pd.to_datetime(df[col_dt_fim_previsto], errors="coerce")
     incluir = dt_fim.dt.year == (ano_base - 1)

@@ -1,9 +1,7 @@
-"""Regras de ajuste de nome e eixo de curso do legado — A2, A3 e A5
-(`002-baixador-planilhas-sistec`, T027, D-08).
+"""Regras de ajuste de nome e eixo de curso do legado — A2, A3 e A5.
 
 Transcrição literal do modelo semântico do painel legado
-(`dimCurso.tmdl:193-304`), itens A2, A3 e A5. Fecha o GAP
-`mapa_nomes_curso={}` apontado em `app.py:166-170`.
+(`dimCurso.tmdl:193-304`), itens A2, A3 e A5.
 
 O legado aplica os passos nesta ordem sobre `NOME DO CURSO` (cru, maiúsculo,
 como vem do Sistec):
@@ -11,7 +9,7 @@ como vem do Sistec):
    (`MAPA_NOMES_CURSO`, aplicado por `app/data/transform.t03_normalizar_curso`).
 2. A3 — prefixo "TÉCNICO EM " quando o tipo é "TÉCNICO" e falta o prefixo
    (`aplicar_prefixo_tecnico`).
-3. (merge com a tabela de fatores, fora deste módulo — D-07)
+3. (merge com a tabela de fatores, fora deste módulo)
 4. Cosmético, só para exibição: `Text.Proper` + as correções de preposição
    e dois nomes mal codificados do legado (`aplicar_preposicoes_minusculas`).
 5. A5 — reclassificação do eixo tecnológico por 17 termos no nome ajustado

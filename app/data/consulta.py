@@ -1,13 +1,8 @@
-"""BC-01/consulta: leitura do dataset ativo para consumo por `app/domain/*` e
-`app/pages/*`.
+"""Leitura do dataset ativo para consumo por `app/domain/*` e `app/pages/*`.
 
-Não faz parte da árvore aprovada em `target_architecture.md` §"Honra à
-topologia escolhida" (que cobre apenas a escrita do dataset). É glue necessária para
-materializar a seta `Domain --> Store` do diagrama de `target_architecture.md`
-— cada função de `app/domain/*` recebe `DataFrame` como parâmetro explícito
-(`target_domain_model.md`), e algo precisa montá-lo a partir do SQLite antes
-de chamar essas funções. Implementado na Tarefa 09 (BC-04), por ser onde essa
-necessidade concretamente aparece pela primeira vez.
+É a cola entre o domínio e o armazenamento: cada função de `app/domain/*`
+recebe `DataFrame` como parâmetro explícito, e algo precisa montá-lo a partir
+do SQLite antes de chamar essas funções.
 """
 
 import pandas as pd
@@ -16,7 +11,7 @@ from app.data.schema import DEFAULT_DB_PATH, get_connection
 
 
 def dataset_disponivel(db_path=DEFAULT_DB_PATH, conn=None):
-    """`conn` explícita (fonte da prévia, PVP-04) faz a leitura sem abrir nem
+    """`conn` explícita (fonte da prévia) faz a leitura sem abrir nem
     fechar conexão própria nem tocar `DEFAULT_DB_PATH`; sem ela, o caminho é o
     banco publicado, como antes."""
     if conn is not None:
@@ -32,7 +27,7 @@ def dataset_disponivel(db_path=DEFAULT_DB_PATH, conn=None):
 def data_ultima_publicacao(db_path=DEFAULT_DB_PATH, conn=None):
     """Timestamp da última publicação (`estado_versoes.publicada_em`), usado
     pela página inicial no rótulo "Atualizado em". Com `conn` explícita (fonte
-    da prévia), `publicada_em` fica vazio e o carimbo é omitido (PVP-05)."""
+    da prévia), `publicada_em` fica vazio e o carimbo é omitido."""
     if conn is not None:
         row = conn.execute("SELECT publicada_em FROM estado_versoes WHERE id = 1").fetchone()
         return row[0] if row else None
@@ -45,7 +40,7 @@ def data_ultima_publicacao(db_path=DEFAULT_DB_PATH, conn=None):
 
 
 def ano_base_ativo(db_path=DEFAULT_DB_PATH, conn=None):
-    """BR-MIGRAR-016: ano-base como único ponto de configuração. Com `conn`
+    """Ano-base como único ponto de configuração. Com `conn`
     explícita, lê `config` da fonte da prévia (o ano-base do candidato)."""
     if conn is not None:
         row = conn.execute("SELECT valor FROM config WHERE chave='ano_base'").fetchone()
@@ -59,11 +54,11 @@ def ano_base_ativo(db_path=DEFAULT_DB_PATH, conn=None):
 
 
 def carregar_matriculas(db_path=DEFAULT_DB_PATH, conn=None):
-    """Base consolidada de `matriculas` (grão de BR-MIGRAR-001, já aplicado
-    na ingestão) com curso/ciclo/campus já juntados — pronta para
-    `app/domain/matriculas.py` e `app/domain/percentuais_legais.py`.
+    """Base consolidada de `matriculas` (grão já aplicado na ingestão) com
+    curso/ciclo/campus já juntados — pronta para `app/domain/matriculas.py` e
+    `app/domain/percentuais_legais.py`.
 
-    Com `conn` explícita (fonte da prévia, PVP-04), roda o mesmo SQL e os
+    Com `conn` explícita (fonte da prévia), roda o mesmo SQL e os
     mesmos `parse_dates` contra ela, sem abrir nem fechar conexão própria."""
     if conn is not None:
         return pd.read_sql_query(
@@ -109,10 +104,9 @@ def carregar_matriculas(db_path=DEFAULT_DB_PATH, conn=None):
 
 
 def carregar_eficiencia(db_path=DEFAULT_DB_PATH, conn=None):
-    """Base consolidada de `matriculas_eficiencia` (grão de BR-MIGRAR-002)
-    com `dt_data_fim_previsto` do ciclo já junto — pronta para
-    `app/domain/eficiencia.py`. Com `conn` explícita, roda o mesmo SQL contra
-    a fonte da prévia (PVP-04)."""
+    """Base consolidada de `matriculas_eficiencia` com `dt_data_fim_previsto`
+    do ciclo já junto — pronta para `app/domain/eficiencia.py`. Com `conn`
+    explícita, roda o mesmo SQL contra a fonte da prévia."""
     if conn is not None:
         return pd.read_sql_query(
             """

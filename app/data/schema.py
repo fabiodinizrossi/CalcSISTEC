@@ -1,11 +1,10 @@
-"""Schema do banco alvo (SQLite) — Tarefa 02 do plano de reconstrução.
+"""Schema do banco alvo (SQLite).
 
-DDL e inicialização do armazenamento local (AD-01 do desenho alvo).
-Nenhuma tabela contém coluna de dado pessoal identificável (BR-DESCARTAR-001).
+DDL e inicialização do armazenamento local. Nenhuma tabela contém coluna de
+dado pessoal identificável.
 
-Schema v2 (`002-baixador-planilhas-sistec`): versionamento
-interna/publicada/anterior, fatores por versão, lista de campi do Sistec,
-estado de versões e histórico de execuções.
+Schema v2: versionamento interna/publicada/anterior, fatores por versão,
+lista de campi do Sistec, estado de versões e histórico de execuções.
 """
 
 import os
@@ -16,13 +15,13 @@ FATORES_PADRAO_PATH = os.path.join(os.path.dirname(__file__), "padroes", "dados_
 
 SCHEMA_VERSAO_ATUAL = "2"
 
-# Conversão de tipos do arquivo de fatores (D-09): normalizar(tipo) -> tipo gravado.
+# Conversão de tipos do arquivo de fatores: normalizar(tipo) -> tipo gravado.
 CONVERSAO_TIPO_FATORES = {
     "ESPECIALIZAÇÃO (LATO SENSU/PROFISSIONAL TECNOLÓGICA)": "ESPECIALIZAÇÃO (LATO SENSU)",
     "MESTRADO (ACADÊMICO/PROFISSIONAL)": "MESTRADO PROFISSIONAL",
 }
 
-# Tipos cuja chave é só o tipo (D-07, D-10): sem casamento por nome do curso.
+# Tipos cuja chave é só o tipo: sem casamento por nome do curso.
 TIPOS_SO_PELO_TIPO = {
     "ESPECIALIZAÇÃO (LATO SENSU)",
     "QUALIFICAÇÃO PROFISSIONAL",
@@ -31,7 +30,7 @@ TIPOS_SO_PELO_TIPO = {
 
 
 def normalizar(texto):
-    """RN-36: maiúsculas, espaços das pontas e repetidos no meio removidos, acentos preservados."""
+    """Maiúsculas, espaços das pontas e repetidos no meio removidos, acentos preservados."""
     return " ".join(str(texto).split()).upper()
 
 
@@ -39,7 +38,7 @@ def _ddl_conjunto(prefixo, fk_campus=True):
     """DDL das 5 tabelas de um conjunto (publicada/interna/anterior), mesmo índice, prefixo no nome.
 
     `fk_campus`: mantido só por simetria de assinatura; nenhum conjunto tem
-    FK `cursos.co_unidade -> campus` (RN-16, sai na v2).
+    FK `cursos.co_unidade -> campus` (saiu na v2).
     """
     p = prefixo
     return f"""
@@ -111,7 +110,7 @@ CREATE TABLE IF NOT EXISTS {tabela} (
 """
 
 
-# Tabelas públicas (vazias na migração, RN-30). Sem FK cursos.co_unidade -> campus (RN-16).
+# Tabelas públicas (vazias na migração). Sem FK cursos.co_unidade -> campus.
 SCHEMA_PUBLICAS_SQL = _ddl_conjunto("")
 
 # `interna_*` e `anterior_*`: mesmo DDL, prefixo no nome.
@@ -186,10 +185,10 @@ CREATE TABLE IF NOT EXISTS uploads_log (
 );
 """
 
-# Linha obrigatória em `config` (BR-MIGRAR-016).
+# Linha obrigatória em `config`: o ano-base existe desde a criação do banco.
 DEFAULT_CONFIG = {"ano_base": "2026"}
 
-# Ordem de DROP respeitando as FKs internas do conjunto público (T005).
+# Ordem de DROP respeitando as FKs internas do conjunto público.
 _TABELAS_PUBLICAS_EM_ORDEM_DE_DROP = (
     "matriculas_eficiencia",
     "matriculas",
@@ -227,7 +226,7 @@ def _converter_tipo_fator(tipo_bruto):
 
 
 def _linhas_fatores_padrao(caminho=FATORES_PADRAO_PATH):
-    """Lê `dados_FEC_PNP.xlsx` e devolve linhas prontas para `fatores`/`interna_fatores` (D-09, D-11)."""
+    """Lê `dados_FEC_PNP.xlsx` e devolve linhas prontas para `fatores`/`interna_fatores`."""
     import openpyxl
 
     wb = openpyxl.load_workbook(caminho, read_only=True, data_only=True)

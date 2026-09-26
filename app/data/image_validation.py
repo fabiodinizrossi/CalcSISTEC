@@ -1,6 +1,6 @@
-"""Validação e normalização de PNG enviado como logotipo (`001-govbr-design-system`, T011).
+"""Validação e normalização de PNG enviado como logotipo.
 
-RF-21/RN-13: verifica a assinatura binária do arquivo (rejeita qualquer coisa
+Verifica a assinatura binária do arquivo (rejeita qualquer coisa
 que não seja PNG de verdade, mesmo com extensão `.png`) e reabre/regrava a
 imagem com Pillow, descartando qualquer dado fora da estrutura de *chunks*
 válida do formato (ex.: dado anexado após o chunk `IEND`).

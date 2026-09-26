@@ -1,16 +1,14 @@
-"""BC-01 (Ingestão & Preparação): monta a versão interna a partir da baixa
-consolidada do Sistec (`002-baixador-planilhas-sistec`, T037/T038, D-14,
-D-18).
+"""Ingestão & Preparação: monta a versão interna a partir da baixa
+consolidada do Sistec.
 
-O upload `.xlsx` saiu do sistema (D-14, `/admin/upload` removido). A entrada
-agora é o `conjunto` já consolidado por `app/sistec/consolidacao.consolidar`
+A entrada é o `conjunto` já consolidado por `app/sistec/consolidacao.consolidar`
 (pares de ciclo/matrícula da extensão, já com a lista de permissão de
 colunas aplicada). `montar_versao_interna` deriva `cursos`/`ciclos`
-(`_cursos_e_ciclos_do_conjunto`, reaproveitando T-03/T-04 de
-`app/data/transform.py` e os ajustes A2/A3/A5 de `app/data/ajustes_curso.py`),
-aplica a regra de campus falho (RN-22, `data-delta.md` §6) e grava via
+(`_cursos_e_ciclos_do_conjunto`, reaproveitando `t03_normalizar_curso`/
+`t04_chave_curso_unica` de `app/data/transform.py` e os ajustes A2/A3/A5 de
+`app/data/ajustes_curso.py`), aplica a regra de campus falho e grava via
 `app/data/versoes.salvar_interna` — nunca escreve incrementalmente sobre a
-versão interna em uso (RN-20)."""
+versão interna em uso."""
 
 import pandas as pd
 
@@ -59,12 +57,12 @@ _COLUNAS_EFICIENCIA_SCHEMA = ["co_matricula", "codigo_ciclo_matricula", "status_
 def _cursos_e_ciclos_do_conjunto(df_ciclo):
     """Deriva `cursos` e `ciclos` (nomes de coluna do schema) a partir das
     linhas de ciclo consolidadas (`app/sistec/consolidacao.consolidar`), que
-    trazem os atributos do curso embutidos em cada linha (T036, D-18).
+    trazem os atributos do curso embutidos em cada linha.
 
     Aplica, nesta ordem (`app/data/ajustes_curso.py`): A2 (mapa de nomes,
     `t03_normalizar_curso`), A3 (prefixo "TÉCNICO EM"), Text.Proper + A4
     (cosmético), A5 (eixo tecnológico). `t04_chave_curso_unica` rejeita
-    linhas sem `CÓDIGO DO PORTFÓLIO` (D-08)."""
+    linhas sem `CÓDIGO DO PORTFÓLIO`."""
     if df_ciclo.empty:
         cursos_vazio = pd.DataFrame(columns=[c for c in _COLUNAS_CURSOS_SCHEMA if c not in ("fec", "fech", "fator_nao_encontrado")])
         return cursos_vazio, pd.DataFrame(columns=_COLUNAS_CICLOS_SCHEMA), 0
@@ -132,7 +130,7 @@ def _cursos_e_ciclos_do_conjunto(df_ciclo):
 
 
 def _ler_mantidos(conn, campi_falhos):
-    """data-delta.md §6.2: linhas de `interna_*` dos campi com par falho —
+    """Linhas de `interna_*` dos campi com par falho —
     mantidas como estão, sem entrar na troca desta baixa."""
     vazio = {
         "cursos": pd.DataFrame(columns=_COLUNAS_CURSOS_SCHEMA),
@@ -174,7 +172,7 @@ def _ler_mantidos(conn, campi_falhos):
 
 
 def ciclos_com_modalidade(df_ciclo):
-    """CPR-03: descarta os ciclos sem `MODALIDADE_ENSINO` (nulo, `NaN` ou
+    """Descarta os ciclos sem `MODALIDADE_ENSINO` (nulo, `NaN` ou
     vazio/só espaço) antes de montar `cursos`/`ciclos`/`matriculas`.
 
     Ciclos antigos de programas encerrados (ex.: MULHERES MIL 2011–2013)
@@ -192,12 +190,11 @@ def ciclos_com_modalidade(df_ciclo):
 
 
 def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
-    """PVP-10 (`previa-paginas-publicas`, T1): assinatura de origem do
-    candidato — as dependências que precisam continuar iguais entre a
-    conferência e o Salvar. Devolve `rev_interna`, `rev_publicada`,
-    `ano_base` e um resumo determinístico (tuplas ordenadas) de
-    `interna_fatores` e de `interna_campus` (CPR-06: é a interna que vai ao
-    ar no Publicar; o `campus` publicado pode estar desatualizado até lá).
+    """Assinatura de origem do candidato — as dependências que precisam
+    continuar iguais entre a conferência e o Salvar. Devolve `rev_interna`,
+    `rev_publicada`, `ano_base` e um resumo determinístico (tuplas ordenadas)
+    de `interna_fatores` e de `interna_campus` (é a interna que vai ao ar no
+    Publicar; o `campus` publicado pode estar desatualizado até lá).
     Estável entre chamadas com o mesmo banco."""
     conn = get_connection(db_path)
     try:
@@ -224,9 +221,9 @@ def calcular_assinatura_origem(db_path=DEFAULT_DB_PATH):
 
 
 def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=None):
-    """PVP-03/PVP-04 (`previa-paginas-publicas`, T1): prepara, sem gravar, as
-    quatro tabelas que `salvar_interna` receberia para o `conjunto` — com os
-    campi preservados concatenados e os fatores casados (RN-22, D-07).
+    """Prepara, sem gravar, as quatro tabelas que `salvar_interna` receberia
+    para o `conjunto` — com os campi preservados concatenados e os fatores
+    casados.
 
     Devolve `{"tabelas", "resumo", "ano_base", "assinatura_origem"}`. Nenhuma
     conexão de escrita é aberta. `ano_base=None` lê `config.ano_base`
@@ -243,7 +240,7 @@ def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=No
     else:
         df_ciclo_novos = df_ciclo
 
-    # CPR-03: ciclos sem modalidade de ensino são descartados antes de montar
+    # Ciclos sem modalidade de ensino são descartados antes de montar
     # o candidato — as matrículas deles saem por não casarem no merge interno.
     df_ciclo_novos_validos = ciclos_com_modalidade(df_ciclo_novos)
     codigos_descartados = set(df_ciclo_novos["CODIGO_CICLO_MATRICULA"]) - set(
@@ -324,16 +321,16 @@ def preparar_versao(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=No
 
 
 def montar_versao_interna(conjunto, campi_falhos, db_path=DEFAULT_DB_PATH, ano_base=2026):
-    """RN-20/RN-22 (`data-delta.md` §6): monta a versão interna a partir do
-    `conjunto` consolidado (`app/sistec/consolidacao.consolidar`) e dos
-    `campi_falhos` (códigos de unidade com algum par que falhou nesta
-    execução — os dados desses campi na interna atual são preservados, e as
-    linhas novas desses campi no `conjunto` são descartadas, P-06).
+    """Monta a versão interna a partir do `conjunto` consolidado
+    (`app/sistec/consolidacao.consolidar`) e dos `campi_falhos` (códigos de
+    unidade com algum par que falhou nesta execução — os dados desses campi
+    na interna atual são preservados, e as linhas novas desses campi no
+    `conjunto` são descartadas).
 
     Grava via `app/data/versoes.salvar_interna` (transação única), reusando a
     preparação de `preparar_versao` (que calcula a assinatura de origem por
     `calcular_assinatura_origem`). Retorna o resumo de contagens para a
-    prévia (RN-18: cursos sem fator)."""
+    prévia, incluindo os cursos sem fator."""
     candidato = preparar_versao(conjunto, campi_falhos, db_path=db_path, ano_base=ano_base)
     salvar_interna(candidato["tabelas"], db_path)
     return candidato["resumo"]
