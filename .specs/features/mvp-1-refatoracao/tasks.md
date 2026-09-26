@@ -187,7 +187,7 @@ quatro funções auxiliares; criar `tests/test_rotas_modulos.py`; citar
 
 ---
 
-### T2: Mover as rotas públicas para `app/rotas/publico.py`
+### [x] T2: Mover as rotas públicas para `app/rotas/publico.py`
 
 **What**: `GET /matriculas` (`matriculas_legado`, `app/app.py:210`) e
 `GET /branding/logo` (`branding_logo`, `app/app.py:1007`) vão para o blueprint

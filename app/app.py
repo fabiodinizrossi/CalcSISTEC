@@ -8,11 +8,9 @@ from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, 
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
 from app.config import aplicar_configuracao_sessao
 from app.data.config_store import (
-    DEFAULT_LOGO_PATH,
     dados_instituicao,
     set_instituicao,
     get_contato_email,
-    get_logo_path,
     get_qtd_perfis,
     reset_contato_email,
     reset_logo,
@@ -32,6 +30,7 @@ from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
 from app.admin_campi import campi_bp
 from app.rotas import comum
+from app.rotas.publico import publico_bp, UPLOADS_BRANDING_DIR
 from app.shell import PainelDash, init_shell
 from app.sistec import envio, execucoes, navegador
 
@@ -58,6 +57,7 @@ from app.sistec.api import bp as sistec_api_bp  # noqa: E402
 
 server.register_blueprint(sistec_api_bp)
 server.register_blueprint(campi_bp)
+server.register_blueprint(publico_bp)
 init_shell(server, app)
 
 # Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do
@@ -84,7 +84,6 @@ _MSG_CONFIG_AUSENTE = (
 )
 
 LOGO_MAX_BYTES = 500 * 1024  # RN-13: acima disso, rejeitado (RF-21).
-UPLOADS_BRANDING_DIR = os.path.join(os.path.dirname(__file__), "data", "uploads", "branding")
 
 
 @server.route("/admin/login", methods=["GET", "POST"])
@@ -202,13 +201,6 @@ def admin_instalacao():
         valores=valores,
         **comum.contexto_base(),
     )
-
-
-@server.route("/matriculas")
-def matriculas_legado():
-    """Rota antiga da página Matrículas: agora a landing é `/` (Matrículas),
-    então redireciona para lá para não quebrar links antigos."""
-    return flask.redirect("/")
 
 
 @server.route("/recuperar-acesso")
@@ -984,32 +976,6 @@ def admin_config_captura_estado():
             "perfis": captura.perfis if captura.estado == "revisao" else None,
         }
     )
-
-
-@server.route("/branding/logo")
-def branding_logo():
-    """RF-02/RF-21: serve o logotipo vigente. Sempre com *fallback* ao
-    padrão de fábrica quando o arquivo configurado está ausente ou
-    ilegível — nunca um erro visível ao visitante público (T037)."""
-    caminho = get_logo_path()
-    conteudo = None
-    if caminho and os.path.isfile(caminho):
-        try:
-            with open(caminho, "rb") as f:
-                conteudo = f.read()
-        except OSError:
-            conteudo = None
-
-    if conteudo is None:
-        caminho = DEFAULT_LOGO_PATH
-        with open(caminho, "rb") as f:
-            conteudo = f.read()
-
-    mimetype = "image/svg+xml" if caminho.lower().endswith(".svg") else "image/png"
-    resposta = flask.Response(conteudo, mimetype=mimetype)
-    resposta.headers["X-Content-Type-Options"] = "nosniff"
-    resposta.headers["Cache-Control"] = "no-cache"
-    return resposta
 
 
 if __name__ == "__main__":

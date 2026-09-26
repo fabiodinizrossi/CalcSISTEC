@@ -6,12 +6,16 @@ import pytest
 
 import app.app as app_module
 from app.rotas import comum
+from app.rotas.publico import UPLOADS_BRANDING_DIR
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 # (URL como aparece em url_map, método, prefixo esperado do endpoint)
 # Preenchido pelas tarefas de migração de cada área (T2-T9).
-ROTAS_ESPERADAS = []
+ROTAS_ESPERADAS = [
+    ("/matriculas", "GET", "publico_bp"),
+    ("/branding/logo", "GET", "publico_bp"),
+]
 
 
 def _endpoint(url, metodo):
@@ -33,6 +37,10 @@ def test_pacote_rotas_existe_com_modulo_comum():
 
     for nome in ("contexto_base", "admin_email", "execucao_da_sessao", "ano_base_config"):
         assert callable(getattr(comum, nome))
+
+
+def test_uploads_branding_dir_aponta_para_app_data_uploads_branding():
+    assert UPLOADS_BRANDING_DIR == str(RAIZ / "app" / "data" / "uploads" / "branding")
 
 
 def test_contexto_base_reune_contato_e_instituicao(monkeypatch):
