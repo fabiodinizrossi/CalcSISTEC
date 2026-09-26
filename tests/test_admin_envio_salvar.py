@@ -42,6 +42,7 @@ def ambiente(monkeypatch):
     HISTORICO.clear()
     GRAVACOES.clear()
     execucoes._REGISTRO.clear()
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
 
     def montar(conjunto, campi_falhos, db_path=None, ano_base=None):
         GRAVACOES.append({"campi_falhos": set(campi_falhos), "ano_base": ano_base})

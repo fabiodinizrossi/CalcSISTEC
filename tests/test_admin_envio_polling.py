@@ -27,6 +27,7 @@ CAMPI_BAIXA = [{"id_perfil": "1", "nome_perfil": "Assessor A", "co_unidade": "U1
 @pytest.fixture(autouse=True)
 def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
     monkeypatch.setattr(app_module.navegador, "status", lambda email: None)
     yield
     execucoes._REGISTRO.clear()

@@ -24,6 +24,7 @@ ADMIN = "pi@ife.edu.br"
 @pytest.fixture(autouse=True)
 def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
     monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: 1)
     monkeypatch.setattr(app_module, "historico_encerrar", lambda *a, **k: None)
     yield

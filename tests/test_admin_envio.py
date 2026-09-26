@@ -109,6 +109,7 @@ def ambiente(monkeypatch):
     """Dublês de campi e histórico + registro de execuções limpo."""
     HISTORICO.clear()
     execucoes._REGISTRO.clear()
+    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
     monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CAMPI)
     monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
     monkeypatch.setattr(app_module, "historico_encerrar", _encerrar)

@@ -110,3 +110,4 @@ Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao viv
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada enviado ao remoto.
 - **Working tree à época**: só `?? .agents/` e `?? nonascii.txt` (pré-existentes, não rastreados). `app/data/sistec.db` (ignorado) vazio de publicadas.
 - **Branch**: migracao-dash-gov-br.
+- T10 concluída (20260926-170551)

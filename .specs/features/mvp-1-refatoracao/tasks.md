@@ -457,7 +457,7 @@ com o que o spec lista no fim do "Mapa de rotas".
 
 ---
 
-### T10: Teste de higiene das docstrings e limpeza de `app/domain/`
+### [x] T10: Teste de higiene das docstrings e limpeza de `app/domain/`
 
 **What**: Criar `tests/test_higiene_docstrings.py` com os padrões proibidos do
 spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
@@ -560,11 +560,11 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 **Done when**:
 
-- [ ] `tests/test_higiene_docstrings.py` passa com `ALVOS_LIMPOS = ["app/domain"]`
-- [ ] `tests/test_higiene_repositorio.py` continua passando, com a exclusão nova
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] `tests/test_higiene_docstrings.py` passa com `ALVOS_LIMPOS = ["app/domain"]`
+- [x] `tests/test_higiene_repositorio.py` continua passando, com a exclusão nova
+- [x] Script da seção 6 do protocolo lista `[]`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

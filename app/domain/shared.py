@@ -1,21 +1,13 @@
-"""BC-02 (Núcleo de Matrículas, shared kernel): eh_evadido(), matricula_equivalente(), eixo dinâmico.
+"""Regras comuns de evasão, matrícula equivalente e agrupamento por eixo.
 
-Contrato de domínio (filtros ativos, ordem de dependência entre módulos) definido em
-`app/domain/contrato.py` (Tarefa 04). Toda função deste módulo deve receber
-`filtros: FiltrosAtivos` como parâmetro explícito. Funções implementadas na
-Tarefa 06 (seção BC-02, BR-MIGRAR-005, 007, 008, 014, 019, 020).
-
-Paradigma alvo: procedural rico, estilo funcional leve —
-cada função pura, recebendo os filtros ativos como parâmetro explícito, sem estado global.
+As funções recebem os filtros ativos por parâmetro e não consultam estado global.
 """
 
 import pandas as pd
 
 from app.domain.contrato import EixoQuebra, FiltrosAtivos
 
-# BR-MIGRAR-005: definição única de evasão (7 status) — o legado tinha 3
-# definições divergentes entre medida e coluna de agrupamento; esta é a
-# única fonte de verdade, consumida por todas as páginas/indicadores.
+# Estes sete status compõem a evasão em todos os indicadores.
 STATUS_EVADIDO = {
     "ABANDONO",
     "DESLIGADO",
@@ -26,17 +18,11 @@ STATUS_EVADIDO = {
     "TRANSF_INT",
 }
 
-# BR-MIGRAR-007/008: fech = 1 para todos os tipos de curso, exceto
-# Qualificação Profissional, onde fech = carga_horaria_total / 800.
+# Para Qualificação Profissional, FECH é carga horária total dividida por 800.
 TIPO_CURSO_QUALIFICACAO_PROFISSIONAL = "QUALIFICAÇÃO PROFISSIONAL"
 CARGA_HORARIA_REFERENCIA_FECH = 800
 
-# MAT-01 (AC2): o Sistec exporta `MES_DE_OCORRENCIA` por extenso, em português
-# e em maiúsculas ("JUNHO 2026"). `pandas`/`dateutil` não reconhece nomes de mês
-# em português — `pd.to_datetime(..., errors="coerce")` devolvia `NaT` para
-# 100% das linhas, e a via do mês de ocorrência em `t07_grao_matricula_atendida`
-# nunca era verdadeira. `MARCO` sem cedilha entra como chave extra porque as
-# exportações variam na acentuação (edge case de `spec.md`).
+# O Sistec exporta meses por extenso em português, com ou sem cedilha em março.
 MESES_PT = {
     "JANEIRO": 1,
     "FEVEREIRO": 2,
@@ -53,13 +39,7 @@ MESES_PT = {
     "DEZEMBRO": 12,
 }
 
-# BR-MIGRAR-020: mapeia cada eixo de quebra (seleção única) para a coluna do
-# dataset consolidado usada para agrupar — corrige o bug M-D3 do legado
-# (field parameter do Power BI permitia, indevidamente, seleção múltipla).
-# Correção da Tarefa 11 (parity_tests/06-eixo-dinamico-e-fic.feature): a
-# Tarefa 06 mapeava "tipo_curso" para `tipo_curso_pnp` e não mapeava "oferta"
-# a coluna alguma — a spec exige `subtipo_curso` e `tipo_oferta_curso`
-# respectivamente (coluna adicionada ao schema na própria Tarefa 11).
+# Cada eixo seleciona uma coluna do conjunto consolidado para o agrupamento.
 COLUNA_POR_EIXO = {
     "campus": "co_unidade",
     "tipo_curso": "subtipo_curso",
@@ -71,26 +51,20 @@ COLUNA_POR_EIXO = {
 
 
 def eh_evadido(status):
-    """BR-MIGRAR-005/006: True se `status` (já corrigido, BR-MIGRAR-003) está
-    no conjunto único de evasão. REPROVADO/REPROVADA contam como evasão sem
-    remapeamento prévio no ETL (BR-MIGRAR-006) — a classificação acontece
-    inteiramente aqui, não na ingestão."""
+    """Retorna se o status corrigido representa evasão.
+
+    REPROVADO e REPROVADA contam como evasão sem remapeamento na ingestão.
+    """
     return status in STATUS_EVADIDO
 
 
 def matricula_equivalente(tipo_curso, carga_horaria_total, fec, matriculas, fech=1):
-    """BR-MIGRAR-007: Mateq = Mat x fech x fec (Portaria 146/2021 art. 2º).
+    """Calcula Mateq = matrículas × FECH × FEC (Portaria 146/2021, art. 2º).
 
-    `fec` já chega com o default explícito aplicado na ingestão quando a
-    planilha de fatores não tinha par (BR-MIGRAR-008, hoje via
-    `app/data/fatores.casar_fatores`, D-07) — esta função nunca recebe `fec`
-    nulo.
-
-    `fech` (D-07, `002-baixador-planilhas-sistec`): para curso não FIC, vale
-    o `fech` do curso (`cursos.fech`, casado por `casar_fatores`), passado
-    explicitamente pelo chamador. Para Qualificação Profissional (FIC), o
-    `fech` recebido é ignorado — continua sendo a carga horária total / 800,
-    como antes desta feature.
+    `fec` chega com o valor padrão aplicado pela ingestão, nunca nulo. Para
+    cursos que não são de Qualificação Profissional, usa o `fech` recebido.
+    Para Qualificação Profissional, ignora esse valor e divide a carga horária
+    total por 800.
     """
     if tipo_curso == TIPO_CURSO_QUALIFICACAO_PROFISSIONAL:
         fech_efetivo = carga_horaria_total / CARGA_HORARIA_REFERENCIA_FECH
@@ -100,39 +74,28 @@ def matricula_equivalente(tipo_curso, carga_horaria_total, fec, matriculas, fech
 
 
 def coluna_para_eixo(eixo: EixoQuebra):
-    """BR-MIGRAR-020: resolve o eixo de quebra ativo (parâmetro explícito,
-    nunca estado implícito) para a coluna correspondente no dataset."""
+    """Resolve o eixo de quebra para sua coluna no conjunto consolidado."""
     return COLUNA_POR_EIXO[eixo]
 
 
 def agrupar_por_eixo(df, filtros: FiltrosAtivos, coluna_valor, agregacao="sum"):
-    """BR-MIGRAR-020/025: agrega `coluna_valor` por exatamente um eixo de
-    quebra por vez — `filtros.eixo` é sempre uma seleção única por construção
-    (`EixoQuebra` é um `Literal`, não uma lista), o que corrige o bug M-D3 do
-    legado (field parameter com `singleSelect=false`)."""
+    """Agrega `coluna_valor` por um único eixo de quebra ativo."""
     coluna = coluna_para_eixo(filtros.eixo)
     return df.groupby(coluna, dropna=False)[coluna_valor].agg(agregacao).reset_index()
 
 
 def modalidade(df):
-    """BR-MIGRAR-019: fonte única de "Modalidade". O legado usava
-    `dimCiclo[MODALIDADE ENSINO]` ou `dimCurso[MODALIDADE ENSINO]` de forma
-    inconsistente entre páginas; a ingestão (Tarefa 05) já grava uma única
-    coluna `modalidade_ensino` em `cursos` — este acessor existe para que
-    nenhuma página leia outra coluna divergente."""
+    """Lê a modalidade de ensino consolidada pela ingestão."""
     return df["modalidade_ensino"]
 
 
 def parsear_mes_ocorrencia(serie):
-    """MAT-01: interpreta `MES_DE_OCORRENCIA` do Sistec, texto em português
-    (`"JUNHO 2026"`), como o dia 1 daquele mês.
+    """Interpreta o mês de ocorrência do Sistec como o dia 1 daquele mês.
 
     Devolve `pandas.Series` de `pandas.Timestamp` com o mesmo índice de
     `serie`. Qualquer valor que não seja `<nome de mês em português> <ano de 4
     dígitos>` (nulo, vazio, texto inesperado, outro formato de data) vira
-    `pandas.NaT` — nunca levanta exceção (MAT-01 AC4, `RISK-002`). O contrato
-    de retorno é o mesmo de `pd.to_datetime(..., errors="coerce")`, com
-    `.dt.year` já pronto para uso.
+    `pandas.NaT` sem levantar exceção. O resultado permite usar `.dt.year`.
     """
     texto = serie.astype("string").str.strip().str.upper()
     extraido = texto.str.extract(r"^([A-ZÇ]+)\s+(\d{4})$")

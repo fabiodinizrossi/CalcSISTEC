@@ -1,19 +1,11 @@
-"""BC-03 (Indicadores Regulatórios): percentuais legais (Técnico/Professores/PROEJA).
-
-Depende de BC-02 (`app/domain/shared.py`, `app/domain/matriculas.py`) — nunca o inverso,
-conforme `ORDEM_DEPENDENCIA` em `app/domain/contrato.py` (Tarefa 04). Toda função
-recebe `filtros: FiltrosAtivos` como parâmetro explícito.
-
-Implementado na Tarefa 07 do plano de reconstrução (seção BC-03,
-BR-MIGRAR-009 a 012, 024).
+"""Recortes e percentuais legais para Técnico, Professores e PROEJA.
 
 Todas as funções recebem uma única base já consolidada `df` — uma linha por
 combinação curso x ciclo com as colunas: `tipo_curso_pnp`, `subtipo_curso`,
 `eixo_tecnologico_ajustado`, `carga_horaria_total`, `fec`, `tipo_programa_curso`
 (do ciclo) e `quantidade_matriculas` (contagem de matrículas atendidas nessa
-combinação, já filtrada por `FiltrosAtivos` a montante em `app/domain/
-matriculas.py`) — nunca recalculam `matricula_equivalente` por conta própria
-(invariante de `AGG-IndicadoresRegulatorios`, `target_domain_model.md`).
+combinação, já filtrada por `FiltrosAtivos` a montante) — e usam a mesma regra
+de matrícula equivalente.
 """
 
 from app.domain.shared import matricula_equivalente
@@ -24,8 +16,7 @@ META_PROEJA = 0.10
 
 EIXO_PROFESSORES = "DESENVOLVIMENTO EDUCACIONAL E SOCIAL"
 
-# BR-MIGRAR-010: lista de exclusão externalizada (não hardcoded dentro da
-# função de cálculo) — facilita auditoria e futuras mudanças de critério.
+# Lista de cursos excluídos do recorte de Formação de Professores.
 EXCLUSOES_PROFESSORES = {
     "CERVEJEIRO",
     "FORMAÇÃO COMPLEMENTAR AO ENSINO FUNDAMENTAL",
@@ -36,20 +27,15 @@ EXCLUSOES_PROFESSORES = {
 
 
 def recorte_tecnico(df):
-    """BR-MIGRAR-009: `subtipo_curso` = Técnico; meta legal >= 50% (Lei
-    11.892/2008 art. 8º §1º)."""
+    """Seleciona cursos do subtipo Técnico; a meta legal é de 50%."""
     return df[df["subtipo_curso"] == "Técnico"]
 
 
 def recorte_professores(df, exclusoes=EXCLUSOES_PROFESSORES):
-    """BR-MIGRAR-010: `eixo_tecnologico_ajustado` = Desenvolvimento
-    Educacional e Social, menos a lista de exclusão; meta legal = 20%
-    (Q22 — o limiar de cor do medidor no legado estava errado, não a meta).
+    """Seleciona o eixo Desenvolvimento Educacional e Social, com exclusões.
 
-    Correção da Tarefa 11 (`parity_tests/04-percentuais-legais.feature`): a
-    exclusão é por substring no nome do curso ("...tem 'cervejeiro' no nome
-    ajustado"), não por igualdade exata — um curso como "TÉCNICO EM
-    CERVEJEIRO" precisa ser excluído, e `.isin()` nunca casaria com isso.
+    Exclui cursos cujo nome contenha qualquer termo da lista, inclusive quando
+    o termo é parte de um nome maior. A meta legal é de 20%.
     """
     no_eixo = df["eixo_tecnologico_ajustado"] == EIXO_PROFESSORES
     nomes = df["nome_curso_ajustado"].str.upper()
@@ -59,15 +45,15 @@ def recorte_professores(df, exclusoes=EXCLUSOES_PROFESSORES):
 
 
 def recorte_proeja(df):
-    """BR-MIGRAR-011: `tipo_programa_curso` contém "EJA"; meta legal >= 10%
-    (Decreto 5.840/2006 art. 2º §1º)."""
+    """Seleciona programas cujo tipo contém EJA; a meta legal é de 10%."""
     return df[df["tipo_programa_curso"].str.contains("EJA", na=False)]
 
 
 def matriculas_equivalentes(df):
-    """BR-MIGRAR-007/012: Matriculas_equivalentes linha a linha, sem excluir
-    nenhum tipo de curso (Mulheres Mil incluída no denominador — decisão já
-    confirmada, BR-MIGRAR-012). Base para todo percentual desta unit."""
+    """Calcula matrículas equivalentes por linha para o denominador comum.
+
+    Nenhum tipo de curso é excluído; Mulheres Mil também entra no denominador.
+    """
     return df.apply(
         lambda linha: matricula_equivalente(
             linha["tipo_curso_pnp"],
@@ -103,8 +89,5 @@ def percentual_proeja(df):
 
 
 def cor_medidor(valor, meta):
-    """BR-MIGRAR-024: cor do medidor derivada dinamicamente de `valor >= meta`
-    — nos 3 medidores, nunca uma constante de cor duplicada e independente da
-    meta (correção do limiar fixo incorreto de ~29,9% do legado para
-    Formação de Professores)."""
+    """Retorna verde quando o valor alcança a meta, vermelho caso contrário."""
     return "verde" if valor >= meta else "vermelho"
