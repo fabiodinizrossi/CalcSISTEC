@@ -94,7 +94,7 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16
 
 ## Task Breakdown
 
-### T1: Criar `app/rotas/`, o módulo `comum` e o teste de rotas
+### [x] T1: Criar `app/rotas/`, o módulo `comum` e o teste de rotas
 
 **What**: Criar o pacote `app/rotas/` com `__init__.py` vazio e `comum.py` com as
 quatro funções auxiliares; criar `tests/test_rotas_modulos.py`; citar

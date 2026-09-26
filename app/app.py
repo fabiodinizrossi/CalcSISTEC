@@ -31,6 +31,7 @@ from app.data.image_validation import ImagemInvalida, validar_e_normalizar_png
 from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
 from app.admin_campi import campi_bp
+from app.rotas import comum
 from app.shell import PainelDash, init_shell
 from app.sistec import envio, execucoes, navegador
 
@@ -86,10 +87,6 @@ LOGO_MAX_BYTES = 500 * 1024  # RN-13: acima disso, rejeitado (RF-21).
 UPLOADS_BRANDING_DIR = os.path.join(os.path.dirname(__file__), "data", "uploads", "branding")
 
 
-def _contexto_base():
-    return {"contato_email": get_contato_email(), "instituicao": dados_instituicao()}
-
-
 @server.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     """BC-05/AD-04: única porta de entrada autenticada do sistema — as 5
@@ -101,7 +98,7 @@ def admin_login():
     qual campo errou (RF-12), foco no primeiro campo inválido."""
     if not credenciais_configuradas():
         return flask.render_template(
-            "login.html", erro_global=_MSG_CONFIG_AUSENTE, email="", **_contexto_base()
+            "login.html", erro_global=_MSG_CONFIG_AUSENTE, email="", **comum.contexto_base()
         )
 
     if flask.request.method == "POST":
@@ -116,7 +113,7 @@ def admin_login():
                 erro_email=erro_email,
                 erro_senha=erro_senha,
                 email=email,
-                **_contexto_base(),
+                **comum.contexto_base(),
             )
 
         if autenticar_sessao(email, senha):
@@ -125,10 +122,10 @@ def admin_login():
             "login.html",
             erro_global="E-mail ou senha incorretos.",
             email=email,
-            **_contexto_base(),
+            **comum.contexto_base(),
         )
 
-    return flask.render_template("login.html", email="", **_contexto_base())
+    return flask.render_template("login.html", email="", **comum.contexto_base())
 
 
 @server.route("/admin/logout")
@@ -195,7 +192,7 @@ def admin_instalacao():
 
     return flask.render_template(
         "instalacao.html",
-        usuario=_admin_email(),
+        usuario=comum.admin_email(),
         campi=listar_campi(),
         pendencias=instalacao.pendencias(),
         mensagem=mensagem,
@@ -203,7 +200,7 @@ def admin_instalacao():
         erro_nome=erro_nome,
         erro_email=erro_email,
         valores=valores,
-        **_contexto_base(),
+        **comum.contexto_base(),
     )
 
 
@@ -218,7 +215,7 @@ def matriculas_legado():
 def recuperar_acesso():
     """RF-15/RN-10: pública, sem exigir sessão — orienta a pedir a
     redefinição à Pesquisa Institucional, sem nenhum campo de formulário."""
-    return flask.render_template("recuperar_acesso.html", **_contexto_base())
+    return flask.render_template("recuperar_acesso.html", **comum.contexto_base())
 
 
 _ROTAS_SEM_INSTALACAO = ("/admin/login", "/admin/logout", "/admin/instalacao")
@@ -251,21 +248,6 @@ def _exigir_sessao_previa():
     return None
 
 
-def _admin_email():
-    return flask.session.get("admin_usuario", "")
-
-
-def _execucao_da_sessao():
-    """Confere que a execução pertence ao administrador da sessão (D-14
-    remove o upload; toda ação de `/admin/atualizar/*` passa por aqui)."""
-    execucao = execucoes.obter_do_admin(_admin_email())
-    return execucao
-
-
-def _ano_base_config():
-    return int(os.environ.get("ANO_BASE", 2026))
-
-
 def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
     """Ações que não têm execução/captura em memória (publicar, desfazer):
     abre e fecha a linha de histórico no mesmo request (RF-13)."""
@@ -279,7 +261,7 @@ def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
 def admin_atualizar():
     """RF-08/RF-10 (D-14): tela "Atualizar dados" — baixa, progresso,
     resumo, prévia, Publicar, Desfazer, resumo comparativo (T063)."""
-    return flask.render_template("atualizar.html", usuario=_admin_email(), **_contexto_base())
+    return flask.render_template("atualizar.html", usuario=comum.admin_email(), **comum.contexto_base())
 
 
 @server.route("/admin/atualizar/sistec", methods=["POST"])
@@ -289,17 +271,17 @@ def admin_atualizar_sistec():
     login gov.br e, depois dele, lê os campi, baixa ciclos e matrículas e
     monta a prévia (`app/sistec/navegador.py`). Substitui a extensão no uso
     local."""
-    estado_navegador = navegador.status(_admin_email())
+    estado_navegador = navegador.status(comum.admin_email())
     if estado_navegador and estado_navegador["ativa"]:
         return flask.jsonify({"erro": "atualizacao_em_andamento"}), 409
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is not None and execucao.estado not in execucoes.ESTADOS_TERMINAIS:
         erro = "previa_pendente" if execucao.estado == "previa" else "execucao_em_andamento"
         return flask.jsonify({"erro": erro}), 409
 
-    historico_id = historico_iniciar("baixa", _admin_email())
+    historico_id = historico_iniciar("baixa", comum.admin_email())
     try:
-        navegador.iniciar(_admin_email(), historico_id=historico_id)
+        navegador.iniciar(comum.admin_email(), historico_id=historico_id)
     except execucoes.ExecucaoInvalida:
         historico_encerrar(historico_id, "cancelada")
         return flask.jsonify({"erro": "atualizacao_em_andamento"}), 409
@@ -310,7 +292,7 @@ def admin_atualizar_sistec():
 @requer_autenticacao
 def admin_atualizar_sistec_login_feito():
     """Reserva para quando a detecção automática do login não dispara."""
-    if not navegador.confirmar_login(_admin_email()):
+    if not navegador.confirmar_login(comum.admin_email()):
         return flask.jsonify({"erro": "sem_atualizacao_aguardando_login"}), 409
     return "", 204
 
@@ -321,9 +303,9 @@ def admin_atualizar_sistec_cancelar():
     """Com a coleta em andamento, a thread do navegador encerra a execução e o
     histórico. Sem ela (ex.: execução presa de uma tentativa anterior),
     cancela a execução aqui mesmo."""
-    if navegador.cancelar(_admin_email()):
+    if navegador.cancelar(comum.admin_email()):
         return "", 204
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.estado in execucoes.ESTADOS_TERMINAIS:
         return flask.jsonify({"erro": "nada_para_cancelar"}), 409
     execucoes.cancelar(execucao)
@@ -411,10 +393,10 @@ def admin_atualizar_envio():
     enviadas, consolida na mesma execução da baixa e devolve o desfecho por
     arquivo. Processamento síncrono: os bytes só existem enquanto a
     requisição vive (o buffer temporário do parser é descartado no fim)."""
-    estado_navegador = navegador.status(_admin_email())
+    estado_navegador = navegador.status(comum.admin_email())
     if estado_navegador and estado_navegador["ativa"]:
         return flask.jsonify({"erro": "execucao_em_andamento"}), 409
-    execucao_atual = _execucao_da_sessao()
+    execucao_atual = comum.execucao_da_sessao()
     if execucao_atual is not None and execucao_atual.estado not in execucoes.ESTADOS_TERMINAIS:
         erro = "previa_pendente" if execucao_atual.estado == "previa" else "execucao_em_andamento"
         return flask.jsonify({"erro": erro}), 409
@@ -428,10 +410,10 @@ def admin_atualizar_envio():
         # arquivo e o motivo, nunca o conteúdo da célula.
         return flask.jsonify({"erro": "envio_invalido", "arquivo": exc.arquivo, "motivo": exc.motivo}), 400
 
-    historico_id = historico_iniciar("envio", _admin_email())
+    historico_id = historico_iniciar("envio", comum.admin_email())
     try:
         execucao = execucoes.criar_execucao_envio(
-            _admin_email(),
+            comum.admin_email(),
             [nome for nome, _ in leitura["ciclo"]],
             [nome for nome, _ in leitura["matricula"]],
             historico_id=historico_id,
@@ -533,8 +515,8 @@ def admin_atualizar_criar_execucao():
         return flask.jsonify({"erro": "sem_campus_com_unidade"}), 409
 
     try:
-        historico_id = historico_iniciar("baixa", _admin_email())
-        execucao = execucoes.criar_execucao(_admin_email(), campi, historico_id=historico_id)
+        historico_id = historico_iniciar("baixa", comum.admin_email())
+        execucao = execucoes.criar_execucao(comum.admin_email(), campi, historico_id=historico_id)
     except execucoes.ExecucaoInvalida:
         return flask.jsonify({"erro": "execucao_em_andamento"}), 409
 
@@ -544,7 +526,7 @@ def admin_atualizar_criar_execucao():
 @server.route("/admin/atualizar/execucoes/<execucao_id>/iniciar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_iniciar(execucao_id):
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     if existe_campus_sem_unidade():
@@ -560,7 +542,7 @@ def admin_atualizar_iniciar(execucao_id):
 @server.route("/admin/atualizar/execucoes/<execucao_id>/retomar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_retomar(execucao_id):
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     try:
@@ -573,7 +555,7 @@ def admin_atualizar_retomar(execucao_id):
 @server.route("/admin/atualizar/execucoes/<execucao_id>/cancelar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_cancelar(execucao_id):
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     try:
@@ -593,13 +575,13 @@ def admin_atualizar_salvar(execucao_id):
     a lista dos campi preservados (o portão não é só do JS).
 
     PVP-04/PVP-09/PVP-10: o envio usa o ano-base de `config` (o mesmo que as
-    páginas consultam); a baixa direta segue com `_ano_base_config()` do
+    páginas consultam); a baixa direta segue com `comum.ano_base_config()` do
     ambiente. Conferência desatualizada e página com falha devolvem 409."""
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     corpo = flask.request.get_json(silent=True) or {}
-    ano_base = ano_base_ativo() if execucao.origem == "envio" else _ano_base_config()
+    ano_base = ano_base_ativo() if execucao.origem == "envio" else comum.ano_base_config()
     try:
         resultado = execucoes.salvar(
             execucao, DEFAULT_DB_PATH, ano_base, confirmado=bool(corpo.get("confirmar_preservacao"))
@@ -635,7 +617,7 @@ def admin_atualizar_salvar(execucao_id):
 @server.route("/admin/atualizar/execucoes/<execucao_id>/descartar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_descartar(execucao_id):
-    execucao = _execucao_da_sessao()
+    execucao = comum.execucao_da_sessao()
     if execucao is None or execucao.id != execucao_id:
         return flask.jsonify({"erro": "execucao_nao_encontrada"}), 404
     try:
@@ -659,8 +641,8 @@ def admin_atualizar_estado():
     `matriculas_orfas`) são só códigos institucionais, nomes de arquivo e
     contagens (RN-13); numa baixa `origem` é `"baixa"` e as listas vêm
     vazias."""
-    execucao = _execucao_da_sessao()
-    estado_navegador = navegador.status(_admin_email())
+    execucao = comum.execucao_da_sessao()
+    estado_navegador = navegador.status(comum.admin_email())
     if execucao is None:
         return flask.jsonify({"estado": None, "navegador": estado_navegador})
 
@@ -720,8 +702,8 @@ def admin_atualizar_estado():
 @requer_autenticacao
 def admin_atualizar_publicar():
     """RF-18/RN-21/RN-27."""
-    versoes.publicar(DEFAULT_DB_PATH, admin_email=_admin_email())
-    historico_iniciar_e_encerrar("publicacao", _admin_email(), "publicada")
+    versoes.publicar(DEFAULT_DB_PATH, admin_email=comum.admin_email())
+    historico_iniciar_e_encerrar("publicacao", comum.admin_email(), "publicada")
     return "", 204
 
 
@@ -733,7 +715,7 @@ def admin_atualizar_desfazer():
         versoes.desfazer(DEFAULT_DB_PATH)
     except ValueError as exc:
         return flask.jsonify({"erro": str(exc)}), 409
-    historico_iniciar_e_encerrar("desfazer_publicacao", _admin_email(), "publicacao_desfeita")
+    historico_iniciar_e_encerrar("desfazer_publicacao", comum.admin_email(), "publicacao_desfeita")
     return "", 204
 
 
@@ -742,7 +724,7 @@ def admin_atualizar_desfazer():
 def admin_historico():
     """RF-13 (T065)."""
     return flask.render_template(
-        "historico.html", usuario=_admin_email(), eventos=historico_listar(), **_contexto_base()
+        "historico.html", usuario=comum.admin_email(), eventos=historico_listar(), **comum.contexto_base()
     )
 
 
@@ -763,7 +745,7 @@ def admin_config():
     recarregar a página desta rota."""
     if flask.request.method == "POST" and flask.request.form.get("acao") == "iniciar_captura":
         try:
-            captura = execucoes.criar_captura(_admin_email())
+            captura = execucoes.criar_captura(comum.admin_email())
         except execucoes.ExecucaoInvalida:
             return flask.jsonify({"erro": "execucao_em_andamento"}), 409
         return flask.jsonify({"captura_id": captura.id, "token": captura.token})
@@ -790,7 +772,7 @@ def admin_config():
         acao = flask.request.form.get("acao")
 
         if acao == "salvar_lista_campi":
-            captura = execucoes.obter_captura_do_admin(_admin_email())
+            captura = execucoes.obter_captura_do_admin(comum.admin_email())
             if captura is None:
                 contexto["mensagem_campi"] = "Nenhuma captura de perfis em revisão."
             else:
@@ -802,7 +784,7 @@ def admin_config():
             contexto["campi"] = listar_campi()
 
         elif acao == "cancelar_captura":
-            captura = execucoes.obter_captura_do_admin(_admin_email())
+            captura = execucoes.obter_captura_do_admin(comum.admin_email())
             if captura is None:
                 contexto["mensagem_campi"] = "Nenhuma captura em andamento."
             else:
@@ -900,7 +882,7 @@ def admin_config():
                 try:
                     linhas_novas, _avisos = fatores.ler_e_validar(FATORES_PENDENTE_PATH)
                     fatores.substituir_interna_fatores(linhas_novas, DEFAULT_DB_PATH)
-                    historico_iniciar_e_encerrar("fatores_arquivo", _admin_email(), "aplicada")
+                    historico_iniciar_e_encerrar("fatores_arquivo", comum.admin_email(), "aplicada")
                     contexto["mensagem_fatores"] = "Tabela de fatores atualizada na versão interna."
                     contexto["sucesso_fatores"] = True
                 except fatores.ArquivoFatoresInvalido as exc:
@@ -914,13 +896,13 @@ def admin_config():
 
             linhas_padrao, _avisos = fatores.ler_e_validar(FATORES_PADRAO_PATH)
             fatores.substituir_interna_fatores(linhas_padrao, DEFAULT_DB_PATH)
-            historico_iniciar_e_encerrar("fatores_restaurar_padrao", _admin_email(), "aplicada")
+            historico_iniciar_e_encerrar("fatores_restaurar_padrao", comum.admin_email(), "aplicada")
             contexto["mensagem_fatores"] = "Tabela de fatores restaurada ao padrão de fábrica."
             contexto["sucesso_fatores"] = True
 
         elif acao == "aplicar_publico":
-            versoes.aplicar_publico(DEFAULT_DB_PATH, admin_email=_admin_email())
-            historico_iniciar_e_encerrar("configuracao_aplicada_publico", _admin_email(), "aplicada")
+            versoes.aplicar_publico(DEFAULT_DB_PATH, admin_email=comum.admin_email())
+            historico_iniciar_e_encerrar("configuracao_aplicada_publico", comum.admin_email(), "aplicada")
             contexto["mensagem_campi"] = "Campi e fatores aplicados ao painel público."
             contexto["campi"] = listar_campi()
 
@@ -991,7 +973,7 @@ def admin_config_captura_estado():
     **Sem uso pelas telas**: a lista de campi é cadastrada à mão desde a E007.
     Mantida junto com `extensao-sistec/` e `/api/sistec/capturas/*` para o caso
     de a distribuição por extensão voltar."""
-    captura = execucoes.obter_ultima_captura_do_admin(_admin_email())
+    captura = execucoes.obter_ultima_captura_do_admin(comum.admin_email())
     if captura is None:
         return flask.jsonify({"estado": None})
 

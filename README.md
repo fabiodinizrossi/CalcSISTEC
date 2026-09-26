@@ -63,6 +63,7 @@ Passo a passo do ambiente de teste em `TESTAR.md`; publicação em `DEPLOY.md`.
 | Caminho | Para que serve |
 | --- | --- |
 | `app/app.py` | App Dash e os callbacks das telas. |
+| `app/rotas/` | Rotas administrativas do Flask, um módulo por área. |
 | `app/shell.py` | Shell único (cabeçalho, menu, breadcrumb, rodapé) e a rota `/ds/`. |
 | `app/auth.py` | Login e controle de acesso das rotas administrativas. |
 | `app/config.py` | Configuração de sessão (HTTPS, cookie `SameSite`) e do ano-base. |
@@ -88,7 +89,7 @@ Passo a passo do ambiente de teste em `TESTAR.md`; publicação em `DEPLOY.md`.
 | Adicionar uma página pública | Crie um arquivo em `app/pages/` (uma página por arquivo), registre no menu em `app/shell.py` e use os componentes de `app/components/`. |
 | Mudar a coleta do Sistec | `app/sistec/` — URLs e tempos em `app/sistec/urls.py`, pastas vigiadas em `app/sistec/downloads.py`, execuções em `app/sistec/execucoes.py`. |
 | Mudar o visual (DS/tema) | `app/static/` (arquivos do gov.br DS servidos em `/ds/`), `app/assets/style.css` e os tokens em `app/static/govbr-ds/dist/core-tokens.css`. |
-| Mudar uma rota administrativa | `app/app.py` para a rota e o callback, `app/templates/` para a tela, `app/auth.py` se mexer no acesso. |
+| Mudar uma rota administrativa | `app/rotas/` para a rota (no módulo da área), `app/templates/` para a tela, `app/auth.py` se mexer no acesso. |
 | Mudar o schema ou uma migração | `app/data/schema.py`, com teste em `tests/test_schema_v2.py`. |
 | Instalar em outra instituição | Assistente em `/admin/instalacao`; a seção "Instalar em outra instituição" abaixo. |
 

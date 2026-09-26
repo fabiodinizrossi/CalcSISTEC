@@ -111,3 +111,4 @@ Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao viv
 - **Working tree à época**: só `?? .agents/` e `?? nonascii.txt` (pré-existentes, não rastreados). `app/data/sistec.db` (ignorado) vazio de publicadas.
 - **Branch**: migracao-dash-gov-br.
 - T10 concluída (20260926-170551)
+- T1 concluída (20260926-170551)

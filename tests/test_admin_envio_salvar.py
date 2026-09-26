@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
 from app.data import ingest, versoes  # noqa: E402
+from app.rotas import comum  # noqa: E402
 from app.sistec import execucoes  # noqa: E402
 
 ADMIN = "pi@ife.edu.br"
@@ -153,7 +154,7 @@ def test_salvar_baixa_continua_sem_exigir_o_campo(sessao):
     assert resposta.status_code == 200
     assert execucao.estado == "salva"
     # a baixa direta continua gravando pelo ano-base do ambiente
-    assert GRAVACOES == [{"campi_falhos": set(), "ano_base": app_module._ano_base_config()}]
+    assert GRAVACOES == [{"campi_falhos": set(), "ano_base": comum.ano_base_config()}]
 
 
 def test_confirmacao_nao_grava_conteudo_de_planilha_no_historico(sessao):
