@@ -4,8 +4,10 @@ import re
 
 import flask
 import pytest
+from werkzeug.security import generate_password_hash
 
 from app import app as app_module
+from app.rotas import acesso
 
 
 @pytest.fixture
@@ -54,7 +56,7 @@ def test_login_nao_mostra_menu_nem_breadcrumb(cliente):
 
 @pytest.fixture
 def login_configurado(monkeypatch):
-    monkeypatch.setattr(app_module, "credenciais_configuradas", lambda: True)
+    monkeypatch.setattr(acesso, "credenciais_configuradas", lambda: True)
 
 
 def test_login_tem_titulo_campos_com_rotulo_e_apoio_e_link_depois_da_senha(cliente, login_configurado):
@@ -81,10 +83,39 @@ def test_login_com_campo_invalido_devolve_o_campo_em_danger_ligado_ao_erro(clien
 
 
 def test_login_recusado_mostra_mensagem_danger_com_role_alert(cliente, login_configurado, monkeypatch):
-    monkeypatch.setattr(app_module, "autenticar_sessao", lambda email, senha: False)
+    monkeypatch.setattr(acesso, "autenticar_sessao", lambda email, senha: False)
     html = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "12345678"}).get_data(as_text=True)
     assert re.search(r'class="br-message danger"[^>]*role="alert"', html)
     assert "E-mail ou senha incorretos." in html
+
+
+def test_login_valido_redireciona_e_autentica_sessao(cliente, monkeypatch):
+    monkeypatch.setenv("ADMIN_EMAIL", "pi@ife.edu.br")
+    monkeypatch.setenv("ADMIN_PASSWORD_HASH", generate_password_hash("senha-segura"))
+
+    resposta = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "senha-segura"})
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/atualizar"
+    with cliente.session_transaction() as sessao:
+        assert sessao["admin_autenticado"] is True
+        assert sessao["admin_usuario"] == "pi@ife.edu.br"
+
+
+def test_logout_redireciona_e_encerra_sessao(cliente):
+    with cliente.session_transaction() as sessao:
+        sessao["admin_autenticado"] = True
+        sessao["admin_usuario"] = "pi@ife.edu.br"
+        sessao["sessao_id"] = "sessao-teste"
+
+    resposta = cliente.get("/admin/logout")
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/login"
+    with cliente.session_transaction() as sessao:
+        assert "admin_autenticado" not in sessao
+        assert "admin_usuario" not in sessao
+        assert "sessao_id" not in sessao
 
 
 def test_recuperar_acesso_tem_titulo_shell_sem_menu_e_sem_breadcrumb(cliente):

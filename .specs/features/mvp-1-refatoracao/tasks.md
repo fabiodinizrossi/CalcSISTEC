@@ -223,7 +223,7 @@ apontando para `app/data/uploads/branding`: use
 
 ---
 
-### T3: Mover login, logout e recuperação de acesso para `app/rotas/acesso.py`
+### [x] T3: Mover login, logout e recuperação de acesso para `app/rotas/acesso.py`
 
 **What**: `/admin/login` (`:93`), `/admin/logout` (`:134`), `/recuperar-acesso`
 (`:217`), o `before_request` `_exigir_sessao_previa` (`:242`) e as constantes

@@ -4,7 +4,7 @@ import dash
 import flask
 from dash import html
 
-from app.auth import autenticar_sessao, credenciais_configuradas, email_valido, encerrar_sessao, esta_autenticado, requer_autenticacao, sessao_id_atual
+from app.auth import email_valido, requer_autenticacao, sessao_id_atual
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
 from app.config import aplicar_configuracao_sessao
 from app.data.config_store import (
@@ -30,6 +30,7 @@ from app.data.schema import DEFAULT_DB_PATH, init_db
 from app.data.svg_sanitize import SvgInvalido, sanitizar_svg
 from app.admin_campi import campi_bp
 from app.rotas import comum
+from app.rotas.acesso import acesso_bp, _MSG_EMAIL_INVALIDO
 from app.rotas.publico import publico_bp, UPLOADS_BRANDING_DIR
 from app.shell import PainelDash, init_shell
 from app.sistec import envio, execucoes, navegador
@@ -58,6 +59,7 @@ from app.sistec.api import bp as sistec_api_bp  # noqa: E402
 server.register_blueprint(sistec_api_bp)
 server.register_blueprint(campi_bp)
 server.register_blueprint(publico_bp)
+server.register_blueprint(acesso_bp)
 init_shell(server, app)
 
 # Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do
@@ -75,62 +77,7 @@ def serve_layout():
 app.layout = serve_layout
 
 
-_MSG_EMAIL_INVALIDO = "Informe um e-mail válido, por exemplo nome@suainstituicao.edu.br."
-_MSG_SENHA_CURTA = "A senha deve ter pelo menos 8 caracteres."
-_MSG_CONFIG_AUSENTE = (
-    "Servidor sem credenciais administrativas configuradas "
-    "(variáveis de ambiente ADMIN_EMAIL/ADMIN_PASSWORD_HASH ausentes neste processo). "
-    "Nenhum usuário/senha vai funcionar até isso ser corrigido — não é um problema de senha errada."
-)
-
 LOGO_MAX_BYTES = 500 * 1024  # RN-13: acima disso, rejeitado (RF-21).
-
-
-@server.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
-    """BC-05/AD-04: única porta de entrada autenticada do sistema — as 5
-    páginas públicas (Dash `use_pages`) nunca passam por esta rota.
-
-    `001-govbr-design-system` (T033): RF-10 a RF-14 — campos E-mail/Senha
-    (em vez de Usuário/Senha), validação de formato por campo (RF-11),
-    mensagem global genérica em caso de credencial incorreta, sem indicar
-    qual campo errou (RF-12), foco no primeiro campo inválido."""
-    if not credenciais_configuradas():
-        return flask.render_template(
-            "login.html", erro_global=_MSG_CONFIG_AUSENTE, email="", **comum.contexto_base()
-        )
-
-    if flask.request.method == "POST":
-        email = flask.request.form.get("email", "").strip()
-        senha = flask.request.form.get("senha", "")
-
-        erro_email = None if email_valido(email) else _MSG_EMAIL_INVALIDO
-        erro_senha = None if len(senha) >= 8 else _MSG_SENHA_CURTA
-        if erro_email or erro_senha:
-            return flask.render_template(
-                "login.html",
-                erro_email=erro_email,
-                erro_senha=erro_senha,
-                email=email,
-                **comum.contexto_base(),
-            )
-
-        if autenticar_sessao(email, senha):
-            return flask.redirect("/admin/atualizar")
-        return flask.render_template(
-            "login.html",
-            erro_global="E-mail ou senha incorretos.",
-            email=email,
-            **comum.contexto_base(),
-        )
-
-    return flask.render_template("login.html", email="", **comum.contexto_base())
-
-
-@server.route("/admin/logout")
-def admin_logout():
-    encerrar_sessao()
-    return flask.redirect("/admin/login")
 
 
 @server.route("/admin/instalacao", methods=["GET", "POST"])
@@ -203,13 +150,6 @@ def admin_instalacao():
     )
 
 
-@server.route("/recuperar-acesso")
-def recuperar_acesso():
-    """RF-15/RN-10: pública, sem exigir sessão — orienta a pedir a
-    redefinição à Pesquisa Institucional, sem nenhum campo de formulário."""
-    return flask.render_template("recuperar_acesso.html", **comum.contexto_base())
-
-
 _ROTAS_SEM_INSTALACAO = ("/admin/login", "/admin/logout", "/admin/instalacao")
 
 
@@ -226,18 +166,6 @@ def _exigir_instalacao():
     if not flask.session.get("admin_autenticado"):
         return None
     return flask.redirect("/admin/instalacao")
-
-
-@server.before_request
-def _exigir_sessao_previa():
-    """PVP-07 (`previa-paginas-publicas`, T15): barra no servidor qualquer
-    requisição a `/admin/previa/...` sem sessão autenticada, redirecionando
-    para `/admin/login` antes de o Dash montar o layout. Camada a mais — não
-    substitui a validação de posse de `obter_previa`/`abrir_leitura_previa`
-    (T4/T7), que continuam valendo nos callbacks."""
-    if flask.request.path.startswith("/admin/previa/") and not esta_autenticado():
-        return flask.redirect("/admin/login")
-    return None
 
 
 def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):

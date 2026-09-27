@@ -15,6 +15,10 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 ROTAS_ESPERADAS = [
     ("/matriculas", "GET", "publico_bp"),
     ("/branding/logo", "GET", "publico_bp"),
+    ("/admin/login", "GET", "acesso_bp"),
+    ("/admin/login", "POST", "acesso_bp"),
+    ("/admin/logout", "GET", "acesso_bp"),
+    ("/recuperar-acesso", "GET", "acesso_bp"),
 ]
 
 

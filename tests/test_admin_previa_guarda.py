@@ -7,11 +7,12 @@ import flask
 import pytest
 
 from app import app as app_module
+from app.rotas import acesso
 
 
 def test_previa_sem_sessao_redireciona_para_login():
     with app_module.server.test_request_context("/admin/previa/abc/matriculas"):
-        resposta = app_module._exigir_sessao_previa()
+        resposta = acesso._exigir_sessao_previa()
         assert resposta is not None
         assert resposta.status_code in (301, 302)
         assert "/admin/login" in resposta.headers.get("Location", "")
@@ -20,9 +21,16 @@ def test_previa_sem_sessao_redireciona_para_login():
 def test_previa_com_sessao_nao_interfere():
     with app_module.server.test_request_context("/admin/previa/abc/matriculas"):
         flask.session["admin_autenticado"] = True
-        assert app_module._exigir_sessao_previa() is None
+        assert acesso._exigir_sessao_previa() is None
 
 
 def test_rota_publica_nao_interfere():
     with app_module.server.test_request_context("/"):
-        assert app_module._exigir_sessao_previa() is None
+        assert acesso._exigir_sessao_previa() is None
+
+
+def test_guarda_global_bloqueia_previa_sem_sessao_pelo_cliente():
+    resposta = app_module.server.test_client().get("/admin/previa/abc/matriculas")
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/login"
