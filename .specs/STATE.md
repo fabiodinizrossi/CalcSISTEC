@@ -123,3 +123,4 @@ Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao viv
 - T6 concluída (20260926-170551)
 - T15 concluída (20260926-170551)
 - T7 concluída (20260926-170551)
+- T8 concluída (20260926-170551)

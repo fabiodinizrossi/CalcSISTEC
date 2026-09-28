@@ -384,7 +384,7 @@ nesse caso. `ROTAS_ESPERADAS`: `("/admin/atualizar/envio", "POST", "envio_bp")`.
 
 ---
 
-### T8: Mover a coleta pelo Sistec para `app/rotas/coleta_sistec.py`
+### [x] T8: Mover a coleta pelo Sistec para `app/rotas/coleta_sistec.py`
 
 **What**: `/admin/atualizar/sistec` (`:285`), `/admin/atualizar/sistec/login-feito`
 (`:309`), `/admin/atualizar/sistec/cancelar` (`:318`), `/admin/atualizar/execucoes`
