@@ -125,13 +125,13 @@ Expressões regulares, aplicadas só ao texto de docstrings e comentários `#`:
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| REF-01 | P1: Rotas — AC1, AC3 (um módulo por grupo) | Tasks | Pending |
-| REF-02 | P1: Rotas — AC2 (`app.py` enxuto) | Tasks | Pending |
-| REF-03 | P1: Rotas — AC4 (`before_request`) | Tasks | Pending |
-| REF-04 | P1: Rotas — AC5 (README) | Tasks | Pending |
-| REF-05 | P1: Docstrings — AC1, AC2, edge cases | Tasks | Pending |
-| REF-06 | P1: Docstrings — AC3 (nada executável muda) | Tasks | Pending |
-| REF-07 | P1: Docstrings — AC4 (saída do script de prontidão) | Tasks | Pending |
+| REF-01 | P1: Rotas — AC1, AC3 (um módulo por grupo) | Tasks | ✅ Verified |
+| REF-02 | P1: Rotas — AC2 (`app.py` enxuto) | Tasks | ✅ Verified |
+| REF-03 | P1: Rotas — AC4 (`before_request`) | Tasks | ✅ Verified |
+| REF-04 | P1: Rotas — AC5 (README) | Tasks | ✅ Verified |
+| REF-05 | P1: Docstrings — AC1, AC2, edge cases | Tasks | ✅ Verified |
+| REF-06 | P1: Docstrings — AC3 (nada executável muda) | Tasks | ✅ Verified |
+| REF-07 | P1: Docstrings — AC4 (saída do script de prontidão) | Tasks | ✅ Verified |
 
 **Coverage:** 7 total, 7 mapped to tasks, 0 unmapped.
 

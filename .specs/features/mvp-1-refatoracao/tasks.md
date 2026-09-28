@@ -12,7 +12,7 @@ Exceção combinada com a usuária para executores sem suporte a skills: leia `.
 
 **Spec**: `.specs/features/mvp-1-refatoracao/spec.md`
 **Design**: não há `design.md`; o "Mapa de rotas" do spec é o design.
-**Status**: Draft
+**Status**: Done
 
 ---
 

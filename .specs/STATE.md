@@ -110,20 +110,10 @@ Estado revisado em 2026-09-24 (segunda revisão no mesmo dia, após o UAT ao viv
 - **Não fazer sem OK explícito**: `git push`, merge da branch e deploy. Nada enviado ao remoto.
 - **Working tree à época**: só `?? .agents/` e `?? nonascii.txt` (pré-existentes, não rastreados). `app/data/sistec.db` (ignorado) vazio de publicadas.
 - **Branch**: migracao-dash-gov-br.
-- T10 concluída (20260926-170551)
-- T1 concluída (20260926-170551)
-- T11 concluída (20260926-170551)
-- T2 concluída (20260926-170551)
-- T3 concluída (20260926-170551)
-- T12 concluída (20260926-170551)
-- T4 concluída (20260926-170551)
-- T13 concluída (20260926-170551)
-- T5 concluída (20260926-170551)
-- T14 concluída (20260926-170551)
-- T6 concluída (20260926-170551)
-- T15 concluída (20260926-170551)
-- T7 concluída (20260926-170551)
-- T8 concluída (20260926-170551)
-- T16 concluída (20260926-170551)
-- T16 concluída (20260926-170551)
-- T9 concluída (20260926-170551)
+### Handoff: `mvp-1-refatoracao`
+
+- **Estado**: **concluída e validada**. T1–T16 executadas via `/orq` (worktree `20260926-170551`); Verifier independente rodou em sessão separada (2026-09-28, sem código desta feature) e escreveu `.specs/features/mvp-1-refatoracao/validation.md` → **PASS**. 9/9 ACs (5 de Rotas + 4 de Docstrings) com evidência `file:line`; sensor de discriminação (4 mutações: ID de spec em docstring de `app/data`, remoção de `before_app_request` de instalação, blueprint público desregistrado, `app.py` acima de 150 linhas) — **4/4 mortas**. Gate: **1058 passed, 0 failed**. `tasks.md` (`Status: Done`) e `spec.md` (REF-01..REF-07 → `Verified`) atualizados; `validate_state.py mvp-1-refatoracao` → 0 erros.
+- **O que mudou**: `app/app.py` caiu de 1034 para 65 linhas, sem `@server.route`; rotas administrativas migraram para 9 módulos de `app/rotas/` (`comum`, `publico`, `acesso`, `instalacao`, `configuracoes`, `publicacao`, `envio`, `coleta_sistec`, `atualizar`), mantendo URL/método/resposta e os dois `before_app_request` (instalação pendente, prévia sem sessão). Docstrings e comentários de `app/`, `scripts/` e `run.py` deixaram de citar IDs de spec, "Tarefa NN" ou documentos ausentes — guardado por `tests/test_higiene_docstrings.py`, que cobre todo `app/*` via `ALVOS_LIMPOS` e garante (por teste próprio) que nenhum módulo novo de `app/` fica fora da lista.
+- **Branch**: `orq/mvp-1-refatoracao`, worktree `.orq/wt/20260926-170551/_int`. Árvore de trabalho limpa a não ser pelas 3 atualizações desta rodada de validação (`validation.md` novo, `tasks.md`/`spec.md` com status).
+- **Não fazer sem OK explícito**: `git push`, merge com `migracao-dash-gov-br` (ou `main`) e deploy. Nada enviado ao remoto.
+- **Observação para o merge futuro**: `migracao-dash-gov-br` também tem uma versão de `tests/test_higiene_docstrings.py` (mais restrita, só `app/sistec`, commit `c34141b` nesta mesma data). No merge, a versão desta branch (cobre todo `app/*` + `scripts/` + `run.py`) é a que deve prevalecer — é estritamente mais ampla.
