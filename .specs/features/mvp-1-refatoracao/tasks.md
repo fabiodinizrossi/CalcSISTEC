@@ -720,7 +720,7 @@ Nesta tarefa, e só nesta, uma linha executável muda: essa string impressa.
 
 ---
 
-### T16: Registrar a feature no `STATE.md`
+### [x] T16: Registrar a feature no `STATE.md`
 
 **What**: Atualizar o bloco "Estado atual" e acrescentar o handoff desta
 feature em `.specs/STATE.md`: faixa de commits, contagem de testes, módulos
