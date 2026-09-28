@@ -1,10 +1,6 @@
-"""BC-04 (Apresentação): componentes de filtro reusados pelas páginas de
-dashboard — `FicToggle`, `AxisSelector`, `Select` (dentro de `FilterPanel`) e
-o botão "Limpar Filtros".
+"""Filtros de FIC, eixo e seleção usados pelas páginas do dashboard.
 
-Implementado na Tarefa 09 do plano de reconstrução. Substitui o antigo filtro único
-de sidebar global (compartilhado entre páginas) por um `FilterPanel` por
-página, conforme o contrato de cada tela.
+Cada página monta seus próprios filtros e botão "Limpar Filtros".
 """
 
 import dash_bootstrap_components as dbc
@@ -12,10 +8,8 @@ from dash import html, dcc
 
 TODOS = "__todos__"
 
-# BR-MIGRAR-020: os 6 eixos de quebra definidos em EixoQuebra
-# (`app/domain/contrato.py`). "oferta" mapeia para `cursos.tipo_oferta_curso`
-# (coluna adicionada ao schema na Tarefa 11, após divergência encontrada em
-# parity_tests/06-eixo-dinamico-e-fic.feature).
+# Os seis eixos de quebra seguem EixoQuebra (`app/domain/contrato.py`).
+# "oferta" mapeia para `cursos.tipo_oferta_curso`.
 EIXOS = [
     {"label": "Campus", "value": "campus"},
     {"label": "Tipo de Curso", "value": "tipo_curso"},
@@ -27,9 +21,7 @@ EIXOS = [
 
 
 def fic_toggle(id_, default="com_fic"):
-    """BR-MIGRAR-021: toggle COM FIC / SEM FIC — bidirecional por
-    construção (`dbc.RadioItems` não tem o bug de estado unidirecional do
-    legado nesta página)."""
+    """Cria o controle Com FIC / Sem FIC com seleção nos dois sentidos."""
     return html.Div(
         [
             html.Label("Filtro FIC", className="filter-label"),
@@ -94,5 +86,5 @@ def filter_panel(*campos):
 
 
 def clear_filters_button(id_):
-    """BR-MIGRAR-023: callback "Limpar Filtros" por página."""
+    """Cria o botão "Limpar Filtros" da página."""
     return html.Button("Limpar Filtros", id=id_, n_clicks=0, className="br-button primary")

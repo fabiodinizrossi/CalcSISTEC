@@ -621,7 +621,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T13: Limpar docstrings e comentários de `app/pages/` e `app/components/`
+### [x] T13: Limpar docstrings e comentários de `app/pages/` e `app/components/`
 
 **What**: Mesmo trabalho de T10 nos dois diretórios de interface.
 **Where**: `app/pages/`
@@ -634,10 +634,14 @@ siga os passos 3 a 5 de T10.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com os dois diretórios na lista
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com os dois diretórios na lista
+- [x] Script da seção 6 do protocolo lista `[]` para `app/pages/` e `app/components/`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
+
+A verificação AST considera os dois diretórios de código. A lista
+`ALVOS_LIMPOS` do teste muda por exigência desta tarefa e, por isso, aparece
+na saída do script sem esse filtro.
 
 **Tests**: unit
 **Gate**: full

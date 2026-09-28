@@ -20,7 +20,7 @@ PADROES = [
 ]
 
 # Cada tarefa de limpeza acrescenta aqui os arquivos que revisou.
-ALVOS_LIMPOS = ["app/domain", "app/data", "app/sistec"]
+ALVOS_LIMPOS = ["app/domain", "app/data", "app/sistec", "app/pages", "app/components"]
 
 
 def _arquivos(alvo):

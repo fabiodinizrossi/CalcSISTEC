@@ -1,4 +1,4 @@
-"""BC-04 (Apresentação): observação sobre a origem dos dados (simulação).
+"""Observação sobre a origem dos dados exibidos nas páginas públicas.
 
 A nota fica no rodapé do conteúdo das páginas públicas enquanto
 `CORRECAO_PNP_ATIVA` for `False` — um único ponto a desligar quando a feature
