@@ -1,7 +1,6 @@
-"""Orquestração em memória de execuções de baixa e captura de perfis
-(`002-baixador-planilhas-sistec`, T039, T040, T042, D-02, D-03, roadmap §5.1).
+"""Orquestração em memória de execuções de baixa e captura de perfis.
 
-Um registro por `admin_email` (RN-11: uma execução não terminal por vez),
+Um registro por `admin_email` (uma execução não terminal por vez),
 guardado num `dict` protegido por `threading.Lock`. A extensão é um
 executor sem estado: pede o próximo par (`proximo`), baixa e reporta
 (`receber_bytes`/`reportar_falha`). Uma thread de varredura (`iniciar_
@@ -9,7 +8,7 @@ varredura`) encerra pausas com mais de 4 h e falha pares parados há mais de
 900 s + 60 s sem resposta (watchdog).
 
 O relógio é injetável (`relogio`, um `callable` sem argumento devolvendo
-`datetime`) para os testes de tempo (T023) não dependerem de `sleep` real.
+`datetime`) para os testes de tempo não dependerem de `sleep` real.
 """
 
 import contextlib
@@ -47,13 +46,12 @@ class ConfirmacaoNecessaria(Exception):
 
 class PreviaIndisponivel(Exception):
     """Prévia não disponível para o contexto: execução inexistente, sessão
-    alheia, origem diferente de `envio` ou estado diferente de `previa`
-    (`previa-paginas-publicas`, PVP-07). Distinta de `ExecucaoInvalida`."""
+    alheia, origem diferente de `envio` ou estado diferente de `previa`.
+    Distinta de `ExecucaoInvalida`."""
 
 
 class PreviaIncompleta(Exception):
-    """Páginas da prévia com falha de cálculo/renderização impedem o Salvar
-    (`previa-paginas-publicas`, PVP-09)."""
+    """Páginas da prévia com falha de cálculo/renderização impedem o Salvar."""
 
     def __init__(self, paginas):
         self.paginas = list(paginas)
@@ -62,13 +60,13 @@ class PreviaIncompleta(Exception):
 
 class PreviaDesatualizada(Exception):
     """A conferência da prévia ficou desatualizada — a assinatura de origem
-    mudou entre a prévia e o Salvar (`previa-paginas-publicas`, PVP-10). A
+    mudou entre a prévia e o Salvar. A
     execução continua em `previa` para uma nova conferência."""
 
 
 @contextlib.contextmanager
 def com_trava(execucao):
-    """Trava por execução (PVP-08): serializa a leitura da fonte candidata e
+    """Trava por execução: serializa a leitura da fonte candidata e
     as transições de estado, para Salvar/Descartar não fecharem a fonte no
     meio de um callback. Nunca toma `_LOCK` (trava do registro) por dentro —
     a ordem é sempre execução -> registro, evitando deadlock."""
@@ -144,7 +142,7 @@ class Execucao:
 
 
 class Captura:
-    """Máquina de estados de captura de perfis (roadmap §5.1): aguardando_
+    """Máquina de estados de captura de perfis: aguardando_
     login -> lendo_perfis -> revisao -> salva | cancelada; ou 0 perfis/erro
     -> sem_resultado | falhou."""
 
@@ -171,9 +169,9 @@ def _relogio_padrao():
 
 
 def criar_execucao(admin_email, campi, historico_id=None, relogio=None):
-    """RN-11: 409 (via `ExecucaoInvalida`) se o administrador já tem uma
+    """Devolve erro via `ExecucaoInvalida` se o administrador já tem uma
     execução não terminal. `campi`: lista de dicts `{id_perfil, nome_perfil}`
-    dos perfis com `co_unidade` preenchido, na ordem da fila (RN-06)."""
+    dos perfis com `co_unidade` preenchido, na ordem da fila."""
     relogio = relogio or _relogio_padrao
     with _LOCK:
         atual = _REGISTRO.get(admin_email)
@@ -188,7 +186,7 @@ def criar_execucao(admin_email, campi, historico_id=None, relogio=None):
 
 def criar_execucao_envio(admin_email, nomes_ciclo, nomes_matricula, historico_id=None, relogio=None, sessao_id=None):
     """Cria uma execução cuja fila é composta pelos arquivos enviados. Vincula
-    a execução à `sessao_id` que a iniciou (PVP-07, `previa-paginas-publicas`)."""
+    a execução à `sessao_id` que a iniciou."""
     relogio = relogio or _relogio_padrao
     with _LOCK:
         atual = _REGISTRO.get(admin_email)
@@ -234,7 +232,7 @@ def obter_do_admin(admin_email):
 
 
 def obter_previa(execucao_id, sessao_id):
-    """PVP-07 (`previa-paginas-publicas`): devolve a execução de envio em
+    """Devolve a execução de envio em
     estado `previa` apenas para a sessão dona. Qualquer outra combinação —
     execução inexistente, sessão alheia (inclusive outra sessão do mesmo
     e-mail), origem diferente de `envio` ou estado diferente de `previa` —
@@ -253,7 +251,7 @@ def obter_previa(execucao_id, sessao_id):
 
 
 def iniciar_baixa(execucao):
-    """RF-10 dispara "Baixar": só a partir de `aguardando_login`."""
+    """Inicia a baixa só a partir de `aguardando_login`."""
     if execucao.estado != "aguardando_login":
         raise ExecucaoInvalida(f"não é possível iniciar a baixa a partir do estado '{execucao.estado}'")
     execucao.estado = "baixando"
@@ -297,8 +295,8 @@ def proximo(execucao):
 def receber_bytes(execucao, n, conteudo_bytes):
     """§4.2. `204` (None) se aceito; levanta `ValueError` com um código curto
     (`par_inesperado`/`colunas_ausentes`/`leitura_csv`) para o chamador HTTP
-    traduzir em status (D-03: bytes nunca persistidos, descartados após a
-    leitura; erro nunca ecoa o conteúdo, RN-13)."""
+    traduzir em status. Bytes nunca são persistidos; após a leitura, o erro
+    não ecoa o conteúdo."""
     par = execucao.par_em_andamento()
     if par is None or par.n != n:
         raise ValueError("par_inesperado")
@@ -348,7 +346,7 @@ def definir_co_unidade(execucao, id_perfil, co_unidade):
 
 def _consolidar_ou_falhar(execucao):
     """Fila vazia: consolida os pares baixados. Erro de consolidação vai
-    para `falhou_consolidacao`; sucesso vai para `previa` (RF-08)."""
+    para `falhou_consolidacao`; sucesso vai para `previa`."""
     from app.sistec.consolidacao import ConsolidacaoInvalida, consolidar
 
     execucao.estado = "consolidando"
@@ -364,13 +362,13 @@ def _consolidar_ou_falhar(execucao):
 
 
 def salvar(execucao, db_path, ano_base, confirmado=False):
-    """Estado `previa` -> Salvar (RF-08): grava a versão interna e marca
-    `salva`. Serializa com a leitura da fonte via `com_trava` (PVP-08).
+    """Estado `previa` -> Salvar: grava a versão interna e marca
+    `salva`. Serializa com a leitura da fonte via `com_trava`.
 
-    PVP-04/PVP-08/PVP-10: um envio grava as tabelas já preparadas do
+    Um envio grava as tabelas já preparadas do
     candidato, com a assinatura de origem conferida na transação; divergência
     vira `PreviaDesatualizada` e a execução continua em `previa` (fonte viva).
-    A baixa direta continua por `montar_versao_interna`, sem mudança."""
+    A baixa direta grava por `montar_versao_interna`."""
     with com_trava(execucao):
         if execucao.estado != "previa":
             raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
@@ -420,7 +418,7 @@ _COLUNAS_AMOSTRA = [
 
 
 def _amostra_candidato(candidato):
-    """CPR-07 AC2: até 20 linhas do candidato (já filtrado pela regra PNP),
+    """Até 20 linhas do candidato (já filtrado pela regra PNP),
     uma por matrícula, com o curso daquela matrícula na mesma linha — é o que
     o Salvar vai gravar, ao contrário do consolidado bruto. Só colunas
     institucionais: nenhuma de `COLUNAS_PII` existe no candidato."""
@@ -453,7 +451,7 @@ def _amostra_candidato(candidato):
 
 def _resumo_amostra(candidato):
     """Resumo/amostra leves da prévia para o polling, sem reter os DataFrames
-    completos. CPR-07 AC1/AC3: as contagens e a amostra saem do `candidato`
+    completos. As contagens e a amostra saem do `candidato`
     (o que o Salvar grava), não do consolidado bruto de `execucao.previa`."""
     if candidato is None:
         return None
@@ -468,7 +466,7 @@ def _resumo_amostra(candidato):
 
 
 def abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH):
-    """Abre a fonte candidata da prévia na execução (PVP-03/PVP-08). Lê o
+    """Abre a fonte candidata da prévia na execução. Lê o
     `interna_campus` e guarda a fonte e o `candidato` na execução.
     Idempotente: chamadas repetidas não criam uma segunda fonte. Depois de
     abrir, libera os DataFrames por arquivo e o consolidado pesado,
@@ -498,7 +496,7 @@ def liberar_previa(execucao):
 
 
 class ContextoLeitura:
-    """Contexto de leitura validado da prévia (PVP-04/PVP-07): execução
+    """Contexto de leitura validado da prévia: execução
     autorizada, conexão somente leitura da fonte candidata e o ano-base do
     candidato. Único caminho para qualquer layout/callback ler a fonte."""
 
@@ -509,7 +507,7 @@ class ContextoLeitura:
 
 
 def abrir_leitura_previa(execucao_id, sessao_id):
-    """PVP-04/PVP-07: valida o contexto pela regra de `obter_previa` e devolve
+    """Valida o contexto pela regra de `obter_previa` e devolve
     um `ContextoLeitura` com a conexão somente leitura da fonte candidata e o
     ano-base do candidato. A validação de estado e a abertura da conexão
     acontecem sob a trava da execução, antes de qualquer consulta; contexto
@@ -532,7 +530,7 @@ def abrir_leitura_previa(execucao_id, sessao_id):
 
 def registrar_falha_pagina(execucao, pagina):
     """Marca `pagina` (slug da página pública) como falha ao calcular ou
-    renderizar na prévia (PVP-09)."""
+    renderizar na prévia."""
     execucao.falhas_paginas.add(pagina)
 
 
@@ -591,15 +589,14 @@ def parar_varredura():
     _VARREDURA_PARAR.set()
 
 
-# ===================== Captura de perfis (roadmap §5.1) =====================
+# ===================== Captura de perfis =====================
 
 
 def criar_captura(admin_email, relogio=None):
-    """RN-11 também vale para captura-vs-baixa: bloqueia se o administrador
+    """Bloqueia a captura se o administrador
     tem uma execução de baixa em andamento (mesmo registro `_REGISTRO`).
 
-    RN-05 (clarify 2026-09-15, Q2): ao contrário da baixa, uma captura
-    anterior do mesmo administrador presa em estado não terminal (ex.:
+    Uma captura anterior do mesmo administrador presa em estado não terminal (ex.:
     `aguardando_login` sem conclusão) não bloqueia uma nova — é descartada
     automaticamente (`cancelada`), sem exigir cancelamento manual antes."""
     relogio = relogio or _relogio_padrao
@@ -646,7 +643,7 @@ def obter_captura_por_token(captura_id, token):
 
 
 def receber_perfis(captura, perfis):
-    """§4.4: `perfis` vazio -> `sem_resultado` (RN-05, lista salva não
+    """`perfis` vazio -> `sem_resultado` (lista salva não
     muda). Não vazio -> `revisao`, aguardando "Salvar lista".
 
     O Sistec real lista um perfil por papel (Assessor/Gestor) para o mesmo
@@ -683,7 +680,7 @@ def cancelar_captura(captura):
 
 
 def salvar_lista_captura(captura, db_path):
-    """"Salvar lista" a partir de `revisao` (RN-05): grava via
+    """"Salvar lista" a partir de `revisao`: grava via
     `app/data/campi.salvar_captura`."""
     if captura.estado != "revisao":
         raise ExecucaoInvalida(f"não é possível salvar a lista a partir do estado '{captura.estado}'")

@@ -1,16 +1,12 @@
-"""Lista de permissão de colunas do Sistec (`002-baixador-planilhas-sistec`, T026, D-04).
+"""Lista de permissão de colunas das planilhas do Sistec.
 
-RN-17: do resultado da junção entram só as colunas de interesse para os
+Do resultado da junção entram só as colunas de interesse para os
 cálculos do painel. Qualquer coluna fora da lista de permissão é descartada
-já na leitura (D-03), e isso é obrigatório para toda coluna de dado pessoal
+já na leitura, e isso é obrigatório para toda coluna de dado pessoal
 (defesa em profundidade) — inclusive `NOME_RESPONSAVEL` e `CPF` do
-responsável, confirmadas na planilha de ciclo pela investigação ao vivo F0
-(achado 4), que não estavam na versão anterior de
-`app/data/transform.COLUNAS_PII`.
+responsável, presentes na planilha de ciclo.
 
-Cada mapa é {nome no Sistec: nome interno}, conforme a convenção provisória
-para a planilha de matrícula (P-03), ainda não confirmada em exploração ao
-vivo — a de ciclo já foi, pela F0.
+Cada mapa é {nome no Sistec: nome interno}.
 """
 
 import io
@@ -34,8 +30,8 @@ COLUNAS_CICLO = {
     "DATA INÍCIO DO CURSO": "DT_DATA_INICIO",
     "DATA FIM PREVISTO DO CURSO": "DT_DATA_FIM_PREVISTO",
     "STATUS DO CICLO DE MATRÍCULA": "STATUS_CICLO",
-    "SITUAÇÃO DO CICLO ": "SITUACAO_CICLO",  # espaço final confirmado em data-delta.md §4.1
-    # CPR-05: dado institucional da unidade (nunca pessoal — Princípio III),
+    "SITUAÇÃO DO CICLO ": "SITUACAO_CICLO",  # o cabeçalho exportado tem espaço final
+    # Dado institucional da unidade (nunca pessoal),
     # lido só para o cadastro automático de campus. Não entra em nenhum
     # schema de gravação (`app/data/ingest.py`), então não é persistido.
     # Grafia confirmada no cabeçalho dos CSVs reais: sem acento, em maiúsculas.
@@ -56,7 +52,7 @@ _PERMISSAO_POR_TIPO = {
     "matricula": COLUNAS_MATRICULA,
 }
 
-# Defesa em profundidade (D-04): nem o nome no Sistec nem o nome interno de
+# Defesa em profundidade: nem o nome no Sistec nem o nome interno de
 # uma coluna permitida podem ser um nome de PII conhecido. Falha na
 # importação do módulo, não em tempo de teste, para que um erro de edição
 # futura nesta lista pare a aplicação imediatamente.
@@ -71,8 +67,7 @@ for _tipo, _mapa in _PERMISSAO_POR_TIPO.items():
 def aplicar_permissao(df, tipo):
     """Mantém só as colunas permitidas para `tipo` ('ciclo' ou 'matricula') que
     estiverem presentes em `df`, e as renomeia para o nome interno. Coluna
-    nova que o Sistec passar a exportar nunca entra sem mudança de código
-    (RN-17)."""
+    nova que o Sistec passar a exportar nunca entra sem mudança de código."""
     try:
         mapa = _PERMISSAO_POR_TIPO[tipo]
     except KeyError:

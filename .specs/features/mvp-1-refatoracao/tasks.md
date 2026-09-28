@@ -597,7 +597,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T12: Limpar docstrings e comentários de `app/sistec/`
+### [x] T12: Limpar docstrings e comentários de `app/sistec/`
 
 **What**: Mesmo trabalho de T10 em `app/sistec/`.
 **Where**: `app/sistec/`
@@ -609,10 +609,10 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com `app/sistec` na lista
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com `app/sistec` na lista
+- [x] Script da seção 6 do protocolo lista `[]`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

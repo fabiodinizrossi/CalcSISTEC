@@ -1,20 +1,19 @@
-"""Consolidação das planilhas baixadas do Sistec (`002-baixador-planilhas-
-sistec`, T036, D-18).
+"""Consolidação das planilhas baixadas do Sistec.
 
 Empilha as planilhas do mesmo tipo (ciclo/matrícula) já lidas com a lista de
 permissão aplicada (`app/sistec/colunas.aplicar_permissao` — os DataFrames de
-entrada já chegam com os nomes internos de `data-delta.md` §4), confere a
-assinatura de cabeçalho (RN-16), deduplica por `CODIGO_CICLO_MATRICULA` e
-cria `STATUS_MATRICULA_PNP` nulo (RN-23: sem PNP, o corrigido vale o
+entrada já chegam com os nomes internos), confere a
+assinatura de cabeçalho, deduplica por `CODIGO_CICLO_MATRICULA` e
+cria `STATUS_MATRICULA_PNP` nulo (sem PNP, o corrigido vale o
 Sistec, via `app/data/transform.t02_corrigir_status`).
 
 Cada linha da planilha de ciclo traz, junto do ciclo, os atributos do curso
-(RN-16 do Sistec: um ciclo pertence a um único portfólio). A separação em
+(um ciclo pertence a um único portfólio). A separação em
 `cursos` (por `codigo_portfolio`) e `ciclos` (por `codigo_ciclo_matricula`),
-os ajustes de nome/eixo (A2/A3/A5, `app/data/ajustes_curso.py`), o casamento
-de fatores (D-07, `app/data/fatores.py`) e o mapeamento final para os nomes
+os ajustes de nome/eixo (`app/data/ajustes_curso.py`), o casamento
+de fatores (`app/data/fatores.py`) e o mapeamento final para os nomes
 de coluna do schema (`app/data/schema.py`) ficam em
-`app/data/ingest.montar_versao_interna` (T037/T038), que consome o
+`app/data/ingest.montar_versao_interna`, que consome o
 `conjunto` devolvido por `consolidar`.
 """
 
@@ -30,9 +29,9 @@ COL_UNIDADE = "CO_UNIDADE"
 
 
 class ConsolidacaoInvalida(Exception):
-    """RNF Robustez: assinatura de cabeçalho divergente entre pares do mesmo
+    """Assinatura de cabeçalho divergente entre pares do mesmo
     tipo, `codigo_ciclo_matricula` repetido com conteúdo divergente, ou
-    `codigo_portfolio` com `co_unidade` divergente entre campi (P-07)."""
+    `codigo_portfolio` com `co_unidade` divergente entre campi."""
 
 
 def _assinatura(df):
@@ -41,7 +40,7 @@ def _assinatura(df):
 
 def empilhar(dfs, tipo):
     """Empilha os DataFrames (já com a permissão de colunas aplicada) do
-    mesmo `tipo` ('ciclo' ou 'matricula'). RN-16: todos precisam ter a mesma
+    mesmo `tipo` ('ciclo' ou 'matricula'). Todos precisam ter a mesma
     assinatura de cabeçalho; caso contrário, a consolidação falha por inteiro
     com erro explícito."""
     if not dfs:
@@ -56,7 +55,7 @@ def empilhar(dfs, tipo):
 
 
 def _checar_portfolio_sem_unidade_divergente(df_ciclo):
-    """P-07: `codigo_portfolio` não pode ter mais de um `CO_UNIDADE` — a
+    """`codigo_portfolio` não pode ter mais de um `CO_UNIDADE` — a
     consolidação falha com erro explícito (a chave de `cursos` é
     `codigo_portfolio`, um único `co_unidade`)."""
     if COL_PORTFOLIO not in df_ciclo.columns or COL_UNIDADE not in df_ciclo.columns:
@@ -69,7 +68,7 @@ def _checar_portfolio_sem_unidade_divergente(df_ciclo):
 
 
 def _deduplicar_por_chave(df, coluna_chave):
-    """data-delta.md §6.4: chave repetida com conteúdo idêntico é
+    """Chave repetida com conteúdo idêntico é
     deduplicada; com conteúdo divergente, a consolidação falha explícita."""
     duplicadas = df[df.duplicated(subset=[coluna_chave], keep=False)]
     if duplicadas.empty:
@@ -85,8 +84,8 @@ def _deduplicar_por_chave(df, coluna_chave):
 
 def consolidar(pares_ciclo, pares_matricula):
     """Consolida os pares já lidos com permissão aplicada. Retorna um dict
-    com `ciclos` e `matriculas`, ainda nos nomes internos de colunas
-    (`data-delta.md` §4), prontos para `app/data/ingest.montar_versao_interna`.
+    com `ciclos` e `matriculas`, ainda nos nomes internos de colunas,
+    prontos para `app/data/ingest.montar_versao_interna`.
 
     `pares_ciclo`/`pares_matricula`: listas de DataFrames, um por par
     (campus) baixado com sucesso.
@@ -100,14 +99,14 @@ def consolidar(pares_ciclo, pares_matricula):
     _checar_portfolio_sem_unidade_divergente(df_ciclo)
     df_ciclo = _deduplicar_por_chave(df_ciclo, COL_CICLO_CHAVE)
 
-    # T-06 (status EXCLUÍDO do ciclo) + SITUAÇÃO DO CICLO (RN filtro adicional).
+    # Exclui ciclos com status ou situação EXCLUÍDO.
     df_ciclo = t06_filtrar_ciclos_excluidos(df_ciclo, col_status="STATUS_CICLO")
     if "SITUACAO_CICLO" in df_ciclo.columns:
         df_ciclo = df_ciclo.loc[df_ciclo["SITUACAO_CICLO"] != "EXCLUÍDO"].copy()
 
     if not df_matricula.empty:
         df_matricula = _deduplicar_por_chave(df_matricula, COL_MATRICULA_CHAVE)
-        # RN-23: sem correção PNP nesta feature — STATUS_MATRICULA_PNP nulo,
+        # Sem correção PNP — STATUS_MATRICULA_PNP nulo,
         # o corrigido vale sempre o Sistec (t02_corrigir_status já cobre isso).
         df_matricula = df_matricula.assign(STATUS_MATRICULA_PNP=pd.NA)
         df_matricula, _rejeitadas_status = corrigir_status_sistec_pnp(
@@ -119,8 +118,7 @@ def consolidar(pares_ciclo, pares_matricula):
 
 def montar_matriculas_e_eficiencia(df_matriculas, df_ciclos, ano_base):
     """Junta matrículas ao ciclo (para expor `dt_data_inicio`/
-    `dt_data_fim_previsto`) e aplica T-07/T-08, reaproveitando o núcleo já
-    coberto pela suíte de paridade."""
+    `dt_data_fim_previsto`) e aplica os filtros de matrícula e eficiência."""
     colunas_matriculas = ["CO_MATRICULA", COL_CICLO_CHAVE, "status_corrigido", "mes_ocorrencia_corrigido"]
     colunas_eficiencia = ["CO_MATRICULA", COL_CICLO_CHAVE, "status_corrigido"]
     if df_matriculas.empty or df_ciclos.empty:

@@ -1,10 +1,8 @@
-"""*Blueprint* `/api/sistec`: rotas HTTP consumidas pela extensão
-(`002-baixador-planilhas-sistec`, T047-T051, T060, D-16, D-19,
-`interfaces/api-extensao-calcsistec.md` §3-§4).
+"""Rotas HTTP de `/api/sistec` consumidas pela extensão.
 
-Autenticação por `Authorization: Bearer <token>` (D-16) — nunca a sessão
+Autenticação por `Authorization: Bearer <token>`, sem usar a sessão
 Flask do administrador (evita CSRF e limita o alcance a uma execução/
-captura). Erros nunca ecoam o conteúdo recebido (RN-13).
+captura). Erros nunca ecoam o conteúdo recebido.
 """
 
 import flask
@@ -18,7 +16,7 @@ CORPO_MAXIMO_PAR_BYTES = 200 * 1024 * 1024
 
 @bp.before_request
 def _exigir_https_fora_de_localhost():
-    """D-19: recusa requisição HTTP simples fora de `localhost`/`127.0.0.1`,
+    """Recusa requisição HTTP simples fora de `localhost`/`127.0.0.1`,
     independentemente de `CALCSISTEC_HTTPS` (falha segura)."""
     host = (flask.request.host or "").split(":")[0]
     if flask.request.is_secure or host in ("localhost", "127.0.0.1"):

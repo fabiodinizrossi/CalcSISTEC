@@ -1,12 +1,9 @@
-"""Leitura do texto dos perfis da tela de seleção do Sistec
-(`002-baixador-planilhas-sistec`, achados 2 e 3 da F0).
+"""Leitura do texto dos perfis da tela de seleção do Sistec.
 
 Cada perfil é uma linha de texto no padrão
 "<PAPEL> DA UNIDADE DE ENSINO - [<código da unidade> -] <instituição> - CAMPUS <nome>".
 No Sistec real o código da unidade nem sempre aparece, e alguns campi vêm
-como "CÂMPUS". Porta em Python de `extrairPerfilDoTexto`
-(`extensao-sistec/sistec-content.js`), usada pelo navegador controlado pelo
-servidor (`app/sistec/navegador.py`) e pela lista de campi
+como "CÂMPUS". A extração também é usada pela lista de campi
 (`app/data/campi.py`).
 """
 

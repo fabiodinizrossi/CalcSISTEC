@@ -1,6 +1,4 @@
-"""Modo "pasta de coleta" — a mesma mecânica do script R
-(`sistec_crawler_ifrs_versaoIFFar.R`), usada como alternativa quando o modo
-da janela controlada não funciona (`app/sistec/navegador.py`).
+"""Coleta dos CSVs pelo navegador habitual da pessoa.
 
 A pessoa faz o login no **navegador de sempre**, com a sessão dela. O
 CalcSISTEC só manda o navegador abrir as URLs (troca de campus e exportação)
@@ -13,11 +11,9 @@ cobre duas pastas: a pasta fixa do programa (criada na instalação,
 usuário. Configurando o navegador para baixar na pasta fixa, o arquivo já
 nasce no lugar certo; caindo em Downloads, ele é movido na hora.
 
-Diferença de exposição em relação ao modo da janela (D-03): aqui os CSVs com
-CPF passam pelo disco por alguns segundos, exatamente como já acontece hoje
-com o script R. As colunas de dado pessoal continuam sendo descartadas na
-leitura (`app/sistec/colunas.py`), então nada disso entra no banco nem no que
-é enviado adiante.
+Os CSVs com CPF passam pelo disco por alguns segundos. As colunas de dado
+pessoal são descartadas na leitura (`app/sistec/colunas.py`), então nada disso
+entra no banco nem no que é enviado adiante.
 """
 
 import logging
@@ -31,7 +27,7 @@ from app.sistec import urls
 
 log = logging.getLogger(__name__)
 
-# Nomes com que o Sistec entrega cada exportação (script R: `ciclo-matricula.csv`
+# Nomes com que o Sistec entrega cada exportação (`ciclo-matricula.csv`
 # e `sistec.csv`). O Chrome acrescenta " (1)", " (2)"... se o arquivo já existir.
 NOMES_ESPERADOS = {"ciclo": "ciclo-matricula", "matricula": "sistec"}
 
@@ -83,7 +79,7 @@ def pasta_downloads():
 
 def abrir_no_navegador(url):
     """Abre a URL no navegador padrão da pessoa — é ele que tem a sessão do
-    Sistec (equivalente ao `BROWSE()` do script R)."""
+    Sistec."""
     webbrowser.open(url, new=2, autoraise=False)
 
 
