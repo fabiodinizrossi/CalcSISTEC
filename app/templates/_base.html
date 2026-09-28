@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  {% set titulo %}{% block title %}Pesquisa Institucional - SISTEC{% endblock %}{% endset %}
+  {% include "shell/_head.html" %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% include "shell/_header.html" %}
+  {% include "shell/_menu.html" %}
+  {% include "shell/_breadcrumb.html" %}
+
+  <main id="main-content" class="container-fluid">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "shell/_modal_confirmacao.html" %}
+  {% include "shell/_footer.html" %}
+  {% include "shell/_scripts.html" %}
+</body>
+</html>

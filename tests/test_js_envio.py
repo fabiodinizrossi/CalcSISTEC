@@ -1,0 +1,649 @@
+"""`atualizar.js`, segunda origem (T11/UPL-01, UPL-08): envio multipart das
+duas pastas, resultado por arquivo e o Salvar direto de um envio que preserva
+campi ausentes (AFE-01).
+
+Os casos rodam o script de verdade em `node` sobre o DOM simulado de
+`dom_falso.py`; `fetch`, `FormData` e `setInterval` são dublês registrados em
+`preparar`, que o script enxerga como globais.
+"""
+
+import json
+
+import pytest
+
+from dom_falso import precisa_de_node, rodar
+
+pytestmark = precisa_de_node
+
+IDS = [
+    "status-navegador",
+    "barra-area",
+    "barra-progresso",
+    "barra-rotulo",
+    "passos-navegador",
+    "avisos-navegador",
+    "atualizar-progresso",
+    "progresso-resumo",
+    "progresso-pares",
+    "atualizar-previa",
+    "previa-nao-publicada",
+    "previa-paginas",
+    "previa-resumo",
+    "previa-cabecalho",
+    "previa-linhas",
+    "status-salvar",
+    "status-publicacao",
+    "btn-atualizar-sistec",
+    "btn-login-feito",
+    "btn-cancelar",
+    "btn-salvar",
+    "btn-descartar",
+    "btn-publicar",
+    "btn-desfazer",
+    "bloco-sistec",
+    "bloco-envio",
+    "envio-ciclos",
+    "envio-matriculas",
+    "envio-ciclos-status",
+    "envio-matriculas-status",
+    "btn-escolher-ciclos",
+    "btn-escolher-matriculas",
+    "btn-enviar-pastas",
+    "status-envio",
+    "envio-arquivos-area",
+    "envio-ignorados",
+    "envio-cadastrados",
+]
+
+# Estado que o polling devolve por padrão: nenhuma execução aberta.
+SEM_EXECUCAO = {"estado": None, "navegador": None}
+
+
+def _estado_previa(
+    origem="envio",
+    campi_preservados=(),
+    campi_cadastrados_automaticamente=(),
+    arquivos_ignorados=(),
+    matriculas_orfas=0,
+):
+    return {
+        "estado": "previa",
+        "execucao_id": "abc",
+        "origem": origem,
+        "navegador": None,
+        "erro_consolidacao": None,
+        "progresso": {"total": 2, "concluidos": 2},
+        "pares": [],
+        "previa": {"ciclos": 1, "matriculas": 1, "campi_falhos": list(campi_preservados), "amostra": []},
+        "campi_preservados": list(campi_preservados),
+        "campi_cadastrados_automaticamente": list(campi_cadastrados_automaticamente),
+        "arquivos_ignorados": list(arquivos_ignorados),
+        "matriculas_orfas": matriculas_orfas,
+    }
+
+
+def _preparar(estado=None, respostas=(), pendente=False, arquivos_ciclos=(), arquivos_matriculas=()):
+    """Monta o DOM da tela e os dublês de rede para um caso."""
+    return f"""
+const ids = {json.dumps(IDS)};
+ids.forEach((id) => {{ registrar(criarElemento(id), id); }});
+// Links da prévia, encontrados pelo script via `document.querySelector`.
+["matriculas", "eficiencia", "evasao", "percentuais-legais"].forEach((slug) => {{
+  registrar(criarElemento("previa-link-" + slug), "previa-link-" + slug, 'a[data-pagina="' + slug + '"]');
+}});
+const comFilhos = (id) => {{
+  const e = registrar(criarElemento(id), id);
+  e.filhos = [];
+  e.appendChild = (f) => {{ e.filhos.push(f); return f; }};
+  return e;
+}};
+comFilhos("envio-arquivos");
+comFilhos("envio-avisos");
+// O elemento simulado não limpa os filhos sozinho: `innerHTML = ""` precisa
+// esvaziar a lista, senão as linhas se acumulam a cada redesenho.
+["envio-arquivos", "envio-avisos"].forEach((id) => {{
+  const e = doc.porId[id];
+  Object.defineProperty(e, "innerHTML", {{ set() {{ e.filhos.length = 0; }}, get() {{ return ""; }} }});
+}});
+doc.porId["barra-progresso"].removeAttribute = () => {{}};
+doc.createElement = (tag) => {{
+  const e = criarElemento(tag);
+  e.filhos = [];
+  e.appendChild = (f) => {{ e.filhos.push(f); return f; }};
+  return e;
+}};
+doc.porId["envio-ciclos"].files = {json.dumps([{"name": nome} for nome in arquivos_ciclos])};
+doc.porId["envio-matriculas"].files = {json.dumps([{"name": nome} for nome in arquivos_matriculas])};
+contexto.setInterval = () => 0;
+contexto.FormData = class {{
+  constructor() {{ this.anexos = []; }}
+  append(chave, valor) {{ this.anexos.push([chave, valor.name || String(valor)]); }}
+}};
+contexto.__t = {{ estado: {json.dumps(estado if estado is not None else SEM_EXECUCAO)}, respostas: {json.dumps(list(respostas))}, pendente: {json.dumps(pendente)}, resolver: null }};
+contexto.fetch = (url, opcoes) => {{
+  contexto.__t.chamadas = contexto.__t.chamadas || [];
+  contexto.__t.chamadas.push({{ url, opcoes }});
+  if (url.indexOf("/admin/atualizar/execucao") !== -1) {{
+    return Promise.resolve({{ status: 200, ok: true, json: async () => contexto.__t.estado }});
+  }}
+  if (contexto.__t.pendente) {{
+    return new Promise((resolver) => {{ contexto.__t.resolver = resolver; }});
+  }}
+  const proxima = contexto.__t.respostas.shift() || {{ status: 200, corpo: {{ ciclos: 1, matriculas: 1 }} }};
+  return Promise.resolve({{
+    status: proxima.status,
+    ok: proxima.status >= 200 && proxima.status < 300,
+    json: async () => proxima.corpo,
+  }});
+}};
+contexto.__t.chamadas = [];
+"""
+
+
+# `setTimeout` é dublê sem relógio, então o avanço das promessas do `fetch` é
+# feito à mão, em passos de microtarefa.
+ESPERAR = "for (let i = 0; i < 12; i += 1) await Promise.resolve();"
+
+CHAMADAS_PARA = """
+const para = (trecho) => contexto.__t.chamadas.filter((c) => c.url.indexOf(trecho) !== -1);
+"""
+
+
+def test_enviar_sem_uma_das_pastas_avisa_e_nao_chama_o_servidor():
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+doc.porId["envio-ciclos"].files = [{ name: "ciclos-U1.csv" }];
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + """
+return { texto: doc.porId["status-envio"].textContent, chamadas: para("/admin/atualizar/envio").length };
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(), verificar)
+    assert resultado["chamadas"] == 0
+    assert "duas pastas são obrigatórias" in resultado["texto"]
+
+
+def test_durante_o_envio_informa_quantos_arquivos_e_bloqueia_o_botao():
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + """
+const botao = doc.porId["btn-enviar-pastas"];
+const durante = { texto: doc.porId["status-envio"].textContent, bloqueado: botao.disabled === true };
+contexto.__t.resolver({
+  status: 200,
+  ok: true,
+  json: async () => ({
+    estado: "previa", execucao_id: "abc", arquivos: [], campi_preservados: [],
+    campi_nao_cadastrados: [], ignorados: [], matriculas_orfas: 0, erro_consolidacao: null, navegador: null,
+  }),
+});
+"""
+        + ESPERAR
+        + """
+const enviada = para("/admin/atualizar/envio")[0];
+return { durante, depoisBloqueado: botao.disabled === true, anexos: enviada.opcoes.body.anexos };
+"""
+    )
+    resultado = rodar(
+        "atualizar.js",
+        _preparar(pendente=True, arquivos_ciclos=("ciclos-U1.csv", "ciclos-U2.csv"), arquivos_matriculas=("matriculas-U1.csv",)),
+        verificar,
+    )
+    assert resultado["durante"]["bloqueado"] is True
+    assert "3 arquivo(s)" in resultado["durante"]["texto"]
+    assert "2 de ciclos e 1 de matrículas" in resultado["durante"]["texto"]
+    assert resultado["depoisBloqueado"] is False
+    assert resultado["anexos"] == [
+        ["ciclos", "ciclos-U1.csv"],
+        ["ciclos", "ciclos-U2.csv"],
+        ["matriculas", "matriculas-U1.csv"],
+    ]
+
+
+def test_400_mostra_o_arquivo_e_o_motivo_em_portugues():
+    respostas = [{"status": 400, "corpo": {"erro": "envio_invalido", "arquivo": "quebrado.csv", "motivo": "colunas_ausentes"}}]
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + 'return doc.porId["status-envio"].textContent;'
+    )
+    texto = rodar(
+        "atualizar.js",
+        _preparar(respostas=respostas, arquivos_ciclos=("quebrado.csv",), arquivos_matriculas=("matriculas-U1.csv",)),
+        verificar,
+    )
+    assert "quebrado.csv" in texto
+    assert "colunas esperadas" in texto
+    assert "pastas não estão invertidas" in texto
+    assert "colunas_ausentes" not in texto
+    assert "Nada foi gravado" in texto
+
+
+@pytest.mark.parametrize(
+    "corpo,esperado",
+    [
+        ({"erro": "previa_pendente"}, "Há uma prévia pendente"),
+        ({"erro": "execucao_em_andamento"}, "Já existe uma atualização em andamento"),
+    ],
+)
+def test_409_tem_mensagem_propria(corpo, esperado):
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + 'return doc.porId["status-envio"].textContent;'
+    )
+    texto = rodar(
+        "atualizar.js",
+        _preparar(respostas=[{"status": 409, "corpo": corpo}], arquivos_ciclos=("a.csv",), arquivos_matriculas=("b.csv",)),
+        verificar,
+    )
+    assert esperado in texto
+
+
+def test_previa_pendente_sem_resumo_ainda_permite_descartar():
+    estado = _estado_previa()
+    estado["previa"] = None
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = {
+  previaVisivel: doc.porId["atualizar-previa"].hidden === false,
+  descartarVisivel: doc.porId["btn-descartar"].hidden !== true,
+  mensagem: doc.porId["previa-resumo"].textContent,
+};
+contexto.confirmarAcao = async () => true;
+doc.porId["btn-descartar"].disparar("click");
+"""
+        + ESPERAR
+        + """
+return { antes, chamadas: para("/descartar").map((c) => c.url) };
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(estado=estado), verificar)
+    assert resultado["antes"]["previaVisivel"] is True
+    assert resultado["antes"]["descartarVisivel"] is True
+    assert "Descarte" in resultado["antes"]["mensagem"]
+    assert resultado["chamadas"] == ["/admin/atualizar/execucoes/abc/descartar"]
+
+
+def test_previa_pendente_com_amostra_vazia_mostra_salvar_e_descartar():
+    verificar = ESPERAR + """
+return {
+  previaVisivel: doc.porId["atualizar-previa"].hidden === false,
+  salvarVisivel: doc.porId["btn-salvar"].hidden === false,
+  descartarVisivel: doc.porId["btn-descartar"].hidden !== true,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado == {"previaVisivel": True, "salvarVisivel": True, "descartarVisivel": True}
+
+
+def test_413_tem_mensagem_propria():
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + 'return doc.porId["status-envio"].textContent;'
+    )
+    texto = rodar(
+        "atualizar.js",
+        _preparar(respostas=[{"status": 413, "corpo": {}}], arquivos_ciclos=("a.csv",), arquivos_matriculas=("b.csv",)),
+        verificar,
+    )
+    assert "500 MB" in texto
+
+
+def test_resultado_por_arquivo_mostra_nome_tipo_e_linhas():
+    resposta = {
+        "status": 200,
+        "corpo": {
+            "estado": "previa",
+            "execucao_id": "abc",
+            "arquivos": [
+                {"n": 1, "tipo": "ciclo", "nome": "ciclos-U1.csv", "status": "baixado", "linhas": 3},
+                {"n": 2, "tipo": "matricula", "nome": "matriculas-U1.csv", "status": "baixado", "linhas": 4},
+            ],
+            "campi_preservados": [],
+            "campi_cadastrados_automaticamente": ["U9"],
+            "ignorados": ["LEIA-ME.txt"],
+            "matriculas_orfas": 0,
+            "erro_consolidacao": None,
+            "navegador": None,
+        },
+    }
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-enviar-pastas"].disparar("click");
+"""
+        + ESPERAR
+        + """
+const linhas = doc.porId["envio-arquivos"].filhos.map((tr) => tr.filhos.map((td) => td.textContent));
+return {
+  linhas,
+  area: doc.porId["envio-arquivos-area"].hidden,
+  ignorados: doc.porId["envio-ignorados"].textContent,
+  cadastrados: doc.porId["envio-cadastrados"].textContent,
+  cadastradosVisivel: doc.porId["envio-cadastrados"].hidden === false,
+  avisos: doc.porId["envio-avisos"].filhos.map((li) => li.textContent),
+  texto: doc.porId["status-envio"].textContent,
+};
+"""
+    )
+    resultado = rodar(
+        "atualizar.js",
+        _preparar(
+            estado=_estado_previa(campi_cadastrados_automaticamente=["U9"], arquivos_ignorados=["LEIA-ME.txt"]),
+            respostas=[resposta],
+            arquivos_ciclos=("ciclos-U1.csv",),
+            arquivos_matriculas=("matriculas-U1.csv",),
+        ),
+        verificar,
+    )
+    assert resultado["area"] is False
+    assert resultado["linhas"] == [
+        ["1", "ciclos-U1.csv", "Ciclos", "Lido", "3"],
+        ["2", "matriculas-U1.csv", "Matrículas", "Lido", "4"],
+    ]
+    assert resultado["ignorados"] == "Ignorados (não são .csv): LEIA-ME.txt."
+    # AFE-03: a unidade que só veio no envio virou cadastro, sem aviso de alerta.
+    assert resultado["cadastrados"] == "1 unidade(s) nova(s) cadastrada(s) automaticamente: U9."
+    assert resultado["cadastradosVisivel"] is True
+    assert resultado["avisos"] == []
+    assert "fora do cadastro" not in resultado["texto"]
+    assert "2 arquivo(s) lido(s)" in resultado["texto"]
+
+
+def test_envio_com_campi_preservados_salva_de_primeira_sem_clique_extra():
+    """AFE-01: com unidades preservadas o clique em Salvar vai ao servidor de
+    imediato — nada de caixa amarela nem de checkbox — e o corpo já leva
+    `confirmar_preservacao: true`, satisfazendo o portão do servidor (UPL-08,
+    que continua existindo do lado de lá)."""
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = { bloqueado: doc.porId["btn-salvar"].disabled === true, preservacao: !!doc.porId["envio-preservacao"] };
+doc.porId["btn-salvar"].disparar("click");
+"""
+        + ESPERAR
+        + """
+const enviada = para("/salvar")[0];
+return {
+  antes,
+  chamadas: para("/salvar").length,
+  corpos: para("/salvar").map((c) => c.opcoes.body),
+  cabecalhos: enviada.opcoes.headers,
+  status: doc.porId["status-salvar"].textContent,
+};
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(campi_preservados=["U2", "U3"])), verificar)
+    assert resultado["antes"]["bloqueado"] is False
+    assert resultado["antes"]["preservacao"] is False
+    assert resultado["chamadas"] == 1
+    assert resultado["corpos"] == ['{"confirmar_preservacao":true}']
+    assert resultado["cabecalhos"]["Content-Type"] == "application/json"
+    assert "Salvo na versão interna" in resultado["status"]
+
+
+def test_numa_baixa_o_salvar_tambem_manda_a_confirmacao():
+    """AFE-01: o corpo do Salvar não depende de a origem ser envio — a baixa
+    manda o mesmo campo, e nada pede confirmação na tela."""
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = { bloqueado: doc.porId["btn-salvar"].disabled === true };
+doc.porId["btn-salvar"].disparar("click");
+"""
+        + ESPERAR
+        + """
+return {
+  antes,
+  chamadas: para("/salvar").length,
+  corpos: para("/salvar").map((c) => c.opcoes.body),
+  status: doc.porId["status-salvar"].textContent,
+};
+"""
+    )
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(origem="baixa")), verificar)
+    assert resultado["antes"]["bloqueado"] is False
+    assert resultado["chamadas"] == 1
+    assert resultado["corpos"] == ['{"confirmar_preservacao":true}']
+    assert "Salvo na versão interna" in resultado["status"]
+
+
+# --- Escolha de pasta: nome e contagem sem rede (CEP-01, CEP-02, CEP-03) -----
+
+
+def _arquivos_com_pasta(campo, pasta, nomes):
+    """Extra de `preparar` (T6): monta o `input.files` do campo com caminho de pasta."""
+    itens = ", ".join(f"arquivoFalso({json.dumps(nome)}, {json.dumps(pasta + '/' + nome)})" for nome in nomes)
+    return f'doc.porId["{campo}"].files = [{itens}];'
+
+
+def test_clicar_no_botao_de_escolher_pasta_aciona_o_input_correspondente():
+    verificar = (
+        ESPERAR
+        + """
+const antes = contexto.__t.chamadas.length;
+doc.porId["btn-escolher-ciclos"].click();
+doc.porId["btn-escolher-matriculas"].click();
+return {
+  cliquesCiclos: doc.porId["envio-ciclos"].cliques,
+  cliquesMatriculas: doc.porId["envio-matriculas"].cliques,
+  chamadasNovas: contexto.__t.chamadas.length - antes,
+};
+"""
+    )
+    assert rodar("atualizar.js", _preparar(), verificar) == {
+        "cliquesCiclos": 1,
+        "cliquesMatriculas": 1,
+        "chamadasNovas": 0,
+    }
+
+
+def test_escolher_pasta_mostra_o_nome_dela_e_a_contagem_de_csv():
+    # O texto inicial de cada status vem da marcação; aqui ele é reposto à mão
+    # para conferir que escolher uma pasta não mexe no status da outra.
+    preparar = _preparar() + _arquivos_com_pasta(
+        "envio-ciclos", "CICLOS-2024-1", ["ciclo-U1.csv", "ciclo-U2.csv", "ciclo-U3.csv"]
+    ) + """
+doc.porId["envio-matriculas-status"].textContent = "Nenhuma pasta de matrículas escolhida — obrigatória.";
+"""
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+return {
+  ciclos: doc.porId["envio-ciclos-status"].textContent,
+  matriculas: doc.porId["envio-matriculas-status"].textContent,
+};
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "ciclos": "Pasta CICLOS-2024-1: 3 arquivo(s) .csv escolhido(s).",
+        "matriculas": "Nenhuma pasta de matrículas escolhida — obrigatória.",
+    }
+
+
+def test_escolher_pasta_conta_os_arquivos_que_nao_sao_csv_na_mesma_linha():
+    preparar = _preparar() + _arquivos_com_pasta(
+        "envio-matriculas", "MATRICULAS-2024-1", ["m1.csv", "m2.CSV", "LEIA-ME.txt", "extracao.pdf"]
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["btn-escolher-matriculas"].click();
+doc.porId["envio-matriculas"].disparar("change");
+return doc.porId["envio-matriculas-status"].textContent;
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == (
+        "Pasta MATRICULAS-2024-1: 2 arquivo(s) .csv escolhido(s). 2 arquivo(s) que não é/são .csv será/serão ignorado(s)."
+    )
+
+
+def test_sem_caminho_de_pasta_o_status_mostra_so_a_contagem():
+    """Edge case da spec: navegador sem `webkitdirectory` informa arquivos sem
+    `webkitRelativePath`; o status mostra a contagem, sem nome e sem erro."""
+    preparar = _preparar(arquivos_ciclos=("ciclo-U1.csv", "ciclo-U2.csv"))
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+return doc.porId["envio-ciclos-status"].textContent;
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == "2 arquivo(s) .csv escolhido(s)."
+
+
+def test_reescolher_a_pasta_substitui_o_status_anterior():
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-ANTIGO", ["a.csv", "b.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["m1.csv"])
+    )
+    verificar = (
+        ESPERAR
+        + """
+doc.porId["envio-ciclos"].disparar("change");
+const primeira = doc.porId["envio-ciclos-status"].textContent;
+doc.porId["envio-ciclos"].files = [arquivoFalso("unico.csv", "CICLOS-NOVO/unico.csv")];
+doc.porId["envio-ciclos"].disparar("change");
+return { primeira, segunda: doc.porId["envio-ciclos-status"].textContent };
+"""
+    )
+    assert rodar("atualizar.js", preparar, verificar) == {
+        "primeira": "Pasta CICLOS-ANTIGO: 2 arquivo(s) .csv escolhido(s).",
+        "segunda": "Pasta CICLOS-NOVO: 1 arquivo(s) .csv escolhido(s).",
+    }
+
+
+def test_escolher_pasta_nao_faz_rede_nem_anima_envio():
+    """CEP-03: seleção é seleção — nada de requisição nem de estado "enviando"
+    antes de clicar em Enviar pastas."""
+    preparar = (
+        _preparar()
+        + _arquivos_com_pasta("envio-ciclos", "CICLOS-2024-1", ["a.csv"])
+        + _arquivos_com_pasta("envio-matriculas", "MATRICULAS-2024-1", ["b.csv"])
+    )
+    verificar = (
+        ESPERAR
+        + CHAMADAS_PARA
+        + """
+const antes = contexto.__t.chamadas.length;
+doc.porId["btn-escolher-ciclos"].click();
+doc.porId["envio-ciclos"].disparar("change");
+doc.porId["btn-escolher-matriculas"].click();
+doc.porId["envio-matriculas"].disparar("change");
+"""
+        + ESPERAR
+        + """
+return {
+  chamadasNovas: contexto.__t.chamadas.length - antes,
+  envio: para("/admin/atualizar/envio").length,
+  statusEnvio: doc.porId["status-envio"].textContent,
+  botaoBloqueado: doc.porId["btn-enviar-pastas"].disabled === true,
+  filaDeTimeout: fila.length,
+};
+"""
+    )
+    resultado = rodar("atualizar.js", preparar, verificar)
+    assert resultado["chamadasNovas"] == 0
+    assert resultado["envio"] == 0
+    assert resultado["statusEnvio"] == ""
+    assert resultado["botaoBloqueado"] is False
+    assert resultado["filaDeTimeout"] == 0
+
+
+## Os testes de troca de origem (escolherOrigem) saíram com o rádio removido
+## em cards-atualizar-dados (CAD-01): os dois cards ficam sempre visíveis, sem
+## nenhuma alternância a testar. O texto inicial de obrigatoriedade continua
+## coberto por test_tela_atualizar_envio.py (marcação estática, sem JS).
+
+
+# --- Links da prévia (previa-paginas-publicas, T19) ----------------------------
+
+
+def test_links_da_previa_tem_href_montado_pelo_polling():
+    verificar = ESPERAR + """
+const hrefs = {};
+["matriculas", "eficiencia", "evasao", "percentuais-legais"].forEach((slug) => {
+  hrefs[slug] = doc.querySelector('a[data-pagina="' + slug + '"]').href;
+});
+return {
+  hrefs,
+  faixaVisivel: doc.porId["previa-nao-publicada"].hidden === false,
+  paginasVisivel: doc.porId["previa-paginas"].hidden === false,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado["hrefs"] == {
+        "matriculas": "/admin/previa/abc/matriculas",
+        "eficiencia": "/admin/previa/abc/eficiencia",
+        "evasao": "/admin/previa/abc/evasao",
+        "percentuais-legais": "/admin/previa/abc/percentuais-legais",
+    }
+    assert resultado["faixaVisivel"] is True
+    assert resultado["paginasVisivel"] is True
+
+
+def test_bloco_da_previa_oculto_fora_do_estado_previa():
+    estado = _estado_previa()
+    estado["estado"] = "baixando"
+    verificar = ESPERAR + """
+return {
+  faixa: doc.porId["previa-nao-publicada"].hidden,
+  paginas: doc.porId["previa-paginas"].hidden,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=estado), verificar)
+    assert resultado == {"faixa": True, "paginas": True}
+
+
+def test_bloco_da_previa_oculto_na_origem_baixa():
+    verificar = ESPERAR + """
+return {
+  faixa: doc.porId["previa-nao-publicada"].hidden,
+  paginas: doc.porId["previa-paginas"].hidden,
+  areaPrevia: doc.porId["atualizar-previa"].hidden,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa(origem="baixa")), verificar)
+    assert resultado["faixa"] is True
+    assert resultado["paginas"] is True
+    # a área de prévia da baixa continua visível (resumo/amostra), sem os links
+    assert resultado["areaPrevia"] is False
+
+
+def test_links_da_previa_nao_fazem_nova_chamada_de_rede():
+    verificar = ESPERAR + CHAMADAS_PARA + """
+return {
+  chamadasPrevia: para("/admin/previa").length,
+  chamadasTotais: contexto.__t.chamadas.length,
+};
+"""
+    resultado = rodar("atualizar.js", _preparar(estado=_estado_previa()), verificar)
+    assert resultado["chamadasPrevia"] == 0
+    # só o polling de `/admin/atualizar/execucao` roda (nenhuma busca extra)
+    assert resultado["chamadasTotais"] == 1

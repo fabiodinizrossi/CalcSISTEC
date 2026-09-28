@@ -1,0 +1,472 @@
+"""Higiene do repositório (`limpeza-onboarding-repo`).
+
+Afirma o que não existe mais (módulos e funções sem uso, arquivos soltos) e o
+que passou a existir (arquivos de instalação reproduzível). A raiz do
+repositório vem de `__file__`, nunca do diretório corrente: o pytest pode ser
+rodado de qualquer lugar.
+"""
+
+import ast
+import os
+import re
+import subprocess
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+def caminho(*partes):
+    return os.path.join(RAIZ, *partes)
+
+
+def definicoes(arquivo_relativo):
+    """Nomes de funções definidas no arquivo, lidos por AST."""
+    with open(caminho(*arquivo_relativo.split("/")), encoding="utf-8") as arquivo:
+        arvore = ast.parse(arquivo.read())
+    return {
+        no.name
+        for no in ast.walk(arvore)
+        if isinstance(no, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+
+
+def arquivos_py(*pastas):
+    """Todos os `.py` das pastas, em ordem estável."""
+    for pasta in pastas:
+        for raiz, _subpastas, nomes in os.walk(caminho(*pasta.split("/"))):
+            for nome in sorted(nomes):
+                if nome.endswith(".py"):
+                    yield os.path.join(raiz, nome)
+
+
+TERMOS_PROIBIDOS = [
+    "_reversa_sdd",
+    "_reversa_forward",
+    "cutover_plan.md",
+    "PARITY_REPORT.md",
+    "CUTOVER.md",
+    "APAGAR",
+    "projetoFabio",
+]
+
+
+def test_app_nao_cita_documentos_ausentes():
+    """DOC-01 AC1: nenhum `.py` de `app/` aponta para arquivo que não existe."""
+    for arquivo in arquivos_py("app"):
+        with open(arquivo, encoding="utf-8") as fonte:
+            conteudo = fonte.read()
+        for termo in TERMOS_PROIBIDOS:
+            if termo in conteudo:
+                pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
+
+
+def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
+    """DOC-01 AC1: o mesmo vale para `scripts/`, `tests/` e `run.py`. O próprio
+    teste de higiene é a exceção — ele lista os termos proibidos."""
+    arquivos = list(arquivos_py("scripts", "tests")) + [caminho("run.py")]
+
+    for arquivo in arquivos:
+        # O teste de docstrings lista os termos proibidos de propósito.
+        if os.path.basename(arquivo) in {"test_higiene_repositorio.py", "test_higiene_docstrings.py"}:
+            continue
+        with open(arquivo, encoding="utf-8") as fonte:
+            conteudo = fonte.read()
+        for termo in TERMOS_PROIBIDOS:
+            if termo in conteudo:
+                pytest.fail(f"{os.path.relpath(arquivo, RAIZ)} cita {termo}")
+
+
+DOCS_VERIFICADOS = [
+    ".specs/PROJECT_RULES.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "DEPLOY.md",
+    "README.md",
+    "TESTAR.md",
+]
+
+TERMOS_PROIBIDOS_EM_DOCS = TERMOS_PROIBIDOS + ["Tarefa "]
+
+
+@pytest.mark.parametrize("documento", DOCS_VERIFICADOS)
+def test_documentos_nao_citam_arquivos_ausentes_nem_tarefa_nn(documento):
+    """DOC-01 AC1/AC2: documento que manda o leitor para caminho inexistente ou
+    para a numeração do plano de reconstrução antigo."""
+    with open(caminho(*documento.split("/")), encoding="utf-8") as fonte:
+        conteudo = fonte.read()
+
+    for termo in TERMOS_PROIBIDOS_EM_DOCS:
+        if termo in conteudo:
+            pytest.fail(f"{documento} cita {termo}")
+
+
+def test_project_rules_esta_na_versao_1_2_0():
+    """DOC-04 AC9: emenda MINOR aprovada com esta feature. `.specs/` passa a ser a
+    fonte de regras, sem apontar para documentação que não está no repositório."""
+    conteudo = texto(".specs/PROJECT_RULES.md")
+
+    assert "Version change: 1.1.0 → 1.2.0" in conteudo
+    for termo in TERMOS_PROIBIDOS:
+        assert termo not in conteudo, f"PROJECT_RULES.md cita {termo}"
+
+
+def test_specs_readme_nao_cita_o_fluxo_arquivado():
+    """DOC-04 AC10: o índice das specs não manda mais ler nem apagar o material
+    do workflow anterior, e não aponta para arquivo que não existe — vale a
+    mesma lista de termos proibidos dos outros documentos."""
+    conteudo = texto(".specs/README.md")
+
+    assert "Spec Kit" not in conteudo
+    for termo in TERMOS_PROIBIDOS_EM_DOCS:
+        assert termo not in conteudo, f".specs/README.md cita {termo}"
+
+
+def test_cutover_e_parity_report_sairam_do_repositorio():
+    """DOC-02 AC3: os dois documentos antigos saem; o `DEPLOY.md` entra."""
+    assert not os.path.exists(caminho("CUTOVER.md"))
+    assert not os.path.exists(caminho("PARITY_REPORT.md"))
+    assert os.path.exists(caminho("DEPLOY.md"))
+
+
+MARCADORES_DEPLOY = [
+    "run.py",
+    "CALCSISTEC_HTTPS=1",
+    "verificar_prontidao_cutover.py",
+    "DS-42",
+    "CSRF",
+    "worker",
+]
+
+
+def test_deploy_documenta_os_pontos_obrigatorios():
+    """DOC-02 AC4: pré-requisitos, subida, HTTPS, worker único, pendências."""
+    with open(caminho("DEPLOY.md"), encoding="utf-8") as fonte:
+        conteudo = fonte.read()
+
+    for marcador in MARCADORES_DEPLOY:
+        assert marcador in conteudo, f"{marcador} fora do DEPLOY.md"
+
+
+def texto(documento):
+    with open(caminho(*documento.split("/")), encoding="utf-8") as fonte:
+        return fonte.read()
+
+
+def test_readme_lista_cada_subdiretorio_de_app_e_as_pastas_do_projeto():
+    """DOC-03 AC6: a lista é montada do disco, então um subdiretório novo sem
+    documentação faz este teste falhar."""
+    conteudo = texto("README.md")
+
+    subpastas = sorted(
+        nome
+        for nome in os.listdir(caminho("app"))
+        if os.path.isdir(caminho("app", nome)) and nome != "__pycache__"
+    )
+    assert subpastas, "app/ sem subdiretorio nenhum?"
+
+    for pasta in subpastas:
+        assert f"app/{pasta}/" in conteudo, f"README.md nao cita app/{pasta}/"
+    for pasta in ("scripts/", "tests/", ".specs/"):
+        assert f"`{pasta}`" in conteudo, f"README.md nao cita `{pasta}`"
+
+
+TEMAS_DE_ONDE_MEXER = [
+    "regra de cálculo",
+    "página pública",
+    "coleta do Sistec",
+    "visual",
+    "rota administrativa",
+]
+
+
+def test_readme_tem_as_secoes_de_entrada_e_onde_mexer():
+    """DOC-03 AC7/AC8: "Começar" na ordem certa e "Onde mexer" presente."""
+    conteudo = texto("README.md")
+
+    assert "## Começar" in conteudo
+    assert "## Onde mexer" in conteudo
+
+    comecar = conteudo.split("## Começar", 1)[1].split("\n## ", 1)[0]
+    ordem = [
+        comecar.index("requirements-dev.txt"),
+        comecar.index(".env.example"),
+        comecar.index("pytest"),
+    ]
+    assert ordem == sorted(ordem), f"ordem errada em Comecar: {ordem}"
+
+
+def test_onde_mexer_cobre_os_cinco_temas():
+    """DOC-03 AC8: "Onde mexer" responde às cinco perguntas previsíveis —
+    regra de cálculo, página pública, coleta do Sistec, visual e rota
+    administrativa. É a tabela que evita o agente procurar no lugar errado."""
+    secao = texto("README.md").split("## Onde mexer", 1)[1].split("\n## ", 1)[0]
+
+    for tema in TEMAS_DE_ONDE_MEXER:
+        assert tema in secao, f"Onde mexer não cita {tema}"
+
+
+PADRAO_CRASE = re.compile(r"`([^`\n]+)`")
+
+
+def test_todo_caminho_citado_no_readme_existe():
+    """DOC-03 AC6/AC7: caminho relativo citado entre crases tem de existir no
+    repositório — é o defeito que a feature corrige."""
+    citados = set()
+    for bruto in PADRAO_CRASE.findall(texto("README.md")):
+        sem_linha = re.sub(r":\d+(-\d+)?$", "", bruto.strip())
+        if sem_linha.startswith(("app/", "scripts/", "tests/", ".specs/")):
+            citados.add(sem_linha)
+
+    assert citados, "README.md nao cita caminho nenhum entre crases"
+    for citado in sorted(citados):
+        assert os.path.exists(caminho(*citado.split("/"))), f"README.md cita {citado}, que nao existe"
+
+
+def test_testar_md_documenta_o_modo_destacado_e_o_requirements_dev():
+    """DOC-01 (TESTAR): os dois switches que qualquer agente usa e o comando
+    que instala as dependências de teste."""
+    conteudo = texto("TESTAR.md")
+
+    for marcador in ("-Destacado", "-Parar", "requirements-dev.txt"):
+        assert marcador in conteudo, f"TESTAR.md nao cita {marcador}"
+
+
+def test_comando_testar_sobe_destacado_e_sem_navegador():
+    """AMB-02 AC7: o `/testar` é o atalho de quem não pode ficar preso ao app."""
+    conteudo = texto(".claude/commands/testar.md")
+
+    assert "-Destacado" in conteudo
+    assert "-SemNavegador" in conteudo
+    assert "-Parar" in conteudo
+
+
+def git(*argumentos):
+    return subprocess.run(
+        ["git", *argumentos], cwd=RAIZ, capture_output=True, text=True
+    )
+
+
+def test_comando_testar_e_versionado_e_o_settings_local_nao():
+    """AMB-02 AC7: o comando é do repositório; a configuração da máquina não."""
+    assert git("check-ignore", ".claude/commands/testar.md").returncode != 0
+    assert (
+        git("ls-files", "--error-unmatch", ".claude/settings.local.json").returncode != 0
+    )
+
+
+def test_agents_tem_as_secoes_de_entrada_e_de_ambiente_de_teste():
+    """AMB-02 AC8: qualquer agente lê por onde começar e como subir o ambiente."""
+    conteudo = texto("AGENTS.md")
+
+    assert "## Começar" in conteudo
+    assert "## Subir o ambiente de teste" in conteudo
+    assert "-Destacado" in conteudo
+    assert "-Parar" in conteudo
+
+
+FRASE_DE_NAO_MONITORAR_AGENTS = "monitora o servidor depois"
+FRASE_DE_NAO_MONITORAR_COMANDO = "acompanhe o servidor"
+
+
+def test_instrucao_de_nao_monitorar_o_servidor_depois_de_subir():
+    """AMB-02 AC7/AC8: quem sobe em `-Destacado` não fica preso ao servidor —
+    a ordem de não monitorar o log depois de subir está escrita para o agente,
+    no guia (AGENTS.md) e no atalho (`/testar`)."""
+    secao = texto("AGENTS.md").split("## Subir o ambiente de teste", 1)[1].split("\n## ", 1)[0]
+    linha = next(
+        (linha for linha in secao.splitlines() if FRASE_DE_NAO_MONITORAR_AGENTS in linha),
+        None,
+    )
+    assert linha is not None, "AGENTS.md não diz para não monitorar o servidor"
+    assert "não" in linha, linha
+
+    comando = texto(".claude/commands/testar.md")
+    linha = next(
+        (linha for linha in comando.splitlines() if FRASE_DE_NAO_MONITORAR_COMANDO in linha),
+        None,
+    )
+    assert linha is not None, "o /testar não diz para não acompanhar o servidor"
+    assert "Não" in linha, linha
+
+
+def test_claude_importa_o_agents():
+    """AMB-02 AC9: `CLAUDE.md` só aponta para o guia comum."""
+    assert "@AGENTS.md" in texto("CLAUDE.md")
+
+
+def carregar_script(nome):
+    """Importa um `scripts/*.py` pelo caminho (não é pacote)."""
+    import importlib.util
+
+    espec = importlib.util.spec_from_file_location(nome, caminho("scripts", f"{nome}.py"))
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    return modulo
+
+
+def test_verificacao_de_prontidao_aponta_para_o_deploy(capsys):
+    """DOC-02 AC5: a seção fora do escopo automatizável manda ler o `DEPLOY.md`."""
+    modulo = carregar_script("verificar_prontidao_cutover")
+
+    modulo.imprimir_relatorio([])
+    saida = capsys.readouterr().out
+
+    assert "DEPLOY.md" in saida
+    assert "CUTOVER.md" not in saida
+
+
+def test_modulo_validators_foi_removido():
+    """LIM-01 AC1: `app/data/validators.py` não era importado por ninguém."""
+    assert not os.path.exists(caminho("app", "data", "validators.py"))
+
+
+SIMBOLOS_REMOVIDOS = [
+    ("app/components/kpi.py", "kpi_colunas"),
+    ("app/data/consulta.py", "data_ultimo_upload_valido"),
+    ("app/data/transform.py", "t01_remover_pii"),
+    ("app/pages/percentuais_legais.py", "_rotulo_eixo"),
+]
+
+
+@pytest.mark.parametrize("arquivo_relativo,nome", SIMBOLOS_REMOVIDOS)
+def test_funcao_sem_chamador_foi_removida(arquivo_relativo, nome):
+    """LIM-01 AC2: nenhuma das quatro funções tem chamador."""
+    assert nome not in definicoes(arquivo_relativo)
+
+
+COLUNAS_PII_ESPERADAS = [
+    "DS_SENHA",
+    "DS_EMAIL",
+    "CO_PESSOA_FISICA_ALUNO",
+    "NO_ALUNO",
+    "NO_MAE_ALUNO",
+    "SG_SEXO",
+    "DT_DATA_NASCIMENTO",
+    "NU_CPF",
+    "NOME_RESPONSAVEL",
+    "CPF",
+]
+
+
+def test_colunas_pii_continua_com_as_mesmas_entradas():
+    """LIM-01 AC3: `COLUNAS_PII` fica — `app/sistec/colunas.py` depende dela."""
+    from app.data.transform import COLUNAS_PII
+
+    assert COLUNAS_PII == COLUNAS_PII_ESPERADAS
+
+
+def test_arquivos_soltos_na_raiz_nao_existem():
+    """LIM-02 AC4: `nonascii.txt` e `chromedriver/` (Princípio VI: nada de
+    automação de navegador no repositório)."""
+    assert not os.path.exists(caminho("nonascii.txt"))
+    assert not os.path.exists(caminho("chromedriver"))
+
+
+ENTRADAS_GITIGNORE = [".agents/", ".uv-cache/", ".uv-python/"]
+
+
+def test_gitignore_lista_o_estado_das_ferramentas_locais():
+    """LIM-02 AC5: pastas de ferramenta ficam fora do versionamento, mas
+    continuam existindo no disco (não são apagadas)."""
+    with open(caminho(".gitignore"), encoding="utf-8") as arquivo:
+        linhas = {linha.strip() for linha in arquivo}
+
+    for entrada in ENTRADAS_GITIGNORE:
+        assert entrada in linhas, f"{entrada} nao esta no .gitignore"
+
+
+def linhas_uteis(arquivo_relativo):
+    """Linhas não vazias de um arquivo de texto, sem espaços nas pontas."""
+    with open(caminho(*arquivo_relativo.split("/")), encoding="utf-8") as arquivo:
+        return [linha.strip() for linha in arquivo if linha.strip()]
+
+
+REQUIREMENTS_ESPERADOS = [
+    "dash==4.4.1",
+    "dash-bootstrap-components==2.0.4",
+    "pandas==2.3.0",
+    "openpyxl==3.1.5",
+    "plotly==6.8.0",
+    "defusedxml==0.7.1",
+    "Pillow==11.2.1",
+    "Flask==3.1.3",
+    "Werkzeug==3.1.8",
+]
+
+
+def test_requirements_fixa_as_versoes_testadas():
+    """DEP-01 AC1: sem `==`, um `pip install` de amanhã pode quebrar o gate."""
+    assert linhas_uteis("requirements.txt") == REQUIREMENTS_ESPERADOS
+
+
+def test_requirements_dev_inclui_o_principal_e_o_pytest():
+    """DEP-01 AC2: quem instala o `-dev` tem o app e a suíte."""
+    assert linhas_uteis("requirements-dev.txt") == [
+        "-r requirements.txt",
+        "pytest==9.1.1",
+    ]
+
+
+def test_python_version_declara_a_versao_do_projeto():
+    """DEP-02 AC3: projeto é Python 3.12 (PROJECT_RULES, Restrições Técnicas)."""
+    assert linhas_uteis(".python-version") == ["3.12"]
+
+
+CHAVES_ENV = [
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD_HASH",
+    "FLASK_SECRET_KEY",
+    "CALCSISTEC_HTTPS",
+    "CALCSISTEC_SISTEC_BASE_URL",
+    "CALCSISTEC_PASTA_DOWNLOADS",
+    "CALCSISTEC_PASTA_COLETA",
+    "ANO_BASE",
+]
+
+
+def valores_env_exemplo():
+    """`{chave: valor}` de `.env.example`, sem as linhas de comentário."""
+    valores = {}
+    for linha in linhas_uteis(".env.example"):
+        if linha.startswith("#"):
+            continue
+        chave, _separador, valor = linha.partition("=")
+        valores[chave.strip()] = valor.strip()
+    return valores
+
+
+def test_env_exemplo_documenta_todas_as_chaves_de_ambiente():
+    """DEP-02 AC4: quem clona sabe o que definir antes de subir."""
+    valores = valores_env_exemplo()
+
+    for chave in CHAVES_ENV:
+        assert chave in valores, f"{chave} fora do .env.example"
+
+
+VALORES_DE_EXEMPLO = {
+    "CALCSISTEC_SISTEC_BASE_URL": "https://sistec.mec.gov.br",
+    "ANO_BASE": "2026",
+}
+
+PADRAO_HASH_HEX = re.compile(r"[0-9a-fA-F]{32,}")
+
+
+def test_env_exemplo_nao_traz_segredo_nenhum():
+    """DEP-02 AC4: arquivo versionado não pode carregar segredo real — cada
+    chave fica vazia ou com um valor de exemplo reconhecido, e nenhum valor
+    parece hash de senha (`scrypt:`/`pbkdf2:`) nem segredo hexadecimal."""
+    valores = valores_env_exemplo()
+
+    assert valores["FLASK_SECRET_KEY"] == ""
+    assert valores["ADMIN_PASSWORD_HASH"] == ""
+
+    for chave, valor in valores.items():
+        assert valor == "" or valor == VALORES_DE_EXEMPLO.get(chave), (
+            f"{chave} tem valor que não é de exemplo: {valor!r}"
+        )
+        assert not valor.startswith(("scrypt:", "pbkdf2:")), f"{chave} tem hash de senha"
+        assert not PADRAO_HASH_HEX.fullmatch(valor), f"{chave} tem segredo hexadecimal"

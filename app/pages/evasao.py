@@ -1,0 +1,170 @@
+"""Página Taxa de Evasão Anual."""
+
+import dash
+from dash import Input, Output, State, callback, dcc, html
+
+from app.auth import sessao_id_atual
+from app.components.filters import EIXOS, axis_selector, clear_filters_button, fic_toggle, ordenar_eixos, select_filter
+from app.components.mensagem import mensagem_ds
+from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
+from app.components.tabela import tabela_hierarquica_ds
+from app.data.consulta import ano_base_ativo, carregar_matriculas, data_ultima_publicacao, dataset_disponivel
+from app.domain.contrato import FiltrosAtivos
+from app.domain.matriculas import filtrar_fic, taxa_evasao
+from app.domain.shared import coluna_para_eixo
+from app.sistec.execucoes import PreviaIndisponivel, abrir_leitura_previa
+
+dash.register_page(__name__, path="/evasao", title="Taxa de Evasão Anual - Pesquisa Institucional - SISTEC")
+
+
+def _data_curta(valor):
+    if not valor:
+        return None
+    texto = str(valor)[:10]
+    return "/".join(reversed(texto.split("-"))) if "-" in texto else texto
+
+
+def _carregar(preview_id):
+    """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
+    validada. Levanta `PreviaIndisponivel` em contexto inválido."""
+    if preview_id is None:
+        return carregar_matriculas(), ano_base_ativo() or 2026
+
+    contexto = abrir_leitura_previa(preview_id, sessao_id_atual())
+    try:
+        return carregar_matriculas(conn=contexto.conn), contexto.ano_base
+    finally:
+        contexto.conn.close()
+
+
+def _filtros(df):
+    return html.Div(
+        [
+            select_filter("evasao-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
+            select_filter("evasao-filtro-tipo-curso", "Tipo de Curso", sorted(df["tipo_curso_pnp"].dropna().unique())),
+            fic_toggle("evasao-fic", default="sem_fic"),
+            clear_filters_button("evasao-limpar"),
+        ],
+        className="card-filtros",
+    )
+
+
+def layout(preview_id=None):
+    """Monta a página pública; com `preview_id`,
+    lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
+    que leva o identificador aos callbacks."""
+    if preview_id is not None:
+        try:
+            df, ano_base = _carregar(preview_id)
+        except PreviaIndisponivel:
+            return mensagem_ds("warning", "Prévia indisponível.")
+        atualizado = None
+    else:
+        if not dataset_disponivel():
+            return mensagem_ds("info", "Ainda não há dados publicados.")
+        df, ano_base = _carregar(None)
+        atualizado = _data_curta(data_ultima_publicacao())
+
+    filhos = [
+        cabecalho_pagina("Taxa de Evasão Anual", ano_base, atualizado),
+        dcc.Loading(html.Div(id="evasao-kpi", className="kpis-figma")),
+        axis_selector("evasao-eixo", default="campus"),
+        dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
+        dcc.Loading(html.Div(id="evasao-heatmap")),
+        _filtros(df),
+        # O `Store` entra sempre: o callback o declara como `State`
+        # também no caminho público (`data=None`), e um `State` apontando para
+        # id inexistente trava a página com ReferenceError no navegador.
+        dcc.Store(id="evasao-preview", data=preview_id),
+    ]
+
+    return html.Div(filhos, className="painel-dashboard")
+
+
+def _filtrar(df, campus, tipo_curso, incluir_fic):
+    if campus and campus != "__todos__":
+        df = df[df["cidade"] == campus]
+    if tipo_curso and tipo_curso != "__todos__":
+        df = df[df["tipo_curso_pnp"] == tipo_curso]
+    return filtrar_fic(df, incluir_fic)
+
+
+# A escala verde/amarelo/vermelho usa 16% como limiar médio.
+LIMIAR_EVASAO_MEDIO = 0.16
+
+
+def _classe_evasao(taxa):
+    if taxa is None:
+        return ""
+    if taxa >= LIMIAR_EVASAO_MEDIO * 1.5:
+        return "evasao-alta"
+    if taxa >= LIMIAR_EVASAO_MEDIO:
+        return "evasao-media"
+    return "evasao-baixa"
+
+
+# Cor nunca é o único indicador de estado: cada faixa tem um
+# equivalente textual visível, para quem não distingue cor (daltonismo,
+# leitor de tela, impressão em preto e branco).
+_LABEL_EVASAO = {"evasao-alta": "Alta", "evasao-media": "Média", "evasao-baixa": "Baixa"}
+
+
+@callback(
+    Output("evasao-eixos-ordenados", "data"),
+    Input("evasao-eixo", "value"),
+    State("evasao-eixos-ordenados", "data"),
+)
+def atualizar_ordem_eixos(marcados, ordem_anterior):
+    return ordenar_eixos(marcados, ordem_anterior)
+
+
+@callback(
+    Output("evasao-kpi", "children"),
+    Output("evasao-heatmap", "children"),
+    Input("evasao-fic", "value"),
+    Input("evasao-eixos-ordenados", "data"),
+    Input("evasao-filtro-campus", "value"),
+    Input("evasao-filtro-tipo-curso", "value"),
+    State("evasao-preview", "data"),
+)
+def atualizar(fic, eixos, campus, tipo_curso, preview_id=None):
+    try:
+        df, ano_base = _carregar(preview_id)
+    except PreviaIndisponivel:
+        return html.Div(), mensagem_ds("warning", "Prévia indisponível.")
+    incluir_fic = fic == "com_fic"
+    df = _filtrar(df, campus, tipo_curso, incluir_fic)
+    filtros = FiltrosAtivos(ano_base=ano_base, incluir_fic=incluir_fic)
+
+    if df.empty:
+        return html.Div(), mensagem_ds("info", "Sem dados para os filtros selecionados.")
+
+    eixos = ordenar_eixos(eixos if isinstance(eixos, list) else [eixos], eixos if isinstance(eixos, list) else [eixos])
+
+    def metricas(grupo):
+        taxa = taxa_evasao(grupo, filtros)
+        classe = _classe_evasao(taxa)
+        percentual = f"{taxa:.1%}".replace(".", ",")
+        return [{"valor": f"{percentual} ({_LABEL_EVASAO.get(classe, '—')})", "classe": classe or None}]
+
+    taxa_total = taxa_evasao(df, filtros)
+    kpi = cartoes_indicadores([cartao_indicador("Taxa de evasão anual", taxa_total, formato="#,0.00", destaque=True)])
+    colunas_eixos = {eixo: "cidade" if eixo == "campus" else coluna_para_eixo(eixo) for eixo in (opcao["value"] for opcao in EIXOS)}
+    rotulos = {opcao["value"]: opcao["label"] for opcao in EIXOS}
+    tabela = tabela_hierarquica_ds(
+        df, eixos, colunas_eixos, rotulos, ["Taxa de Evasão"], "Taxa de evasão por recorte selecionado", metricas,
+        metricas(df),
+    )
+    return kpi, tabela
+
+
+@callback(
+    Output("evasao-filtro-campus", "value"),
+    Output("evasao-filtro-tipo-curso", "value"),
+    Output("evasao-fic", "value"),
+    Output("evasao-eixo", "value"),
+    Input("evasao-limpar", "n_clicks"),
+    prevent_initial_call=True,
+)
+def limpar_filtros(_n_clicks):
+    return "__todos__", "__todos__", "sem_fic", ["campus"]

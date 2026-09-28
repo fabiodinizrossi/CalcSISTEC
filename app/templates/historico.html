@@ -1,0 +1,44 @@
+{% extends "_base.html" %}
+{% from "shell/_macros.html" import mensagem %}
+{% block title %}Histórico de atualizações - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<h1>Histórico de atualizações</h1>
+
+{% if not eventos %}
+{{ mensagem("info", "Nenhuma atualização registrada ainda.") }}
+{% else %}
+<div class="br-table">
+  <div class="responsive">
+    <table>
+      <caption>Histórico de atualizações</caption>
+      <thead>
+        <tr>
+          <th>Início</th>
+          <th>Tipo</th>
+          <th>Administrador</th>
+          <th>Desfecho</th>
+          <th>Sucessos</th>
+          <th>Falhas</th>
+          <th>Pausas</th>
+          <th>Linhas consolidadas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for evento in eventos %}
+        <tr>
+          <td>{{ evento.inicio }}</td>
+          <td>{{ evento.tipo }}</td>
+          <td>{{ evento.admin_email }}</td>
+          <td>{{ evento.desfecho or "em andamento" }}</td>
+          <td>{{ evento.sucessos if evento.sucessos is not none else "—" }}</td>
+          <td>{{ evento.falhas if evento.falhas is not none else "—" }}</td>
+          <td>{{ evento.pausas if evento.pausas is not none else "—" }}</td>
+          <td>{{ evento.linhas_consolidadas if evento.linhas_consolidadas is not none else "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

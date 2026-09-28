@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Baixador Sistec — Opções de desenvolvimento</title>
+  <style>
+    body { font-family: sans-serif; max-width: 32rem; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: bold; }
+    input[type="url"] { width: 100%; padding: 0.4rem; box-sizing: border-box; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; }
+    p.aviso { background: #fff3cd; padding: 0.75rem; border-radius: 4px; }
+    p.status { color: #2a7a2a; }
+  </style>
+</head>
+<body>
+  <h1>Baixador Sistec — Opções de desenvolvimento</h1>
+  <p class="aviso">
+    Esta página é só para desenvolvimento e teste (`002-baixador-planilhas-sistec`,
+    T061). Em uso real, deixe o campo abaixo em branco — a extensão fala direto com
+    <code>https://sistec.mec.gov.br</code>.
+  </p>
+
+  <label for="base-sistec">URL-base do Sistec simulado (<code>scripts/sistec_simulado.py</code>)</label>
+  <input type="url" id="base-sistec" placeholder="http://127.0.0.1:8051">
+
+  <button id="salvar">Salvar</button>
+  <button id="limpar">Usar o Sistec real</button>
+  <p id="status" class="status" role="status"></p>
+
+  <script src="options.js"></script>
+</body>
+</html>

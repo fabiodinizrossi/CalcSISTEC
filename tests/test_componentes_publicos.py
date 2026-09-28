@@ -1,0 +1,285 @@
+"""Componentes públicos em Dash no padrão do gov.br DS (DS-13, DS-14, DS-15, DS-17, DS-27)."""
+
+import pytest
+import pandas as pd
+from dash import html
+
+from app.components.kpi import kpi_card
+from arvore_dash import classes, com_classe, exigir_sem_componente_do_ds_que_precisa_de_js, textos
+
+CLASSES_DO_BOOTSTRAP = {"card", "card-body", "kpi-card"}
+
+
+def test_kpi_card_e_um_br_card_com_o_valor_formatado():
+    cartao = kpi_card("Matrículas", 1234, "0")
+    assert "br-card" in classes(cartao)
+    assert "1.234" in textos(cartao)
+    assert "Matrículas" in textos(cartao)
+
+
+def test_kpi_card_sem_valor_mostra_travessao():
+    assert "—" in textos(kpi_card("Matrículas", None, "0"))
+
+
+def test_empty_state_substitui_o_valor_none_sem_virar_zero():
+    texto = textos(kpi_card("Eficiência", None, "0", empty_state="Fatores ausentes"))
+    assert "Fatores ausentes" in texto
+    assert "0" not in texto
+    assert "—" not in texto
+
+
+def test_empty_state_nao_esconde_um_valor_zero_real():
+    assert "0" in textos(kpi_card("Evasão", 0, "0", empty_state="Fatores ausentes"))
+    assert "Fatores ausentes" not in textos(kpi_card("Evasão", 0, "0", empty_state="Fatores ausentes"))
+
+
+def test_kpi_card_nao_usa_classe_de_card_do_bootstrap():
+    assert not (classes(kpi_card("Matrículas", 1234, "0")) & CLASSES_DO_BOOTSTRAP)
+
+
+def test_kpi_card_nao_usa_componente_do_ds_que_precisa_de_js():
+    exigir_sem_componente_do_ds_que_precisa_de_js(kpi_card("Matrículas", 1234, "0"))
+
+
+@pytest.mark.parametrize("classe", ["br-select", "br-tab", "br-modal", "br-tooltip", "br-accordion", "br-dropdown", "br-carousel", "br-upload"])
+def test_o_helper_falha_com_componente_do_ds_que_precisa_de_js(classe):
+    arvore = html.Div([html.Div("ok"), html.Div(html.Span("x", className=f"algo {classe}"))])
+    with pytest.raises(AssertionError):
+        exigir_sem_componente_do_ds_que_precisa_de_js(arvore)
+
+
+def test_o_helper_acha_componentes_por_classe_em_arvore_aninhada():
+    arvore = html.Div([html.Div(className="a"), html.Div(html.Div(className="a b"))])
+    assert len(com_classe(arvore, "a")) == 2
+
+
+from app.components.tabela import tabela_ds, tabela_hierarquica_ds
+from arvore_dash import componentes
+
+
+def _tabela(**kwargs):
+    return tabela_ds(["Campus", "Total"], [["Alegrete", 120], ["Jaguari", 80]], "Matrículas por campus", **kwargs)
+
+
+def test_tabela_e_br_table_com_conteiner_de_rolagem_e_table_dentro():
+    raiz = _tabela()
+    assert raiz.className == "br-table"
+    assert raiz.children.className == "responsive"
+    assert type(raiz.children.children).__name__ == "Table"
+
+
+def test_tabela_tem_legenda_em_caption_e_cabecalhos_com_scope_col():
+    raiz = _tabela()
+    legendas = [c for c in componentes(raiz) if type(c).__name__ == "Caption"]
+    assert [textos(c) for c in legendas] == ["Matrículas por campus"]
+    cabecalhos = [c for c in componentes(raiz) if type(c).__name__ == "Th"]
+    assert [(textos(c), c.scope) for c in cabecalhos] == [("Campus", "col"), ("Total", "col")]
+
+
+def test_valores_das_celulas_chegam_iguais_aos_passados():
+    linhas = [
+        [textos(c) for c in componentes(tr) if type(c).__name__ == "Td"]
+        for tr in componentes(_tabela())
+        if type(tr).__name__ == "Tr"
+    ]
+    assert linhas == [[], ["Alegrete", "120"], ["Jaguari", "80"]]
+
+
+def test_celula_com_classe_recebe_a_classe_e_a_sem_classe_nao():
+    raiz = tabela_ds(["Taxa"], [[{"valor": "12,3%", "classe": "evasao-media"}], ["5,0%"]], "Evasão")
+    celulas = [c for c in componentes(raiz) if type(c).__name__ == "Td"]
+    assert [(textos(c), getattr(c, "className", None)) for c in celulas] == [("12,3%", "evasao-media"), ("5,0%", None)]
+
+
+def test_tabela_nao_usa_classe_de_tabela_do_bootstrap_nem_componente_dbc():
+    raiz = _tabela()
+    assert not (classes(raiz) & {"table", "table-striped", "table-bordered", "table-hover"})
+    assert not [c for c in componentes(raiz) if type(c).__module__.startswith("dash_bootstrap_components")]
+
+
+def test_tabela_nao_usa_componente_do_ds_que_precisa_de_js():
+    exigir_sem_componente_do_ds_que_precisa_de_js(_tabela())
+
+
+def test_variante_de_quadro_tem_regiao_nomeada_numeros_alinhaveis_e_total():
+    raiz = tabela_ds(
+        ["Campus", "IEA"], [["Alegrete", "0,75"]], "IEA por campus",
+        quadro=True, total=["Total", "0,75"],
+    )
+    tabela = [c for c in componentes(raiz) if type(c).__name__ == "Table"][0]
+    regiao = [c for c in componentes(raiz) if getattr(c, "role", None) == "region"][0]
+    celulas = [c for c in componentes(tabela) if type(c).__name__ == "Td"]
+
+    assert raiz.className == "matriz-figma tabela-publica-quadro"
+    assert getattr(regiao, "aria-label") == "IEA por campus"
+    assert tabela.children[-1].children.children[1].className == "num"
+    assert [(textos(c), c.scope) for c in componentes(tabela) if type(c).__name__ == "Th"] == [("Campus", "col"), ("IEA", "col")]
+    assert [(textos(c), c.className) for c in celulas] == [("Alegrete", None), ("0,75", "num"), ("Total", None), ("0,75", "num")]
+
+
+def test_tabela_hierarquica_mantem_blocos_pai_filho_ordenaveis_e_total():
+    dados = pd.DataFrame({"cidade": ["A", "A", "B"], "modalidade": ["Presencial", "EAD", "EAD"], "valor": [2, 1, 3]})
+    raiz = tabela_hierarquica_ds(
+        dados, ["campus", "modalidade"], {"campus": "cidade", "modalidade": "modalidade"},
+        {"campus": "Campus", "modalidade": "Modalidade"}, ["Valor"], "Matriz", lambda grupo: [grupo["valor"].sum()], [6],
+    )
+    tabela = [c for c in componentes(raiz) if type(c).__name__ == "Table"][0]
+    linhas = [c for c in componentes(tabela) if type(c).__name__ == "Tr" and getattr(c, "data-group-id", None) is not None]
+    assert tabela.className == "tabela-publica tabela-hierarquica"
+    assert getattr(tabela, "data-sortable") == "true"
+    assert [(getattr(linha, "data-group-id"), getattr(linha, "data-parent-id")) for linha in linhas] == [("0", ""), ("0-0", "0"), ("0-1", "0"), ("1", ""), ("1-0", "1")]
+    assert [textos(td) for td in componentes(tabela) if type(td).__name__ == "Td"][-2:] == ["Total", "6"]
+
+
+from app.components.filters import EIXOS, axis_selector, fic_toggle, ordenar_eixos
+
+
+def _radio(raiz):
+    radios = [c for c in componentes(raiz) if type(c).__name__ == "RadioItems"]
+    assert len(radios) == 1
+    return radios[0]
+
+
+def _checklist(raiz):
+    checklists = [c for c in componentes(raiz) if type(c).__name__ == "Checklist"]
+    assert len(checklists) == 1
+    return checklists[0]
+
+
+def test_fic_toggle_tem_com_fic_e_sem_fic_com_padrao_com_fic_e_id_preservado():
+    radio = _radio(fic_toggle("matriculas-fic"))
+    assert radio.id == "matriculas-fic"
+    assert radio.options == [{"label": "Com FIC", "value": "com_fic"}, {"label": "Sem FIC", "value": "sem_fic"}]
+    assert radio.value == "com_fic"
+
+
+def test_axis_selector_tem_os_6_eixos_com_padrao_campus_e_id_preservado():
+    checklist = _checklist(axis_selector("matriculas-eixo"))
+    assert checklist.id == "matriculas-eixo"
+    assert [o["value"] for o in checklist.options] == ["campus", "tipo_curso", "oferta", "nome_curso", "modalidade", "ciclo"]
+    assert checklist.options == EIXOS
+    assert checklist.value == ["campus"]
+    assert {"card-chips", "chips-grupo"} <= classes(axis_selector("matriculas-eixo"))
+    assert checklist.labelClassName == "chip"
+    assert checklist.labelCheckedClassName == "chip--ativo"
+    assert checklist.inputClassName == "chip-input"
+
+
+def test_fic_toggle_de_opcao_exclusiva_e_br_radio_sem_classe_btn_do_bootstrap():
+    componente = fic_toggle("x")
+    radio = _radio(componente)
+    assert "br-radio" in radio.className.split()
+    assert not [c for c in classes(componente) if c == "btn" or c.startswith("btn-")]
+    exigir_sem_componente_do_ds_que_precisa_de_js(componente)
+
+
+def test_ordenar_eixos_preserva_cliques_e_reinsere_eixo_no_fim():
+    assert ordenar_eixos(["campus", "modalidade"], ["campus"]) == ["campus", "modalidade"]
+    assert ordenar_eixos(["modalidade"], ["campus", "modalidade"]) == ["modalidade"]
+    assert ordenar_eixos(["campus", "modalidade"], ["modalidade"]) == ["modalidade", "campus"]
+
+
+from app.components.filters import TODOS, clear_filters_button, filter_panel, select_filter
+
+
+def test_botao_limpar_filtros_e_html_button_br_button_primary_com_id_e_n_clicks():
+    botao = clear_filters_button("matriculas-limpar")
+    assert type(botao).__module__.startswith("dash.html")
+    assert botao.id == "matriculas-limpar"
+    assert botao.n_clicks == 0
+    assert {"br-button", "primary"} <= set(botao.className.split())
+    assert "Limpar Filtros" in textos(botao)
+
+
+def test_select_filter_mantem_todos_como_valor_padrao_sem_limpar_e_com_a_opcao_todos():
+    dropdown = [c for c in componentes(select_filter("f", "Campus", ["Alegrete", "Jaguari"])) if type(c).__name__ == "Dropdown"][0]
+    assert dropdown.id == "f"
+    assert dropdown.value == TODOS
+    assert dropdown.clearable is False
+    assert dropdown.options == [
+        {"label": "Todos", "value": TODOS},
+        {"label": "Alegrete", "value": "Alegrete"},
+        {"label": "Jaguari", "value": "Jaguari"},
+    ]
+
+
+def test_select_filter_nao_usa_br_select_e_tem_classe_propria_no_dropdown():
+    componente = select_filter("f", "Campus", ["Alegrete"])
+    exigir_sem_componente_do_ds_que_precisa_de_js(componente)
+    dropdown = [c for c in componentes(componente) if type(c).__name__ == "Dropdown"][0]
+    assert "filtro-dropdown" in dropdown.className.split()
+
+
+def test_filter_panel_e_uma_row_com_cada_campo_em_coluna_que_comeca_em_col_12():
+    painel = filter_panel(select_filter("a", "A", []), select_filter("b", "B", []), fic_toggle("c"))
+    assert "row" in painel.className.split()
+    assert len(painel.children) == 3
+    for coluna in painel.children:
+        assert "col-12" in coluna.className.split()
+    assert [coluna.children.children[1].id for coluna in painel.children] == ["a", "b", "c"]
+
+
+from app.components import aviso_sem_pnp
+
+TEXTO_DO_AVISO = (
+    "Os dados exibidos vêm direto do Sistec e por isso, podem divergir dos "
+    "publicados oficialmente na PNP. Trata-se de simulação para acompanhamento."
+)
+
+
+def test_aviso_sem_pnp_e_uma_observacao_discreta_sem_br_message(monkeypatch):
+    monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", False)
+    aviso = aviso_sem_pnp.make_aviso_sem_pnp()
+    assert aviso.className == "aviso-simulacao"
+    assert TEXTO_DO_AVISO in textos(aviso)
+    assert not ({"br-message", "warning"} & set(aviso.className.split()))
+
+
+def test_aviso_sem_pnp_devolve_none_com_a_correcao_ativa(monkeypatch):
+    monkeypatch.setattr(aviso_sem_pnp, "CORRECAO_PNP_ATIVA", True)
+    assert aviso_sem_pnp.make_aviso_sem_pnp() is None
+
+
+from app.components.mensagem import mensagem_ds
+
+
+@pytest.mark.parametrize("tipo,papel", [("success", "alert"), ("danger", "alert"), ("info", "status"), ("warning", "status")])
+def test_mensagem_ds_usa_a_classe_do_tipo_e_o_papel_aria_da_spec(tipo, papel):
+    mensagem = mensagem_ds(tipo, "Texto")
+    assert {"br-message", tipo} <= set(mensagem.className.split())
+    assert mensagem.role == papel
+    assert "Texto" in textos(mensagem)
+
+
+from app.components.painel_publico import cabecalho_pagina, cartao_indicador, cartoes_indicadores
+
+
+def test_cabecalho_publico_tem_contexto_e_omite_somente_data_ausente():
+    completo = cabecalho_pagina("Eficiência Acadêmica", 2026, "22/09/2026")
+    sem_data = cabecalho_pagina("Eficiência Acadêmica", 2026)
+
+    assert textos(completo) == "Eficiência Acadêmica Acompanhamento Sistec | Ano PNP 2026 Atualizado em 22/09/2026"
+    assert textos(sem_data) == "Eficiência Acadêmica Acompanhamento Sistec | Ano PNP 2026"
+    assert len(completo.children) == 2
+    assert len(sem_data.children) == 2
+    assert sem_data.children[1] is None
+
+
+def test_cartao_indicador_mantem_titulo_antes_do_valor_e_distingue_zero_de_incompleto():
+    zero = cartao_indicador("IEA", 0, "#,0.00", empty_state="dado incompleto", destaque=True)
+    incompleto = cartao_indicador("IEA", None, "#,0.00", empty_state="dado incompleto")
+
+    assert textos(zero) == "IEA 0,00"
+    assert zero.className == "kpi-figma kpi-figma--destaque"
+    assert zero.children[0].className == "rotulo"
+    assert zero.children[1].className == "valor"
+    assert textos(incompleto) == "IEA dado incompleto"
+    assert incompleto.children[1].className == "valor valor--texto"
+
+
+@pytest.mark.parametrize("tema", ["claro", "escuro"])
+def test_cartoes_publicos_usam_classes_semanticas_iguais_nos_dois_temas(tema):
+    grade = cartoes_indicadores([cartao_indicador("Taxa", 0, destaque=tema == "claro")])
+
+    assert grade.className == "kpis-figma"
+    assert "kpi-figma" in grade.children[0].className.split()

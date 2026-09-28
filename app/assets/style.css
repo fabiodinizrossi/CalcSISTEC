@@ -1,0 +1,801 @@
+/* Regras que o gov.br DS 3.7.0 não cobre. Só variáveis do DS: nenhuma cor
+   literal e nenhum ponto de quebra fora de 576, 992, 1280 e 1600px. */
+
+/* ---- Logotipo: fica sobre superfície clara nos dois temas ---- */
+
+.logo-superficie{
+  display: inline-flex;
+  background: var(--pure-0);
+  border-radius: var(--surface-rounder-md);
+  padding: var(--spacing-scale-half) var(--spacing-scale-base);
+}
+.logo-superficie img{
+  height: 48px;
+  width: auto;
+}
+
+/* ---- KPIs, filtros e medidores das páginas públicas ---- */
+
+.kpi-label{
+  font-size: var(--font-size-scale-down-01);
+  color: var(--color);
+}
+.kpi-value{
+  font-size: var(--font-size-scale-up-03);
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
+}
+
+.filter-panel{ margin: var(--spacing-scale-2x) 0; }
+.filter-label{
+  display: block;
+  font-size: var(--font-size-scale-down-01);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color);
+  margin: var(--spacing-scale-base) 0 var(--spacing-scale-half);
+}
+
+.gauge-value{
+  font-size: var(--font-size-scale-up-03);
+  font-weight: var(--font-weight-bold);
+}
+.gauge-value.gauge-verde, .gauge-situacao-verde{ color: var(--success); }
+.gauge-value.gauge-vermelho, .gauge-situacao-vermelho{ color: var(--danger); }
+.gauge-meta{
+  font-size: var(--font-size-scale-down-01);
+  color: var(--color);
+}
+.gauge-situacao{
+  font-size: var(--font-size-scale-down-01);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ---- Faixas da taxa de evasão (o texto da faixa também aparece na célula) ---- */
+
+.evasao-baixa{ background: color-mix(in srgb, var(--success) 25%, var(--background)); }
+.evasao-media{ background: color-mix(in srgb, var(--warning) 35%, var(--background)); }
+.evasao-alta{ background: color-mix(in srgb, var(--danger) 25%, var(--background)); }
+
+/* ---- Contêiner, toque e foco ---- */
+
+:root{
+  --alvo-toque-minimo: 24px;
+  --menu-largura: 240px;
+  --superficie-pagina: var(--gray-2);
+}
+
+/* A partir de 1600px o conteúdo para em --grid-tv-maxwidth e fica centralizado. */
+@media (min-width: 1600px){
+  .container-fluid{
+    max-width: var(--grid-tv-maxwidth);
+    margin-inline: auto;
+  }
+}
+
+/* Área mínima de toque de 24 x 24px nos controles interativos. */
+button, input, select, textarea, .br-button, [role="button"], .dash-dropdown-trigger{
+  min-width: var(--alvo-toque-minimo);
+  min-height: var(--alvo-toque-minimo);
+}
+
+:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: var(--spacing-scale-half);
+}
+
+/* ---- Menu: barra lateral fixa à esquerda a partir de 992px, sobreposto abaixo disso ---- */
+
+@media (min-width: 992px){
+  body{
+    display: grid;
+    grid-template-columns: var(--menu-largura) 1fr;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "cabecalho cabecalho"
+      "menu      breadcrumb"
+      "menu      conteudo"
+      "rodape    rodape";
+    min-height: 100vh;
+    padding-left: 0;
+  }
+  body > header.br-header{ grid-area: cabecalho; }
+  body > .br-menu{ grid-area: menu; }
+  body > .br-breadcrumb{ grid-area: breadcrumb; }
+  body > main#main-content{ grid-area: conteudo; }
+  body > footer.br-footer{ grid-area: rodape; }
+
+  .br-menu{
+    position: static;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    align-self: stretch;
+    width: auto;
+    height: auto;
+  }
+  .br-menu .menu-container, .br-menu.active .menu-container{ display: block; position: static; }
+  .br-menu .menu-body{ display: block; }
+  .br-menu .menu-header, .br-menu .menu-scrim{ display: none; }
+  .header-menu-trigger{ display: none; }
+  .br-menu .menu-container{ height: 100%; }
+  .br-menu .menu-panel{
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 100%;
+    background: var(--background);
+    border-right: 1px solid var(--border-color);
+    padding: var(--spacing-scale-3x) 0;
+    gap: var(--spacing-scale-half);
+  }
+  .br-menu .menu-body .menu-item{
+    padding: var(--spacing-scale-baseh) var(--spacing-scale-2x) var(--spacing-scale-baseh) var(--spacing-scale-3x);
+    font-size: var(--font-size-scale-base);
+    color: var(--color);
+    background: transparent;
+  }
+  .br-menu .menu-body a.menu-item.active{
+    background: color-mix(in srgb, var(--color-primary-default) 8%, var(--background));
+    color: var(--color-primary-default);
+    font-weight: var(--font-weight-bold);
+    padding-left: var(--spacing-scale-baseh);
+    gap: var(--spacing-scale-base);
+  }
+  .br-menu .menu-body a.menu-item.active::before{
+    content: "";
+    flex: 0 0 auto;
+    width: 4px;
+    height: 20px;
+    border-radius: 2px;
+    background: var(--color-primary-default);
+  }
+}
+
+/* Sem o core.min.js o menu não abre: fica sempre à vista, como lista de links. */
+.ds-sem-js .br-menu .menu-container{ display: block; }
+.ds-sem-js .br-menu .menu-panel{ height: auto; }
+.ds-sem-js .br-menu .menu-header, .ds-sem-js .br-menu .menu-scrim, .ds-sem-js .header-menu-trigger{ display: none; }
+
+/* ---- dcc.Dropdown (Dash 4) pelas variáveis do DS ---- */
+
+.filtro-dropdown .dash-dropdown-trigger{
+  background: var(--background);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+}
+.dash-dropdown-content{
+  background: var(--background);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+}
+.dash-dropdown-option:hover, .dash-dropdown-option:focus-visible{
+  background: var(--background-alternative);
+}
+
+/* ---- Tema escuro ----
+   O DS 3.7.0 não tem tema global: ele traz pares claro e escuro nos tokens, e o
+   modificador `.dark-mode` só em alguns componentes. `data-tema` em <html> (definido
+   por `shell/_head.html` e `tema.js`) remapeia as variáveis semânticas para os
+   pares -dark; as regras abaixo cobrem o que o DS não remapeia sozinho. */
+
+body{
+  background: var(--superficie-pagina);
+  color: var(--color);
+}
+
+main#main-content{
+  background: var(--background);
+  padding: var(--spacing-scale-3x) var(--spacing-scale-2x) var(--spacing-scale-4x);
+}
+
+@media (min-width: 992px){
+  main#main-content{
+    padding: var(--spacing-scale-4x) var(--spacing-scale-3x) var(--spacing-scale-5x);
+  }
+}
+
+:root[data-tema="escuro"]{
+  color-scheme: dark;
+  --background: var(--background-dark);
+  --background-rgb: var(--background-dark-rgb);
+  --background-alternative: var(--blue-warm-vivid-80);
+  --color: var(--color-dark);
+  --color-rgb: var(--color-dark-rgb);
+  --interactive: var(--interactive-dark);
+  --interactive-rgb: var(--interactive-dark-rgb);
+  --border-color: var(--gray-60);
+  --border-color-alternative: var(--gray-40);
+  --visited: var(--visited-dark);
+  --hover: var(--hover-dark);
+  --pressed: var(--pressed-dark);
+  --focus-color: var(--focus-color-dark);
+  --focus: var(--focus-color-dark);
+  --superficie-pagina: var(--background-dark);
+}
+
+/* Componentes que fixam os tokens claros ou não têm `.dark-mode` no DS 3.7.0. */
+:root[data-tema="escuro"] .br-header{
+  background: var(--background);
+  color: var(--color);
+  border-bottom: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-menu{
+  --menu-background-submenu: var(--background-alternative);
+}
+:root[data-tema="escuro"] .br-menu .menu-body a.menu-item.active{
+  background: var(--background-alternative);
+  color: var(--pure-0);
+}
+:root[data-tema="escuro"] .br-menu .menu-panel{
+  background: var(--background);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-footer{
+  background: var(--background);
+  color: var(--color);
+  border-top: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-message,
+:root[data-tema="escuro"] .br-message.info,
+:root[data-tema="escuro"] .br-message.success,
+:root[data-tema="escuro"] .br-message.warning,
+:root[data-tema="escuro"] .br-message.danger{
+  --message-background: var(--background-alternative);
+  --message-text: var(--color);
+  --message-color-icon: var(--color);
+  background: var(--background-alternative);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-card{
+  background: var(--background-alternative);
+  color: var(--color);
+  border: 1px solid var(--border-color);
+}
+:root[data-tema="escuro"] .br-table{
+  background: var(--background);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-table th,
+:root[data-tema="escuro"] .br-table td{
+  border-color: var(--border-color);
+}
+:root[data-tema="escuro"] .tabela-landing tbody tr:nth-child(even) td{
+  background: var(--background-alternative);
+}
+:root[data-tema="escuro"] .br-input,
+:root[data-tema="escuro"] .br-textarea{
+  --color: var(--color-dark);
+  --color-rgb: var(--color-dark-rgb);
+  --text-color: var(--color-dark);
+  --interactive: var(--interactive-dark);
+  --interactive-rgb: var(--interactive-dark-rgb);
+  --focus-color: var(--focus-color-dark);
+  --focus: var(--focus-color-dark);
+  color: var(--color);
+}
+:root[data-tema="escuro"] .br-input input,
+:root[data-tema="escuro"] .br-input select,
+:root[data-tema="escuro"] .br-textarea textarea{
+  background: var(--background);
+  color: var(--color);
+  border-color: var(--border-color-alternative);
+}
+:root[data-tema="escuro"] .br-button.secondary,
+:root[data-tema="escuro"] .br-button.circle:not(.primary){
+  background-color: var(--background);
+  color: var(--interactive);
+  border-color: var(--interactive);
+}
+
+/* ---- Sem rolagem lateral nas telas estreitas (achado na verificação visual) ---- */
+
+.br-message .content{
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+pre{
+  max-width: 100%;
+  overflow-x: auto;
+}
+.br-button{
+  max-width: 100%;
+  height: auto;
+  min-height: var(--button-size);
+  white-space: normal;
+}
+
+/* ---- Cabeçalho público (visual do Figma) ---- */
+
+.painel-publico{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  border-bottom: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.painel-publico .header-top{
+  min-height: 72px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-baseh) var(--spacing-scale-2x);
+}
+.painel-publico .header-titulo{
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--font-size-scale-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--pure-0);
+  line-height: 1.2;
+}
+.painel-publico .header-actions{
+  margin-left: auto;
+}
+.painel-publico .painel-tema{
+  background: transparent;
+  color: var(--pure-0);
+  border: 1px solid var(--pure-0);
+  border-radius: var(--surface-rounder-pill);
+  font-size: 12px;
+  padding: 0 var(--spacing-scale-baseh);
+}
+.painel-publico .painel-tema:hover{
+  background: color-mix(in srgb, var(--pure-0) 15%, transparent);
+  color: var(--pure-0);
+}
+.painel-publico .painel-menu{
+  background: transparent;
+  color: var(--pure-0);
+  border-color: var(--pure-0);
+}
+@media (min-width: 576px){
+  .painel-publico .header-titulo{ font-size: var(--font-size-scale-up-03); }
+  .painel-publico .painel-tema{ font-size: 13px; }
+}
+@media (min-width: 992px){
+  .painel-publico .header-top{
+    gap: var(--spacing-scale-2x);
+    padding: 0 var(--spacing-scale-3x);
+  }
+  .painel-publico .painel-tema{ padding: 0 var(--spacing-scale-3x); }
+}
+
+.br-footer.painel-publico{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  min-height: 48px;
+  border-top: none;
+}
+.br-footer.painel-publico .container-fluid{ padding: var(--spacing-scale-2x) var(--spacing-scale-3x); }
+.br-footer.painel-publico a{ color: var(--pure-0); }
+
+/* ---- Página inicial Matrículas (visual do Figma) ---- */
+
+.painel-landing,
+.painel-dashboard{
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-3x);
+}
+
+.painel-landing .cabecalho-pagina,
+.painel-dashboard .cabecalho-pagina{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-scale-base) var(--spacing-scale-2x);
+}
+.painel-landing .cabecalho-pagina .titulo-bloco,
+.painel-dashboard .cabecalho-pagina .titulo-bloco{
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-half);
+}
+.painel-landing .cabecalho-pagina h1,
+.painel-dashboard .cabecalho-pagina h1{
+  font-size: 24px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
+  margin: 0;
+  line-height: 1.2;
+}
+.painel-landing .cabecalho-pagina .subtitulo,
+.painel-dashboard .cabecalho-pagina .subtitulo{
+  font-size: 13px;
+  color: var(--gray-60);
+}
+.painel-landing .cabecalho-pagina .atualizado,
+.painel-dashboard .cabecalho-pagina .atualizado{
+  margin-left: 0;
+  font-size: 12px;
+  color: var(--gray-60);
+  white-space: nowrap;
+}
+
+@media (min-width: 992px){
+  .painel-landing .cabecalho-pagina, .painel-dashboard .cabecalho-pagina{ align-items: flex-end; }
+  .painel-landing .cabecalho-pagina .atualizado, .painel-dashboard .cabecalho-pagina .atualizado{ margin-left: auto; }
+}
+
+.kpis-figma{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-scale-baseh);
+}
+.kpi-figma{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-3x);
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+}
+.kpi-figma .rotulo{
+  font-size: var(--font-size-scale-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.kpi-figma .valor{
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color);
+  overflow-wrap: anywhere;
+}
+.kpi-figma .valor--texto{
+  font-size: var(--font-size-scale-base);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+}
+.kpi-figma--destaque{
+  background: color-mix(in srgb, var(--color-primary-default) 8%, var(--background));
+  border-color: var(--color-primary-pastel-01);
+}
+.kpi-figma--destaque .valor{
+  color: var(--color-primary-default);
+}
+:root[data-tema="escuro"] .kpi-figma--destaque{
+  background: var(--background-alternative);
+  border-color: var(--interactive);
+}
+:root[data-tema="escuro"] .kpi-figma--destaque .valor{
+  color: var(--interactive);
+}
+
+.aviso-simulacao{
+  margin: var(--spacing-scale-2x) 0 0;
+  font-size: 12px;
+  color: var(--gray-60);
+}
+:root[data-tema="escuro"] .aviso-simulacao{
+  color: var(--gray-20);
+}
+
+.card-chips{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-scale-baseh) var(--spacing-scale-2x);
+  background: var(--background);
+  border-radius: 12px;
+  padding: var(--spacing-scale-2x);
+}
+.card-chips .rotulo-chips{
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color);
+}
+.card-chips .chips-grupo{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-scale-base) var(--spacing-scale-baseh);
+}
+.card-chips .form-check{ display: inline-flex; padding: 0; margin: 0; }
+.card-chips input{ position: absolute; opacity: 0; width: 0; height: 0; }
+.card-chips label.chip{
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--spacing-scale-4x);
+  padding: var(--spacing-scale-base) var(--spacing-scale-2x);
+  border: 1px solid var(--interactive);
+  border-radius: 999px;
+  color: var(--interactive);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.card-chips label.chip--ativo{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  font-weight: var(--font-weight-bold);
+}
+.card-chips .chip-input:focus-visible + label.chip,
+.card-filtros .seg-input:focus-visible + label.seg{
+  outline: 3px solid var(--focus-color);
+  outline-offset: var(--spacing-scale-half);
+}
+
+.matriz-figma{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.matriz-figma > .rolagem-tabela{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.matriz-figma > .rolagem-tabela:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: -3px;
+}
+.matriz-figma .tabela-landing{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--background);
+  min-width: 790px;
+}
+.tabela-landing .col-total{ width: 160px; }
+.tabela-landing .col-concluidas{ width: 110px; }
+.tabela-landing .col-integralizadas{ width: 130px; }
+.tabela-landing .col-em-curso{ width: 120px; }
+.tabela-landing .col-evasoes{ width: 110px; }
+.tabela-landing thead th{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  font-size: 12px;
+  font-weight: var(--font-weight-regular);
+  padding: var(--spacing-scale-base) var(--spacing-scale-baseh);
+  border: 1px solid var(--color-primary-default);
+  text-align: right;
+}
+.tabela-landing thead th[rowspan="2"]:first-child,
+.tabela-landing thead th[colspan]{
+  text-align: center;
+}
+.tabela-landing thead th.negrito{
+  font-weight: var(--font-weight-bold);
+}
+.tabela-landing tbody td{
+  font-size: 13px;
+  color: var(--color);
+  padding: var(--spacing-scale-base) var(--spacing-scale-baseh);
+  border-bottom: 1px solid var(--gray-10);
+  height: 36px;
+}
+.tabela-landing tbody tr:nth-child(even) td{
+  background: var(--gray-2);
+}
+.tabela-landing td.campus{ text-align: left; }
+.tabela-hierarquica .matriz-rotulo{
+  align-items: center;
+  display: flex;
+  gap: var(--spacing-scale-base);
+  padding-left: calc(var(--nivel, 0) * var(--spacing-scale-3x));
+}
+.tabela-publica-quadro .rolagem-tabela{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tabela-publica-quadro .tabela-publica{
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+}
+.tabela-publica-quadro .tabela-publica thead th{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  text-align: left;
+}
+.tabela-publica-quadro .tabela-publica th,
+.tabela-publica-quadro .tabela-publica td{
+  padding: var(--spacing-scale-base) var(--spacing-scale-baseh);
+  border-bottom: 1px solid var(--border-color);
+}
+.tabela-publica-quadro .tabela-publica .num{ text-align: right; }
+.tabela-publica-quadro .tabela-publica tfoot td{
+  font-weight: var(--font-weight-bold);
+  border-top: 2px solid var(--color-primary-default);
+}
+.tabela-hierarquica tr[class^="matriz-nivel-"]:not(.matriz-nivel-0) td:first-child{
+  border-left: 3px solid color-mix(in srgb, var(--color-primary-default) 35%, transparent);
+}
+.matriz-expansor,
+.matriz-expansor-espaco{
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 24px;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+.matriz-expansor{
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--interactive);
+  cursor: pointer;
+  padding: 0;
+}
+.matriz-expansor:hover{ background: color-mix(in srgb, var(--interactive) 12%, transparent); }
+.matriz-expansor:focus-visible{ outline: 3px solid var(--focus-color); }
+.matriz-expansor[aria-expanded="false"] .fa-chevron-down{ transform: rotate(-90deg); }
+.matriz-expansor .fa-chevron-down{ transition: transform .15s ease; }
+.tabela-landing td.num{ text-align: right; }
+.tabela-landing td.vazio{ color: var(--gray-40); }
+.tabela-landing td.evasao{
+  text-align: right;
+  color: var(--danger);
+}
+.tabela-landing tfoot td{
+  font-weight: var(--font-weight-bold);
+  border-top: 2px solid var(--color-primary-default);
+  background: color-mix(in srgb, var(--color-primary-default) 10%, var(--background));
+  height: 36px;
+}
+
+/* Ordenacao compartilhada pelas tabelas Dash e administrativas. */
+table thead th.cabecalho-ordenavel{
+  cursor: pointer;
+  padding-right: 2rem;
+  position: relative;
+  user-select: none;
+}
+table thead th.cabecalho-ordenavel::after{
+  content: "\2195";
+  font-size: .85em;
+  opacity: .55;
+  position: absolute;
+  right: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+table thead th.cabecalho-ordenavel[aria-sort="descending"]::after{
+  content: "\2193";
+  opacity: 1;
+}
+table thead th.cabecalho-ordenavel[aria-sort="ascending"]::after{
+  content: "\2191";
+  opacity: 1;
+}
+table thead th.cabecalho-ordenavel:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: -3px;
+}
+.dica-rolagem{
+  font-size: 12px;
+  color: var(--gray-60);
+  margin: var(--spacing-scale-base) var(--spacing-scale-baseh);
+}
+@media (min-width: 992px){
+  .dica-rolagem{ display: none; }
+}
+:root[data-tema="escuro"] .dica-rolagem{ color: var(--gray-20); }
+
+.card-filtros{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-scale-2x);
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: var(--spacing-scale-2x);
+}
+.card-filtros .filter-item{
+  flex: 1 1 185px;
+  width: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-half);
+}
+@media (min-width: 992px){
+  .card-filtros .filter-item{ flex: 0 0 185px; width: 185px; }
+}
+.card-filtros .filter-label{
+  font-size: 12px;
+  font-weight: var(--font-weight-regular);
+  color: var(--gray-60);
+  margin: 0;
+}
+.card-filtros .filtro-dropdown .dash-dropdown-trigger{
+  min-height: 40px;
+  border-radius: var(--surface-rounder-sm);
+}
+.card-filtros .fic-segmentado{
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-half);
+}
+.card-filtros .fic-segmentado .seg-grupo{ display: flex; }
+.card-filtros .fic-segmentado .form-check{ display: inline-flex; padding: 0; margin: 0; }
+.card-filtros .fic-segmentado input{ position: absolute; opacity: 0; width: 0; height: 0; }
+.card-filtros .fic-segmentado label.seg{
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--spacing-scale-2x);
+  border: 1px solid var(--interactive);
+  color: var(--interactive);
+  font-size: 13px;
+  line-height: 1;
+  background: var(--background);
+  cursor: pointer;
+}
+.card-filtros .fic-segmentado label.seg:first-of-type{
+  border-radius: var(--surface-rounder-sm) 0 0 var(--surface-rounder-sm);
+}
+.card-filtros .fic-segmentado label.seg:last-of-type{
+  border-radius: 0 var(--surface-rounder-sm) var(--surface-rounder-sm) 0;
+  margin-left: -1px;
+}
+.card-filtros .fic-segmentado label.seg--ativo{
+  background: var(--color-primary-default);
+  color: var(--pure-0);
+  font-weight: var(--font-weight-bold);
+}
+.card-filtros .br-button.primary{
+  border-radius: 999px;
+  font-weight: var(--font-weight-bold);
+  min-height: 40px;
+}
+
+/* Escolha de pasta do envio (correcoes-envio-pastas). O widget e proprio — o
+   .br-upload do pacote esconde o input sem dar controle visivel —, entao a
+   superficie do campo e desenhada aqui, so com tokens do DS (AD-003). */
+.campo-pasta{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-scale-base);
+  padding: var(--spacing-scale-2x);
+}
+.campo-pasta .br-button.secondary{
+  align-self: flex-start;
+  border-color: var(--interactive);
+  color: var(--interactive);
+}
+.campo-pasta .br-button.secondary:hover{
+  background: color-mix(in srgb, var(--interactive) 12%, transparent);
+}
+.campo-pasta .br-button:focus-visible{
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
+}
+.campo-pasta-status{
+  color: var(--gray-60);
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+}
+:root[data-tema="escuro"] .campo-pasta-status{ color: var(--gray-20); }
+
+/* Cards de origem em "Atualizar dados" (cards-atualizar-dados). A classe
+   .br-card do pacote e position:absolute (feita para menu flutuante/
+   cookiebar, ver .br-cookiebar .br-card no core.min.css) e quebraria o
+   layout de pagina; a superficie aqui usa so os tokens de card do DS
+   (AD-003), no mesmo padrao ja usado por .card-filtros. */
+.card-atualizar{
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--surface-rounder-md);
+  box-shadow: var(--surface-shadow-sm);
+  flex: 1 1 0;
+  padding: var(--card-padding, var(--spacing-scale-2x));
+}
+.card-atualizar > h2:first-child{ margin-top: 0; }

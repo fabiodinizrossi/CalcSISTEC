@@ -1,0 +1,35 @@
+{% extends "_base.html" %}
+{% from "shell/_macros.html" import campo, mensagem %}
+{% block title %}Acesso ao sistema - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+    <h1>Acesso ao sistema</h1>
+
+    {% if erro_global %}{{ mensagem("danger", erro_global) }}{% endif %}
+
+    <form method="post" novalidate>
+      {{ campo("email", "E-mail", email, erro=erro_email, ajuda="Use o e-mail do administrador do painel.", obrigatorio=True, tipo="email") }}
+      {{ campo("senha", "Senha", "", erro=erro_senha, ajuda="Mínimo de 8 caracteres.", obrigatorio=True, tipo="password") }}
+
+      <p class="mt-2"><a href="/recuperar-acesso">Esqueci minha senha</a></p>
+
+      <button type="submit" class="br-button primary block" data-loading="Entrando...">Entrar</button>
+    </form>
+  </div>
+</div>
+<script>
+(function () {
+  var form = document.querySelector("main form");
+  var btn = document.querySelector("main button[type=submit]");
+  var invalido = document.querySelector("main [aria-invalid=true]");
+  if (invalido) { invalido.focus(); }
+  if (form && btn) {
+    form.addEventListener("submit", function () {
+      btn.disabled = true;
+      btn.textContent = btn.dataset.loading;
+    });
+  }
+})();
+</script>
+{% endblock %}

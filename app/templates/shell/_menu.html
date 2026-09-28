@@ -1,0 +1,23 @@
+{% if shell.com_menu %}
+<div class="br-menu" id="main-navigation">
+  <div class="menu-container">
+    <div class="menu-panel">
+      <div class="menu-header">
+        <div class="menu-close">
+          <button class="br-button circle" type="button" aria-label="Fechar o menu" data-dismiss="menu">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <nav class="menu-body" aria-label="Navegação principal">
+        {% for item in shell.menu %}
+        <a class="menu-item{% if item.ativo %} active{% endif %}" href="{{ item.href }}"{% if item.ativo %} aria-current="page"{% endif %}>
+          <span class="content">{{ item.rotulo }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
+    <div class="menu-scrim" data-dismiss="menu" tabindex="0"></div>
+  </div>
+</div>
+{% endif %}

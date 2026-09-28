@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+{% from "shell/_macros.html" import campo, mensagem, botoes_formulario %}
+{% block title %}{{ titulo_pagina }} - Pesquisa Institucional - SISTEC{% endblock %}
+{% block content %}
+<h1>{{ titulo_pagina }}</h1>
+
+{% if mensagem_erro %}{{ mensagem("danger", mensagem_erro) }}{% endif %}
+
+{% set campos = [("id_perfil", "Identificador do perfil", True)] %}
+{% if inclusao %}{% set campos = campos + [("nome_perfil", "Nome do perfil", True)] %}{% endif %}
+{% set campos = campos + [
+  ("co_unidade", "Código da unidade", not inclusao),
+  ("cidade", "Cidade", not inclusao),
+  ("nome_unidade", "Nome da unidade", not inclusao),
+] %}
+
+<form method="post" action="{{ acao }}" novalidate>
+  <div class="row">
+    {% for nome, rotulo, obrigatorio in campos %}
+    <div class="col-12 col-md-6">
+      {{ campo(nome, rotulo, valores[nome], erro=erros[nome], obrigatorio=obrigatorio) }}
+    </div>
+    {% endfor %}
+  </div>
+  {{ botoes_formulario("/admin/campi", "Salvar") }}
+</form>
+{% endblock %}

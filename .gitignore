@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+*.sqlite3
+.env
+*.log
+.pytest_cache/
+.test-*/
+.verifier-scratch-*/
+APAGAR/
+.agents/
+.uv-cache/
+.uv-python/
+app/data/uploads/*
+!app/data/uploads/**/.gitkeep
+
+# Modelos do Figma da feature govbr-design-system (~87 MB), so referencia local
+.specs/features/**/*.svg
