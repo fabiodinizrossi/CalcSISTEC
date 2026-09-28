@@ -413,7 +413,7 @@ parte variável aparece como `<execucao_id>` (ex.:
 
 ---
 
-### T9: Mover a tela de atualizar, salvar e descartar; enxugar `app.py`
+### [x] T9: Mover a tela de atualizar, salvar e descartar; enxugar `app.py`
 
 **What**: `GET /admin/atualizar` (`:277`), `GET /admin/atualizar/execucao`
 (`:650`), `/admin/atualizar/execucoes/<execucao_id>/salvar` (`:588`) e

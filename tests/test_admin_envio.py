@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
 from app.data import instalacao as instalacao_mod  # noqa: E402
+from app.rotas import atualizar as rota_atualizar  # noqa: E402
 from app.rotas import envio as rota_envio  # noqa: E402
 from app.sistec import envio, execucoes  # noqa: E402
 from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA  # noqa: E402
@@ -113,9 +114,7 @@ def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
     monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     monkeypatch.setattr(rota_envio, "listar_campi", lambda *a, **k: CAMPI)
-    monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
     monkeypatch.setattr(rota_envio, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
-    monkeypatch.setattr(app_module, "historico_encerrar", _encerrar)
     monkeypatch.setattr(rota_envio, "historico_encerrar", _encerrar)
     yield
     execucoes._REGISTRO.clear()
@@ -271,7 +270,7 @@ def test_previa_pendente_recusa_um_segundo_envio(sessao):
 
 
 def test_baixa_em_andamento_recusa_o_envio(sessao, monkeypatch):
-    monkeypatch.setattr(app_module.navegador, "status", lambda email: {"ativa": True})
+    monkeypatch.setattr(rota_envio.navegador, "status", lambda email: {"ativa": True})
     ciclos, matriculas = _envio_valido(("U1",))
     resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
 
@@ -280,7 +279,7 @@ def test_baixa_em_andamento_recusa_o_envio(sessao, monkeypatch):
 
 
 def test_envio_em_andamento_faz_a_baixa_do_sistec_devolver_409(sessao, monkeypatch):
-    monkeypatch.setattr(app_module.navegador, "status", lambda email: None)
+    monkeypatch.setattr(rota_envio.navegador, "status", lambda email: None)
     ciclos, matriculas = _envio_valido(("U1",))
     sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
 
@@ -340,8 +339,8 @@ def banco_temporario(tmp_path, monkeypatch):
 
     caminho = str(tmp_path / "envio.db")
     init_db(caminho)
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
     monkeypatch.setattr(rota_envio, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(rota_atualizar, "DEFAULT_DB_PATH", caminho)
     return caminho
 
 

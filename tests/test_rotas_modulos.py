@@ -28,6 +28,10 @@ ROTAS_ESPERADAS = [
     ("/admin/atualizar/desfazer", "POST", "publicacao_bp"),
     ("/admin/historico", "GET", "publicacao_bp"),
     ("/admin/atualizar/envio", "POST", "envio_bp"),
+    ("/admin/atualizar", "GET", "atualizar_bp"),
+    ("/admin/atualizar/execucao", "GET", "atualizar_bp"),
+    ("/admin/atualizar/execucoes/<execucao_id>/salvar", "POST", "atualizar_bp"),
+    ("/admin/atualizar/execucoes/<execucao_id>/descartar", "POST", "atualizar_bp"),
 ]
 
 
@@ -43,6 +47,13 @@ def test_rota_mora_no_blueprint_da_area(url, metodo, prefixo):
     endpoint = _endpoint(url, metodo)
     assert endpoint is not None, f"{metodo} {url} não está registrada"
     assert endpoint.startswith(prefixo + "."), f"{metodo} {url} está em {endpoint}, esperado {prefixo}"
+
+
+def test_app_py_so_monta_o_app():
+    texto = (RAIZ / "app" / "app.py").read_text(encoding="utf-8")
+    assert "@server.route" not in texto
+    assert "before_request" not in texto
+    assert len(texto.splitlines()) <= 150
 
 
 def test_pacote_rotas_existe_com_modulo_comum():

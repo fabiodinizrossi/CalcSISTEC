@@ -15,6 +15,8 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.rotas import atualizar as rota_atualizar  # noqa: E402
+from app.rotas import envio as rota_envio  # noqa: E402
 from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.data import ingest, versoes  # noqa: E402
 from app.rotas import comum  # noqa: E402
@@ -55,8 +57,9 @@ def ambiente(monkeypatch):
 
     monkeypatch.setattr(ingest, "montar_versao_interna", montar)
     monkeypatch.setattr(versoes, "salvar_interna", gravar)
-    monkeypatch.setattr(app_module, "historico_iniciar", _iniciar)
-    monkeypatch.setattr(app_module, "historico_encerrar", _encerrar)
+    monkeypatch.setattr(rota_envio, "historico_iniciar", _iniciar)
+    monkeypatch.setattr(rota_envio, "historico_encerrar", _encerrar)
+    monkeypatch.setattr(rota_atualizar, "historico_encerrar", _encerrar)
     yield
     execucoes._REGISTRO.clear()
 
@@ -77,8 +80,10 @@ def banco_temporario(tmp_path, monkeypatch):
 
     caminho = str(tmp_path / "salvar.db")
     init_db(caminho)
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
-    monkeypatch.setattr(app_module, "ano_base_ativo", lambda: ano_base_ativo(caminho))
+    monkeypatch.setattr(rota_envio, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(rota_atualizar, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(rota_envio, "ano_base_ativo", lambda: ano_base_ativo(caminho))
+    monkeypatch.setattr(rota_atualizar, "ano_base_ativo", lambda: ano_base_ativo(caminho))
     return caminho
 
 
