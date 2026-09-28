@@ -1,17 +1,11 @@
-"""Servidor local que imita o Sistec — feature `002-baixador-planilhas-sistec`,
-ações T014/T062 de `actions.md`.
-
-Cobre a interface descrita em `interfaces/sistec-http.md` §2, já com as
-correções da F0 (`f0-resultado.md`), e o caminho usado pelo navegador
-controlado pelo CalcSISTEC (`app/sistec/navegador.py`):
+"""Servidor local que imita a interface HTTP do Sistec para testes.
 
 - login fake com cookie de sessão (sem login, as exportações devolvem a
   página de login em HTML, como numa sessão expirada);
 - tela de perfis sem `<select>`: itens `<div>` sem classe, renderizados por JS
   depois do carregamento, com o id do perfil só no campo oculto `tipo`
-  depois do clique (achado 3 da F0), e um perfil por papel (Assessor/Gestor,
-  achado 2);
-- troca de perfil por `POST /index/index` (achado 1), guardada em cookie;
+  depois do clique, e um perfil por papel (Assessor/Gestor);
+- troca de perfil por `POST /index/index`, guardada em cookie;
 - planilhas CSV `;` cp1252 com dados sintéticos do campus ativo (sem dados
   pessoais reais).
 
@@ -174,7 +168,7 @@ class HandlerSimulado(BaseHTTPRequestHandler):
         elif not self._logado():
             self._responder_login()
         elif caminho == "/index/index":
-            # Achado 1 da F0: troca de perfil é POST, sem query string.
+            # Troca de perfil por POST, sem query string.
             tipo = (corpo.get("tipo") or [""])[0]
             if tipo not in UNIDADE_POR_PERFIL:
                 self._responder_html("<html><body>perfil inválido</body></html>", status=400)

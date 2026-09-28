@@ -25,6 +25,7 @@ ALVOS_LIMPOS = [
     "app/domain", "app/data", "app/sistec", "app/pages", "app/components",
     "app/rotas", "app/app.py", "app/shell.py", "app/auth.py",
     "app/config.py", "app/admin_campi.py", "app/__init__.py", "run.py",
+    "scripts",
 ]
 
 
@@ -84,3 +85,13 @@ def test_todos_os_modulos_app_estao_cobertos():
     modulos = {nome for nome in rastreados if nome.endswith(".py")}
     cobertos = {caminho.relative_to(RAIZ).as_posix() for alvo in ALVOS_LIMPOS for caminho in _arquivos(alvo)}
     assert not modulos - cobertos, f"Módulos sem teste de higiene: {sorted(modulos - cobertos)}"
+
+
+def test_relatorio_de_prontidao_sem_numeracao_de_tarefas(capsys):
+    from scripts.verificar_prontidao_cutover import imprimir_relatorio
+
+    imprimir_relatorio([])
+    saida = capsys.readouterr().out
+
+    assert "Tarefa" not in saida
+    assert "[ ] Paridade com o Power BI conferida (.specs/features/mvp-2-paridade/relatorio-paridade.md)" in saida

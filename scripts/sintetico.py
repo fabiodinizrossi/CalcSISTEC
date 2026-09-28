@@ -1,5 +1,4 @@
-"""Dados sintéticos do Sistec no formato real das exportações (`002-baixador-
-planilhas-sistec`, T062).
+"""Dados sintéticos do Sistec no formato real das exportações.
 
 Gera as planilhas de ciclo e de matrícula com a estrutura exata que o Sistec
 exporta (CSV separado por `;`, codificação cp1252): 37 colunas na de ciclo e
@@ -20,11 +19,8 @@ import random
 
 ANO_BASE = 2026
 
-# `MES_DE_OCORRENCIA` no Sistec real vem por extenso, em português
-# ("JUNHO 2026") — o simulador gerava "06/2026", formato que a extração real
-# nunca traz e que `app.domain.shared.parsear_mes_ocorrencia` não reconhece.
-# Dado sintético fora do formato real escondia a regra do mês de ocorrência
-# (MAT-01) do próprio modo de teste.
+# `MES_DE_OCORRENCIA` vem por extenso no Sistec real ("JUNHO 2026").
+# O formato também exercita a regra do mês de ocorrência no modo de teste.
 MESES_PT = {
     1: "JANEIRO",
     2: "FEVEREIRO",

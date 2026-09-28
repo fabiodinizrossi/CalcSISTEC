@@ -679,7 +679,7 @@ na saída do script sem esse filtro.
 
 ---
 
-### T15: Limpar `scripts/` e a saída do script de prontidão
+### [x] T15: Limpar `scripts/` e a saída do script de prontidão
 
 **What**: Mesmo trabalho de T10 em `scripts/`, mais a linha impressa
 `"[ ] Paridade 100% em parity_specs.md/parity_tests/ (Tarefa 11)"` de
