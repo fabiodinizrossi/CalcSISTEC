@@ -22,6 +22,7 @@ from werkzeug.datastructures import FileStorage
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.sistec import envio, execucoes  # noqa: E402
 from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA  # noqa: E402
 
@@ -109,7 +110,7 @@ def ambiente(monkeypatch):
     """Dublês de campi e histórico + registro de execuções limpo."""
     HISTORICO.clear()
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CAMPI)
     monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
     monkeypatch.setattr(app_module, "historico_encerrar", _encerrar)
@@ -477,7 +478,7 @@ def test_unidade_cadastrada_pelo_envio_aparece_nas_paginas_de_cadastro(sessao, b
 
     monkeypatch.setattr(admin_campi, "DB_PATH", banco_temporario)
     monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
 
     ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]
     matriculas = [_matricula("C9", "M9", "U9")]

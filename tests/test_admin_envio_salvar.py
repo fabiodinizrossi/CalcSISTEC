@@ -15,6 +15,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.data import ingest, versoes  # noqa: E402
 from app.rotas import comum  # noqa: E402
 from app.sistec import execucoes  # noqa: E402
@@ -43,7 +44,7 @@ def ambiente(monkeypatch):
     HISTORICO.clear()
     GRAVACOES.clear()
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
 
     def montar(conjunto, campi_falhos, db_path=None, ano_base=None):
         GRAVACOES.append({"campi_falhos": set(campi_falhos), "ano_base": ano_base})

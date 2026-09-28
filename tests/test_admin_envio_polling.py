@@ -15,6 +15,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.data.transform import COLUNAS_PII  # noqa: E402
 from app.sistec import execucoes  # noqa: E402
 
@@ -27,7 +28,7 @@ CAMPI_BAIXA = [{"id_perfil": "1", "nome_perfil": "Assessor A", "co_unidade": "U1
 @pytest.fixture(autouse=True)
 def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     monkeypatch.setattr(app_module.navegador, "status", lambda email: None)
     yield
     execucoes._REGISTRO.clear()

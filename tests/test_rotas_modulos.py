@@ -19,6 +19,8 @@ ROTAS_ESPERADAS = [
     ("/admin/login", "POST", "acesso_bp"),
     ("/admin/logout", "GET", "acesso_bp"),
     ("/recuperar-acesso", "GET", "acesso_bp"),
+    ("/admin/instalacao", "GET", "instalacao_bp"),
+    ("/admin/instalacao", "POST", "instalacao_bp"),
 ]
 
 

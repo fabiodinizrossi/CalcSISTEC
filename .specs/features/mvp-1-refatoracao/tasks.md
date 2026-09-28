@@ -256,7 +256,7 @@ e outros achados com `git grep`) passam a trocar em `app.rotas.acesso`.
 
 ---
 
-### T4: Mover a instalação para `app/rotas/instalacao.py`
+### [x] T4: Mover a instalação para `app/rotas/instalacao.py`
 
 **What**: `/admin/instalacao` (`:140`), o `before_request` `_exigir_instalacao`
 (`:227`) e `_ROTAS_SEM_INSTALACAO` (`:224`) vão para `instalacao_bp`.
@@ -277,9 +277,9 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 **Done when**:
 
-- [ ] Sem instalação concluída, uma tela administrativa autenticada continua redirecionando para `/admin/instalacao` (testes existentes verdes)
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Sem instalação concluída, uma tela administrativa autenticada continua redirecionando para `/admin/instalacao` (testes existentes verdes)
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: integration
 **Gate**: full

@@ -7,6 +7,7 @@ import pytest
 from werkzeug.security import generate_password_hash
 
 from app import app as app_module
+from app.data import instalacao as instalacao_mod
 from app.rotas import acesso
 
 
@@ -20,7 +21,7 @@ def cliente_autenticado(cliente, monkeypatch):
     with cliente.session_transaction() as sessao:
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     return cliente
 
 

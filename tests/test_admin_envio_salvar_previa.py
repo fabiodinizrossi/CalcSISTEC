@@ -13,6 +13,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.data.ingest import preparar_versao  # noqa: E402
 from app.data.schema import get_connection, init_db  # noqa: E402
 from app.sistec import execucoes  # noqa: E402
@@ -24,7 +25,7 @@ ADMIN = "pi@ife.edu.br"
 @pytest.fixture(autouse=True)
 def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: 1)
     monkeypatch.setattr(app_module, "historico_encerrar", lambda *a, **k: None)
     yield
