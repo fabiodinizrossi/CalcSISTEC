@@ -1,16 +1,15 @@
-"""Fonte candidata da prévia (`previa-paginas-publicas`, T2): SQLite nomeado
-em memória (`file:previa-<id>?mode=memory&cache=shared`) com as tabelas que
-`app.data.consulta` lê nas páginas públicas — as quatro tabelas do candidato
-(T1), o `campus` publicado, a `config` (ano-base) e `estado_versoes` sem data
-de publicação.
+"""Fonte candidata da prévia: SQLite nomeado em memória
+(`file:previa-<id>?mode=memory&cache=shared`) com as tabelas que
+`app.data.consulta` lê nas páginas públicas — as quatro tabelas do candidato,
+o `campus` publicado, a `config` (ano-base) e `estado_versoes` sem data de
+publicação.
 
 Um banco nomeado em memória morre quando a última conexão fecha; a conexão
 âncora o mantém vivo enquanto a fonte existir. `abrir_leitura` devolve uma
 conexão nova somente leitura (`query_only=ON`). Nenhum arquivo em disco e
-nenhuma coluna pessoal (as tabelas vêm do candidato, já sem PII — PVP-03,
-`RISK-008`).
+nenhuma coluna pessoal (as tabelas vêm do candidato, já sem PII).
 
-A âncora é criada com `check_same_thread=False` (T21): o Flask atende cada
+A âncora é criada com `check_same_thread=False`: o Flask atende cada
 requisição numa thread, então a fonte aberta no envio é fechada por outra
 thread no Salvar/Descartar. A serialização continua sendo a de
 `execucoes.com_trava`, não a do `sqlite3` — a flag só remove a checagem de
@@ -61,11 +60,11 @@ class FontePrevia:
 
 
 def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
-    """Cria a fonte em memória a partir do `candidato` (T1: dict com
-    `tabelas` e `ano_base`). `campus_publico`: DataFrame de campus (colunas
-    `co_unidade`, `cidade`, `nome_unidade`); se None, o fallback lê
-    `interna_campus` de `db_path` (CPR-06: é o que o Publicar leva ao ar).
-    Não toca nem grava no banco publicado."""
+    """Cria a fonte em memória a partir do `candidato` (dict com `tabelas` e
+    `ano_base`). `campus_publico`: DataFrame de campus (colunas `co_unidade`,
+    `cidade`, `nome_unidade`); se None, o fallback lê `interna_campus` de
+    `db_path` (é o que o Publicar leva ao ar). Não toca nem grava no banco
+    publicado."""
     tabelas = candidato["tabelas"]
     ano_base = candidato["ano_base"]
 
@@ -79,7 +78,7 @@ def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
             conn.close()
 
     nome = f"file:previa-{secrets.token_urlsafe(16)}?mode=memory&cache=shared"
-    # `check_same_thread=False` (T21): o Flask atende cada requisição numa
+    # `check_same_thread=False`: o Flask atende cada requisição numa
     # thread, então a fonte aberta no envio é fechada por outra thread no
     # Salvar/Descartar. Todo acesso à âncora já é serializado por
     # `execucoes.com_trava`, então nunca há duas threads na conexão ao mesmo
@@ -103,7 +102,7 @@ def abrir_fonte_previa(candidato, campus_publico=None, db_path=DEFAULT_DB_PATH):
             "INSERT INTO config (chave, valor) VALUES ('ano_base', ?)", (str(ano_base),)
         )
         # `publicada_em` vazio: as páginas da prévia não exibem a data da
-        # publicação antiga (PVP-05).
+        # publicação antiga.
         ancora.execute(
             "INSERT INTO estado_versoes (id, rev_interna, rev_publicada, rev_anterior, publicada_em, publicada_por) "
             "VALUES (1, 0, NULL, NULL, NULL, NULL)"

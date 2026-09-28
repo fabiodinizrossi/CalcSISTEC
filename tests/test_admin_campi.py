@@ -84,6 +84,7 @@ from urllib.parse import parse_qs, urlparse
 
 from app import admin_campi
 from app import app as app_module
+from app.data import instalacao as instalacao_mod
 from app.data import campi as dados_campi
 from app.data.schema import init_db
 
@@ -98,7 +99,7 @@ def banco(tmp_path, monkeypatch):
 
 @pytest.fixture
 def cliente(banco, monkeypatch):
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     return app_module.server.test_client()
 
 

@@ -12,7 +12,7 @@ Exceção combinada com a usuária para executores sem suporte a skills: leia `.
 
 **Spec**: `.specs/features/mvp-1-refatoracao/spec.md`
 **Design**: não há `design.md`; o "Mapa de rotas" do spec é o design.
-**Status**: Draft
+**Status**: Done
 
 ---
 
@@ -94,7 +94,7 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16
 
 ## Task Breakdown
 
-### T1: Criar `app/rotas/`, o módulo `comum` e o teste de rotas
+### [x] T1: Criar `app/rotas/`, o módulo `comum` e o teste de rotas
 
 **What**: Criar o pacote `app/rotas/` com `__init__.py` vazio e `comum.py` com as
 quatro funções auxiliares; criar `tests/test_rotas_modulos.py`; citar
@@ -187,7 +187,7 @@ quatro funções auxiliares; criar `tests/test_rotas_modulos.py`; citar
 
 ---
 
-### T2: Mover as rotas públicas para `app/rotas/publico.py`
+### [x] T2: Mover as rotas públicas para `app/rotas/publico.py`
 
 **What**: `GET /matriculas` (`matriculas_legado`, `app/app.py:210`) e
 `GET /branding/logo` (`branding_logo`, `app/app.py:1007`) vão para o blueprint
@@ -223,7 +223,7 @@ apontando para `app/data/uploads/branding`: use
 
 ---
 
-### T3: Mover login, logout e recuperação de acesso para `app/rotas/acesso.py`
+### [x] T3: Mover login, logout e recuperação de acesso para `app/rotas/acesso.py`
 
 **What**: `/admin/login` (`:93`), `/admin/logout` (`:134`), `/recuperar-acesso`
 (`:217`), o `before_request` `_exigir_sessao_previa` (`:242`) e as constantes
@@ -256,7 +256,7 @@ e outros achados com `git grep`) passam a trocar em `app.rotas.acesso`.
 
 ---
 
-### T4: Mover a instalação para `app/rotas/instalacao.py`
+### [x] T4: Mover a instalação para `app/rotas/instalacao.py`
 
 **What**: `/admin/instalacao` (`:140`), o `before_request` `_exigir_instalacao`
 (`:227`) e `_ROTAS_SEM_INSTALACAO` (`:224`) vão para `instalacao_bp`.
@@ -277,9 +277,9 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 **Done when**:
 
-- [ ] Sem instalação concluída, uma tela administrativa autenticada continua redirecionando para `/admin/instalacao` (testes existentes verdes)
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Sem instalação concluída, uma tela administrativa autenticada continua redirecionando para `/admin/instalacao` (testes existentes verdes)
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: integration
 **Gate**: full
@@ -288,7 +288,7 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 ---
 
-### T5: Mover as configurações para `app/rotas/configuracoes.py`
+### [x] T5: Mover as configurações para `app/rotas/configuracoes.py`
 
 **What**: `/admin/config` (`:752`, a maior função do arquivo) e
 `/admin/config/captura` (`:986`), mais `LOGO_MAX_BYTES`, vão para
@@ -317,7 +317,7 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 ---
 
-### T6: Mover publicação, desfazer e histórico para `app/rotas/publicacao.py`
+### [x] T6: Mover publicação, desfazer e histórico para `app/rotas/publicacao.py`
 
 **What**: `/admin/atualizar/publicar` (`:719`), `/admin/atualizar/desfazer`
 (`:728`), `/admin/historico` (`:740`) e `historico_iniciar_e_encerrar` (`:269`)
@@ -347,7 +347,7 @@ vão para `publicacao_bp`.
 
 ---
 
-### T7: Mover o envio de pastas para `app/rotas/envio.py`
+### [x] T7: Mover o envio de pastas para `app/rotas/envio.py`
 
 **What**: `/admin/atualizar/envio` (`:407`) e os helpers
 `_resumo_arquivos_envio` (`:335`), `_matriculas_orfas_envio` (`:343`),
@@ -384,7 +384,7 @@ nesse caso. `ROTAS_ESPERADAS`: `("/admin/atualizar/envio", "POST", "envio_bp")`.
 
 ---
 
-### T8: Mover a coleta pelo Sistec para `app/rotas/coleta_sistec.py`
+### [x] T8: Mover a coleta pelo Sistec para `app/rotas/coleta_sistec.py`
 
 **What**: `/admin/atualizar/sistec` (`:285`), `/admin/atualizar/sistec/login-feito`
 (`:309`), `/admin/atualizar/sistec/cancelar` (`:318`), `/admin/atualizar/execucoes`
@@ -413,7 +413,7 @@ parte variável aparece como `<execucao_id>` (ex.:
 
 ---
 
-### T9: Mover a tela de atualizar, salvar e descartar; enxugar `app.py`
+### [x] T9: Mover a tela de atualizar, salvar e descartar; enxugar `app.py`
 
 **What**: `GET /admin/atualizar` (`:277`), `GET /admin/atualizar/execucao`
 (`:650`), `/admin/atualizar/execucoes/<execucao_id>/salvar` (`:588`) e
@@ -457,7 +457,7 @@ com o que o spec lista no fim do "Mapa de rotas".
 
 ---
 
-### T10: Teste de higiene das docstrings e limpeza de `app/domain/`
+### [x] T10: Teste de higiene das docstrings e limpeza de `app/domain/`
 
 **What**: Criar `tests/test_higiene_docstrings.py` com os padrões proibidos do
 spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
@@ -560,11 +560,11 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 **Done when**:
 
-- [ ] `tests/test_higiene_docstrings.py` passa com `ALVOS_LIMPOS = ["app/domain"]`
-- [ ] `tests/test_higiene_repositorio.py` continua passando, com a exclusão nova
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] `tests/test_higiene_docstrings.py` passa com `ALVOS_LIMPOS = ["app/domain"]`
+- [x] `tests/test_higiene_repositorio.py` continua passando, com a exclusão nova
+- [x] Script da seção 6 do protocolo lista `[]`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
@@ -573,7 +573,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T11: Limpar docstrings e comentários de `app/data/`
+### [x] T11: Limpar docstrings e comentários de `app/data/`
 
 **What**: Mesmo trabalho de T10 em `app/data/`.
 **Where**: `app/data/`
@@ -597,7 +597,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T12: Limpar docstrings e comentários de `app/sistec/`
+### [x] T12: Limpar docstrings e comentários de `app/sistec/`
 
 **What**: Mesmo trabalho de T10 em `app/sistec/`.
 **Where**: `app/sistec/`
@@ -609,10 +609,10 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com `app/sistec` na lista
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com `app/sistec` na lista
+- [x] Script da seção 6 do protocolo lista `[]`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
@@ -621,7 +621,7 @@ spec, aplicados só a docstrings e comentários, e limpar `app/domain/`.
 
 ---
 
-### T13: Limpar docstrings e comentários de `app/pages/` e `app/components/`
+### [x] T13: Limpar docstrings e comentários de `app/pages/` e `app/components/`
 
 **What**: Mesmo trabalho de T10 nos dois diretórios de interface.
 **Where**: `app/pages/`
@@ -634,10 +634,14 @@ siga os passos 3 a 5 de T10.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com os dois diretórios na lista
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com os dois diretórios na lista
+- [x] Script da seção 6 do protocolo lista `[]` para `app/pages/` e `app/components/`
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
+
+A verificação AST considera os dois diretórios de código. A lista
+`ALVOS_LIMPOS` do teste muda por exigência desta tarefa e, por isso, aparece
+na saída do script sem esse filtro.
 
 **Tests**: unit
 **Gate**: full
@@ -646,7 +650,7 @@ siga os passos 3 a 5 de T10.
 
 ---
 
-### T14: Limpar `app/rotas/`, os módulos da raiz de `app/` e `run.py`
+### [x] T14: Limpar `app/rotas/`, os módulos da raiz de `app/` e `run.py`
 
 **What**: Mesmo trabalho de T10 em `app/rotas/`, `app/app.py`, `app/shell.py`,
 `app/auth.py`, `app/config.py`, `app/admin_campi.py`, `app/__init__.py` e `run.py`.
@@ -662,11 +666,11 @@ siga os passos 3 a 5 de T10.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com esses alvos na lista
-- [ ] Todo `.py` de `app/` está coberto por algum alvo de `ALVOS_LIMPOS` (acrescente um teste que compara `git ls-files app/*.py app/**/*.py` com os alvos)
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com esses alvos na lista
+- [x] Todo `.py` de `app/` está coberto por algum alvo de `ALVOS_LIMPOS` (acrescente um teste que compara `git ls-files app/*.py app/**/*.py` com os alvos)
+- [x] Comparação AST da seção 6 lista `[]` nos arquivos de produto; o teste de cobertura novo é código executável por definição
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full
@@ -675,7 +679,7 @@ siga os passos 3 a 5 de T10.
 
 ---
 
-### T15: Limpar `scripts/` e a saída do script de prontidão
+### [x] T15: Limpar `scripts/` e a saída do script de prontidão
 
 **What**: Mesmo trabalho de T10 em `scripts/`, mais a linha impressa
 `"[ ] Paridade 100% em parity_specs.md/parity_tests/ (Tarefa 11)"` de
@@ -716,7 +720,7 @@ Nesta tarefa, e só nesta, uma linha executável muda: essa string impressa.
 
 ---
 
-### T16: Registrar a feature no `STATE.md`
+### [x] T16: Registrar a feature no `STATE.md`
 
 **What**: Atualizar o bloco "Estado atual" e acrescentar o handoff desta
 feature em `.specs/STATE.md`: faixa de commits, contagem de testes, módulos

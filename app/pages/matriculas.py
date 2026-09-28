@@ -1,8 +1,8 @@
-"""BC-04 (Apresentação): página inicial (Matrículas).
+"""Página inicial de Matrículas.
 
 Conteúdo renderizado conforme o design "09 - Página inicial (Matrículas)" do
 Figma. Nenhuma regra de negócio é calculada aqui — apenas consumo de
-`app/domain/*` (invariante de `AGG-Apresentacao`).
+`app/domain/*`.
 """
 
 import dash
@@ -93,7 +93,7 @@ def _fic_selector(id_):
 
 def _carregar(preview_id):
     """Devolve `(df, ano_base)`. `preview_id=None` lê o banco publicado; com
-    `preview_id`, resolve o contexto validado da prévia (PVP-04/PVP-07) e lê
+    `preview_id`, valida o contexto da prévia e lê
     pela conexão da fonte candidata, usando o ano-base do candidato. Levanta
     `PreviaIndisponivel` se o contexto da prévia for inválido."""
     if preview_id is None:
@@ -136,9 +136,11 @@ def _filtros(df):
 
 
 def layout(preview_id=None):
-    """PVP-01/PVP-02/PVP-04: caminho público (sem `preview_id`) fica idêntico;
-    com `preview_id`, lê a fonte candidata, omite o "Atualizado em" e injeta o
-    `dcc.Store` que leva o identificador aos callbacks (nunca dados públicos)."""
+    """Monta a página pública ou a prévia da fonte candidata.
+
+    Na prévia, omite o "Atualizado em" e passa o identificador aos callbacks
+    pelo `dcc.Store`, sem incluir dados públicos nesse estado.
+    """
     if preview_id is not None:
         try:
             df, ano_base = _carregar(preview_id)
@@ -158,7 +160,7 @@ def layout(preview_id=None):
         dcc.Store(id="matriculas-eixos-ordenados", data=["campus"]),
         dcc.Loading(html.Div(id="matriculas-matriz")),
         _filtros(df),
-        # CPR-02: o `Store` entra sempre — o callback o declara como `State`
+        # O `Store` entra sempre: o callback o declara como `State`
         # também no caminho público (`data=None`), e um `State` apontando para
         # id inexistente trava a página com ReferenceError no navegador.
         dcc.Store(id="matriculas-preview", data=preview_id),
@@ -389,5 +391,5 @@ def atualizar(fic, eixos, campus, tipo_curso, programa, preview_id=None):
     prevent_initial_call=True,
 )
 def limpar_filtros(_n_clicks):
-    """BR-MIGRAR-023."""
+    """Restaura os valores iniciais dos filtros de Matrículas."""
     return "__todos__", "__todos__", "__todos__", "com_fic", ["campus"]

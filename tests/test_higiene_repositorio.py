@@ -70,7 +70,7 @@ def test_scripts_tests_e_run_nao_citam_documentos_ausentes():
     arquivos = list(arquivos_py("scripts", "tests")) + [caminho("run.py")]
 
     for arquivo in arquivos:
-        # Os testes de docstrings listam os termos proibidos de propósito.
+        # O teste de docstrings lista os termos proibidos de propósito.
         if os.path.basename(arquivo) in {"test_higiene_repositorio.py", "test_higiene_docstrings.py"}:
             continue
         with open(arquivo, encoding="utf-8") as fonte:

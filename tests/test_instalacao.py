@@ -133,12 +133,12 @@ def test_tela_administrativa_leva_ao_assistente_enquanto_a_instalacao_nao_termin
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
 
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: False)
+    monkeypatch.setattr(instalacao, "concluida", lambda: False)
     resposta = cliente.get("/admin/atualizar", follow_redirects=False)
     assert resposta.status_code == 302
     assert resposta.headers["Location"].endswith("/admin/instalacao")
 
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao, "concluida", lambda: True)
     assert cliente.get("/admin/atualizar", follow_redirects=False).status_code == 200
 
 
@@ -149,6 +149,6 @@ def test_assistente_nao_exige_instalacao_concluida(monkeypatch):
     with cliente.session_transaction() as sessao:
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: False)
+    monkeypatch.setattr(instalacao, "concluida", lambda: False)
 
     assert cliente.get("/admin/instalacao", follow_redirects=False).status_code == 200

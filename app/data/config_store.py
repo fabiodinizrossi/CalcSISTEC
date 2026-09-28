@@ -1,10 +1,10 @@
 """Configurações administráveis do painel — identidade da instituição,
-e-mail de contato e logotipo (`001-govbr-design-system`, T012).
+e-mail de contato e logotipo.
 
 Sobre a tabela `config` (chave/valor) já existente em `app/data/schema.py`
 (mesmo padrão de `app/data/consulta.ano_base_ativo`), sem cache em processo:
 cada leitura consulta o SQLite diretamente, para que uma escrita feita em
-outra requisição/processo seja vista de imediato (RN-12/RN-13/RN-14).
+outra requisição/processo seja vista de imediato.
 
 Nada aqui é fixo numa instituição: os padrões de fábrica são vazios (ou
 neutros, no caso do logotipo), e o assistente de instalação

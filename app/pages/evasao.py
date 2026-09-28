@@ -1,8 +1,4 @@
-"""BC-04 (Apresentação): página Taxa de Evasão Anual.
-
-Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
-tela de Taxa de Evasão Anual.
-"""
+"""Página Taxa de Evasão Anual."""
 
 import dash
 from dash import Input, Output, State, callback, dcc, html
@@ -30,7 +26,7 @@ def _data_curta(valor):
 
 def _carregar(preview_id):
     """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
-    validada (PVP-04/PVP-07). Levanta `PreviaIndisponivel` em contexto inválido."""
+    validada. Levanta `PreviaIndisponivel` em contexto inválido."""
     if preview_id is None:
         return carregar_matriculas(), ano_base_ativo() or 2026
 
@@ -54,7 +50,7 @@ def _filtros(df):
 
 
 def layout(preview_id=None):
-    """PVP-01/PVP-02/PVP-04: caminho público fica idêntico; com `preview_id`,
+    """Monta a página pública; com `preview_id`,
     lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
     que leva o identificador aos callbacks."""
     if preview_id is not None:
@@ -76,7 +72,7 @@ def layout(preview_id=None):
         dcc.Store(id="evasao-eixos-ordenados", data=["campus"]),
         dcc.Loading(html.Div(id="evasao-heatmap")),
         _filtros(df),
-        # CPR-02: o `Store` entra sempre — o callback o declara como `State`
+        # O `Store` entra sempre: o callback o declara como `State`
         # também no caminho público (`data=None`), e um `State` apontando para
         # id inexistente trava a página com ReferenceError no navegador.
         dcc.Store(id="evasao-preview", data=preview_id),
@@ -93,10 +89,7 @@ def _filtrar(df, campus, tipo_curso, incluir_fic):
     return filtrar_fic(df, incluir_fic)
 
 
-# `color_scale` de `target_screens.md` (verde/amarelo/vermelho) — o ponto
-# médio é sinalizado no próprio contrato como "revisar, hoje 16% fixo no
-# legado"; mantido aqui como constante nomeada (nunca literal solto), até que
-# vire configurável.
+# A escala verde/amarelo/vermelho usa 16% como limiar médio.
 LIMIAR_EVASAO_MEDIO = 0.16
 
 
@@ -110,7 +103,7 @@ def _classe_evasao(taxa):
     return "evasao-baixa"
 
 
-# RN-08 (RF-09): cor nunca é o único indicador de estado — cada faixa tem um
+# Cor nunca é o único indicador de estado: cada faixa tem um
 # equivalente textual visível, para quem não distingue cor (daltonismo,
 # leitor de tela, impressão em preto e branco).
 _LABEL_EVASAO = {"evasao-alta": "Alta", "evasao-media": "Média", "evasao-baixa": "Baixa"}

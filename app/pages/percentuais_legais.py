@@ -1,9 +1,4 @@
-"""BC-04 (Apresentação): página Percentuais Legais.
-
-Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
-tela de Percentuais Legais.
-`BR-MIGRAR-022`: página já liberada — nunca retida/oculta.
-"""
+"""Página Percentuais Legais, disponível no painel público."""
 
 import dash
 from dash import Input, Output, State, callback, dcc, html
@@ -47,7 +42,7 @@ def _formatar_equivalentes(valor):
 
 def _carregar(preview_id):
     """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
-    validada (PVP-04/PVP-07). Levanta `PreviaIndisponivel` em contexto inválido."""
+    validada. Levanta `PreviaIndisponivel` em contexto inválido."""
     if preview_id is None:
         return carregar_matriculas(), ano_base_ativo() or 2026
 
@@ -71,7 +66,7 @@ def _filtros(df):
 
 
 def layout(preview_id=None):
-    """PVP-01/PVP-02/PVP-04: caminho público fica idêntico; com `preview_id`,
+    """Monta a página pública; com `preview_id`,
     lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
     que leva o identificador aos callbacks."""
     if preview_id is not None:
@@ -93,7 +88,7 @@ def layout(preview_id=None):
         dcc.Store(id="percentuais-eixos-ordenados", data=["campus"]),
         dcc.Loading(html.Div(id="percentuais-tabela")),
         _filtros(df),
-        # CPR-02: o `Store` entra sempre — o callback o declara como `State`
+        # O `Store` entra sempre: o callback o declara como `State`
         # também no caminho público (`data=None`), e um `State` apontando para
         # id inexistente trava a página com ReferenceError no navegador.
         dcc.Store(id="percentuais-preview", data=preview_id),
@@ -140,7 +135,7 @@ def atualizar(eixos, campus, programa, preview_id=None):
     aviso = None
     if programa and programa != "__todos__":
         df = df[df["tipo_programa_curso"] == programa]
-        # BR-MIGRAR-026: avisa quando o filtro de programa distorce o % PROEJA
+        # Avisa quando o filtro de programa distorce o % PROEJA
         # (denominador filtrado deixa de representar o universo de referência).
         aviso = mensagem_ds("warning", "Atenção: o filtro de Programa Associado pode distorcer o percentual PROEJA.")
 
@@ -155,7 +150,7 @@ def atualizar(eixos, campus, programa, preview_id=None):
 
     def gauge(label, valor, meta, destaque=False):
         cor = cor_medidor(valor, meta)
-        # RF-09/RN-08: a cor do medidor nunca é o único sinal de estado — o
+        # A cor do medidor nunca é o único sinal de estado: o
         # texto "Acima da meta"/"Abaixo da meta" vale mesmo sem distinguir cor.
         situacao = "Acima da meta" if valor >= meta else "Abaixo da meta"
         return html.Div(

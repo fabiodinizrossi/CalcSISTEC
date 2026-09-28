@@ -1,24 +1,22 @@
-"""Verificação automatizada de prontidão para o cutover — Tarefa 10 do plano
-de reconstrução, atualizada por `002-baixador-planilhas-sistec` (T068).
+"""Verificação automatizada de prontidão para a publicação do painel.
 
 O roteiro de implantação e as pendências humanas estão em `DEPLOY.md`.
 
 Cobre a parte do checklist que é verificável por código antes do corte:
 
-- RISK-008 (crítico): nenhuma coluna de PII em nenhuma tabela do schema ativo.
-- RISK-009 (alto): autenticação da rota administrativa configurada.
-- Schema v2 aplicado (`config.schema_versao`, D-14: `RISK-004`/`uploads_log`
-  saíram do sistema com o upload `.xlsx`).
-- Fatores carregados (`fatores`/`interna_fatores` não vazias, D-11).
-- HTTPS configurado (D-19: `CALCSISTEC_HTTPS=1`) — as rotas `/api/sistec/*`
+- Nenhuma coluna de PII em nenhuma tabela do schema ativo.
+- Autenticação da rota administrativa configurada.
+- Schema v2 aplicado (`config.schema_versao`).
+- Fatores carregados (`fatores`/`interna_fatores` não vazias).
+- HTTPS configurado (`CALCSISTEC_HTTPS=1`) — as rotas `/api/sistec/*`
   bloqueiam bytes com dado pessoal sem cifrar fora de `localhost`.
 - Dataset publicado presente e ano-base configurado.
 
 NÃO cobre (são passos humanos, não automatizáveis):
-- Paridade numérica 100% (`parity_specs.md`/`parity_tests/` — Tarefa 11).
+- Paridade numérica com o Power BI.
 - Validação de design responsivo no navegador (320–430 px e 1280 px ou mais).
-- Roteiro de `onboarding.md` (Sistec simulado + 1 baixa real).
-- Instalação da extensão na máquina da PI e política institucional (P-10).
+- Teste com o Sistec simulado e uma baixa real.
+- Instalação da extensão na máquina da PI e política institucional.
 - Comunicação aos stakeholders e decommission do Power BI Service.
 
 Uso: `python scripts/verificar_prontidao_cutover.py`
@@ -42,7 +40,7 @@ TABELAS = [
 
 
 def verificar_ausencia_pii(db_path=DEFAULT_DB_PATH):
-    """RISK-008: nenhuma coluna de PII em nenhuma tabela do schema ativo."""
+    """Lista colunas de PII encontradas nas tabelas do schema ativo."""
     conn = get_connection(db_path)
     try:
         achados = []
@@ -57,7 +55,7 @@ def verificar_ausencia_pii(db_path=DEFAULT_DB_PATH):
 
 
 def verificar_autenticacao_admin():
-    """RISK-009: credenciais da rota administrativa configuradas (não em
+    """Confere se as credenciais da rota administrativa estão configuradas (não em
     branco) — não verifica a força da senha, apenas a presença da config."""
     return bool(os.environ.get("ADMIN_EMAIL")) and bool(os.environ.get("ADMIN_PASSWORD_HASH"))
 
@@ -81,9 +79,7 @@ def verificar_ano_base(db_path=DEFAULT_DB_PATH):
 
 
 def verificar_schema_v2(db_path=DEFAULT_DB_PATH):
-    """D-14: substitui a checagem de RISK-004 (validação de upload, removida
-    com a rota `/admin/upload`) — o que garante um dataset consistente agora
-    é o schema v2 aplicado (T004-T012)."""
+    """Lê a versão do schema aplicada ao banco."""
     conn = get_connection(db_path)
     try:
         row = conn.execute("SELECT valor FROM config WHERE chave='schema_versao'").fetchone()
@@ -93,8 +89,10 @@ def verificar_schema_v2(db_path=DEFAULT_DB_PATH):
 
 
 def verificar_fatores_carregados(db_path=DEFAULT_DB_PATH):
-    """D-11: `fatores`/`interna_fatores` não vazias — sem isso, todo curso
-    cai no default `fec=1, fech=1, fator_nao_encontrado=1` (D-07)."""
+    """Confere se `fatores` e `interna_fatores` estão preenchidas.
+
+    Sem fatores, todo curso cai no default `fec=1, fech=1, fator_nao_encontrado=1`.
+    """
     conn = get_connection(db_path)
     try:
         publicada = conn.execute("SELECT COUNT(*) FROM fatores").fetchone()[0]
@@ -105,7 +103,7 @@ def verificar_fatores_carregados(db_path=DEFAULT_DB_PATH):
 
 
 def verificar_https_configurado():
-    """D-19: `CALCSISTEC_HTTPS=1` liga `SESSION_COOKIE_SECURE` e faz as
+    """`CALCSISTEC_HTTPS=1` liga `SESSION_COOKIE_SECURE` e faz as
     rotas `/api/sistec/*` recusarem HTTP simples fora de `localhost` — bytes
     com dado pessoal só podem trafegar cifrados."""
     return os.environ.get("CALCSISTEC_HTTPS") == "1"
@@ -137,7 +135,7 @@ def rodar_verificacoes(db_path=DEFAULT_DB_PATH):
 
 
 def imprimir_relatorio(resultados):
-    print("=== Verificação de prontidão para cutover (Tarefa 10) ===\n")
+    print("=== Verificação de prontidão para cutover ===\n")
     todos_ok = True
     for nome, ok, detalhe in resultados:
         status = "OK" if ok else "FALHA"
@@ -150,7 +148,7 @@ def imprimir_relatorio(resultados):
 
     print()
     print("--- Fora do escopo automatizável (ver DEPLOY.md) ---")
-    print("[ ] Paridade 100% em parity_specs.md/parity_tests/ (Tarefa 11)")
+    print("[ ] Paridade com o Power BI conferida (.specs/features/mvp-2-paridade/relatorio-paridade.md)")
     print("[ ] Design gov.br responsivo validado no navegador (320-430 px e 1280 px ou mais)")
     print("[ ] Roteiro de onboarding.md com o Sistec simulado e 1 baixa real")
     print("[ ] Extensão Baixador Sistec instalada na máquina da PI (P-10)")

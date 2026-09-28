@@ -22,6 +22,9 @@ from werkzeug.datastructures import FileStorage
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
+from app.rotas import atualizar as rota_atualizar  # noqa: E402
+from app.rotas import envio as rota_envio  # noqa: E402
 from app.sistec import envio, execucoes  # noqa: E402
 from app.sistec.colunas import COLUNAS_CICLO, COLUNAS_MATRICULA  # noqa: E402
 
@@ -109,9 +112,10 @@ def ambiente(monkeypatch):
     """Dublês de campi e histórico + registro de execuções limpo."""
     HISTORICO.clear()
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CAMPI)
-    monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
-    monkeypatch.setattr(app_module, "historico_encerrar", _encerrar)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
+    monkeypatch.setattr(rota_envio, "listar_campi", lambda *a, **k: CAMPI)
+    monkeypatch.setattr(rota_envio, "historico_iniciar", lambda tipo, email: _iniciar(tipo, email))
+    monkeypatch.setattr(rota_envio, "historico_encerrar", _encerrar)
     yield
     execucoes._REGISTRO.clear()
 
@@ -266,7 +270,7 @@ def test_previa_pendente_recusa_um_segundo_envio(sessao):
 
 
 def test_baixa_em_andamento_recusa_o_envio(sessao, monkeypatch):
-    monkeypatch.setattr(app_module.navegador, "status", lambda email: {"ativa": True})
+    monkeypatch.setattr(rota_envio.navegador, "status", lambda email: {"ativa": True})
     ciclos, matriculas = _envio_valido(("U1",))
     resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
 
@@ -275,7 +279,7 @@ def test_baixa_em_andamento_recusa_o_envio(sessao, monkeypatch):
 
 
 def test_envio_em_andamento_faz_a_baixa_do_sistec_devolver_409(sessao, monkeypatch):
-    monkeypatch.setattr(app_module.navegador, "status", lambda email: None)
+    monkeypatch.setattr(rota_envio.navegador, "status", lambda email: None)
     ciclos, matriculas = _envio_valido(("U1",))
     sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
 
@@ -335,7 +339,8 @@ def banco_temporario(tmp_path, monkeypatch):
 
     caminho = str(tmp_path / "envio.db")
     init_db(caminho)
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(rota_envio, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(rota_atualizar, "DEFAULT_DB_PATH", caminho)
     return caminho
 
 
@@ -467,16 +472,17 @@ def test_unidade_cadastrada_pelo_envio_aparece_nas_paginas_de_cadastro(sessao, b
     conta nos totais de Configurações — a tela, não só o banco.
 
     As duas páginas chegam ao cadastro por caminhos próprios: `admin_config`
-    usa o `listar_campi` do `app.py`, e `/admin/campi` usa um `DB_PATH` próprio
+    usa o `listar_campi` de `app/rotas/configuracoes.py`, e `/admin/campi` usa um `DB_PATH` próprio
     (`app/admin_campi.py:25`, cópia do valor de `DEFAULT_DB_PATH` feita no
     import). O teste aponta os dois para o banco temporário — sem isso as
     chamadas leriam o banco do repositório e o teste não provaria nada."""
     from app import admin_campi
     from app.data import campi as dados_campi
+    from app.rotas import configuracoes
 
     monkeypatch.setattr(admin_campi, "DB_PATH", banco_temporario)
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
 
     ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]
     matriculas = [_matricula("C9", "M9", "U9")]
@@ -497,7 +503,7 @@ def test_unidade_ja_cadastrada_nao_e_cadastrada_de_novo(sessao, banco_temporario
     `campi_nao_cadastrados` a exclui e nada é incluído de novo — nem duplicado."""
     from app.data import campi as dados_campi
 
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(rota_envio, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
 
     def enviar():
         # Cada POST recebe arquivos novos: o `FileStorage` do primeiro foi lido
@@ -540,7 +546,7 @@ def test_unidade_cadastrada_incompleta_e_completada_pelo_envio(sessao, banco_tem
     from app.data import campi as dados_campi
 
     dados_campi.incluir_campus("1", "Assessor A", co_unidade="U1", db_path=banco_temporario)
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(rota_envio, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
 
     ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv")]
     matriculas = [_matricula("C1", "M1", "U1")]
@@ -560,7 +566,7 @@ def test_envio_nao_sobrescreve_cidade_ja_cadastrada(sessao, banco_temporario, mo
     dados_campi.incluir_campus(
         "1", "Assessor A", co_unidade="U1", cidade="Cidade Antiga", db_path=banco_temporario
     )
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(rota_envio, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
 
     ciclos = [_ciclo("C1", "U1", nome="ciclos-U1.csv")]
     matriculas = [_matricula("C1", "M1", "U1")]
@@ -649,7 +655,7 @@ def test_falha_ao_montar_a_fonte_devolve_erro_json_nunca_500(sessao, banco_tempo
     def _boom(*a, **k):
         raise ValueError("boom")
 
-    monkeypatch.setattr(app_module, "preparar_versao", _boom)
+    monkeypatch.setattr(rota_envio, "preparar_versao", _boom)
     ciclos, matriculas = _envio_valido(("U1",))
 
     resposta = sessao.post("/admin/atualizar/envio", data={"ciclos": ciclos, "matriculas": matriculas})
@@ -684,7 +690,7 @@ def test_falha_ao_montar_a_fonte_nao_deixa_cadastro_de_campus_gravado(sessao, ba
     def _boom(*a, **k):
         raise ValueError("boom")
 
-    monkeypatch.setattr(app_module, "preparar_versao", _boom)
+    monkeypatch.setattr(rota_envio, "preparar_versao", _boom)
 
     ciclos = [_ciclo("C2", "U2", nome="ciclos-U2.csv"), _ciclo("C9", "U9", nome="ciclos-U9.csv")]
     matriculas = [_matricula("C2", "M2", "U2"), _matricula("C9", "M9", "U9")]

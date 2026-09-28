@@ -1,13 +1,7 @@
-"""BC-04 (Apresentação): página Eficiência Acadêmica.
+"""Página Eficiência Acadêmica.
 
-Implementado na Tarefa 09 do plano de reconstrução, conforme o contrato da
-tela de Eficiência Acadêmica.
-`DEV-003`: link de Percentuais Legais mantido no menu (já liberada).
-
-Tarefa 11: corrigido bug em que o toggle FIC não tinha nenhum efeito sobre os
-dados (a Tarefa 09 calculava `filtros.incluir_fic` mas nunca aplicava
-`filtrar_fic` ao `df`); e o eixo "Oferta" passou a funcionar com a coluna
-`tipo_oferta_curso` adicionada ao schema nesta mesma tarefa.
+O filtro FIC seleciona os dados usados nos indicadores, e o eixo "Oferta"
+usa a coluna `tipo_oferta_curso`.
 """
 
 import dash
@@ -38,7 +32,7 @@ def _data_curta(valor):
 
 def _carregar(preview_id):
     """`(df, ano_base)` — banco publicado (`preview_id=None`) ou fonte candidata
-    validada (PVP-04/PVP-07). Levanta `PreviaIndisponivel` em contexto inválido."""
+    validada. Levanta `PreviaIndisponivel` em contexto inválido."""
     if preview_id is None:
         return carregar_eficiencia(), ano_base_ativo() or 2026
 
@@ -54,7 +48,7 @@ def _filtros(df):
         [
             select_filter("eficiencia-filtro-campus", "Campus", sorted(df["cidade"].dropna().unique())),
             select_filter("eficiencia-filtro-modalidade", "Modalidade", sorted(df["modalidade_ensino"].dropna().unique())),
-            # BR-MIGRAR-021: estado inicial SEM FIC nesta página, intencional.
+            # O estado inicial desta página é Sem FIC.
             fic_toggle("eficiencia-fic", default="sem_fic"),
             clear_filters_button("eficiencia-limpar"),
         ],
@@ -63,7 +57,7 @@ def _filtros(df):
 
 
 def layout(preview_id=None):
-    """PVP-01/PVP-02/PVP-04: caminho público fica idêntico; com `preview_id`,
+    """Monta a página pública; com `preview_id`,
     lê a fonte candidata, omite o carimbo de publicação e injeta o `dcc.Store`
     que leva o identificador aos callbacks."""
     if preview_id is not None:
@@ -85,7 +79,7 @@ def layout(preview_id=None):
         dcc.Store(id="eficiencia-eixos-ordenados", data=["campus"]),
         dcc.Loading(html.Div(id="eficiencia-matriz")),
         _filtros(df),
-        # CPR-02: o `Store` entra sempre — o callback o declara como `State`
+        # O `Store` entra sempre: o callback o declara como `State`
         # também no caminho público (`data=None`), e um `State` apontando para
         # id inexistente trava a página com ReferenceError no navegador.
         dcc.Store(id="eficiencia-preview", data=preview_id),
@@ -143,7 +137,7 @@ def atualizar(fic, eixos, campus, modalidade, preview_id=None):
         [f"{valor_iea:.2f}".replace(".", ",")],
     )
 
-    # BR-MIGRAR-013/BR-HUMANA-001: 0, nunca NaN, quando pC+pE=0 — já garantido
+    # O IEA é 0, nunca NaN, quando pC+pE=0; isso é garantido
     # por `app.domain.eficiencia.calcular_iea`.
     return cartoes_indicadores([cartao_indicador("IEA (Índice de Eficiência Acadêmica)", valor_iea, formato="#,0.00", destaque=True)]), matriz
 

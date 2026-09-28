@@ -1,8 +1,8 @@
-"""Blueprint `/api/sistec`: rotas HTTP consumidas pela extensão.
+"""Rotas HTTP de `/api/sistec` consumidas pela extensão.
 
-Autenticação por `Authorization: Bearer <token>` — nunca a sessão Flask do
-administrador (evita CSRF e limita o alcance a uma execução/captura). Erros
-nunca ecoam o conteúdo recebido.
+Autenticação por `Authorization: Bearer <token>`, sem usar a sessão
+Flask do administrador (evita CSRF e limita o alcance a uma execução/
+captura). Erros nunca ecoam o conteúdo recebido.
 """
 
 import flask

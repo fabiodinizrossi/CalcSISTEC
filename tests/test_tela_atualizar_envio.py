@@ -11,6 +11,7 @@ import re
 import pytest
 
 from app import app as app_module
+from app.data import instalacao as instalacao_mod
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def cliente_autenticado(monkeypatch):
     with cliente.session_transaction() as sessao:
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     return cliente
 
 

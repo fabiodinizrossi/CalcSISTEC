@@ -13,7 +13,7 @@ def _celula(celula, numerica=False):
 
 def tabela_ds(colunas, linhas, legenda, *, quadro=False, total=None, ordenavel=True):
     """`div.br-table > div.responsive > table`: a rolagem horizontal fica dentro do
-    quadro da tabela (RF-07), e a legenda vai em `<caption>`."""
+    quadro da tabela, e a legenda vai em `<caption>`."""
     corpo = html.Tbody(
         [
             html.Tr([_celula(celula, quadro and indice > 0) for indice, celula in enumerate(linha)])

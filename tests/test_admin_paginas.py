@@ -1,11 +1,15 @@
 """Páginas administrativas (Flask/Jinja) no padrão do gov.br DS."""
 
+import io
 import re
 
 import flask
 import pytest
+from werkzeug.security import generate_password_hash
 
 from app import app as app_module
+from app.data import instalacao as instalacao_mod
+from app.rotas import acesso, configuracoes, publicacao
 
 
 @pytest.fixture
@@ -18,7 +22,7 @@ def cliente_autenticado(cliente, monkeypatch):
     with cliente.session_transaction() as sessao:
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
     return cliente
 
 
@@ -54,7 +58,7 @@ def test_login_nao_mostra_menu_nem_breadcrumb(cliente):
 
 @pytest.fixture
 def login_configurado(monkeypatch):
-    monkeypatch.setattr(app_module, "credenciais_configuradas", lambda: True)
+    monkeypatch.setattr(acesso, "credenciais_configuradas", lambda: True)
 
 
 def test_login_tem_titulo_campos_com_rotulo_e_apoio_e_link_depois_da_senha(cliente, login_configurado):
@@ -81,10 +85,39 @@ def test_login_com_campo_invalido_devolve_o_campo_em_danger_ligado_ao_erro(clien
 
 
 def test_login_recusado_mostra_mensagem_danger_com_role_alert(cliente, login_configurado, monkeypatch):
-    monkeypatch.setattr(app_module, "autenticar_sessao", lambda email, senha: False)
+    monkeypatch.setattr(acesso, "autenticar_sessao", lambda email, senha: False)
     html = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "12345678"}).get_data(as_text=True)
     assert re.search(r'class="br-message danger"[^>]*role="alert"', html)
     assert "E-mail ou senha incorretos." in html
+
+
+def test_login_valido_redireciona_e_autentica_sessao(cliente, monkeypatch):
+    monkeypatch.setenv("ADMIN_EMAIL", "pi@ife.edu.br")
+    monkeypatch.setenv("ADMIN_PASSWORD_HASH", generate_password_hash("senha-segura"))
+
+    resposta = cliente.post("/admin/login", data={"email": "pi@ife.edu.br", "senha": "senha-segura"})
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/atualizar"
+    with cliente.session_transaction() as sessao:
+        assert sessao["admin_autenticado"] is True
+        assert sessao["admin_usuario"] == "pi@ife.edu.br"
+
+
+def test_logout_redireciona_e_encerra_sessao(cliente):
+    with cliente.session_transaction() as sessao:
+        sessao["admin_autenticado"] = True
+        sessao["admin_usuario"] = "pi@ife.edu.br"
+        sessao["sessao_id"] = "sessao-teste"
+
+    resposta = cliente.get("/admin/logout")
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/login"
+    with cliente.session_transaction() as sessao:
+        assert "admin_autenticado" not in sessao
+        assert "admin_usuario" not in sessao
+        assert "sessao_id" not in sessao
 
 
 def test_recuperar_acesso_tem_titulo_shell_sem_menu_e_sem_breadcrumb(cliente):
@@ -155,7 +188,7 @@ EVENTOS = [
 
 
 def test_historico_com_registros_usa_br_table_em_conteiner_rolavel(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: EVENTOS)
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: EVENTOS)
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     assert re.search(r'<div class="br-table">\s*<div class="responsive">\s*<table', html)
     assert "table-scroll-wrapper" not in html
@@ -166,18 +199,61 @@ def test_historico_com_registros_usa_br_table_em_conteiner_rolavel(cliente_auten
 
 
 def test_historico_sem_registros_mostra_br_message_info_no_lugar_da_tabela(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: [])
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     assert re.search(r'class="br-message info"[^>]*>.*Nenhuma atualização registrada ainda\.', html, re.S)
     assert "<table" not in html
 
 
 def test_historico_tem_breadcrumb_inicio_e_pagina_atual(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: [])
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
     assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Matrículas\s*</a>', crumbs)
     assert re.search(r'<span aria-current="page">Histórico de atualizações</span>', crumbs)
+
+
+def test_publicar_responde_204_e_registra_publicacao(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(publicacao.versoes, "publicar", lambda db, admin_email: chamadas.append((db, admin_email)))
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *args: chamadas.append(args))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/publicar")
+
+    assert resposta.status_code == 204
+    assert resposta.data == b""
+    assert chamadas == [
+        (publicacao.DEFAULT_DB_PATH, "pi@ife.edu.br"),
+        ("publicacao", "pi@ife.edu.br", "publicada"),
+    ]
+
+
+def test_desfazer_responde_204_e_registra_desfecho(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(publicacao.versoes, "desfazer", lambda db: chamadas.append(db))
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *args: chamadas.append(args))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/desfazer")
+
+    assert resposta.status_code == 204
+    assert resposta.data == b""
+    assert chamadas == [
+        publicacao.DEFAULT_DB_PATH,
+        ("desfazer_publicacao", "pi@ife.edu.br", "publicacao_desfeita"),
+    ]
+
+
+def test_desfazer_sem_publicacao_anterior_responde_409(cliente_autenticado, monkeypatch):
+    def sem_publicacao(_db):
+        raise ValueError("Nada a desfazer")
+
+    monkeypatch.setattr(publicacao.versoes, "desfazer", sem_publicacao)
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *_: pytest.fail("histórico indevido"))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/desfazer")
+
+    assert resposta.status_code == 409
+    assert resposta.json == {"erro": "Nada a desfazer"}
 
 
 def test_atualizar_mostra_breadcrumb_e_menu_administrativo(cliente_autenticado):
@@ -220,7 +296,7 @@ CONFIG_CAMPI = [
 
 
 def test_configuracoes_resume_os_campi_e_leva_a_gerenciar_campi(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI)
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: CONFIG_CAMPI)
     resposta = cliente_autenticado.get("/admin/config")
     html = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
@@ -234,7 +310,7 @@ def test_configuracoes_resume_os_campi_e_leva_a_gerenciar_campi(cliente_autentic
 
 
 def test_configuracoes_sem_suspeitos_nao_mostra_o_aviso(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI[:1])
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: CONFIG_CAMPI[:1])
     html = cliente_autenticado.get("/admin/config").get_data(as_text=True)
     assert "1 campi cadastrados, 1 ativos." in html
     assert "identificador inválido" not in html
@@ -275,9 +351,62 @@ def test_email_invalido_mostra_o_campo_em_danger_e_a_mensagem_em_br_message(clie
 
 
 def test_mensagem_do_logotipo_aparece_em_br_message(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "reset_logo", lambda: None)
+    monkeypatch.setattr(configuracoes, "reset_logo", lambda: None)
     html = cliente_autenticado.post("/admin/config", data={"acao": "restaurar_logo"}).get_data(as_text=True)
     assert re.search(r'class="br-message success"[^>]*role="alert".*Logotipo restaurado ao padrão de fábrica\.', html, re.S)
+
+
+def test_enviar_logotipo_svg_salva_arquivo_e_mostra_sucesso(cliente_autenticado, monkeypatch, tmp_path):
+    destinos = []
+    monkeypatch.setattr(configuracoes, "UPLOADS_BRANDING_DIR", str(tmp_path))
+    monkeypatch.setattr(configuracoes, "set_logo", destinos.append)
+    resposta = cliente_autenticado.post(
+        "/admin/config",
+        data={
+            "acao": "enviar_logo",
+            "logo": (io.BytesIO(b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>'), "novo.svg"),
+        },
+    )
+
+    assert resposta.status_code == 200
+    assert "Logotipo atualizado." in resposta.get_data(as_text=True)
+    assert destinos == [str(tmp_path / "logo-atual.svg")]
+    assert b"<svg" in (tmp_path / "logo-atual.svg").read_bytes()
+
+
+def test_salvar_email_valido_atualiza_contato(cliente_autenticado, monkeypatch):
+    gravados = []
+    monkeypatch.setattr(configuracoes, "set_contato_email", gravados.append)
+
+    resposta = cliente_autenticado.post(
+        "/admin/config", data={"acao": "salvar_email", "contato_email": "contato@exemplo.edu.br"}
+    )
+
+    assert resposta.status_code == 200
+    assert gravados == ["contato@exemplo.edu.br"]
+    assert "E-mail de contato salvo." in resposta.get_data(as_text=True)
+
+
+def test_resetar_instalacao_volta_ao_assistente(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(configuracoes.instalacao, "resetar", lambda db_path, apagar_dados: chamadas.append((db_path, apagar_dados)))
+
+    resposta = cliente_autenticado.post(
+        "/admin/config", data={"acao": "resetar_instalacao", "apagar_dados": "1"}
+    )
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/instalacao"
+    assert chamadas == [(configuracoes.DEFAULT_DB_PATH, True)]
+
+
+def test_estado_da_captura_sem_registro_devolve_nulo(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(configuracoes.execucoes, "obter_ultima_captura_do_admin", lambda email: None)
+
+    resposta = cliente_autenticado.get("/admin/config/captura")
+
+    assert resposta.status_code == 200
+    assert resposta.get_json() == {"estado": None}
 
 
 def test_mensagem_dos_fatores_aparece_em_br_message(cliente_autenticado):
@@ -291,7 +420,7 @@ def banco_temporario(tmp_path, monkeypatch):
 
     caminho = str(tmp_path / "config.db")
     init_db(caminho)
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(configuracoes, "DEFAULT_DB_PATH", caminho)
     return caminho
 
 
@@ -327,8 +456,8 @@ def test_acoes_de_campus_sairam_de_admin_config(cliente_autenticado, banco_tempo
 
 def test_salvar_qtd_perfis_continua_gravando_o_valor(cliente_autenticado, banco_temporario, monkeypatch):
     gravado = []
-    monkeypatch.setattr(app_module, "set_qtd_perfis", gravado.append)
-    monkeypatch.setattr(app_module, "get_qtd_perfis", lambda: gravado[-1] if gravado else "")
+    monkeypatch.setattr(configuracoes, "set_qtd_perfis", gravado.append)
+    monkeypatch.setattr(configuracoes, "get_qtd_perfis", lambda: gravado[-1] if gravado else "")
     html = cliente_autenticado.post("/admin/config", data={"acao": "salvar_qtd_perfis", "qtd_perfis": "18"}).get_data(as_text=True)
     assert gravado == ["18"]
     assert "Quantidade de perfis salva." in html

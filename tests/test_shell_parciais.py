@@ -12,6 +12,7 @@ from flask import render_template, render_template_string
 
 from app import app as app_module
 from app import shell as shell_modulo
+from app.rotas import publico as publico_modulo
 from app.shell import PAGINAS_ADMIN, contexto_shell
 
 
@@ -91,9 +92,9 @@ def test_botao_hamburguer_declara_estado_e_alvo_e_some_sem_menu(servidor):
 
 
 def test_logotipo_sem_arquivo_enviado_cai_em_padrao_generico(servidor, monkeypatch):
-    monkeypatch.setattr(app_module, "get_logo_path", lambda: "app/data/uploads/branding/nao-existe.png")
+    monkeypatch.setattr(publico_modulo, "get_logo_path", lambda: "app/data/uploads/branding/nao-existe.png")
     resposta = servidor.test_client().get("/branding/logo")
-    padrao = Path(app_module.DEFAULT_LOGO_PATH).read_bytes()
+    padrao = Path(publico_modulo.DEFAULT_LOGO_PATH).read_bytes()
     assert resposta.status_code == 200
     assert resposta.mimetype == "image/svg+xml"
     assert resposta.data == padrao

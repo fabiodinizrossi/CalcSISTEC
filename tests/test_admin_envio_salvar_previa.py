@@ -13,6 +13,9 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app import app as app_module  # noqa: E402
+from app.rotas import atualizar as rota_atualizar  # noqa: E402
+from app.rotas import envio as rota_envio  # noqa: E402
+from app.data import instalacao as instalacao_mod  # noqa: E402
 from app.data.ingest import preparar_versao  # noqa: E402
 from app.data.schema import get_connection, init_db  # noqa: E402
 from app.sistec import execucoes  # noqa: E402
@@ -24,8 +27,10 @@ ADMIN = "pi@ife.edu.br"
 @pytest.fixture(autouse=True)
 def ambiente(monkeypatch):
     execucoes._REGISTRO.clear()
-    monkeypatch.setattr(app_module, "historico_iniciar", lambda tipo, email: 1)
-    monkeypatch.setattr(app_module, "historico_encerrar", lambda *a, **k: None)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
+    monkeypatch.setattr(rota_envio, "historico_iniciar", lambda tipo, email: 1)
+    monkeypatch.setattr(rota_envio, "historico_encerrar", lambda *a, **k: None)
+    monkeypatch.setattr(rota_atualizar, "historico_encerrar", lambda *a, **k: None)
     yield
     execucoes._REGISTRO.clear()
 
@@ -131,8 +136,10 @@ def test_salvar_envio_caminho_feliz(sessao, monkeypatch, tmp_path):
         conn.commit()
     finally:
         conn.close()
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", db_path)
-    monkeypatch.setattr(app_module, "ano_base_ativo", lambda: 2026)
+    monkeypatch.setattr(rota_envio, "DEFAULT_DB_PATH", db_path)
+    monkeypatch.setattr(rota_atualizar, "DEFAULT_DB_PATH", db_path)
+    monkeypatch.setattr(rota_envio, "ano_base_ativo", lambda: 2026)
+    monkeypatch.setattr(rota_atualizar, "ano_base_ativo", lambda: 2026)
 
     conjunto = consolidar([pd.DataFrame([_linha_ciclo()])], [pd.DataFrame([_linha_matricula()])])
     candidato = preparar_versao(conjunto, (), db_path=db_path, ano_base=2026)

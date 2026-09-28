@@ -1,17 +1,16 @@
 """Transações de versão: salvar interna, publicar, desfazer e aplicar no
-público (`002-baixador-planilhas-sistec`, T033, D-05, D-06, `data-delta.md`
-§3.3, §6).
+público.
 
 As tabelas atuais (`campus`, `cursos`, `ciclos`, `matriculas`,
 `matriculas_eficiencia`, `fatores`) são a versão **publicada**. `interna_*` e
 `anterior_*` têm DDL idêntico. Cada operação roda em uma única transação
-`BEGIN IMMEDIATE`, nunca mistura leitor com estado parcial (RN-21, RN-27).
+`BEGIN IMMEDIATE`, nunca mistura leitor com estado parcial.
 
-`campus` acompanha o ciclo de baixa desde CPR-06: `publicar` copia
-`interna_campus` (projeção de `campi_sistec`, RN-33) para `campus` e guarda a
-publicada anterior em `anterior_campus`, e `desfazer` restaura junto. Para
-quem preferir aplicar só as edições de `campus`/`fatores`, `aplicar_publico`
-continua existindo como caminho independente.
+`campus` acompanha o ciclo de baixa: `publicar` copia `interna_campus`
+(projeção de `campi_sistec`) para `campus` e guarda a publicada anterior em
+`anterior_campus`, e `desfazer` restaura junto. Para quem preferir aplicar só
+as edições de `campus`/`fatores`, `aplicar_publico` continua existindo como
+caminho independente.
 """
 
 import datetime
@@ -55,7 +54,7 @@ _TAMANHO_LOTE = 1000
 class ConflitoDeConferencia(Exception):
     """A assinatura de origem do candidato divergiu do estado atual do banco
     (revisões, ano-base, `interna_fatores` ou `campus` publicado) entre a
-    conferência da prévia e o Salvar (`previa-paginas-publicas`, PVP-10)."""
+    conferência da prévia e o Salvar."""
 
 
 def _now_iso():
@@ -63,12 +62,12 @@ def _now_iso():
 
 
 def salvar_interna(conjunto, db_path=DEFAULT_DB_PATH, assinatura_esperada=None):
-    """RN-20: grava `conjunto` (dict com DataFrames "cursos", "ciclos",
+    """Grava `conjunto` (dict com DataFrames "cursos", "ciclos",
     "matriculas", "matriculas_eficiencia", já com `casar_fatores` aplicado
     pelo chamador) em `interna_*`, substituindo o conteúdo anterior, numa
     única transação. Incrementa `estado_versoes.rev_interna`.
 
-    PVP-10 (`previa-paginas-publicas`): com `assinatura_esperada`, confere a
+    Com `assinatura_esperada`, confere a
     assinatura de origem dentro do `BEGIN IMMEDIATE`, antes do primeiro
     `DELETE`; divergência faz rollback e levanta `ConflitoDeConferencia`, sem
     trocar nenhuma tabela. `assinatura_esperada=None` mantém o caminho da
@@ -117,9 +116,9 @@ def salvar_interna(conjunto, db_path=DEFAULT_DB_PATH, assinatura_esperada=None):
 
 
 def publicar(db_path=DEFAULT_DB_PATH, admin_email=None):
-    """RN-21/RN-27/RN-30: `anterior_* <- publicada` (só se já havia uma
-    publicação), `publicada <- interna_*`, `rev_anterior <- rev_publicada`,
-    `rev_publicada <- rev_interna`. `interna_*` não é alterada (RN-20)."""
+    """`anterior_* <- publicada` (só se já havia uma publicação),
+    `publicada <- interna_*`, `rev_anterior <- rev_publicada`,
+    `rev_publicada <- rev_interna`. `interna_*` não é alterada."""
     conn = get_connection(db_path)
     try:
         conn.execute("BEGIN IMMEDIATE")
@@ -152,7 +151,7 @@ def publicar(db_path=DEFAULT_DB_PATH, admin_email=None):
 
 
 def desfazer(db_path=DEFAULT_DB_PATH):
-    """RN-27: `publicada <- anterior_*`, `rev_publicada <- rev_anterior`,
+    """`publicada <- anterior_*`, `rev_publicada <- rev_anterior`,
     esvazia `anterior_*` e `rev_anterior <- NULL`. `interna_*` intocada."""
     conn = get_connection(db_path)
     try:
@@ -181,14 +180,13 @@ def desfazer(db_path=DEFAULT_DB_PATH):
 
 
 def aplicar_publico(db_path=DEFAULT_DB_PATH, admin_email=None):
-    """RN-33: aplica no painel público as edições feitas só na versão interna
-    de `campus` (projeção de `campi_sistec` via `interna_campus`) e
-    `fatores`, fora do ciclo de baixa. Não mexe em `anterior_*` (não é uma
-    publicação de baixa, e "Desfazer" continua se referindo só à baixa).
+    """Aplica no painel público as edições feitas só na versão interna de
+    `campus` (projeção de `campi_sistec` via `interna_campus`) e `fatores`,
+    fora do ciclo de baixa. Não mexe em `anterior_*` (não é uma publicação de
+    baixa, e "Desfazer" continua se referindo só à baixa).
 
-    `data-delta.md` §3.3: se `rev_interna == rev_publicada` antes, as duas
-    passam a `rev_interna + 1`; senão só `rev_interna` avança (a publicada
-    recebe a alteração do mesmo jeito)."""
+    As duas revisões passam a `rev_interna + 1`: a publicada recebe a
+    alteração junto com a interna."""
     conn = get_connection(db_path)
     try:
         conn.execute("BEGIN IMMEDIATE")
@@ -201,10 +199,8 @@ def aplicar_publico(db_path=DEFAULT_DB_PATH, admin_email=None):
         conn.execute("DELETE FROM fatores")
         conn.execute("INSERT INTO fatores SELECT * FROM interna_fatores")
 
-        # data-delta.md §3.3: nas duas ramificações (rev_publicada == rev_interna
-        # ou não) o resultado da publicada é o mesmo — a diferença do texto é só
-        # sobre se a interna "também" avança (sempre avança) ou se as duas já
-        # estavam empatadas antes.
+        # Independentemente de rev_publicada já empatar com rev_interna ou
+        # não, o resultado da publicada é o mesmo: as duas avançam juntas.
         nova_rev_interna = rev_interna + 1
         nova_rev_publicada = nova_rev_interna
 

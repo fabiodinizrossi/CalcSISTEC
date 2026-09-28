@@ -1,11 +1,9 @@
-"""Histórico de execuções (`002-baixador-planilhas-sistec`, T035, RF-13,
-`data-delta.md` §3.4).
+"""Histórico de execuções.
 
 A linha nasce quando a execução/captura começa, com `desfecho` NULL. No
-*startup*, `schema.init_db` marca como `interrompida` as linhas em aberto
-(já coberto por T012/`test_schema_v2.py`). Edições de campus ou fatores só
-na versão interna não geram linha; troca por arquivo e restauração sempre
-geram (RF-13).
+*startup*, `schema.init_db` marca como `interrompida` as linhas em aberto.
+Edições de campus ou fatores só na versão interna não geram linha; troca por
+arquivo e restauração sempre geram.
 """
 
 import datetime
@@ -72,8 +70,8 @@ def encerrar(
     db_path=DEFAULT_DB_PATH,
 ):
     """Grava o desfecho de uma linha aberta. `campi_mantidos`/`detalhe` são
-    serializados como JSON (RN-13: `detalhe` nunca carrega conteúdo de
-    planilha nem dado pessoal, só contagens e motivos)."""
+    serializados como JSON; `detalhe` nunca carrega conteúdo de planilha nem
+    dado pessoal, só contagens e motivos."""
     if desfecho not in DESFECHOS_VALIDOS:
         raise ValueError(f"desfecho de histórico desconhecido: {desfecho!r}")
 

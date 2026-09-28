@@ -1,15 +1,12 @@
-"""Lista de permissão de colunas do Sistec.
+"""Lista de permissão de colunas das planilhas do Sistec.
 
-Do resultado da junção entram só as colunas de interesse para os cálculos do
-painel. Qualquer coluna fora da lista de permissão é descartada já na leitura,
-e isso é obrigatório para toda coluna de dado pessoal (defesa em profundidade)
-— inclusive `NOME_RESPONSAVEL` e `CPF` do responsável, confirmadas na planilha
-de ciclo pela investigação ao vivo, que não estavam na versão anterior de
-`app/data/transform.COLUNAS_PII`.
+Do resultado da junção entram só as colunas de interesse para os
+cálculos do painel. Qualquer coluna fora da lista de permissão é descartada
+já na leitura, e isso é obrigatório para toda coluna de dado pessoal
+(defesa em profundidade) — inclusive `NOME_RESPONSAVEL` e `CPF` do
+responsável, presentes na planilha de ciclo.
 
-Cada mapa é {nome no Sistec: nome interno}, conforme a convenção provisória
-para a planilha de matrícula, ainda não confirmada em exploração ao vivo — a
-de ciclo já foi.
+Cada mapa é {nome no Sistec: nome interno}.
 """
 
 import io
@@ -18,7 +15,7 @@ import pandas as pd
 
 from app.data.transform import COLUNAS_PII
 
-# Planilha de ciclo (`ciclo-matricula.csv`).
+# §4.1 Planilha de ciclo (`ciclo-matricula.csv`).
 COLUNAS_CICLO = {
     "CÓDIGO CICLO DE MATRÍCULA": "CODIGO_CICLO_MATRICULA",
     "CÓDIGO UNIDADE DE ENSINO": "CO_UNIDADE",
@@ -33,16 +30,16 @@ COLUNAS_CICLO = {
     "DATA INÍCIO DO CURSO": "DT_DATA_INICIO",
     "DATA FIM PREVISTO DO CURSO": "DT_DATA_FIM_PREVISTO",
     "STATUS DO CICLO DE MATRÍCULA": "STATUS_CICLO",
-    "SITUAÇÃO DO CICLO ": "SITUACAO_CICLO",  # espaço final confirmado no cabeçalho real
-    # Dado institucional da unidade (nunca pessoal — Princípio III), lido só
-    # para o cadastro automático de campus. Não entra em nenhum schema de
-    # gravação (`app/data/ingest.py`), então não é persistido. Grafia
-    # confirmada no cabeçalho dos CSVs reais: sem acento, em maiúsculas.
+    "SITUAÇÃO DO CICLO ": "SITUACAO_CICLO",  # o cabeçalho exportado tem espaço final
+    # Dado institucional da unidade (nunca pessoal),
+    # lido só para o cadastro automático de campus. Não entra em nenhum
+    # schema de gravação (`app/data/ingest.py`), então não é persistido.
+    # Grafia confirmada no cabeçalho dos CSVs reais: sem acento, em maiúsculas.
     "MUNICIPIO": "MUNICIPIO_UNIDADE",
     "NOME UNIDADE DE ENSINO": "NOME_UNIDADE_ENSINO",
 }
 
-# Planilha de matrícula (`sistec.csv`).
+# §4.2 Planilha de matrícula (`sistec.csv`).
 COLUNAS_MATRICULA = {
     "CO_MATRICULA": "CO_MATRICULA",
     "CO_CICLO_MATRICULA": "CODIGO_CICLO_MATRICULA",
@@ -55,10 +52,10 @@ _PERMISSAO_POR_TIPO = {
     "matricula": COLUNAS_MATRICULA,
 }
 
-# Defesa em profundidade: nem o nome no Sistec nem o nome interno de uma
-# coluna permitida podem ser um nome de PII conhecido. Falha na importação do
-# módulo, não em tempo de teste, para que um erro de edição futura nesta lista
-# pare a aplicação imediatamente.
+# Defesa em profundidade: nem o nome no Sistec nem o nome interno de
+# uma coluna permitida podem ser um nome de PII conhecido. Falha na
+# importação do módulo, não em tempo de teste, para que um erro de edição
+# futura nesta lista pare a aplicação imediatamente.
 for _tipo, _mapa in _PERMISSAO_POR_TIPO.items():
     _intersecao = (set(_mapa.keys()) | set(_mapa.values())) & set(COLUNAS_PII)
     if _intersecao:
@@ -69,8 +66,8 @@ for _tipo, _mapa in _PERMISSAO_POR_TIPO.items():
 
 def aplicar_permissao(df, tipo):
     """Mantém só as colunas permitidas para `tipo` ('ciclo' ou 'matricula') que
-    estiverem presentes em `df`, e as renomeia para o nome interno. Coluna nova
-    que o Sistec passar a exportar nunca entra sem mudança de código."""
+    estiverem presentes em `df`, e as renomeia para o nome interno. Coluna
+    nova que o Sistec passar a exportar nunca entra sem mudança de código."""
     try:
         mapa = _PERMISSAO_POR_TIPO[tipo]
     except KeyError:

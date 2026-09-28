@@ -1,18 +1,8 @@
-"""BC-05 (Administração): autenticação e controle de acesso da rota de upload.
+"""Autenticação das rotas administrativas pela sessão Flask.
 
-Implementado na Tarefa 08 do plano de reconstrução (seção "BC-05", AD-04 e
-BR-MIGRAR-027).
-
-Único ponto do sistema com requisito de segurança de acesso (§AGG-Administracao):
-a rota administrativa de upload exige login; as 5 páginas de
-consumo público nunca exigem autenticação (`BR-MIGRAR-027`, decisão confirmada —
-"é público, podem ver todos os dados do instituto inteiro"). Não é um serviço de
-identidade separado (`AD-03`, monolito único) — apenas um guarda de rota simples
-sobre a sessão Flask já embutida no Dash (`app.server`).
-
-Credenciais vêm de variáveis de ambiente (`ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`
-— hash gerado com `werkzeug.security.generate_password_hash`), nunca hardcoded.
-`ADMIN_EMAIL` substitui o antigo `ADMIN_USERNAME` (RN-06, `001-govbr-design-system`).
+As páginas públicas não exigem login. As credenciais administrativas vêm das
+variáveis de ambiente `ADMIN_EMAIL` e `ADMIN_PASSWORD_HASH`; a senha é conferida
+contra um hash gerado com `werkzeug.security.generate_password_hash`.
 """
 
 import os
@@ -25,7 +15,7 @@ from werkzeug.security import check_password_hash
 
 SESSION_KEY = "admin_autenticado"
 
-# RN-07: parte local, `@`, domínio com ao menos um ponto — validação de
+# Parte local, `@`, domínio com ao menos um ponto — validação de
 # formato simples, não RFC 5322 completa (não é o ponto de verdade sobre
 # e-mails existentes, apenas evita entradas obviamente inválidas).
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -45,8 +35,8 @@ def credenciais_configuradas():
 
 
 def verificar_credenciais(usuario, senha):
-    """Compara contra `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH` do ambiente (RN-06,
-    RN-07). Se as variáveis de ambiente não estiverem configuradas, ou se o
+    """Compara contra `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH` do ambiente.
+    Se as variáveis de ambiente não estiverem configuradas, ou se o
     e-mail informado não tem formato válido, nenhuma credencial é aceita
     (falha segura) — não há usuário/senha padrão."""
     usuario_esperado = os.environ.get("ADMIN_EMAIL")
@@ -62,8 +52,8 @@ def autenticar_sessao(usuario, senha):
     """Autentica e, se válido, marca a sessão Flask como autenticada.
     Retorna True/False — nunca lança exceção para uma tentativa inválida.
 
-    Grava um `sessao_id` opaco a cada login (PVP-07, `previa-paginas-publicas`):
-    vincula a execução de envio à sessão que a iniciou."""
+    Grava um `sessao_id` opaco a cada login para vincular a execução de envio
+    à sessão que a iniciou."""
     if verificar_credenciais(usuario, senha):
         flask.session[SESSION_KEY] = True
         flask.session["admin_usuario"] = usuario
@@ -78,7 +68,7 @@ def esta_autenticado():
 
 def sessao_id_atual():
     """Identificador opaco da sessão administrativa atual, para vincular a
-    execução de envio à sessão dona (PVP-07). Cria um quando ausente; nunca
+    execução de envio à sessão dona. Cria um quando ausente; nunca
     devolve vazio."""
     sessao_id = flask.session.get("sessao_id")
     if not sessao_id:
@@ -94,9 +84,9 @@ def encerrar_sessao():
 
 
 def requer_autenticacao(view_func):
-    """Decorator para rotas Flask administrativas (ex.: `/admin/upload`).
+    """Decorator para rotas Flask administrativas (ex.: `/admin/atualizar`).
     Redireciona para `/admin/login` quando a sessão não está autenticada —
-    nunca aplicado às 5 páginas públicas do painel (`BR-MIGRAR-027`)."""
+    nunca aplicado às 5 páginas públicas do painel."""
 
     @wraps(view_func)
     def wrapper(*args, **kwargs):

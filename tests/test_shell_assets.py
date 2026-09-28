@@ -7,6 +7,8 @@ import re
 
 import pytest
 
+from app.data import instalacao as instalacao_mod
+
 RAIZ_APP = Path(__file__).resolve().parents[1] / "app"
 
 
@@ -64,7 +66,7 @@ def test_tela_de_atualizar_referencia_o_script_em_ds(monkeypatch):
     with cliente.session_transaction() as sessao:
         sessao["admin_usuario"] = "pi@ife.edu.br"
         sessao["admin_autenticado"] = True
-    monkeypatch.setattr(app_module.instalacao, "concluida", lambda: True)
+    monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
 
     html = cliente.get("/admin/atualizar").get_data(as_text=True)
     assert 'src="/ds/js/atualizar.js"' in html

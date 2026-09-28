@@ -1,12 +1,9 @@
-"""Página da prévia (`previa-paginas-publicas`, T16): decide qual das quatro
-páginas públicas chamar, valida o contexto (sessão dona, origem `envio`,
-estado `previa`) e monta a faixa **Prévia não publicada**, a navegação entre
-as quatro páginas e os avisos do envio.
+"""Página da prévia das quatro páginas públicas.
 
-O guarda de sessão (`app.app._exigir_sessao_previa`, T15) já barra a requisição
-sem login; aqui a validação de posse de `obter_previa` (T4) é a segunda camada.
-Uma falha ao renderizar registra `registrar_falha_pagina` (T8); uma renderização
-bem-sucedida limpa a falha anterior.
+Valida a sessão dona, a origem do envio e o estado da execução. Mostra a faixa
+"Prévia não publicada", a navegação e os avisos do envio. O acesso exige
+sessão administrativa e `obter_previa` valida a posse da execução. Uma falha
+de renderização é registrada; uma renderização bem-sucedida limpa a falha.
 """
 
 import importlib
@@ -43,8 +40,7 @@ def _voltar_atualizar():
 
 
 def _indisponivel():
-    """PVP-08: slug desconhecido, execução perdida, sessão alheia ou estado
-    terminal — nunca a mensagem pública de ausência de dados."""
+    """Mostra indisponibilidade para página, execução, sessão ou estado inválido."""
     return html.Div(
         [
             mensagem_ds("warning", "Prévia indisponível."),
@@ -71,7 +67,7 @@ def _faixa(execucao_id, pagina):
 
 
 def _avisos(execucao):
-    """PVP-05: avisos já apurados no envio — campi preservados, unidades
+    """Mostra avisos apurados no envio: campi preservados, unidades
     cadastradas pelo envio, matrículas órfãs e arquivos ignorados."""
     itens = []
     campi = sorted(execucao.campi_falhos or ())

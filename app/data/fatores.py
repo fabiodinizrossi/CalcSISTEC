@@ -1,10 +1,8 @@
-"""Arquivo de fatores FEC/FECH: leitura, validação, conversão e casamento
-(`002-baixador-planilhas-sistec`, T028/T029, D-07, D-09, D-10, D-11).
+"""Arquivo de fatores FEC/FECH: leitura, validação, conversão e casamento.
 
-Substitui `app/data/transform.t05_default_fec_fech`: a partir desta feature,
-o casamento de fatores usa tipo + nome do curso (D-07), não mais o código do
-portfólio, e a tabela `fatores` (por versão) é editável em Configurações, com
-arquivo enviado, prévia e restauração ao padrão (`dados_FEC_PNP.xlsx`).
+O casamento de fatores usa tipo + nome do curso, não o código do portfólio, e
+a tabela `fatores` (por versão) é editável em Configurações, com arquivo
+enviado, prévia e restauração ao padrão (`dados_FEC_PNP.xlsx`).
 """
 
 import openpyxl
@@ -14,9 +12,9 @@ from app.data.schema import DEFAULT_DB_PATH, CONVERSAO_TIPO_FATORES, TIPOS_SO_PE
 
 COLUNAS_OBRIGATORIAS = {"TIPO DE CURSO", "CURSO", "FEC", "FECH"}
 
-# D-09: tipos convertidos sem correspondência entre os subtipos do Sistec —
+# Tipos convertidos sem correspondência entre os subtipos do Sistec —
 # mantidos na tabela, mas sinalizados como aviso informativo na prévia
-# (RN-34 não os recusa, só o arquivo malformado é recusado).
+# (a validação não os recusa, só o arquivo malformado é recusado).
 TIPOS_SEM_CORRESPONDENCIA_SISTEC = {
     "EDUCAÇÃO INFANTIL",
     "ENSINO FUNDAMENTAL I",
@@ -29,7 +27,7 @@ TIPOS_SEM_CORRESPONDENCIA_SISTEC = {
 
 
 class ArquivoFatoresInvalido(Exception):
-    """RN-35: o arquivo inteiro é recusado, com a lista de erros encontrados."""
+    """O arquivo inteiro é recusado, com a lista de erros encontrados."""
 
     def __init__(self, erros):
         self.erros = list(erros)
@@ -37,7 +35,7 @@ class ArquivoFatoresInvalido(Exception):
 
 
 def _localizar_aba(wb):
-    """D-11: a aba é a única cujo cabeçalho (1ª linha, normalizado) contém as
+    """A aba é a única cujo cabeçalho (1ª linha, normalizado) contém as
     4 colunas obrigatórias. Retorna a lista de abas candidatas (0, 1 ou mais)."""
     candidatas = []
     for nome in wb.sheetnames:
@@ -52,18 +50,18 @@ def _localizar_aba(wb):
 
 
 def ler_e_validar(caminho_ou_arquivo):
-    """D-11/RN-34/RN-35/D-09/D-10. Lê e valida um arquivo de fatores.
+    """Lê e valida um arquivo de fatores.
 
     Retorna `(linhas, avisos)`, onde `linhas` é uma lista de tuplas
     `(tipo_curso, nome_curso, fec, fech, chave_tipo, chave_nome)` prontas para
     gravação em `fatores`/`interna_fatores`, e `avisos` é a lista de tipos sem
-    correspondência no Sistec (D-09), mantidos mas informativos.
+    correspondência no Sistec, mantidos mas informativos.
 
-    Levanta `ArquivoFatoresInvalido` com a lista completa de erros (RN-35):
-    nenhuma ou mais de uma aba candidata; `TIPO DE CURSO`/`CURSO` vazio;
-    `FEC`/`FECH` vazio ou não numérico; linha repetida por chave após a
-    conversão (o que também cobre D-10: tipo só-pelo-tipo com mais de uma
-    linha, porque a chave desses tipos colapsa para `chave_nome=''`).
+    Levanta `ArquivoFatoresInvalido` com a lista completa de erros: nenhuma ou
+    mais de uma aba candidata; `TIPO DE CURSO`/`CURSO` vazio; `FEC`/`FECH`
+    vazio ou não numérico; linha repetida por chave após a conversão (o que
+    também cobre o tipo só-pelo-tipo com mais de uma linha, porque a chave
+    desses tipos colapsa para `chave_nome=''`).
     """
     wb = openpyxl.load_workbook(caminho_ou_arquivo, read_only=True, data_only=True)
     try:
@@ -138,7 +136,7 @@ def ler_e_validar(caminho_ou_arquivo):
 
 
 def diferenca_fatores(linhas_atuais, linhas_novas):
-    """Prévia da troca (data-delta.md §3.1): diferença por (chave_tipo,
+    """Prévia da troca: diferença por (chave_tipo,
     chave_nome) entre a tabela atual (linhas de `(chave_tipo, chave_nome, fec,
     fech)`, ou tuplas completas de `ler_e_validar`) e a nova. Retorna dict com
     `incluidas`, `removidas` e `alteradas` (cada item com fec/fech antes e
@@ -168,10 +166,10 @@ def diferenca_fatores(linhas_atuais, linhas_novas):
 
 
 def casar_fatores(df_cursos, df_fatores):
-    """D-07: substitui `transform.t05_default_fec_fech`. A chave é
+    """Casa os cursos com a tabela de fatores. A chave é
     `normalizar(tipo_curso_pnp)` + `normalizar(nome_curso_ajustado)`; para os
-    3 tipos só-pelo-tipo (D-07/D-10), a chave usa `chave_nome=''`. Sem
-    casamento: FEC 1, FECH 1 e `fator_nao_encontrado=1`.
+    3 tipos só-pelo-tipo, a chave usa `chave_nome=''`. Sem casamento: FEC 1,
+    FECH 1 e `fator_nao_encontrado=1`.
 
     `df_cursos` precisa ter `tipo_curso_pnp` e `nome_curso_ajustado`.
     `df_fatores` precisa ter `chave_tipo`, `chave_nome`, `fec`, `fech` (lida
@@ -217,8 +215,8 @@ def ler_fatores_atuais(tabela, db_path=DEFAULT_DB_PATH):
 def substituir_interna_fatores(linhas, db_path=DEFAULT_DB_PATH):
     """Troca o conteúdo de `interna_fatores` (arquivo enviado ou restauração
     do padrão) e recasa `interna_cursos.fec`/`.fech`/`.fator_nao_encontrado`
-    na mesma transação (data-delta.md §6: "toda gravação de `interna_fatores`
-    reexecuta o casamento na mesma transação")."""
+    na mesma transação: toda gravação de `interna_fatores` reexecuta o
+    casamento."""
     conn = get_connection(db_path)
     try:
         conn.execute("BEGIN IMMEDIATE")

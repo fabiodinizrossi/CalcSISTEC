@@ -1,8 +1,8 @@
 """Orquestração em memória de execuções de baixa e captura de perfis.
 
-Um registro por `admin_email` (uma execução não terminal por vez), guardado
-num `dict` protegido por `threading.Lock`. A extensão é um executor sem
-estado: pede o próximo par (`proximo`), baixa e reporta
+Um registro por `admin_email` (uma execução não terminal por vez),
+guardado num `dict` protegido por `threading.Lock`. A extensão é um
+executor sem estado: pede o próximo par (`proximo`), baixa e reporta
 (`receber_bytes`/`reportar_falha`). Uma thread de varredura (`iniciar_
 varredura`) encerra pausas com mais de 4 h e falha pares parados há mais de
 900 s + 60 s sem resposta (watchdog).
@@ -60,16 +60,16 @@ class PreviaIncompleta(Exception):
 
 class PreviaDesatualizada(Exception):
     """A conferência da prévia ficou desatualizada — a assinatura de origem
-    mudou entre a prévia e o Salvar. A execução continua em `previa` para uma
-    nova conferência."""
+    mudou entre a prévia e o Salvar. A
+    execução continua em `previa` para uma nova conferência."""
 
 
 @contextlib.contextmanager
 def com_trava(execucao):
-    """Trava por execução: serializa a leitura da fonte candidata e as
-    transições de estado, para Salvar/Descartar não fecharem a fonte no meio
-    de um callback. Nunca toma `_LOCK` (trava do registro) por dentro — a ordem
-    é sempre execução -> registro, evitando deadlock."""
+    """Trava por execução: serializa a leitura da fonte candidata e
+    as transições de estado, para Salvar/Descartar não fecharem a fonte no
+    meio de um callback. Nunca toma `_LOCK` (trava do registro) por dentro —
+    a ordem é sempre execução -> registro, evitando deadlock."""
     with execucao.lock:
         yield
 
@@ -142,9 +142,9 @@ class Execucao:
 
 
 class Captura:
-    """Máquina de estados de captura de perfis: aguardando_login ->
-    lendo_perfis -> revisao -> salva | cancelada; ou 0 perfis/erro ->
-    sem_resultado | falhou."""
+    """Máquina de estados de captura de perfis: aguardando_
+    login -> lendo_perfis -> revisao -> salva | cancelada; ou 0 perfis/erro
+    -> sem_resultado | falhou."""
 
     def __init__(self, captura_id, admin_email, relogio):
         self.id = captura_id
@@ -169,9 +169,9 @@ def _relogio_padrao():
 
 
 def criar_execucao(admin_email, campi, historico_id=None, relogio=None):
-    """409 (via `ExecucaoInvalida`) se o administrador já tem uma execução
-    não terminal. `campi`: lista de dicts `{id_perfil, nome_perfil}` dos
-    perfis com `co_unidade` preenchido, na ordem da fila."""
+    """Devolve erro via `ExecucaoInvalida` se o administrador já tem uma
+    execução não terminal. `campi`: lista de dicts `{id_perfil, nome_perfil}`
+    dos perfis com `co_unidade` preenchido, na ordem da fila."""
     relogio = relogio or _relogio_padrao
     with _LOCK:
         atual = _REGISTRO.get(admin_email)
@@ -232,11 +232,12 @@ def obter_do_admin(admin_email):
 
 
 def obter_previa(execucao_id, sessao_id):
-    """Devolve a execução de envio em estado `previa` apenas para a sessão
-    dona. Qualquer outra combinação — execução inexistente, sessão alheia
-    (inclusive outra sessão do mesmo e-mail), origem diferente de `envio` ou
-    estado diferente de `previa` — levanta `PreviaIndisponivel`. A recusa
-    nunca devolve nem abre a fonte candidata nem recai no banco publicado."""
+    """Devolve a execução de envio em
+    estado `previa` apenas para a sessão dona. Qualquer outra combinação —
+    execução inexistente, sessão alheia (inclusive outra sessão do mesmo
+    e-mail), origem diferente de `envio` ou estado diferente de `previa` —
+    levanta `PreviaIndisponivel`. A recusa nunca devolve nem abre a fonte
+    candidata nem recai no banco publicado."""
     for execucao in _REGISTRO.values():
         if execucao.id == execucao_id:
             if (
@@ -250,7 +251,7 @@ def obter_previa(execucao_id, sessao_id):
 
 
 def iniciar_baixa(execucao):
-    """Dispara "Baixar": só a partir de `aguardando_login`."""
+    """Inicia a baixa só a partir de `aguardando_login`."""
     if execucao.estado != "aguardando_login":
         raise ExecucaoInvalida(f"não é possível iniciar a baixa a partir do estado '{execucao.estado}'")
     execucao.estado = "baixando"
@@ -270,8 +271,8 @@ def cancelar(execucao):
 
 
 def proximo(execucao):
-    """Idempotente — repetir sem reportar devolve o mesmo par em andamento.
-    Devolve um dict pronto para a resposta HTTP."""
+    """§4.1: idempotente — repetir sem reportar devolve o mesmo par em
+    andamento. Devolve um dict pronto para a resposta HTTP."""
     if execucao.estado in ("aguardando_login", "pausada"):
         return {"acao": "aguardar"}
 
@@ -292,10 +293,10 @@ def proximo(execucao):
 
 
 def receber_bytes(execucao, n, conteudo_bytes):
-    """Aceita o conteúdo do par em andamento; levanta `ValueError` com um
-    código curto (`par_inesperado`/`colunas_ausentes`/`leitura_csv`) para o
-    chamador HTTP traduzir em status. Os bytes nunca persistem, são descartados
-    após a leitura; erro nunca ecoa o conteúdo."""
+    """§4.2. `204` (None) se aceito; levanta `ValueError` com um código curto
+    (`par_inesperado`/`colunas_ausentes`/`leitura_csv`) para o chamador HTTP
+    traduzir em status. Bytes nunca são persistidos; após a leitura, o erro
+    não ecoa o conteúdo."""
     par = execucao.par_em_andamento()
     if par is None or par.n != n:
         raise ValueError("par_inesperado")
@@ -310,7 +311,7 @@ def receber_bytes(execucao, n, conteudo_bytes):
 
 
 def reportar_falha(execucao, n, motivo):
-    """`sessao_expirada`/`aba_fechada` pausam a execução (o par volta a
+    """§4.3. `sessao_expirada`/`aba_fechada` pausam a execução (o par volta a
     `pendente`); os demais motivos falham só o par, e a fila segue."""
     motivos_validos = {"tempo_esgotado", "erro_http", "resposta_invalida", "sessao_expirada", "aba_fechada"}
     if motivo not in motivos_validos:
@@ -361,13 +362,13 @@ def _consolidar_ou_falhar(execucao):
 
 
 def salvar(execucao, db_path, ano_base, confirmado=False):
-    """Estado `previa` -> Salvar: grava a versão interna e marca `salva`.
-    Serializa com a leitura da fonte via `com_trava`.
+    """Estado `previa` -> Salvar: grava a versão interna e marca
+    `salva`. Serializa com a leitura da fonte via `com_trava`.
 
-    Um envio grava as tabelas já preparadas do candidato, com a assinatura de
-    origem conferida na transação; divergência vira `PreviaDesatualizada` e a
-    execução continua em `previa` (fonte viva). A baixa direta continua por
-    `montar_versao_interna`, sem mudança."""
+    Um envio grava as tabelas já preparadas do
+    candidato, com a assinatura de origem conferida na transação; divergência
+    vira `PreviaDesatualizada` e a execução continua em `previa` (fonte viva).
+    A baixa direta grava por `montar_versao_interna`."""
     with com_trava(execucao):
         if execucao.estado != "previa":
             raise ExecucaoInvalida(f"não é possível salvar a partir do estado '{execucao.estado}'")
@@ -417,10 +418,10 @@ _COLUNAS_AMOSTRA = [
 
 
 def _amostra_candidato(candidato):
-    """Até 20 linhas do candidato (já filtrado pela regra PNP), uma por
-    matrícula, com o curso daquela matrícula na mesma linha — é o que o Salvar
-    vai gravar, ao contrário do consolidado bruto. Só colunas institucionais:
-    nenhuma de `COLUNAS_PII` existe no candidato."""
+    """Até 20 linhas do candidato (já filtrado pela regra PNP),
+    uma por matrícula, com o curso daquela matrícula na mesma linha — é o que
+    o Salvar vai gravar, ao contrário do consolidado bruto. Só colunas
+    institucionais: nenhuma de `COLUNAS_PII` existe no candidato."""
     tabelas = (candidato or {}).get("tabelas") or {}
     matriculas = tabelas.get("matriculas")
     ciclos = tabelas.get("ciclos")
@@ -450,8 +451,8 @@ def _amostra_candidato(candidato):
 
 def _resumo_amostra(candidato):
     """Resumo/amostra leves da prévia para o polling, sem reter os DataFrames
-    completos. As contagens e a amostra saem do `candidato` (o que o Salvar
-    vai gravar), não do consolidado bruto de `execucao.previa`."""
+    completos. As contagens e a amostra saem do `candidato`
+    (o que o Salvar grava), não do consolidado bruto de `execucao.previa`."""
     if candidato is None:
         return None
     resumo = candidato["resumo"]
@@ -465,11 +466,11 @@ def _resumo_amostra(candidato):
 
 
 def abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH):
-    """Abre a fonte candidata da prévia na execução. Lê o `interna_campus` e
-    guarda a fonte e o `candidato` na execução. Idempotente: chamadas
-    repetidas não criam uma segunda fonte. Depois de abrir, libera os
-    DataFrames por arquivo e o consolidado pesado, conservando o resumo/amostra
-    do polling."""
+    """Abre a fonte candidata da prévia na execução. Lê o
+    `interna_campus` e guarda a fonte e o `candidato` na execução.
+    Idempotente: chamadas repetidas não criam uma segunda fonte. Depois de
+    abrir, libera os DataFrames por arquivo e o consolidado pesado,
+    conservando o resumo/amostra do polling."""
     if execucao.previa_fonte is not None:
         return execucao.previa_fonte
 
@@ -495,9 +496,9 @@ def liberar_previa(execucao):
 
 
 class ContextoLeitura:
-    """Contexto de leitura validado da prévia: execução autorizada, conexão
-    somente leitura da fonte candidata e o ano-base do candidato. Único
-    caminho para qualquer layout/callback ler a fonte."""
+    """Contexto de leitura validado da prévia: execução
+    autorizada, conexão somente leitura da fonte candidata e o ano-base do
+    candidato. Único caminho para qualquer layout/callback ler a fonte."""
 
     def __init__(self, execucao, conn, ano_base):
         self.execucao = execucao
@@ -506,8 +507,8 @@ class ContextoLeitura:
 
 
 def abrir_leitura_previa(execucao_id, sessao_id):
-    """Valida o contexto pela regra de `obter_previa` e devolve um
-    `ContextoLeitura` com a conexão somente leitura da fonte candidata e o
+    """Valida o contexto pela regra de `obter_previa` e devolve
+    um `ContextoLeitura` com a conexão somente leitura da fonte candidata e o
     ano-base do candidato. A validação de estado e a abertura da conexão
     acontecem sob a trava da execução, antes de qualquer consulta; contexto
     inválido levanta `PreviaIndisponivel` sem devolver conexão. Nunca devolve
@@ -592,13 +593,12 @@ def parar_varredura():
 
 
 def criar_captura(admin_email, relogio=None):
-    """Bloqueia se o administrador tem uma execução de baixa em andamento
-    (mesmo registro `_REGISTRO`).
+    """Bloqueia a captura se o administrador
+    tem uma execução de baixa em andamento (mesmo registro `_REGISTRO`).
 
-    Ao contrário da baixa, uma captura anterior do mesmo administrador presa
-    em estado não terminal (ex.: `aguardando_login` sem conclusão) não
-    bloqueia uma nova — é descartada automaticamente (`cancelada`), sem
-    exigir cancelamento manual antes."""
+    Uma captura anterior do mesmo administrador presa em estado não terminal (ex.:
+    `aguardando_login` sem conclusão) não bloqueia uma nova — é descartada
+    automaticamente (`cancelada`), sem exigir cancelamento manual antes."""
     relogio = relogio or _relogio_padrao
     with _LOCK:
         atual = _REGISTRO.get(admin_email)
@@ -643,15 +643,15 @@ def obter_captura_por_token(captura_id, token):
 
 
 def receber_perfis(captura, perfis):
-    """`perfis` vazio -> `sem_resultado` (lista salva não muda). Não vazio ->
-    `revisao`, aguardando "Salvar lista".
+    """`perfis` vazio -> `sem_resultado` (lista salva não
+    muda). Não vazio -> `revisao`, aguardando "Salvar lista".
 
     O Sistec real lista um perfil por papel (Assessor/Gestor) para o mesmo
-    campus, repetindo o código da unidade (`qtdPerfis` = 2x o número de
-    campi) — como `co_unidade` é `UNIQUE` em `campi_sistec`
+    campus, repetindo o código da unidade (achado 2 da F0: `qtdPerfis` = 2x
+    o número de campi) — como `co_unidade` é `UNIQUE` em `campi_sistec`
     (`app/data/campi.py`), mantém só o primeiro perfil de cada código de
-    unidade; perfis sem código lido (`co_unidade` vazio) não colidem entre si
-    e passam todos."""
+    unidade; perfis sem código lido (`co_unidade` vazio) não colidem entre
+    si e passam todos."""
     if not perfis:
         captura.estado = "sem_resultado"
         return
