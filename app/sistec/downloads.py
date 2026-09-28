@@ -1,6 +1,6 @@
 """Modo "pasta de coleta" — a mesma mecânica do script R
 (`sistec_crawler_ifrs_versaoIFFar.R`), usada como alternativa quando o modo
-da janela controlada não funciona (`app/sistec/navegador.py`).
+janela controlada não funciona.
 
 A pessoa faz o login no **navegador de sempre**, com a sessão dela. O
 CalcSISTEC só manda o navegador abrir as URLs (troca de campus e exportação)
@@ -13,11 +13,11 @@ cobre duas pastas: a pasta fixa do programa (criada na instalação,
 usuário. Configurando o navegador para baixar na pasta fixa, o arquivo já
 nasce no lugar certo; caindo em Downloads, ele é movido na hora.
 
-Diferença de exposição em relação ao modo da janela (D-03): aqui os CSVs com
-CPF passam pelo disco por alguns segundos, exatamente como já acontece hoje
-com o script R. As colunas de dado pessoal continuam sendo descartadas na
-leitura (`app/sistec/colunas.py`), então nada disso entra no banco nem no que
-é enviado adiante.
+Diferença de exposição em relação ao modo da janela controlada: aqui os CSVs
+com CPF passam pelo disco por alguns segundos, exatamente como já acontece
+hoje com o script R. As colunas de dado pessoal continuam sendo descartadas
+na leitura (`app/sistec/colunas.py`), então nada disso entra no banco nem no
+que é enviado adiante.
 """
 
 import logging
@@ -225,8 +225,8 @@ class Baixador:
 
     def baixar_par(self, par, cancelado=None, aviso=None):
         """`(conteudo, None)` em caso de sucesso; `(None, motivo)` nos motivos
-        conhecidos de `interfaces/sistec-http.md` §4. `aviso` é chamado se o
-        arquivo demorar demais a aparecer (ver `esperar_arquivo`)."""
+        conhecidos. `aviso` é chamado se o arquivo demorar demais a aparecer
+        (ver `esperar_arquivo`)."""
         self.trocar_perfil(par)
 
         desde = time.time()

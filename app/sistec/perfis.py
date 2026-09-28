@@ -1,5 +1,4 @@
-"""Leitura do texto dos perfis da tela de seleção do Sistec
-(`002-baixador-planilhas-sistec`, achados 2 e 3 da F0).
+"""Leitura do texto dos perfis da tela de seleção do Sistec.
 
 Cada perfil é uma linha de texto no padrão
 "<PAPEL> DA UNIDADE DE ENSINO - [<código da unidade> -] <instituição> - CAMPUS <nome>".
@@ -98,8 +97,8 @@ def chave_campus(nome_perfil):
 
 
 def deduplicar_por_campus(perfis, nomes_preferidos=()):
-    """Um perfil por campus — o Sistec lista um por papel (achado 2 da F0),
-    e baixar o mesmo campus duas vezes só duplicaria o trabalho.
+    """Um perfil por campus — o Sistec lista um por papel, e baixar o mesmo
+    campus duas vezes só duplicaria o trabalho.
 
     Mantém a ordem da primeira aparição. Dentro do mesmo campus, prefere o
     perfil cujo `nome_perfil` já está salvo (preserva a escolha anterior) e

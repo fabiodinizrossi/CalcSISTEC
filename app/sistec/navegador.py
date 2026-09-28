@@ -1,5 +1,4 @@
-"""Atualização a partir do Sistec pelo navegador da própria pessoa
-(`002-baixador-planilhas-sistec`, emendas E003/E004, revistas pela E006).
+"""Atualização a partir do Sistec pelo navegador da própria pessoa.
 
 É a mecânica do script R (`sistec_crawler_ifrs_versaoIFFar.R`): quem tem a
 sessão é o **navegador de sempre**, com o login gov.br que a pessoa acabou de
@@ -7,11 +6,10 @@ fazer. O CalcSISTEC só manda abrir as URLs (troca de campus e exportação) e
 vigia a pasta onde o arquivo cai (`app/sistec/downloads.py`), lendo e apagando
 cada CSV assim que chega.
 
-**Por que não há mais o modo janela.** Até a E003 o caminho preferido era abrir
-o Chrome/Edge instalado e conectar o Playwright por CDP. O gov.br identifica o
-navegador sob controle automático e recusa o login — a premissa P-16 do
-roadmap, nunca exercitada até 2026-09-16, caiu na primeira tentativa real. Todo
-esse caminho saiu (E006), junto com a dependência `playwright`.
+**Por que não há mais o modo janela.** Até uma época o caminho preferido era
+abrir o Chrome/Edge instalado e conectar o Playwright por CDP. O gov.br
+identifica o navegador sob controle automático e recusa o login. Todo esse
+caminho saiu, junto com a dependência `playwright`.
 
 **De onde vem a lista de campi.** Do cadastro manual (Configurações → Campi do
 Sistec), não de leitura automática: o identificador de perfil (`tipo`) não
@@ -381,7 +379,7 @@ def _registrar_par(sessao, execucao, par, corpo, motivo):
         _passo(sessao, f"Planilha {n} ({par['nome_perfil']}) veio fora do formato esperado ({exc}).", "aviso")
         return
     finally:
-        corpo = None  # D-03: os bytes crus não ficam referenciados
+        corpo = None  # os bytes crus não ficam referenciados
 
     linhas = execucao.par_por_n(n).linhas
     _passo(sessao, f"Planilha {n} de {par['total']} lida: {linhas} linha(s) de {par['nome_perfil']}.", "sucesso")

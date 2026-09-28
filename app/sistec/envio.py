@@ -39,9 +39,9 @@ def _ler_pasta(arquivos, tipo, nome_pasta):
 def ler_pastas(arquivos_ciclo, arquivos_matricula):
     """Lê os dois conjuntos de arquivos ou recusa o primeiro CSV inválido.
 
-    UPL-06: encerra cada `FileStorage` no fim (inclusive nos arquivos
-    ignorados e no caminho de recusa) — é o que apaga o buffer temporário que
-    o parser criou para um envio grande, sem esperar o coletor de lixo.
+    Encerra cada `FileStorage` no fim (inclusive nos arquivos ignorados e no
+    caminho de recusa) — é o que apaga o buffer temporário que o parser criou
+    para um envio grande, sem esperar o coletor de lixo.
     """
     arquivos_ciclo = list(arquivos_ciclo)
     arquivos_matricula = list(arquivos_matricula)
@@ -74,7 +74,7 @@ def _texto(valor):
 
 
 def dados_unidades_do_envio(df_ciclos):
-    """CPR-05 AC1: cidade e nome de cada `CO_UNIDADE` do envio.
+    """Cidade e nome de cada `CO_UNIDADE` do envio.
 
     Devolve `{codigo: {"cidade": ..., "nome_unidade": ...}}`, uma entrada por
     unidade presente em `df_ciclos`, na ordem em que aparece. Para cada campo,
