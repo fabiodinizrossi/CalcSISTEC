@@ -317,7 +317,7 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 ---
 
-### T6: Mover publicação, desfazer e histórico para `app/rotas/publicacao.py`
+### [x] T6: Mover publicação, desfazer e histórico para `app/rotas/publicacao.py`
 
 **What**: `/admin/atualizar/publicar` (`:719`), `/admin/atualizar/desfazer`
 (`:728`), `/admin/historico` (`:740`) e `historico_iniciar_e_encerrar` (`:269`)

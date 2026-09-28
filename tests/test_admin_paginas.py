@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from app import app as app_module
 from app.data import instalacao as instalacao_mod
-from app.rotas import acesso, configuracoes
+from app.rotas import acesso, configuracoes, publicacao
 
 
 @pytest.fixture
@@ -188,7 +188,7 @@ EVENTOS = [
 
 
 def test_historico_com_registros_usa_br_table_em_conteiner_rolavel(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: EVENTOS)
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: EVENTOS)
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     assert re.search(r'<div class="br-table">\s*<div class="responsive">\s*<table', html)
     assert "table-scroll-wrapper" not in html
@@ -199,18 +199,61 @@ def test_historico_com_registros_usa_br_table_em_conteiner_rolavel(cliente_auten
 
 
 def test_historico_sem_registros_mostra_br_message_info_no_lugar_da_tabela(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: [])
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     assert re.search(r'class="br-message info"[^>]*>.*Nenhuma atualização registrada ainda\.', html, re.S)
     assert "<table" not in html
 
 
 def test_historico_tem_breadcrumb_inicio_e_pagina_atual(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "historico_listar", lambda: [])
+    monkeypatch.setattr(publicacao, "historico_listar", lambda: [])
     html = cliente_autenticado.get("/admin/historico").get_data(as_text=True)
     crumbs = re.search(r'<nav class="br-breadcrumb".*?</nav>', html, re.S).group(0)
     assert re.search(r'<a\b[^>]*href="/"[^>]*>\s*Matrículas\s*</a>', crumbs)
     assert re.search(r'<span aria-current="page">Histórico de atualizações</span>', crumbs)
+
+
+def test_publicar_responde_204_e_registra_publicacao(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(publicacao.versoes, "publicar", lambda db, admin_email: chamadas.append((db, admin_email)))
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *args: chamadas.append(args))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/publicar")
+
+    assert resposta.status_code == 204
+    assert resposta.data == b""
+    assert chamadas == [
+        (publicacao.DEFAULT_DB_PATH, "pi@ife.edu.br"),
+        ("publicacao", "pi@ife.edu.br", "publicada"),
+    ]
+
+
+def test_desfazer_responde_204_e_registra_desfecho(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(publicacao.versoes, "desfazer", lambda db: chamadas.append(db))
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *args: chamadas.append(args))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/desfazer")
+
+    assert resposta.status_code == 204
+    assert resposta.data == b""
+    assert chamadas == [
+        publicacao.DEFAULT_DB_PATH,
+        ("desfazer_publicacao", "pi@ife.edu.br", "publicacao_desfeita"),
+    ]
+
+
+def test_desfazer_sem_publicacao_anterior_responde_409(cliente_autenticado, monkeypatch):
+    def sem_publicacao(_db):
+        raise ValueError("Nada a desfazer")
+
+    monkeypatch.setattr(publicacao.versoes, "desfazer", sem_publicacao)
+    monkeypatch.setattr(publicacao, "historico_iniciar_e_encerrar", lambda *_: pytest.fail("histórico indevido"))
+
+    resposta = cliente_autenticado.post("/admin/atualizar/desfazer")
+
+    assert resposta.status_code == 409
+    assert resposta.json == {"erro": "Nada a desfazer"}
 
 
 def test_atualizar_mostra_breadcrumb_e_menu_administrativo(cliente_autenticado):

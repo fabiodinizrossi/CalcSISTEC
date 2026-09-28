@@ -7,11 +7,10 @@ from dash import html
 from app.auth import requer_autenticacao, sessao_id_atual
 from app.components.aviso_sem_pnp import make_aviso_sem_pnp
 from app.config import aplicar_configuracao_sessao
-from app.data import campi, versoes
+from app.data import campi
 from app.data.campi import existe_campus_sem_unidade, listar_campi
 from app.data.historico import encerrar as historico_encerrar
 from app.data.historico import iniciar as historico_iniciar
-from app.data.historico import listar as historico_listar
 from app.data.consulta import ano_base_ativo
 from app.data.ingest import calcular_assinatura_origem, ciclos_com_modalidade, preparar_versao
 from app.data.schema import DEFAULT_DB_PATH, init_db
@@ -20,6 +19,7 @@ from app.rotas import comum
 from app.rotas.acesso import acesso_bp
 from app.rotas.configuracoes import configuracoes_bp
 from app.rotas.instalacao import instalacao_bp
+from app.rotas.publicacao import publicacao_bp
 from app.rotas.publico import publico_bp
 from app.shell import PainelDash, init_shell
 from app.sistec import envio, execucoes, navegador
@@ -49,6 +49,7 @@ server.register_blueprint(publico_bp)
 server.register_blueprint(acesso_bp)
 server.register_blueprint(instalacao_bp)
 server.register_blueprint(configuracoes_bp)
+server.register_blueprint(publicacao_bp)
 init_shell(server, app)
 
 # As páginas públicas leem o conjunto ativo do SQLite a cada carregamento.
@@ -62,14 +63,6 @@ def serve_layout():
 
 
 app.layout = serve_layout
-
-
-def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
-    """Ações que não têm execução/captura em memória (publicar, desfazer):
-    abre e fecha a linha de histórico na mesma requisição."""
-    historico_id = historico_iniciar(tipo, admin_email)
-    historico_encerrar(historico_id, desfecho)
-    return historico_id
 
 
 @server.route("/admin/atualizar", methods=["GET"])
@@ -507,36 +500,6 @@ def admin_atualizar_estado():
             "ciclos_sem_modalidade_descartados": getattr(execucao, "ciclos_sem_modalidade_descartados", 0) or 0,
             "matriculas_sem_modalidade_descartadas": getattr(execucao, "matriculas_sem_modalidade_descartadas", 0) or 0,
         }
-    )
-
-
-@server.route("/admin/atualizar/publicar", methods=["POST"])
-@requer_autenticacao
-def admin_atualizar_publicar():
-    """Publica a versão interna e registra a ação no histórico."""
-    versoes.publicar(DEFAULT_DB_PATH, admin_email=comum.admin_email())
-    historico_iniciar_e_encerrar("publicacao", comum.admin_email(), "publicada")
-    return "", 204
-
-
-@server.route("/admin/atualizar/desfazer", methods=["POST"])
-@requer_autenticacao
-def admin_atualizar_desfazer():
-    """Restaura a publicação anterior e registra a ação no histórico."""
-    try:
-        versoes.desfazer(DEFAULT_DB_PATH)
-    except ValueError as exc:
-        return flask.jsonify({"erro": str(exc)}), 409
-    historico_iniciar_e_encerrar("desfazer_publicacao", comum.admin_email(), "publicacao_desfeita")
-    return "", 204
-
-
-@server.route("/admin/historico", methods=["GET"])
-@requer_autenticacao
-def admin_historico():
-    """Mostra os eventos do histórico de atualizações."""
-    return flask.render_template(
-        "historico.html", usuario=comum.admin_email(), eventos=historico_listar(), **comum.contexto_base()
     )
 
 
