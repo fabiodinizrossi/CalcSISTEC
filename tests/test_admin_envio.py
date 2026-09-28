@@ -469,15 +469,16 @@ def test_unidade_cadastrada_pelo_envio_aparece_nas_paginas_de_cadastro(sessao, b
     conta nos totais de Configurações — a tela, não só o banco.
 
     As duas páginas chegam ao cadastro por caminhos próprios: `admin_config`
-    usa o `listar_campi` do `app.py`, e `/admin/campi` usa um `DB_PATH` próprio
+    usa o `listar_campi` de `app/rotas/configuracoes.py`, e `/admin/campi` usa um `DB_PATH` próprio
     (`app/admin_campi.py:25`, cópia do valor de `DEFAULT_DB_PATH` feita no
     import). O teste aponta os dois para o banco temporário — sem isso as
     chamadas leriam o banco do repositório e o teste não provaria nada."""
     from app import admin_campi
     from app.data import campi as dados_campi
+    from app.rotas import configuracoes
 
     monkeypatch.setattr(admin_campi, "DB_PATH", banco_temporario)
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: dados_campi.listar_campi(banco_temporario))
     monkeypatch.setattr(instalacao_mod, "concluida", lambda: True)
 
     ciclos = [_ciclo("C9", "U9", nome="ciclos-U9.csv")]

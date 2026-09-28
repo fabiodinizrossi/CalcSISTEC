@@ -1,5 +1,6 @@
 """Páginas administrativas (Flask/Jinja) no padrão do gov.br DS."""
 
+import io
 import re
 
 import flask
@@ -8,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from app import app as app_module
 from app.data import instalacao as instalacao_mod
-from app.rotas import acesso
+from app.rotas import acesso, configuracoes
 
 
 @pytest.fixture
@@ -252,7 +253,7 @@ CONFIG_CAMPI = [
 
 
 def test_configuracoes_resume_os_campi_e_leva_a_gerenciar_campi(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI)
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: CONFIG_CAMPI)
     resposta = cliente_autenticado.get("/admin/config")
     html = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
@@ -266,7 +267,7 @@ def test_configuracoes_resume_os_campi_e_leva_a_gerenciar_campi(cliente_autentic
 
 
 def test_configuracoes_sem_suspeitos_nao_mostra_o_aviso(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "listar_campi", lambda *a, **k: CONFIG_CAMPI[:1])
+    monkeypatch.setattr(configuracoes, "listar_campi", lambda *a, **k: CONFIG_CAMPI[:1])
     html = cliente_autenticado.get("/admin/config").get_data(as_text=True)
     assert "1 campi cadastrados, 1 ativos." in html
     assert "identificador inválido" not in html
@@ -307,9 +308,62 @@ def test_email_invalido_mostra_o_campo_em_danger_e_a_mensagem_em_br_message(clie
 
 
 def test_mensagem_do_logotipo_aparece_em_br_message(cliente_autenticado, monkeypatch):
-    monkeypatch.setattr(app_module, "reset_logo", lambda: None)
+    monkeypatch.setattr(configuracoes, "reset_logo", lambda: None)
     html = cliente_autenticado.post("/admin/config", data={"acao": "restaurar_logo"}).get_data(as_text=True)
     assert re.search(r'class="br-message success"[^>]*role="alert".*Logotipo restaurado ao padrão de fábrica\.', html, re.S)
+
+
+def test_enviar_logotipo_svg_salva_arquivo_e_mostra_sucesso(cliente_autenticado, monkeypatch, tmp_path):
+    destinos = []
+    monkeypatch.setattr(configuracoes, "UPLOADS_BRANDING_DIR", str(tmp_path))
+    monkeypatch.setattr(configuracoes, "set_logo", destinos.append)
+    resposta = cliente_autenticado.post(
+        "/admin/config",
+        data={
+            "acao": "enviar_logo",
+            "logo": (io.BytesIO(b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>'), "novo.svg"),
+        },
+    )
+
+    assert resposta.status_code == 200
+    assert "Logotipo atualizado." in resposta.get_data(as_text=True)
+    assert destinos == [str(tmp_path / "logo-atual.svg")]
+    assert b"<svg" in (tmp_path / "logo-atual.svg").read_bytes()
+
+
+def test_salvar_email_valido_atualiza_contato(cliente_autenticado, monkeypatch):
+    gravados = []
+    monkeypatch.setattr(configuracoes, "set_contato_email", gravados.append)
+
+    resposta = cliente_autenticado.post(
+        "/admin/config", data={"acao": "salvar_email", "contato_email": "contato@exemplo.edu.br"}
+    )
+
+    assert resposta.status_code == 200
+    assert gravados == ["contato@exemplo.edu.br"]
+    assert "E-mail de contato salvo." in resposta.get_data(as_text=True)
+
+
+def test_resetar_instalacao_volta_ao_assistente(cliente_autenticado, monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(configuracoes.instalacao, "resetar", lambda db_path, apagar_dados: chamadas.append((db_path, apagar_dados)))
+
+    resposta = cliente_autenticado.post(
+        "/admin/config", data={"acao": "resetar_instalacao", "apagar_dados": "1"}
+    )
+
+    assert resposta.status_code == 302
+    assert resposta.headers["Location"] == "/admin/instalacao"
+    assert chamadas == [(configuracoes.DEFAULT_DB_PATH, True)]
+
+
+def test_estado_da_captura_sem_registro_devolve_nulo(cliente_autenticado, monkeypatch):
+    monkeypatch.setattr(configuracoes.execucoes, "obter_ultima_captura_do_admin", lambda email: None)
+
+    resposta = cliente_autenticado.get("/admin/config/captura")
+
+    assert resposta.status_code == 200
+    assert resposta.get_json() == {"estado": None}
 
 
 def test_mensagem_dos_fatores_aparece_em_br_message(cliente_autenticado):
@@ -323,7 +377,7 @@ def banco_temporario(tmp_path, monkeypatch):
 
     caminho = str(tmp_path / "config.db")
     init_db(caminho)
-    monkeypatch.setattr(app_module, "DEFAULT_DB_PATH", caminho)
+    monkeypatch.setattr(configuracoes, "DEFAULT_DB_PATH", caminho)
     return caminho
 
 
@@ -359,8 +413,8 @@ def test_acoes_de_campus_sairam_de_admin_config(cliente_autenticado, banco_tempo
 
 def test_salvar_qtd_perfis_continua_gravando_o_valor(cliente_autenticado, banco_temporario, monkeypatch):
     gravado = []
-    monkeypatch.setattr(app_module, "set_qtd_perfis", gravado.append)
-    monkeypatch.setattr(app_module, "get_qtd_perfis", lambda: gravado[-1] if gravado else "")
+    monkeypatch.setattr(configuracoes, "set_qtd_perfis", gravado.append)
+    monkeypatch.setattr(configuracoes, "get_qtd_perfis", lambda: gravado[-1] if gravado else "")
     html = cliente_autenticado.post("/admin/config", data={"acao": "salvar_qtd_perfis", "qtd_perfis": "18"}).get_data(as_text=True)
     assert gravado == ["18"]
     assert "Quantidade de perfis salva." in html

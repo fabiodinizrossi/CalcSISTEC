@@ -21,6 +21,9 @@ ROTAS_ESPERADAS = [
     ("/recuperar-acesso", "GET", "acesso_bp"),
     ("/admin/instalacao", "GET", "instalacao_bp"),
     ("/admin/instalacao", "POST", "instalacao_bp"),
+    ("/admin/config", "GET", "configuracoes_bp"),
+    ("/admin/config", "POST", "configuracoes_bp"),
+    ("/admin/config/captura", "GET", "configuracoes_bp"),
 ]
 
 

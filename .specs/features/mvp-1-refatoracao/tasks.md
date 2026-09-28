@@ -288,7 +288,7 @@ ocorrências em `tests/test_admin_campi.py`, `tests/test_admin_envio.py`,
 
 ---
 
-### T5: Mover as configurações para `app/rotas/configuracoes.py`
+### [x] T5: Mover as configurações para `app/rotas/configuracoes.py`
 
 **What**: `/admin/config` (`:752`, a maior função do arquivo) e
 `/admin/config/captura` (`:986`), mais `LOGO_MAX_BYTES`, vão para
