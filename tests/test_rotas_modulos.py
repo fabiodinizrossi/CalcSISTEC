@@ -27,6 +27,7 @@ ROTAS_ESPERADAS = [
     ("/admin/atualizar/publicar", "POST", "publicacao_bp"),
     ("/admin/atualizar/desfazer", "POST", "publicacao_bp"),
     ("/admin/historico", "GET", "publicacao_bp"),
+    ("/admin/atualizar/envio", "POST", "envio_bp"),
 ]
 
 

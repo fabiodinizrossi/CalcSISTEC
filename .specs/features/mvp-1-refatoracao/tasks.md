@@ -347,7 +347,7 @@ vão para `publicacao_bp`.
 
 ---
 
-### T7: Mover o envio de pastas para `app/rotas/envio.py`
+### [x] T7: Mover o envio de pastas para `app/rotas/envio.py`
 
 **What**: `/admin/atualizar/envio` (`:407`) e os helpers
 `_resumo_arquivos_envio` (`:335`), `_matriculas_orfas_envio` (`:343`),
