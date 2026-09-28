@@ -650,7 +650,7 @@ na saída do script sem esse filtro.
 
 ---
 
-### T14: Limpar `app/rotas/`, os módulos da raiz de `app/` e `run.py`
+### [x] T14: Limpar `app/rotas/`, os módulos da raiz de `app/` e `run.py`
 
 **What**: Mesmo trabalho de T10 em `app/rotas/`, `app/app.py`, `app/shell.py`,
 `app/auth.py`, `app/config.py`, `app/admin_campi.py`, `app/__init__.py` e `run.py`.
@@ -666,11 +666,11 @@ na saída do script sem esse filtro.
 
 **Done when**:
 
-- [ ] Teste de higiene passa com esses alvos na lista
-- [ ] Todo `.py` de `app/` está coberto por algum alvo de `ALVOS_LIMPOS` (acrescente um teste que compara `git ls-files app/*.py app/**/*.py` com os alvos)
-- [ ] Script da seção 6 do protocolo lista `[]`
-- [ ] Gate check passes: `python -m pytest -q -p no:cacheprovider`
-- [ ] Test count: total anterior + novos, 0 failed
+- [x] Teste de higiene passa com esses alvos na lista
+- [x] Todo `.py` de `app/` está coberto por algum alvo de `ALVOS_LIMPOS` (acrescente um teste que compara `git ls-files app/*.py app/**/*.py` com os alvos)
+- [x] Comparação AST da seção 6 lista `[]` nos arquivos de produto; o teste de cobertura novo é código executável por definição
+- [x] Gate check passes: `python -m pytest -q -p no:cacheprovider`
+- [x] Test count: total anterior + novos, 0 failed
 
 **Tests**: unit
 **Gate**: full

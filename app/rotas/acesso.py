@@ -18,13 +18,11 @@ _MSG_CONFIG_AUSENTE = (
 
 @acesso_bp.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    """BC-05/AD-04: única porta de entrada autenticada do sistema — as 5
-    páginas públicas (Dash `use_pages`) nunca passam por esta rota.
+    """Autentica o administrador; as páginas públicas não passam por esta rota.
 
-    `001-govbr-design-system` (T033): RF-10 a RF-14 — campos E-mail/Senha
-    (em vez de Usuário/Senha), validação de formato por campo (RF-11),
-    mensagem global genérica em caso de credencial incorreta, sem indicar
-    qual campo errou (RF-12), foco no primeiro campo inválido."""
+    Valida e-mail e senha por campo, com foco no primeiro campo inválido.
+    Credenciais incorretas produzem uma mensagem genérica, sem indicar
+    qual campo errou."""
     if not credenciais_configuradas():
         return flask.render_template(
             "login.html", erro_global=_MSG_CONFIG_AUSENTE, email="", **comum.contexto_base()
@@ -65,18 +63,17 @@ def admin_logout():
 
 @acesso_bp.route("/recuperar-acesso")
 def recuperar_acesso():
-    """RF-15/RN-10: pública, sem exigir sessão — orienta a pedir a
+    """Rota pública que orienta a pedir a
     redefinição à Pesquisa Institucional, sem nenhum campo de formulário."""
     return flask.render_template("recuperar_acesso.html", **comum.contexto_base())
 
 
 @acesso_bp.before_app_request
 def _exigir_sessao_previa():
-    """PVP-07 (`previa-paginas-publicas`, T15): barra no servidor qualquer
-    requisição a `/admin/previa/...` sem sessão autenticada, redirecionando
-    para `/admin/login` antes de o Dash montar o layout. Camada a mais — não
-    substitui a validação de posse de `obter_previa`/`abrir_leitura_previa`
-    (T4/T7), que continuam valendo nos callbacks."""
+    """Redireciona prévias sem sessão autenticada antes de montar o layout.
+
+    Os callbacks também conferem a posse da prévia ao chamarem
+    `obter_previa` e `abrir_leitura_previa`."""
     if flask.request.path.startswith("/admin/previa/") and not esta_autenticado():
         return flask.redirect("/admin/login")
     return None

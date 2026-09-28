@@ -17,8 +17,7 @@ def admin_email():
 
 
 def execucao_da_sessao():
-    """Confere que a execução pertence ao administrador da sessão (D-14
-    remove o upload; toda ação de `/admin/atualizar/*` passa por aqui)."""
+    """Obtém a execução do administrador da sessão para as rotas de atualização."""
     execucao = execucoes.obter_do_admin(admin_email())
     return execucao
 

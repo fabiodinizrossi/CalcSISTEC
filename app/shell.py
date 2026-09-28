@@ -1,4 +1,4 @@
-"""Shell da interface: entrega do gov.br DS e (nas tasks seguintes) cabeçalho,
+"""Shell da interface: entrega do gov.br DS, cabeçalho,
 menu, breadcrumb e rodapé compartilhados por páginas Flask e Dash."""
 
 import os
@@ -12,7 +12,7 @@ from app.data.config_store import dados_instituicao, get_contato_email
 PASTA_STATIC = os.path.join(os.path.dirname(__file__), "static")
 
 # O DS fica fora de `app/assets/`: o Dash carrega tudo de lá, e o shell decide
-# o que carregar (AD-002).
+# o que carregar.
 ds_static = Blueprint("ds_static", __name__, static_folder=PASTA_STATIC, static_url_path="/ds")
 
 PAGINAS_PUBLICAS = [

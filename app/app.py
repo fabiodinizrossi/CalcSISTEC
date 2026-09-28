@@ -33,14 +33,12 @@ app = PainelDash(
 
 server = app.server
 server.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
-# BC-05/AD-04: sessão Flask usada apenas para o guarda de acesso da rota
-# administrativa de upload — as 5 páginas públicas nunca a consultam.
+# A sessão Flask guarda o acesso administrativo; as páginas públicas não a consultam.
 server.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24))
 aplicar_configuracao_sessao(server)
 
-# roadmap.md §8 (Implantação): "a migração roda no startup" — schema v2 é
-# idempotente e guardada por `config.schema_versao` (T004), então rodar aqui
-# sempre é seguro, inclusive quando o processo já está na v2.
+# A migração do schema é idempotente e guardada por `config.schema_versao`;
+# pode rodar no início de cada processo, inclusive com o banco já atualizado.
 init_db(DEFAULT_DB_PATH)
 
 from app.sistec.api import bp as sistec_api_bp  # noqa: E402
@@ -53,12 +51,10 @@ server.register_blueprint(instalacao_bp)
 server.register_blueprint(configuracoes_bp)
 init_shell(server, app)
 
-# Tarefa 09 (BC-04): as 5 páginas públicas leem o dataset ativo direto do
-# SQLite a cada carregamento (`app/data/consulta.py`), substituindo o antigo
-# padrão de upload no navegador + `dcc.Store` de sessão — o upload agora só
-# acontece na rota administrativa autenticada (`/admin/upload`, Tarefa 08).
+# As páginas públicas leem o conjunto ativo do SQLite a cada carregamento.
+# O envio de dados ocorre pela rota administrativa autenticada.
 #
-# O cabeçalho, o menu e o rodapé vêm do shell (`app/shell.py`, AD-001); o Dash
+# O cabeçalho, o menu e o rodapé vêm do shell (`app/shell.py`); o Dash
 # renderiza só o aviso de dataset sem correção PNP e a página atual. O layout
 # continua sendo uma função para reler o dataset a cada carregamento.
 def serve_layout():
@@ -70,7 +66,7 @@ app.layout = serve_layout
 
 def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
     """Ações que não têm execução/captura em memória (publicar, desfazer):
-    abre e fecha a linha de histórico no mesmo request (RF-13)."""
+    abre e fecha a linha de histórico na mesma requisição."""
     historico_id = historico_iniciar(tipo, admin_email)
     historico_encerrar(historico_id, desfecho)
     return historico_id
@@ -79,8 +75,7 @@ def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
 @server.route("/admin/atualizar", methods=["GET"])
 @requer_autenticacao
 def admin_atualizar():
-    """RF-08/RF-10 (D-14): tela "Atualizar dados" — baixa, progresso,
-    resumo, prévia, Publicar, Desfazer, resumo comparativo (T063)."""
+    """Mostra a tela de atualização com coleta, progresso, prévia e publicação."""
     return flask.render_template("atualizar.html", usuario=comum.admin_email(), **comum.contexto_base())
 
 
@@ -135,7 +130,7 @@ def admin_atualizar_sistec_cancelar():
 
 
 def _resumo_arquivos_envio(execucao):
-    """Desfecho por arquivo enviado: só nome, tipo, linhas e status (RN-13)."""
+    """Resume cada arquivo enviado por nome, tipo, número de linhas e status."""
     return [
         {"n": par.n, "tipo": par.tipo, "nome": par.nome_perfil, "status": par.status, "linhas": par.linhas}
         for par in execucao.fila
@@ -155,10 +150,10 @@ def _matriculas_orfas_envio(previa):
 
 
 def _cadastrar_unidades_do_envio(codigos, dados_unidades):
-    """AFE-03: cadastra as unidades que vieram nos ciclos e ainda não estavam
+    """Cadastra as unidades que vieram nos ciclos e ainda não estavam
     na lista de campi. Se a unidade está no arquivo do Sistec, ela existe.
 
-    CPR-05 AC1: `dados_unidades` (de `envio.dados_unidades_do_envio`) traz
+    `dados_unidades` (de `envio.dados_unidades_do_envio`) traz
     cidade e nome da unidade lidos do próprio CSV — a unidade nova já nasce
     com os dois preenchidos.
 
@@ -188,7 +183,7 @@ def _cadastrar_unidades_do_envio(codigos, dados_unidades):
 
 
 def _completar_unidades_incompletas(campi_cadastrados, dados_unidades):
-    """CPR-05 AC2: unidades já cadastradas que vieram neste envio com cidade
+    """Unidades já cadastradas que vieram neste envio com cidade
     ou nome vazios ganham o valor do CSV — sem sobrescrever o que já existe
     (`campi.completar_cidade_nome` usa `COALESCE`)."""
     for campus in campi_cadastrados:
@@ -209,10 +204,9 @@ def _completar_unidades_incompletas(campi_cadastrados, dados_unidades):
 @server.route("/admin/atualizar/envio", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_envio():
-    """UPL-02/UPL-05/UPL-06/UPL-12 (D-14 + envio de pastas): lê as pastas
-    enviadas, consolida na mesma execução da baixa e devolve o desfecho por
-    arquivo. Processamento síncrono: os bytes só existem enquanto a
-    requisição vive (o buffer temporário do parser é descartado no fim)."""
+    """Lê as pastas enviadas e consolida os arquivos na execução da baixa.
+    Devolve o desfecho por arquivo. Processamento síncrono: os bytes só existem
+    enquanto a requisição vive (o buffer temporário do parser é descartado no fim)."""
     estado_navegador = navegador.status(comum.admin_email())
     if estado_navegador and estado_navegador["ativa"]:
         return flask.jsonify({"erro": "execucao_em_andamento"}), 409
@@ -226,7 +220,7 @@ def admin_atualizar_envio():
             flask.request.files.getlist("ciclos"), flask.request.files.getlist("matriculas")
         )
     except envio.EnvioInvalido as exc:
-        # UPL-10/UPL-12: nada foi criado nem gravado; a resposta nomeia o
+        # Nada foi criado nem gravado; a resposta nomeia o
         # arquivo e o motivo, nunca o conteúdo da célula.
         return flask.jsonify({"erro": "envio_invalido", "arquivo": exc.arquivo, "motivo": exc.motivo}), 400
 
@@ -257,7 +251,7 @@ def admin_atualizar_envio():
     }
 
     if execucao.estado == "falhou_consolidacao":
-        # UPL-11: erro do conjunto, sem arquivo culpado. Nada gravado.
+        # Erro do conjunto, sem arquivo culpado. Nada gravado.
         historico_encerrar(
             historico_id, "falhou_consolidacao", detalhe={"erro": execucao.erro_consolidacao}
         )
@@ -265,10 +259,10 @@ def admin_atualizar_envio():
         return flask.jsonify(resposta)
 
     campi_cadastrados = listar_campi()
-    # CPR-03: unidade cujos ciclos são TODOS sem modalidade não entra no
+    # Unidade cujos ciclos são TODOS sem modalidade não entra no
     # candidato — para "ausente"/"não cadastrado" ela conta como ausente.
     ciclos_validos = ciclos_com_modalidade(execucao.previa["ciclos"])
-    # CPR-05: cidade/nome vêm do próprio CSV — do mesmo recorte que vai para o
+    # Cidade/nome vêm do próprio CSV — do mesmo recorte que vai para o
     # candidato, não dos ciclos brutos.
     dados_unidades = envio.dados_unidades_do_envio(ciclos_validos)
     preservados = envio.campi_ausentes(ciclos_validos, campi_cadastrados)
@@ -282,7 +276,7 @@ def admin_atualizar_envio():
         "matriculas": len(execucao.previa["matriculas"]),
     }
 
-    # T17 (previa-paginas-publicas): prepara o candidato sem gravar e abre a
+    # Prepara o candidato sem gravar e abre a
     # fonte em memória da prévia. `abrir_previa` libera os DataFrames por
     # arquivo e o consolidado pesado, conservando o resumo/amostra do polling.
     try:
@@ -290,18 +284,16 @@ def admin_atualizar_envio():
             execucao.previa, preservados, db_path=DEFAULT_DB_PATH, ano_base=ano_base_ativo()
         )
         execucoes.abrir_previa(execucao, candidato, db_path=DEFAULT_DB_PATH)
-        # CPR-04: cadastro/complemento de campi só grava depois que a prévia foi
+        # Cadastro/complemento de campi só grava depois que a prévia foi
         # montada com sucesso — se `preparar_versao`/`abrir_previa` falhar antes
-        # disto, nada foi persistido (era o gap: a escrita rodava antes do try).
+        # disto, nada foi persistido.
         execucao.campi_cadastrados_automaticamente = _cadastrar_unidades_do_envio(
             envio.campi_nao_cadastrados(ciclos_validos, campi_cadastrados), dados_unidades
         )
         _completar_unidades_incompletas(campi_cadastrados, dados_unidades)
-        # T20: as duas escritas acima mudaram `interna_campus` DEPOIS de
-        # `preparar_versao` ter calculado a assinatura — sem recalculá-la aqui,
-        # o Salvar do próprio envio acusava divergência (409) para sempre. A
-        # assinatura passa a ser a do estado que esta requisição deixou;
-        # mudança de outra origem depois disto continua recusada (CPR-06).
+        # As duas escritas acima mudam `interna_campus` depois de
+        # `preparar_versao` calcular a assinatura. Recalculá-la permite salvar
+        # este envio; mudança de outra origem depois disto continua recusada.
         candidato["assinatura_origem"] = calcular_assinatura_origem(db_path=DEFAULT_DB_PATH)
         resposta["campi_cadastrados_automaticamente"] = execucao.campi_cadastrados_automaticamente
         execucao.ciclos_sem_modalidade_descartados = candidato["resumo"]["ciclos_sem_modalidade_descartados"]
@@ -317,7 +309,7 @@ def admin_atualizar_envio():
         resposta["erro_previa"] = "sem_memoria"
         return flask.jsonify(resposta)
     except Exception:
-        # CPR-04: qualquer outra falha ao montar a fonte (ex.: erro de
+        # Qualquer outra falha ao montar a fonte (ex.: erro de
         # integridade do conjunto) responde erro estruturado com corpo JSON —
         # nunca 500 sem corpo. Nada é gravado e a execução segue descartável.
         resposta["previa"] = None
@@ -390,11 +382,11 @@ def admin_atualizar_cancelar(execucao_id):
 @server.route("/admin/atualizar/execucoes/<execucao_id>/salvar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_salvar(execucao_id):
-    """UPL-08: `{"confirmar_preservacao": true}` libera a gravação de um
+    """`{"confirmar_preservacao": true}` libera a gravação de um
     envio que preserva campi ausentes; sem ele, o servidor recusa com 409 e
     a lista dos campi preservados (o portão não é só do JS).
 
-    PVP-04/PVP-09/PVP-10: o envio usa o ano-base de `config` (o mesmo que as
+    O envio usa o ano-base de `config` (o mesmo que as
     páginas consultam); a baixa direta segue com `comum.ano_base_config()` do
     ambiente. Conferência desatualizada e página com falha devolvem 409."""
     execucao = comum.execucao_da_sessao()
@@ -452,14 +444,14 @@ def admin_atualizar_descartar(execucao_id):
 @server.route("/admin/atualizar/execucao", methods=["GET"])
 @requer_autenticacao
 def admin_atualizar_estado():
-    """Estado JSON para o polling de `atualizar.js` (RF-08, a cada 2 s).
+    """Estado JSON para o polling de `atualizar.js` a cada 2 s.
     Nunca devolve linhas além de uma amostra sem dados pessoais (as colunas
-    já chegam sem PII, D-04, mas a amostra em si fica pequena por prudência).
+    já chegam sem dados pessoais, mas a amostra em si fica pequena por prudência).
 
-    UPL-09: os campos do envio (`origem`, `campi_preservados`,
+    Os campos do envio (`origem`, `campi_preservados`,
     `campi_cadastrados_automaticamente`, `arquivos_ignorados`,
     `matriculas_orfas`) são só códigos institucionais, nomes de arquivo e
-    contagens (RN-13); numa baixa `origem` é `"baixa"` e as listas vêm
+    contagens; numa baixa `origem` é `"baixa"` e as listas vêm
     vazias."""
     execucao = comum.execucao_da_sessao()
     estado_navegador = navegador.status(comum.admin_email())
@@ -475,7 +467,7 @@ def admin_atualizar_estado():
 
     previa_resumo = None
     if execucao.previa_resumo is not None:
-        # envio com a fonte da prévia aberta (T17): o consolidado pesado foi
+        # Envio com a fonte da prévia aberta: o consolidado pesado foi
         # liberado, e o resumo/amostra ficam em `execucao.previa_resumo`.
         previa_resumo = {
             "ciclos": execucao.previa_resumo["ciclos"],
@@ -499,9 +491,9 @@ def admin_atualizar_estado():
             "execucao_id": execucao.id,
             "origem": execucao.origem,
             "navegador": estado_navegador,
-            # T071: `erro_consolidacao` (ConsolidacaoInvalida) só cita
+            # `erro_consolidacao` (ConsolidacaoInvalida) só cita
             # códigos institucionais (portfólio, ciclo, unidade) — nunca
-            # conteúdo de planilha ou dado pessoal (RN-13).
+            # conteúdo de planilha ou dado pessoal.
             "erro_consolidacao": getattr(execucao, "erro_consolidacao", None),
             "progresso": {"total": total, "concluidos": concluidos},
             "pares": pares,
@@ -521,7 +513,7 @@ def admin_atualizar_estado():
 @server.route("/admin/atualizar/publicar", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_publicar():
-    """RF-18/RN-21/RN-27."""
+    """Publica a versão interna e registra a ação no histórico."""
     versoes.publicar(DEFAULT_DB_PATH, admin_email=comum.admin_email())
     historico_iniciar_e_encerrar("publicacao", comum.admin_email(), "publicada")
     return "", 204
@@ -530,7 +522,7 @@ def admin_atualizar_publicar():
 @server.route("/admin/atualizar/desfazer", methods=["POST"])
 @requer_autenticacao
 def admin_atualizar_desfazer():
-    """RN-27."""
+    """Restaura a publicação anterior e registra a ação no histórico."""
     try:
         versoes.desfazer(DEFAULT_DB_PATH)
     except ValueError as exc:
@@ -542,7 +534,7 @@ def admin_atualizar_desfazer():
 @server.route("/admin/historico", methods=["GET"])
 @requer_autenticacao
 def admin_historico():
-    """RF-13 (T065)."""
+    """Mostra os eventos do histórico de atualizações."""
     return flask.render_template(
         "historico.html", usuario=comum.admin_email(), eventos=historico_listar(), **comum.contexto_base()
     )

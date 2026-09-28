@@ -30,7 +30,7 @@ from app.sistec import execucoes
 
 configuracoes_bp = flask.Blueprint("configuracoes_bp", __name__)
 
-LOGO_MAX_BYTES = 500 * 1024
+LOGO_MAX_BYTES = 500 * 1024  # Logotipos acima deste limite são rejeitados.
 
 
 def historico_iniciar_e_encerrar(tipo, admin_email, desfecho):
@@ -47,12 +47,12 @@ FATORES_PENDENTE_PATH = os.path.join(
 @configuracoes_bp.route("/admin/config", methods=["GET", "POST"])
 @requer_autenticacao
 def admin_config():
-    """RF-19 a RF-22: e-mail de contato e logotipo administráveis
-    (`001-govbr-design-system`, T036). Cada ação (`acao` no form) é
+    """Configura e-mail de contato, logotipo, campi e fatores.
+
+    Cada ação (`acao` no formulário) é
     independente — salvar/restaurar e-mail não afeta o logotipo e vice-versa.
 
-    `002-baixador-planilhas-sistec` (T056): ações novas de "Campi do Sistec"
-    e "Fatores". `iniciar_captura` e `salvar_lista_campi` respondem JSON (a
+    `iniciar_captura` e `salvar_lista_campi` respondem JSON (a
     tela precisa do `captura_id`/`token` para falar com a extensão, igual a
     `/admin/atualizar/execucoes`); as demais seguem o padrão de form POST +
     recarregar a página desta rota."""
@@ -281,9 +281,9 @@ def admin_config():
 @configuracoes_bp.route("/admin/config/captura", methods=["GET"])
 @requer_autenticacao
 def admin_config_captura_estado():
-    """Estado JSON da captura de campi da extensão MV3 (T066, RN-04).
+    """Estado JSON da captura de campi da extensão MV3.
 
-    **Sem uso pelas telas**: a lista de campi é cadastrada à mão desde a E007.
+    **Sem uso pelas telas**: a lista de campi é cadastrada à mão.
     Mantida junto com `extensao-sistec/` e `/api/sistec/capturas/*` para o caso
     de a distribuição por extensão voltar."""
     captura = execucoes.obter_ultima_captura_do_admin(comum.admin_email())

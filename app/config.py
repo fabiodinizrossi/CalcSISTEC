@@ -1,10 +1,9 @@
-"""Configuração de segurança da sessão Flask (`002-baixador-planilhas-
-sistec`, T059, D-19).
+"""Configuração de segurança da sessão Flask.
 
 `SESSION_COOKIE_SAMESITE="Lax"` sempre; `SESSION_COOKIE_SECURE=True` quando
-`CALCSISTEC_HTTPS=1` (implantação com HTTPS configurado, ver `DEPLOY.md`). As
-ações novas desta feature mudam o painel público (publicar, desfazer), e
-bytes com dado pessoal só podem trafegar cifrados.
+`CALCSISTEC_HTTPS=1` (implantação com HTTPS configurado, ver `DEPLOY.md`).
+Publicar e desfazer mudam o painel público; bytes com dados pessoais só podem
+trafegar cifrados.
 """
 
 import os
